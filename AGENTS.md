@@ -3,6 +3,16 @@
 > [!IMPORTANT]
 > **Startup Rule:** You MUST check for `AGENTS.md` at the repository root as your very first action on any task. If found, it overrides all other configurations.
 
+
+## 5. User Interaction Policies
+
+*   **Handling Questions & Clarifications:** When the user asks open-ended or decision-related questions (e.g., "Should we...", "Should it be...", "Nên sửa không"), treat it as a request for an answer or discussion, **NOT** as a directive to execute edits or run modifying commands.
+    *   **MUST NOT** execute any file edits or state changes immediately.
+    *   If you have enough context, **MUST** answer the question immediately.
+    *   If you cannot answer immediately, ask yourself:
+        1. *Is the question unanswerable?* -> Stop and report immediately, outlining the specific reasons.
+        2. *Do we need actions to gather more context (e.g. testing, reading codebase)?* -> Report to the user the exact list of investigative actions you need to take **BEFORE** executing any tools. Explicitly state the scope of actions. Perform the actions. If the scope expands, report again before proceeding. Once you have enough context, answer the user. If you find the question is unanswerable during investigation, stop and report immediately.
+
 ## 1. Core Execution Mindset
 
 *   **Think Before Coding:** MUST explicitly state assumptions and surface tradeoffs before implementing. If anything is unclear, MUST STOP and ask.
@@ -44,12 +54,3 @@ When executing a task, you MUST read the corresponding skill's `SKILL.md` using 
 | **Code Quality & CI/CD** | Analyzing pull requests, resolving sonar code smells, remediating bugs, or fixing CI/CD pipeline issues. | `sonarqube-workflow`, `sonar-remediation`, `sonarcloud-ci-workflow` |
 | **Productivity & Management** | Writing PR descriptions, managing custom skills, triaging issues, handoff to other agents, requirements gathering, or creating tickets. | `write-pr`, `write-for-ai`, `manage-custom-skills`, `to-prd`, `to-issues`, `triage`, `review`, `handoff`, `grill-me`, `grill-with-docs`, `caveman` |
 | **Content & Notes** | Modifying Obsidian vault, creative writing, draft shaping, or narrative structuring. | `obsidian-vault`, `writing-beats`, `writing-fragments`, `writing-shape` |
-
-## 5. User Interaction Policies
-
-*   **Handling Questions & Clarifications:** When the user asks open-ended or decision-related questions (e.g., "Should we...", "Should it be...", "Nên sửa không"), treat it as a request for an answer or discussion, **NOT** as a directive to execute edits or run modifying commands.
-    *   **MUST NOT** execute any file edits or state changes immediately.
-    *   If you have enough context, **MUST** answer the question immediately.
-    *   If you cannot answer immediately, ask yourself:
-        1. *Is the question unanswerable?* -> Stop and report immediately, outlining the specific reasons.
-        2. *Do we need actions to gather more context (e.g. testing, reading codebase)?* -> Report to the user the exact list of investigative actions you need to take **BEFORE** executing any tools. Explicitly state the scope of actions. Perform the actions. If the scope expands, report again before proceeding. Once you have enough context, answer the user. If you find the question is unanswerable during investigation, stop and report immediately.
