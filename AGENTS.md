@@ -6,7 +6,7 @@
 
 ## User Interaction Policies
 
-*   **Handling Questions & Clarifications:** When the user asks open-ended or decision-related questions (e.g., "Should we...", "Should it be...", "Nên sửa không"), treat it as a request for an answer or discussion, **NOT** as a directive to execute edits or run modifying commands.
+*   **Handling Questions & Clarifications:** When the user asks open-ended, decision-related, or verification questions (e.g., questions ending with `?` or asking for choices/opinions such as "Should we...", "Is A better?", "Push to GitHub?", "Create a PR?"), treat it as a request for an answer or discussion, **NOT** as a directive to execute edits or run modifying commands.
     *   **MUST NOT** execute any file edits or state changes immediately.
     *   If you have enough context, **MUST** answer the question immediately.
     *   If you cannot answer immediately, ask yourself:
