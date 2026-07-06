@@ -5,7 +5,7 @@
 
 *   **Handling Questions & Clarifications:** When the user asks open-ended, decision-related, or verification questions (e.g., questions ending with `?` or asking for choices/opinions such as "Should we...", "Is A better?", "Push to GitHub?", "Create a PR?"), treat it as a request for an answer or discussion, **NOT** as a directive to execute edits or run modifying commands.
     *   **MUST NOT** execute any file edits or state changes immediately.
-    *   **STRICT WRITE BAN:** During the investigation phase of any question, you **MUST ONLY** use read-only or non-modifying actions (e.g., `view_file`, `grep_search`, `search_web`). You **MUST NEVER** perform any write operations, file edits, git commits, git pushes, file copies, or state-modifying commands until the user has explicitly reviewed your answer/discussion and given a clear directive to proceed with modifications.
+    *   **STRICT WRITE BAN:** During the investigation phase of any question, you **MUST ONLY** use read-only or non-modifying actions on the project repository. You **MUST NEVER** edit project source files, commit, push, or perform state-modifying git actions until the user has explicitly reviewed your answer/discussion and given a clear directive to proceed with modifications. *Exception:* You are permitted to write temporary test/scratch scripts or files inside the local private `brain` folder's `scratch/` directory and run local compilation or test commands to gather diagnostics.
     *   If you have enough context, **MUST** answer the question immediately.
     *   If you cannot answer immediately, ask yourself:
         1. *Is the question unanswerable?* -> Stop and report immediately, outlining the specific reasons.
