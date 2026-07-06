@@ -8,6 +8,7 @@
 
 *   **Handling Questions & Clarifications:** When the user asks open-ended, decision-related, or verification questions (e.g., questions ending with `?` or asking for choices/opinions such as "Should we...", "Is A better?", "Push to GitHub?", "Create a PR?"), treat it as a request for an answer or discussion, **NOT** as a directive to execute edits or run modifying commands.
     *   **MUST NOT** execute any file edits or state changes immediately.
+    *   **STRICT WRITE BAN:** During the investigation phase of any question, you **MUST ONLY** use read-only or non-modifying actions (e.g., `view_file`, `grep_search`, `search_web`). You **MUST NEVER** perform any write operations, file edits, git commits, git pushes, file copies, or state-modifying commands until the user has explicitly reviewed your answer/discussion and given a clear directive to proceed with modifications.
     *   If you have enough context, **MUST** answer the question immediately.
     *   If you cannot answer immediately, ask yourself:
         1. *Is the question unanswerable?* -> Stop and report immediately, outlining the specific reasons.
