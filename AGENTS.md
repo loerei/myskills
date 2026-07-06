@@ -1,4 +1,4 @@
-# ~/.gemini/GEMINI.md (Global Policies)
+# Global Policies
 
 
 ## User Interaction Policies
