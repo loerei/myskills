@@ -48,7 +48,15 @@ Or to a specific project:
 ```powershell
 node <projects-dir>/distribute-skills.js --target <projects-dir>/<project-folder>
 ```
-Confirm to the user that the skill has been created and synced.
+
+Navigate to `<projects-dir>/myskills/`, commit the new skill, and push it to the GitHub remote repository to keep it synced:
+```powershell
+git add .
+git commit -m "Create skill: <skill-name>"
+git push
+```
+
+Confirm to the user that the skill has been created, synced locally, and pushed to GitHub.
 
 ---
 
@@ -59,6 +67,12 @@ When editing or updating an existing custom skill:
 2. **Redistribute**: Run the distribution script to sync the updates across all project workspaces:
    ```powershell
    node <projects-dir>/distribute-skills.js --all <projects-dir>
+   ```
+3. **Push to GitHub**: Commit the modifications or deletion, and push to GitHub:
+   ```powershell
+   git add .
+   git commit -m "Update/Delete skill: <skill-name>"
+   git push
    ```
 
 ---
