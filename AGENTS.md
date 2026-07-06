@@ -1,8 +1,5 @@
 # ~/.gemini/GEMINI.md (Global Policies)
 
-> [!IMPORTANT]
-> **Startup Rule:** You MUST check for `AGENTS.md` at the repository root as your very first action on any task. If found, it overrides all other configurations.
-
 
 ## User Interaction Policies
 
@@ -49,6 +46,7 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
 
 | Category | Policy Instruction |
 | :--- | :--- |
+| **Workspace Override** | **MUST ALWAYS** check for a workspace-level `AGENTS.md` at the repository root as the very first action on any task. If found, its project-specific rules override these global policies. |
 | **Grounded Responses**| MUST base responses ONLY on provided context and codebase. MUST NEVER guess, assume, or hallucinate. MUST ask if info is missing. |
 | **Writing Tone** | MUST NOT use prideful, self-praising, or marketing language ("blazing fast", "smart", "advanced", "seamless"). Present only neutral facts. |
 | **Subagents** | Spawned subagents MUST be passed their corresponding rules from `C:\Users\sayus\.gemini\config\subagent_rules\` (e.g. `developer.md`, `reviewer.md`). |
