@@ -46,7 +46,7 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
 
 ## Task-Specific Workflows
 
-When executing a task, you MUST read the corresponding skill's `SKILL.md` using `view_file` before writing code or planning.
+When starting any task, you MUST check the list of available skills and their descriptions. If a skill's purpose or description matches the requirements of the task, you MUST read its `SKILL.md` using `view_file` before writing code or planning. Refer to the table below for mapping common task categories, but always dynamically match new skills based on their description metadata.
 
 | Task Category | Trigger Conditions & Indicators | Required Skills to Read |
 | :--- | :--- | :--- |
