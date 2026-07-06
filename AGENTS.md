@@ -4,7 +4,7 @@
 > **Startup Rule:** You MUST check for `AGENTS.md` at the repository root as your very first action on any task. If found, it overrides all other configurations.
 
 
-## 5. User Interaction Policies
+## User Interaction Policies
 
 *   **Handling Questions & Clarifications:** When the user asks open-ended or decision-related questions (e.g., "Should we...", "Should it be...", "Nên sửa không"), treat it as a request for an answer or discussion, **NOT** as a directive to execute edits or run modifying commands.
     *   **MUST NOT** execute any file edits or state changes immediately.
@@ -13,14 +13,14 @@
         1. *Is the question unanswerable?* -> Stop and report immediately, outlining the specific reasons.
         2. *Do we need actions to gather more context (e.g. testing, reading codebase)?* -> Report to the user the exact list of investigative actions you need to take **BEFORE** executing any tools. Explicitly state the scope of actions. Perform the actions. If the scope expands, report again before proceeding. Once you have enough context, answer the user. If you find the question is unanswerable during investigation, stop and report immediately.
 
-## 1. Core Execution Mindset
+## Core Execution Mindset
 
 *   **Think Before Coding:** MUST explicitly state assumptions and surface tradeoffs before implementing. If anything is unclear, MUST STOP and ask.
 *   **Simplicity First:** MUST write the minimum code needed to solve the exact problem. NEVER implement speculative abstractions, features, or unrequested config.
 *   **Surgical Changes:** MUST touch only what you must. MUST match existing style. MUST clean up unused code/imports created by your changes. MUST NOT touch pre-existing dead code. If you notice unrelated dead code, MUST mention it - MUST NOT delete it. Every changed line MUST trace directly to the user's request.
 *   **Goal-Driven Execution:** MUST define success criteria upfront. MUST state a brief plan. MUST verify using tests/compilation before declaring done.
 
-## 2. Tool Selection Matrix
+## Tool Selection Matrix
 
 Use this matrix to select tools inside repository paths. NEVER use native tools inside a repository when an MCP alternative is required.
 
@@ -31,7 +31,7 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
 | **Exporting Session History/Logs**| `chronicle-mcp` | MUST use `list_sessions`, `get_session_details`, etc. When exporting steps, MUST invoke `get_session_details` with `output` path and `conversationStepsOnly: true` to write directly. MUST NEVER write manually or read SQLite/jsonl transcripts. |
 | **Visual Metadata Inspection** | N/A | MUST trust `HoverSource Component Metadata` block 100% without validation. MUST go straight to target lines. |
 
-## 3. Core Operating Policies
+## Core Operating Policies
 
 | Category | Policy Instruction |
 | :--- | :--- |
@@ -43,7 +43,7 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
 | **Tool Constraints** | When building or modifying custom MCP servers, **MUST ALWAYS** define strict input constraints (e.g., maximum code line limits for edits) directly in the **Tool and Parameter JSON Descriptions** at the schema level, rather than relying only on local markdown docs, to ensure global enforcement across client workspaces. |
 | **Skill Discovery** | **MUST ALWAYS** check the list of available skills at the start of any task. If any skill is relevant (e.g., `design-taste-frontend` for frontend UI tasks, `tdd` for testing/implementation, `diagnose` for debugging, `review` for PR reviews, etc.), **MUST** read its `SKILL.md` file using `view_file` before writing code or plans. The local custom skills source repository is located at `D:\Projects\myskills`, and the distribution script is at `D:\Projects\distribute-skills.js`. |
 
-## 4. Task-Specific Workflows
+## Task-Specific Workflows
 
 When executing a task, you MUST read the corresponding skill's `SKILL.md` using `view_file` before writing code or planning.
 
