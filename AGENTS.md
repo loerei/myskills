@@ -26,6 +26,9 @@ When starting any task, you MUST check the list of available skills and their de
 
 ## Core Execution Mindset
 
+*   **Ambiguity Triage:** When starting any task, analyze it for ambiguous requirements:
+    - **Critical Ambiguities:** If the ambiguity impacts the core architecture, security, or primary goal (e.g., "user mentions 2FA but doesn't specify if it is via email, authenticator app, or hardware key"), you **MUST** suggest running `/grill-me` or `/grill-with-docs` to align.
+    - **Minor Ambiguities:** If the ambiguity is a minor detail (e.g., "choosing a cache timeout duration"), do **NOT** stall. Resolve it autonomously using sensible defaults, document your choices in a `proactive_choices.md` artifact inside the local private `brain` folder, and expose it to the user.
 *   **Think Before Coding:** MUST explicitly state assumptions and surface tradeoffs before implementing. If anything is unclear, MUST STOP and ask.
 *   **Simplicity First:** MUST write the minimum code needed to solve the exact problem. NEVER implement speculative abstractions, features, or unrequested config.
 *   **Surgical Changes:** MUST touch only what you must. MUST match existing style. MUST clean up unused code/imports created by your changes. MUST NOT touch pre-existing dead code. If you notice unrelated dead code, MUST mention it - MUST NOT delete it. Every changed line MUST trace directly to the user's request.
