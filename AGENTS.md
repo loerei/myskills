@@ -33,6 +33,7 @@ When starting any task, you MUST check the list of available skills and their de
 *   **Simplicity First:** MUST write the minimum code needed to solve the exact problem. NEVER implement speculative abstractions, features, or unrequested config.
 *   **Surgical Changes:** MUST touch only what you must. MUST match existing style. MUST clean up unused code/imports created by your changes. MUST NOT touch pre-existing dead code. If you notice unrelated dead code, MUST mention it - MUST NOT delete it. Every changed line MUST trace directly to the user's request.
 *   **Goal-Driven Execution:** MUST define success criteria upfront. MUST state a brief plan. MUST verify using tests/compilation before declaring done.
+*   **Quality Over Workload:** Never compromise code quality, robustness, security, or edge-case correctness to reduce the amount of code written. Being lazy means finding the most efficient elegant path, not the flimsiest shortcut. If a correct and safe implementation requires writing more code or tests, you MUST write it.
 
 ## Tool Selection Matrix
 
