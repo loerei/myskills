@@ -8,7 +8,7 @@ Skills are grouped into 5 logical categories:
 
 - **`design/`**: Interface design, styling, typography, brand guidelines, and premium UI taste (e.g., `design-taste-frontend`, `brandkit`, `minimalist-skill`).
 - **`engineering/`**: Development workflows, testing, architecture, and diagnostics (e.g., `tdd`, `diagnose`, `improve-codebase-architecture`).
-- **`quality/`**: CI/CD integration and automated code quality gates (e.g., `sonarqube-workflow`, `sonar-remediation`).
+- **`quality/`**: CI/CD integration and automated code quality gates (e.g., `sonarqube-workflow`, `sonar-remediation`, `sonar-remediation-scripts`).
 - **`productivity/`**: Workflow optimization, requirements gathering, issue management, and PR writing (e.g., `write-pr`, `write-for-ai`, `manage-custom-skills`).
 - **`personal/`**: Personal notes, Obsidian vault management, and creative drafting (e.g., `obsidian-vault`, `writing-beats`).
 
