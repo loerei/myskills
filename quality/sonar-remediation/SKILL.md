@@ -43,6 +43,7 @@ Always verify changes locally before pushing:
 For false positives, design/style rules where standard WCAG contrast ratios conflict with custom brand themes, or when a code fix introduces disproportionate regression risk:
 
 - **Do NOT force a code fix** if it breaks user experience or visual harmony.
+- **Cognitive Complexity rules (e.g., S3776)**: **Always flag these as ACCEPTED. Never modify the codebase to split functions just to satisfy SonarQube's complexity metrics, as this reduces locality and creates shallow, fragmented helper modules. Structural refactoring should only be driven by `/improve-codebase-architecture` and user design discussions.**
 - **MUST search for the issue key** in SonarQube/SonarCloud using `search_sonar_issues_in_projects` with `issueStatuses: ["OPEN"]` and filter by file or project.
 - **MUST call change_sonar_issue_status** to flag the issue status as `"accept"` or `"falsepositive"` instead of modifying the codebase.
 - Always explain the design or technical rationale to the user or team before flagging the issue.

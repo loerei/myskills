@@ -34,3 +34,7 @@ Check the remote Quality Gate metrics (duplication %, coverage, vulnerabilities)
 Look up the exact rules or component metrics:
 * Call `sonarcloud:show_rule` with `key="<ruleKey>"` to get explanation details.
 * Call `sonarcloud:get_component_measures` with `projectKey="<projectKey>"` (Note: the argument name is `projectKey`, not `component`) and `metricKeys=["duplicated_lines_density", "security_rating"]`.
+
+## Remediation Policy
+
+* **Cognitive Complexity (S3776)**: Always flag these as ACCEPTED using the status transition tool (`change_sonar_issue_status`). Never rewrite code or split deep functions just to satisfy SonarQube's complexity metrics, as it promotes shallow helper modules. Structural refactoring should only be driven by `/improve-codebase-architecture` and user design discussions.
