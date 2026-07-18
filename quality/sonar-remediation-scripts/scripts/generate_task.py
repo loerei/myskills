@@ -13,9 +13,13 @@ with open(input_path, "r", encoding="utf-8") as f:
 
 issues = data.get("issues", [])
 
+# Filter out S3776 from the issues that need code modifications
+S3776_rules = ["typescript:S3776", "javascript:S3776", "python:S3776"]
+code_issues = [issue for issue in issues if issue.get("rule") not in S3776_rules]
+
 # Group issues by component (file)
 by_file = {}
-for issue in issues:
+for issue in code_issues:
     comp = issue.get("component", "")
     if ":" in comp:
         comp = comp.split(":")[-1]
@@ -29,7 +33,7 @@ sorted_files = sorted(by_file.keys())
 task_lines = [
     "# Tasks for SonarCloud Issue Fixes",
     "",
-    f"This task list tracks the resolution of all {len(issues)} open SonarCloud issues across {len(sorted_files)} files.",
+    f"This task list tracks the resolution of all {len(code_issues)} open SonarCloud code issues across {len(sorted_files)} files.",
     "",
     "- [ ] Git Setup & Branch Creation",
     "  - [ ] Create and checkout new branch `fix/sonar-issues-all`",
@@ -66,6 +70,14 @@ if unused_count > 0:
     task_lines.extend([
         "- [ ] Verify and Flag unused variable/function issues (S1481, S1854) on SonarCloud",
         f"  - [ ] Verify usage for {unused_count} issues, and flag as ACCEPTED if they are false positives"
+    ])
+
+s3776_count = sum(1 for issue in issues if issue.get("rule") in S3776_rules)
+
+if s3776_count > 0:
+    task_lines.extend([
+        "- [ ] Flag Cognitive Complexity issues (S3776) on SonarCloud",
+        f"  - [ ] Flag {s3776_count} cognitive complexity issues as ACCEPTED (avoid splitting deep functions)"
     ])
 
 task_lines.extend([

@@ -61,8 +61,8 @@ for filepath in sorted_files:
             res = "Change logical/nullish chains to use standard TypeScript optional chaining `?.`."
         elif rule == "typescript:S7721":
             res = "Hoist the inner function out of the enclosing function block to prevent redundant closures."
-        elif rule == "typescript:S3776" or rule == "python:S3776":
-            res = "Surgically refactor nested branches/loops or extract helper utility functions to reduce cognitive complexity."
+        elif rule in ["typescript:S3776", "javascript:S3776", "python:S3776"]:
+            res = "Always flag on SonarCloud as APPROVED/ACCEPTED. We do not split functions to satisfy SonarQube metrics as it promotes shallow modules. Structural refactoring should only be initiated via /improve-codebase-architecture."
         elif rule == "typescript:S2004":
             res = "Flatten callback structure or extract helper functions to reduce function nesting depth."
         elif rule == "typescript:S8786":

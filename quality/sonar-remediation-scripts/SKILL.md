@@ -53,4 +53,5 @@ Once the user approves the implementation plan:
 3. **Flag APPROVED/ACCEPTED & False Positive Issues**: Use the `sonarcloud:change_sonar_issue_status` tool to update status to `["accept"]` using unique issue keys for:
    - Approved design exceptions (e.g., `css:S7924` contrast ratio rules).
    - Validated false positives (e.g., `typescript:S1481` or `typescript:S1854` where a function/variable is actually used indirectly but flagged by SonarQube as unused). **Always verify these using codebase search tools (like `jcodemunch` references lookup) to validate whether the code is truly dead before deleting it.**
+   - Cognitive Complexity rules (e.g., `S3776`). **Always flag these as ACCEPTED. Never modify the codebase to split functions just to satisfy SonarQube's complexity metrics, as this reduces locality and creates shallow, fragmented helper modules. Structural refactoring should only be driven by `/improve-codebase-architecture` and user design discussions.**
 4. **Verification**: Run local tests/typecheck to verify compile status.
