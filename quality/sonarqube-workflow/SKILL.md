@@ -16,8 +16,8 @@ If the project key is unknown, search your organization's projects first:
 
 ### 2. Search Issues
 Find all open issues for a project or specific pull request:
-* Call `sonarcloud:search_sonar_issues_in_projects` with `projectKeys=["<projectKey>"]` and `issueStatuses=["OPEN"]`.
-* If inspecting a Pull Request, add the `pullRequest` (ID string) argument.
+* Call `sonarcloud:search_sonar_issues_in_projects` with `projects=["<projectKey>"]` (Note: the argument name is `projects`, not `projectKeys`) and `issueStatuses=["OPEN"]`.
+* If inspecting a Pull Request, add the `pullRequestId` (ID string) argument (Note: the argument name is `pullRequestId`, not `pullRequest`).
 
 ### 3. Retrieve Duplications
 Search for files containing duplicated blocks, and extract precise line ranges:
@@ -33,4 +33,4 @@ Check the remote Quality Gate metrics (duplication %, coverage, vulnerabilities)
 ### Detail Issue Code Inspection
 Look up the exact rules or component metrics:
 * Call `sonarcloud:show_rule` with `key="<ruleKey>"` to get explanation details.
-* Call `sonarcloud:get_component_measures` with `component="<fileKey>"` and `metricKeys=["duplicated_lines_density", "security_rating"]`.
+* Call `sonarcloud:get_component_measures` with `projectKey="<projectKey>"` (Note: the argument name is `projectKey`, not `component`) and `metricKeys=["duplicated_lines_density", "security_rating"]`.
