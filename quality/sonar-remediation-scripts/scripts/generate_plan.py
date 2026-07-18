@@ -79,8 +79,8 @@ for filepath in sorted_files:
             res = "Remove unnecessary `void` operator prefixes."
         elif rule == "typescript:S7780":
             res = "Use `String.raw` for string literals that contain backslashes."
-        elif rule == "typescript:S1854":
-            res = "Remove redundant variables or assignments."
+        elif rule in ["typescript:S1854", "javascript:S1854", "typescript:S1481", "javascript:S1481"]:
+            res = "Verify if the function/variable is truly unused (SonarQube may miss indirect usage). If it is used, flag on SonarCloud as ACCEPTED/FALSE POSITIVE. Otherwise, surgically remove it."
         elif rule == "typescript:S7781":
             res = "Use `String.replaceAll()` instead of `replace()` for global replacements."
         elif rule == "typescript:S6660":

@@ -50,5 +50,7 @@ Once the user approves the implementation plan:
      2. Open the file and fix the issues surgically using `patch_file` (`patchitright` server).
      3. Mark the file's tasks as completed (`[x]`) in `task.md` using `replace_file_content`.
      4. Proceed to the next file.
-3. **Flag APPROVED/ACCEPTED Issues**: If the project has approved theme-specific design exceptions (such as `css:S7924` contrast ratio rules), use the `sonarcloud:change_sonar_issue_status` tool to update their status to `["accept"]` using their unique issue keys.
+3. **Flag APPROVED/ACCEPTED & False Positive Issues**: Use the `sonarcloud:change_sonar_issue_status` tool to update status to `["accept"]` using unique issue keys for:
+   - Approved design exceptions (e.g., `css:S7924` contrast ratio rules).
+   - Validated false positives (e.g., `typescript:S1481` or `typescript:S1854` where a function/variable is actually used indirectly but flagged by SonarQube as unused). **Always verify these using codebase search tools (like `jcodemunch` references lookup) to validate whether the code is truly dead before deleting it.**
 4. **Verification**: Run local tests/typecheck to verify compile status.

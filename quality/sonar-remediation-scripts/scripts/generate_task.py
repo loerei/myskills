@@ -59,6 +59,15 @@ if s7924_count > 0:
         f"  - [ ] Flag {s7924_count} contrast ratio issues as ACCEPTED"
     ])
 
+unused_rules = ["typescript:S1481", "javascript:S1481", "typescript:S1854", "javascript:S1854"]
+unused_count = sum(1 for issue in issues if issue.get("rule") in unused_rules)
+
+if unused_count > 0:
+    task_lines.extend([
+        "- [ ] Verify and Flag unused variable/function issues (S1481, S1854) on SonarCloud",
+        f"  - [ ] Verify usage for {unused_count} issues, and flag as ACCEPTED if they are false positives"
+    ])
+
 task_lines.extend([
     "- [ ] Local Verification & Testing",
     "  - [ ] Run typecheck validation",
