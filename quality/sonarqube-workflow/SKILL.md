@@ -19,6 +19,9 @@ Find all open issues for a project or specific pull request:
 * Call `sonarcloud:search_sonar_issues_in_projects` with `projects=["<projectKey>"]` (Note: the argument name is `projects`, not `projectKeys`) and `issueStatuses=["OPEN"]`.
 * If inspecting a Pull Request, add the `pullRequestId` (ID string) argument (Note: the argument name is `pullRequestId`, not `pullRequest`).
 
+> [!IMPORTANT]
+> **Tránh nhầm lẫn phạm vi**: Khi phân tích lỗi phát sinh của một Pull Request đang làm việc, **bắt buộc phải truyền `pullRequestId`**. Nếu không truyền `pullRequestId`, SonarCloud sẽ trả về toàn bộ issue trên nhánh chính (`main`/`master`), dẫn đến việc sửa nhầm các issue cũ của dự án thay vì các issue mới của PR hiện tại.
+
 ### 3. Retrieve Duplications
 Search for files containing duplicated blocks, and extract precise line ranges:
 * Call `sonarcloud:search_duplicated_files` with `projectKey="<projectKey>"`.
