@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 const { execSync } = require('child_process');
 
 const rootDir = __dirname;
@@ -11,7 +12,6 @@ function findSkillDirectories(dir, results = []) {
   if (!fs.existsSync(dir)) return results;
   const items = fs.readdirSync(dir);
 
-  // If this directory itself contains SKILL.md, it is a skill directory
   if (items.includes('SKILL.md')) {
     results.push(dir);
     return results;
@@ -46,6 +46,21 @@ function parseFrontmatter(content) {
     };
   }
   return { description: 'No description' };
+}
+
+// Helper to copy directory recursively
+function copyRecursiveSync(src, dest) {
+  const exists = fs.existsSync(src);
+  const stats = exists && fs.statSync(src);
+  const isDirectory = exists && stats.isDirectory();
+  if (isDirectory) {
+    fs.mkdirSync(dest, { recursive: true });
+    fs.readdirSync(src).forEach((childItemName) => {
+      copyRecursiveSync(path.join(src, childItemName), path.join(dest, childItemName));
+    });
+  } else {
+    fs.copyFileSync(src, dest);
+  }
 }
 
 function printUsage(upstreams) {
@@ -86,10 +101,6 @@ function main() {
     printUsage(upstreams);
   }
 
-  if (!fs.existsSync(pendingDir)) {
-    fs.mkdirSync(pendingDir, { recursive: true });
-  }
-
   // Scan local skills first
   console.log('[*] Scanning local skills...');
   const localSkillDirs = findSkillDirectories(rootDir);
@@ -107,23 +118,24 @@ function main() {
 
   for (const key of selectedKeys) {
     const config = upstreams[key];
-    const targetRepoDir = path.join(pendingDir, key);
-    console.log(`\n[*] Syncing ${key} from ${config.url}...`);
+    
+    // Create a temp directory for cloning
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), `sync-skills-${key}-`));
+    console.log(`\n[*] Fetching ${key} from ${config.url} to temporary directory...`);
 
     try {
-      if (!fs.existsSync(targetRepoDir)) {
-        execSync(`git clone ${config.url} "${targetRepoDir}"`, { stdio: 'inherit' });
-      } else {
-        execSync(`git fetch origin`, { cwd: targetRepoDir, stdio: 'inherit' });
-        execSync(`git reset --hard origin/${config.branch || 'main'}`, { cwd: targetRepoDir, stdio: 'inherit' });
-      }
+      execSync(`git clone --depth 1 ${config.url} "${tempDir}"`, { stdio: 'inherit' });
     } catch (err) {
-      console.error(`[-] Failed to sync upstream ${key}: ${err.message}`);
+      console.error(`[-] Failed to clone upstream ${key}: ${err.message}`);
+      try {
+        fs.rmSync(tempDir, { recursive: true, force: true });
+      } catch (e) {}
       continue;
     }
 
-    console.log(`[*] Scanning skills in pending/${key}...`);
-    const pendingSkillDirs = findSkillDirectories(targetRepoDir);
+    console.log(`[*] Comparing skills...`);
+    const pendingSkillDirs = findSkillDirectories(tempDir);
+    const candidatesToKeep = [];
 
     for (const dir of pendingSkillDirs) {
       const name = path.basename(dir);
@@ -133,7 +145,10 @@ function main() {
       const upstreamContent = fs.readFileSync(skillFilePath, 'utf8');
       const upstreamMeta = parseFrontmatter(upstreamContent);
 
+      let isCandidate = false;
+
       if (!localSkills[name]) {
+        isCandidate = true;
         newSkillsReport.push({
           name,
           source: key,
@@ -143,8 +158,8 @@ function main() {
       } else {
         const localContent = fs.readFileSync(localSkills[name].skillFile, 'utf8');
         if (localContent !== upstreamContent) {
+          isCandidate = true;
           const localMeta = parseFrontmatter(localContent);
-          
           const localLines = localContent.split('\n').length;
           const upstreamLines = upstreamContent.split('\n').length;
           
@@ -158,6 +173,35 @@ function main() {
           });
         }
       }
+
+      if (isCandidate) {
+        candidatesToKeep.push({
+          name,
+          srcPath: dir
+        });
+      }
+    }
+
+    // Clean up local pending directory for this key and write only candidate folders
+    const localTargetPendingDir = path.join(pendingDir, key);
+    if (fs.existsSync(localTargetPendingDir)) {
+      fs.rmSync(localTargetPendingDir, { recursive: true, force: true });
+    }
+
+    if (candidatesToKeep.length > 0) {
+      fs.mkdirSync(localTargetPendingDir, { recursive: true });
+      for (const candidate of candidatesToKeep) {
+        const dest = path.join(localTargetPendingDir, candidate.name);
+        console.log(`[+] Staging candidate skill: pending/${key}/${candidate.name}`);
+        copyRecursiveSync(candidate.srcPath, dest);
+      }
+    }
+
+    // Clean up temp dir
+    try {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    } catch (e) {
+      console.warn(`[!] Warning: Failed to clean up temp directory ${tempDir}: ${e.message}`);
     }
   }
 
@@ -165,7 +209,7 @@ function main() {
   console.log('                 SYNC REPORT                      ');
   console.log('==================================================\n');
 
-  console.log('### New Upstream Skills');
+  console.log('### New Upstream Skills (Staged in pending/)');
   if (newSkillsReport.length === 0) {
     console.log('No new skills found.');
   } else {
@@ -176,7 +220,7 @@ function main() {
     });
   }
 
-  console.log('\n### Modified Upstream Skills');
+  console.log('\n### Modified Upstream Skills (Staged in pending/)');
   if (diffSkillsReport.length === 0) {
     console.log('No modified skills found.');
   } else {
