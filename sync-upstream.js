@@ -90,7 +90,8 @@ function printUsage(upstreams) {
     console.log(`  node sync-upstream.js --${key}`);
   });
   console.log('\nUsage for Applying Changes:');
-  console.log('  node sync-upstream.js --apply <skill_name> --action <add|overwrite|discard> [--category <category>]');
+  console.log('  node sync-upstream.js --apply <skill_name> --action <add|overwrite> [--category <category>]');
+  console.log('  node sync-upstream.js --clear');
   process.exit(0);
 }
 
@@ -107,6 +108,16 @@ function main() {
     printUsage(upstreams);
   }
 
+  // Handle Clear Mode
+  if (args.includes('--clear')) {
+    console.log('[*] Clearing pending directory...');
+    if (fs.existsSync(pendingDir)) {
+      fs.rmSync(pendingDir, { recursive: true, force: true });
+    }
+    console.log('[+] Successfully cleared pending directory.');
+    process.exit(0);
+  }
+
   // Handle Apply Mode
   if (args.includes('--apply')) {
     const applyIdx = args.indexOf('--apply');
@@ -114,7 +125,7 @@ function main() {
     
     const actionIdx = args.indexOf('--action');
     if (actionIdx === -1 || !args[actionIdx + 1]) {
-      console.error('[-] Error: --action <add|overwrite|discard> is required with --apply.');
+      console.error('[-] Error: --action <add|overwrite> is required with --apply.');
       process.exit(1);
     }
     const action = args[actionIdx + 1].toLowerCase();
@@ -140,12 +151,7 @@ function main() {
       }
     }
 
-    if (action === 'discard') {
-      console.log(`[*] Discarding pending skill "${skillName}"...`);
-      fs.rmSync(pendingSkill.path, { recursive: true, force: true });
-      console.log(`[+] Successfully discarded pending skill "${skillName}".`);
-    } 
-    else if (action === 'overwrite') {
+    if (action === 'overwrite') {
       if (!localPath) {
         console.error(`[-] Error: Skill "${skillName}" does not exist locally. Use action "add" instead.`);
         process.exit(1);
@@ -175,7 +181,7 @@ function main() {
       console.log(`[+] Successfully added new skill "${skillName}" to ${targetDir}.`);
     } 
     else {
-      console.error(`[-] Error: Invalid action "${action}". Choose from: add, overwrite, discard.`);
+      console.error(`[-] Error: Invalid action "${action}". Choose from: add, overwrite.`);
       process.exit(1);
     }
 

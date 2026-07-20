@@ -38,8 +38,8 @@ For each modified skill, perform this self-reflection before talking to the user
    - **b. Use upstream version** (overwrite)
    - **c. Combine into a new version** (merge changes)
 
-### 4. Deploy and Distribute
-After gathering decisions, apply them and distribute:
+### 4. Deploy, Distribute, and Clean Up
+After gathering decisions, apply them, distribute, and clean up the workspace:
 1. Run the apply actions using the script:
    - To add a new skill:
      ```powershell
@@ -49,15 +49,16 @@ After gathering decisions, apply them and distribute:
      ```powershell
      node sync-upstream.js --apply <skill_name> --action overwrite
      ```
-   - To discard/ignore changes (or after manually combining the codes):
-     ```powershell
-     node sync-upstream.js --apply <skill_name> --action discard
-     ```
-2. Sync the updates to all workspaces:
+   - If combining, edit the local file directly, then proceed to cleanup.
+2. After processing all skills, clean up the entire `pending/` directory:
+   ```powershell
+   node sync-upstream.js --clear
+   ```
+3. Sync the updates to all workspaces:
    ```powershell
    node distribute-skills.js --all D:\Projects
    ```
-3. Commit and push the updates:
+4. Commit and push the updates:
    ```powershell
    git add .
    git commit -m "Sync upstream: update skills"
