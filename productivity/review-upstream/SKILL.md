@@ -39,8 +39,20 @@ For each modified skill, perform this self-reflection before talking to the user
    - **c. Combine into a new version** (merge changes)
 
 ### 4. Deploy and Distribute
-After gathering decisions:
-1. Apply the chosen actions to `D:\Projects\myskills/<category>/<name>`.
+After gathering decisions, apply them and distribute:
+1. Run the apply actions using the script:
+   - To add a new skill:
+     ```powershell
+     node sync-upstream.js --apply <skill_name> --action add --category <category>
+     ```
+   - To overwrite a modified skill:
+     ```powershell
+     node sync-upstream.js --apply <skill_name> --action overwrite
+     ```
+   - To discard/ignore changes (or after manually combining the codes):
+     ```powershell
+     node sync-upstream.js --apply <skill_name> --action discard
+     ```
 2. Sync the updates to all workspaces:
    ```powershell
    node distribute-skills.js --all D:\Projects

@@ -63,12 +63,34 @@ function copyRecursiveSync(src, dest) {
   }
 }
 
+// Find a specific skill inside pending/
+function findPendingSkill(skillName) {
+  if (!fs.existsSync(pendingDir)) return null;
+  const upstreams = fs.readdirSync(pendingDir);
+  for (const upstream of upstreams) {
+    const upstreamPath = path.join(pendingDir, upstream);
+    try {
+      if (!fs.statSync(upstreamPath).isDirectory()) continue;
+      const skillPath = path.join(upstreamPath, skillName);
+      if (fs.existsSync(skillPath) && fs.existsSync(path.join(skillPath, 'SKILL.md'))) {
+        return {
+          path: skillPath,
+          upstream: upstream
+        };
+      }
+    } catch (e) {}
+  }
+  return null;
+}
+
 function printUsage(upstreams) {
-  console.log('Usage:');
+  console.log('Usage for Sync/Compare:');
   console.log('  node sync-upstream.js --all');
   Object.keys(upstreams).forEach(key => {
     console.log(`  node sync-upstream.js --${key}`);
   });
+  console.log('\nUsage for Applying Changes:');
+  console.log('  node sync-upstream.js --apply <skill_name> --action <add|overwrite|discard> [--category <category>]');
   process.exit(0);
 }
 
@@ -85,6 +107,90 @@ function main() {
     printUsage(upstreams);
   }
 
+  // Handle Apply Mode
+  if (args.includes('--apply')) {
+    const applyIdx = args.indexOf('--apply');
+    const skillName = args[applyIdx + 1];
+    
+    const actionIdx = args.indexOf('--action');
+    if (actionIdx === -1 || !args[actionIdx + 1]) {
+      console.error('[-] Error: --action <add|overwrite|discard> is required with --apply.');
+      process.exit(1);
+    }
+    const action = args[actionIdx + 1].toLowerCase();
+
+    if (!skillName) {
+      console.error('[-] Error: Specify the skill name to apply.');
+      process.exit(1);
+    }
+
+    const pendingSkill = findPendingSkill(skillName);
+    if (!pendingSkill) {
+      console.error(`[-] Error: Skill "${skillName}" not found in pending directory.`);
+      process.exit(1);
+    }
+
+    // Scan local skills to find current location if any
+    const localSkillDirs = findSkillDirectories(rootDir);
+    let localPath = null;
+    for (const dir of localSkillDirs) {
+      if (path.basename(dir) === skillName) {
+        localPath = dir;
+        break;
+      }
+    }
+
+    if (action === 'discard') {
+      console.log(`[*] Discarding pending skill "${skillName}"...`);
+      fs.rmSync(pendingSkill.path, { recursive: true, force: true });
+      console.log(`[+] Successfully discarded pending skill "${skillName}".`);
+    } 
+    else if (action === 'overwrite') {
+      if (!localPath) {
+        console.error(`[-] Error: Skill "${skillName}" does not exist locally. Use action "add" instead.`);
+        process.exit(1);
+      }
+      console.log(`[*] Overwriting local skill "${skillName}" at ${localPath}...`);
+      fs.rmSync(localPath, { recursive: true, force: true });
+      copyRecursiveSync(pendingSkill.path, localPath);
+      fs.rmSync(pendingSkill.path, { recursive: true, force: true });
+      console.log(`[+] Successfully overwrote local skill "${skillName}".`);
+    } 
+    else if (action === 'add') {
+      if (localPath) {
+        console.error(`[-] Error: Skill "${skillName}" already exists locally at ${localPath}. Use action "overwrite" instead.`);
+        process.exit(1);
+      }
+      const catIdx = args.indexOf('--category');
+      if (catIdx === -1 || !args[catIdx + 1]) {
+        console.error('[-] Error: --category <category_folder> is required when adding a new skill.');
+        process.exit(1);
+      }
+      const category = args[catIdx + 1];
+      const targetDir = path.join(rootDir, category, skillName);
+      
+      console.log(`[*] Adding new skill "${skillName}" to category "${category}"...`);
+      copyRecursiveSync(pendingSkill.path, targetDir);
+      fs.rmSync(pendingSkill.path, { recursive: true, force: true });
+      console.log(`[+] Successfully added new skill "${skillName}" to ${targetDir}.`);
+    } 
+    else {
+      console.error(`[-] Error: Invalid action "${action}". Choose from: add, overwrite, discard.`);
+      process.exit(1);
+    }
+
+    // Clean up empty upstream folders in pending/
+    try {
+      const parentDir = path.dirname(pendingSkill.path);
+      if (fs.readdirSync(parentDir).length === 0) {
+        fs.rmdirSync(parentDir);
+      }
+    } catch (e) {}
+    
+    process.exit(0);
+  }
+
+  // Handle Sync/Compare Mode
   let selectedKeys = [];
   if (args.includes('--all')) {
     selectedKeys = Object.keys(upstreams);
