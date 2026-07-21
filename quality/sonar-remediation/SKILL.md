@@ -56,3 +56,11 @@ For false positives, design/style rules where standard WCAG contrast ratios conf
 - **MUST search for the issue key** in SonarQube/SonarCloud using `search_sonar_issues_in_projects` with `issueStatuses: ["OPEN"]` and filter by file or project.
 - **MUST call change_sonar_issue_status** to flag the issue status as `"accept"` or `"falsepositive"` instead of modifying the codebase.
 - Always explain the design or technical rationale to the user or team before flagging the issue.
+
+### 6. Historical Lessons & Safety Guardrails (PR #30 Retrospective)
+
+Lessons learned from PR #30 rollback (101 commits discarded due to severe runtime `undefined` errors):
+
+- **NEVER attempt zero-issue cleanups by mass-deleting or rewriting files**: PR #30 deleted `src/icon-extractor.js` (a standalone child process script) and refactored it into TS modules, breaking Electron IPC contracts and leading to widespread `undefined` runtime crashes.
+- **NEVER split deep functions to satisfy Cognitive Complexity (S3776)**: Mass-splitting functions creates shallow, fragmented helpers that break context passing, returning `undefined`. Always flag S3776 as ACCEPTED.
+- **Surgical Edits Only**: Edits must be micro-targeted (e.g. `node:` prefix, optional chaining `?.`, `overflow-wrap`, `aria-label`). Never alter function signatures, return types, or child process files during Sonar remediation.
