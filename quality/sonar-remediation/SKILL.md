@@ -57,10 +57,8 @@ For false positives, design/style rules where standard WCAG contrast ratios conf
 - **MUST call change_sonar_issue_status** to flag the issue status as `"accept"` or `"falsepositive"` instead of modifying the codebase.
 - Always explain the design or technical rationale to the user or team before flagging the issue.
 
-### 6. Universal Safety Guardrails (Zero-Issue Rollback Prevention)
+### 6. Remediation Safety Boundaries
 
-Universal lessons from historical zero-issue cleanup failures (e.g. mass-rollbacks due to `undefined` runtime crashes):
-
-- **NEVER attempt zero-issue cleanups by mass-deleting, renaming, or migrating files**: Do not delete standalone child processes, background workers, dynamic entrypoints, or script wrappers to satisfy static analyzers. Moving or deleting standalone entrypoints breaks dynamic runtime contracts (such as Electron IPC, worker pools, or process spawns), causing widespread runtime `undefined` crashes.
-- **NEVER split deep functions to satisfy Cognitive Complexity (S3776)**: Mass-splitting functions creates shallow, fragmented helper modules that break context passing and destroy locality. Always flag S3776 (Cognitive Complexity) as ACCEPTED. Structural refactoring must only occur under `/improve-codebase-architecture`.
-- **Surgical Remediation Only**: Sonar remediation MUST remain strictly non-destructive and micro-targeted (e.g., adding `node:` prefixes, optional chaining `?.`, `overflow-wrap`, `aria-label`, safe regex/lookup optimizations). NEVER alter function signatures, return types, or public module contracts during quality remediation turns.
+- **NEVER delete, rename, or move** standalone entrypoints, child processes, worker scripts, or dynamic wrappers.
+- **NEVER split functions** for Cognitive Complexity (S3776). ALWAYS flag S3776 as ACCEPTED. Structural refactoring requires `/improve-codebase-architecture`.
+- **NEVER modify** function signatures, return types, or exported module interfaces during Sonar remediation.
