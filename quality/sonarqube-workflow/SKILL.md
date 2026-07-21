@@ -42,4 +42,4 @@ Look up the exact rules or component metrics:
 ## Remediation Policy
 
 * **Cognitive Complexity (S3776)**: Always flag these as ACCEPTED using the status transition tool (`change_sonar_issue_status`). Never rewrite code or split deep functions just to satisfy SonarQube's complexity metrics, as it promotes shallow helper modules. Structural refactoring should only be driven by `/improve-codebase-architecture` and user design discussions.
-* **PR #30 Rollback Guardrail**: Never attempt 0-issue cleanups by deleting standalone scripts (e.g. `src/icon-extractor.js`), splitting deep module contracts, or rewriting core IPC/event architectures. Remediation MUST be surgical (e.g., `node:` prefixes, `?.` optional chaining, `Set.has()`, a11y labels).
+* **Universal Remediation Guardrail**: Never attempt zero-issue cleanups by mass-deleting standalone scripts/entrypoints, splitting deep module contracts, or rewriting core IPC/API architectures. Remediation MUST remain strictly non-destructive and surgical (e.g., `node:` prefixes, `?.` optional chaining, `Set.has()`, a11y labels).

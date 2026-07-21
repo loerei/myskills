@@ -57,10 +57,10 @@ For false positives, design/style rules where standard WCAG contrast ratios conf
 - **MUST call change_sonar_issue_status** to flag the issue status as `"accept"` or `"falsepositive"` instead of modifying the codebase.
 - Always explain the design or technical rationale to the user or team before flagging the issue.
 
-### 6. Historical Lessons & Safety Guardrails (PR #30 Retrospective)
+### 6. Universal Safety Guardrails (Zero-Issue Rollback Prevention)
 
-Lessons learned from PR #30 rollback (101 commits discarded due to severe runtime `undefined` errors):
+Universal lessons from historical zero-issue cleanup failures (e.g. mass-rollbacks due to `undefined` runtime crashes):
 
-- **NEVER attempt zero-issue cleanups by mass-deleting or rewriting files**: PR #30 deleted `src/icon-extractor.js` (a standalone child process script) and refactored it into TS modules, breaking Electron IPC contracts and leading to widespread `undefined` runtime crashes.
-- **NEVER split deep functions to satisfy Cognitive Complexity (S3776)**: Mass-splitting functions creates shallow, fragmented helpers that break context passing, returning `undefined`. Always flag S3776 as ACCEPTED.
-- **Surgical Edits Only**: Edits must be micro-targeted (e.g. `node:` prefix, optional chaining `?.`, `overflow-wrap`, `aria-label`). Never alter function signatures, return types, or child process files during Sonar remediation.
+- **NEVER attempt zero-issue cleanups by mass-deleting, renaming, or migrating files**: Do not delete standalone child processes, background workers, dynamic entrypoints, or script wrappers to satisfy static analyzers. Moving or deleting standalone entrypoints breaks dynamic runtime contracts (such as Electron IPC, worker pools, or process spawns), causing widespread runtime `undefined` crashes.
+- **NEVER split deep functions to satisfy Cognitive Complexity (S3776)**: Mass-splitting functions creates shallow, fragmented helper modules that break context passing and destroy locality. Always flag S3776 (Cognitive Complexity) as ACCEPTED. Structural refactoring must only occur under `/improve-codebase-architecture`.
+- **Surgical Remediation Only**: Sonar remediation MUST remain strictly non-destructive and micro-targeted (e.g., adding `node:` prefixes, optional chaining `?.`, `overflow-wrap`, `aria-label`, safe regex/lookup optimizations). NEVER alter function signatures, return types, or public module contracts during quality remediation turns.
