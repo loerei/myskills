@@ -7,31 +7,41 @@ description: Conduct an iterative, multi-turn review loop using independent suba
 
 Run iterative, independent subagent reviews to stress-test plans, code designs, skills, PRDs, or specs against explicit user and system criteria.
 
-## Workflow
+## Workflows
 
-### 1. Synthesize Review Criteria
+### 1. Artifact & Review Matrix
+
+| Artifact Type | Primary Checklist Sources | Recommended Model | Max Iterations |
+| :--- | :--- | :--- | :--- |
+| **Skill Draft** | `/write-a-skill`, `/write-for-ai`, `AGENTS.md`, User rules | `Model: "pro"` | 5 iterations |
+| **Implementation Plan / RFC** | `AGENTS.md`, `/codebase-design`, `/improve-codebase-architecture`, User rules | `Model: "pro"` | 5 iterations |
+| **PRD / Spec** | `/to-prd`, `/to-spec`, User rules | `Model: "pro"` | 5 iterations |
+| **Code / Patch Audit** | `/code-review`, `/ponytail-review`, `AGENTS.md` | `Model: "pro"` | 5 iterations |
+
+### 2. Synthesize Review Criteria
 
 Synthesize a custom review checklist from 3 sources:
 1. **User Criteria**: Explicit rules, constraints, or preferences specified by the user.
 2. **System Guidelines**: Applicable guidelines/skills (e.g. `/write-a-skill`, `/write-for-ai`, `AGENTS.md`).
 3. **Domain Completeness**: Edge cases, performance risks, or missing requirements identified by the main agent.
 
-### 2. Prepare Target Artifact
+### 3. Prepare Target Artifact
 
-Write or update the target document/artifact in a temporary or draft path (e.g. `scratch/draft_<name>/`).
+Write or update the target document/artifact in a draft path (e.g. `scratch/draft_<name>/`).
 
-### 3. Reviewer Loop Execution
+### 4. Reviewer Loop Execution
 
-For each iteration $N$ ($1, 2, 3...$):
+For each iteration $N$ ($1, 2, ... 5$):
 
-1. **Spawn Independent Reviewer**: Call `invoke_subagent` with a DIFFERENT Reviewer Role (`<Domain> Reviewer #N`).
+1. **Spawn Independent Reviewer**: Call `invoke_subagent` with a DIFFERENT Reviewer Role (`<Domain> Reviewer #N`) and `Model: "pro"`.
    - Pass required file paths, guidelines, and synthesized checklist.
    - Instruct reviewer to conclude strictly with **STATUS: PASS** or **STATUS: REVISIONS NEEDED** with numbered edits.
 2. **Evaluate Feedback**:
    - If **STATUS: REVISIONS NEEDED**: Apply required edits to the draft artifact. Proceed to iteration $N+1$ with a fresh subagent reviewer.
    - If **STATUS: PASS**: Terminate loop and proceed to presentation.
+3. **Safeguard (Max 5 Iterations)**: If iteration 5 completes without a `PASS`, stop the loop and submit the current draft with unresolved feedback to the user for guidance.
 
-### 4. Present Verified Final Output
+### 5. Present Verified Final Output
 
 Submit the final, reviewer-validated artifact to the user, highlighting key iterations and improvements.
 
