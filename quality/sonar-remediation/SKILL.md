@@ -62,3 +62,13 @@ For false positives, design/style rules where standard WCAG contrast ratios conf
 - **NEVER delete, rename, or move** standalone entrypoints, child processes, worker scripts, or dynamic wrappers.
 - **NEVER split functions** for Cognitive Complexity (S3776). ALWAYS flag S3776 as ACCEPTED. Structural refactoring requires `/improve-codebase-architecture`.
 - **NEVER modify** function signatures, return types, or exported module interfaces during Sonar remediation.
+
+### 7. Contract-Aware Dead Code & Unused Assignment Remediation (S1854, S1481)
+
+When handling unused assignments or dead stores (`S1854` / `S1481`):
+
+- **NEVER blindly swap returned object keys**: If Sonar flags a variable as "unused" near a return statement or object literal, **DO NOT** change returned keys (e.g. changing `primaryGame: logicalGame` to `primaryGame: primaryGame`) just to consume the variable.
+- **Inspect callers and data contracts**: Always check downstream callers of the returned object/interface using `jcodemunch:find_references` or `gitnexus_impact`.
+- **Domain Container vs. Child Instance**: Never replace a top-level Domain Object (holding state like `favorite`, `status`, `permissions`) with an internal Child Instance or sub-property during structural refactoring.
+- **Safely delete dead calculations**: If an assignment is truly unused dead code, delete the variable calculation itself. **DO NOT** alter the returned API/UI contract object.
+

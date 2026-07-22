@@ -42,4 +42,6 @@ Look up the exact rules or component metrics:
 ## Remediation Policy
 
 - **S3776 (Cognitive Complexity)**: ALWAYS flag as ACCEPTED via `change_sonar_issue_status`. NEVER split functions for S3776.
+- **S1854 (Unused Assignments)**: NEVER blindly change returned object keys or parameters to consume an unused variable. Safely delete unused calculations or inspect API contracts first.
 - **File & Architecture Boundaries**: NEVER delete, rename, or move standalone entrypoints, worker scripts, or child process files. NEVER modify function signatures or module interfaces during remediation.
+
