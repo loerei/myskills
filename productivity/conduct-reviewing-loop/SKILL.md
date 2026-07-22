@@ -11,12 +11,12 @@ Run iterative, independent subagent reviews to stress-test plans, code designs, 
 
 ### 1. Artifact & Review Matrix
 
-| Artifact Type | Primary Checklist Sources | Recommended Model | Max Iterations |
+| Artifact Type | Primary Checklist Sources | Model Selection Strategy | Max Iterations |
 | :--- | :--- | :--- | :--- |
-| **Skill Draft** | `/write-a-skill`, `/write-for-ai`, `AGENTS.md`, User rules | `Model: "pro"` | 5 iterations |
-| **Implementation Plan / RFC** | `AGENTS.md`, `/codebase-design`, `/improve-codebase-architecture`, User rules | `Model: "pro"` | 5 iterations |
-| **PRD / Spec** | `/to-prd`, `/to-spec`, User rules | `Model: "pro"` | 5 iterations |
-| **Code / Patch Audit** | `/code-review`, `/ponytail-review`, `AGENTS.md` | `Model: "pro"` | 5 iterations |
+| **Skill Draft** | `/write-a-skill`, `/write-for-ai`, `AGENTS.md`, User rules | Most capable reasoning model (e.g. `inherit` / `pro`) | 5 iterations |
+| **Implementation Plan / RFC** | `AGENTS.md`, `/codebase-design`, `/improve-codebase-architecture`, User rules | Most capable reasoning model (e.g. `inherit` / `pro`) | 5 iterations |
+| **PRD / Spec** | `/to-prd`, `/to-spec`, User rules | Most capable reasoning model (e.g. `inherit` / `pro`) | 5 iterations |
+| **Code / Patch Audit** | `/code-review`, `/ponytail-review`, `AGENTS.md` | Most capable reasoning model (e.g. `inherit` / `pro`) | 5 iterations |
 
 ### 2. Synthesize Review Criteria
 
@@ -33,7 +33,7 @@ Write or update the target document/artifact in a draft path (e.g. `scratch/draf
 
 For each iteration $N$ ($1, 2, ... 5$):
 
-1. **Spawn Independent Reviewer**: Call `invoke_subagent` with a DIFFERENT Reviewer Role (`<Domain> Reviewer #N`) and `Model: "pro"`.
+1. **Spawn Independent Reviewer**: Call `invoke_subagent` with a DIFFERENT Reviewer Role (`<Domain> Reviewer #N`), using the environment's most capable reasoning model tier (defaulting to `inherit` if unstated).
    - Pass required file paths, guidelines, and synthesized checklist.
    - Instruct reviewer to conclude strictly with **STATUS: PASS** or **STATUS: REVISIONS NEEDED** with numbered edits.
 2. **Evaluate Feedback**:
