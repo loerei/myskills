@@ -10,6 +10,7 @@ description: Create new agent skills with proper structure, progressive disclosu
 1. **Gather requirements** - ask user about:
    - What task/domain does the skill cover?
    - What specific use cases should it handle?
+   - Is it a global skill for `myskills` or a repository-specific local skill?
    - Does it need executable scripts or just instructions?
    - Any reference materials to include?
 
@@ -40,6 +41,7 @@ skill-name/
 ---
 name: skill-name
 description: Brief description of capability. Use when [specific triggers].
+local: true # Set to true ONLY if repo-specific skill to prevent global pruning
 ---
 
 # Skill Name
@@ -111,6 +113,7 @@ After drafting, verify:
 
 - [ ] Description includes triggers ("Use when...")
 - [ ] SKILL.md under 100 lines
+- [ ] Add `local: true` in YAML frontmatter if repository-specific skill to prevent global pruning
 - [ ] No time-sensitive info
 - [ ] Consistent terminology
 - [ ] Concrete examples included
