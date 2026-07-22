@@ -72,3 +72,30 @@ When handling unused assignments or dead stores (`S1854` / `S1481`):
 - **Domain Container vs. Child Instance**: Never replace a top-level Domain Object (holding state like `favorite`, `status`, `permissions`) with an internal Child Instance or sub-property during structural refactoring.
 - **Safely delete dead calculations**: If an assignment is truly unused dead code, delete the variable calculation itself. **DO NOT** alter the returned API/UI contract object.
 
+### 8. Continuous Zero-Issue Remediation Loop (Goal-Driven Batching)
+
+When requested to resolve Sonar issues continuously until **0 open issues remain** (triggered via `/goal` or explicit user directive):
+
+- **Activation Triggers**:
+  - Executed under `/goal` mode with instructions to remediate or clear all issues until zero remain.
+  - Explicit user request (e.g., "fix or accept all open issues until 0 remain", "dọn dẹp sonar cho tới khi còn 0").
+
+- **Supported Scope Modes**:
+  1. **Repo-Wide Scope (Default)**: Query all open issues across the entire project repository.
+  2. **PR / Branch Scope**: Filter open issues by target branch or pull request diff using `git diff` or PR component parameters.
+  3. **Commit / File Scope**: Limit remediation strictly to files changed in specified commits.
+
+- **Batch-and-Poll Protocol**:
+  1. **Query Open Issues**: Call `sonarcloud:search_sonar_issues_in_projects` or `sonarqube:search_sonar_issues_in_projects` for `issueStatuses: ["OPEN"]`.
+  2. **Check Exit Condition**: If `total === 0`, report clean completion (`<!-- GOAL_COMPLETE -->` if in `/goal` mode).
+  3. **Triage & Categorize**:
+     - **Acceptable Issues**: Instantly flag design/complexity/style issues (`S2004` function nesting, `S3776` cognitive complexity, `S7924` CSS contrast, `S8786` backtracking regex) using `change_sonar_issue_status({ status: "accept" })`.
+     - **Fixable Code Smells**: Refactor dead code, unused imports, optional chaining (`S6582`), nullish coalescing (`S6606`), `String.raw` (`S7780`), `codePointAt` (`S7758`), `RegExp.exec()` (`S6594`).
+  4. **Local Verification**: Execute `npm run typecheck` / local linters after every batch.
+  5. **Atomic Commit & Push**:
+     - Stage changed files: `git add <files>`
+     - Commit: `git commit -m "refactor: remediate <description>"`
+     - Push: `git push origin <branch>`
+  6. **Schedule 150s Timer**: Schedule a 150-second timer using `schedule({ DurationSeconds: "150", Prompt: "...", TimerCondition: "never" })` to allow SonarCloud/SonarQube CI scanning to complete before the next iteration.
+  7. **Repeat Loop**: Upon timer expiry, re-query open issues and repeat steps 1–6 until `total === 0`.
+
