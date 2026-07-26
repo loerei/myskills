@@ -45,7 +45,7 @@ function auditCoverage() {
   }
 
   const skillDirs = findSkillDirectories(repoRoot);
-  const repoSkills = skillDirs.map(d => path.basename(d)).sort();
+  const repoSkills = skillDirs.map(d => path.basename(d)).sort((a, b) => a.localeCompare(b));
 
   const agentsContent = fs.readFileSync(agentsPath, 'utf-8');
   
@@ -54,7 +54,7 @@ function auditCoverage() {
   const searchSection = tableMatch ? tableMatch[0] : agentsContent;
   
   const matches = searchSection.match(/`([a-zA-Z0-9_-]+)`/g) || [];
-  const mentionedSkills = new Set(matches.map(m => m.replace(/`/g, '')));
+  const mentionedSkills = new Set(matches.map(m => m.replaceAll('`', '')));
 
   const missingSkills = repoSkills.filter(skill => !mentionedSkills.has(skill));
 
