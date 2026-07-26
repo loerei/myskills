@@ -12,30 +12,13 @@ const path = require('node:path');
 const repoRoot = __dirname;
 const agentsPath = path.join(repoRoot, 'AGENTS.md');
 
-// Helper to recursively discover all valid skill directories containing SKILL.md
-function findSkillDirectories(dir, results = []) {
-  if (!fs.existsSync(dir)) return results;
-  const items = fs.readdirSync(dir);
-
-  if (items.includes('SKILL.md')) {
-    results.push(dir);
-    return results;
-  }
-
-  for (const item of items) {
-    if (item.startsWith('.') || item.startsWith('_') || item === 'node_modules' || item === 'pending') {
-      continue;
-    }
-    const itemPath = path.join(dir, item);
-    try {
-      if (fs.statSync(itemPath).isDirectory()) {
-        findSkillDirectories(itemPath, results);
-      }
-    } catch (_e) {
-      // Ignore unreadable paths
-    }
-  }
-  return results;
+// Helper to discover all valid skill directories containing SKILL.md
+function findSkillDirectories(dir) {
+  const entries = fs.readdirSync(dir, { recursive: true, withFileTypes: true });
+  return entries
+    .filter(e => e.isFile() && e.name === 'SKILL.md')
+    .map(e => e.parentPath || path.dirname(path.join(dir, e.name)))
+    .filter(p => !p.includes('node_modules') && !p.includes('.git') && !p.includes('.agents'));
 }
 
 function auditCoverage() {
