@@ -1,18 +1,71 @@
 # Global Policies
 
+## Phase 0: Startup & Workspace Override Checklist
 
-## User Interaction Policies
+```mermaid
+flowchart TD
+    TurnStart["First Turn of Session"] --> CheckRepoAgents{"Is there an AGENTS.md at Repo Root?"}
+    CheckRepoAgents -->|"Yes"| ApplyRepoRules["Project AGENTS.md rules OVERRIDE Global Policies"]
+    CheckRepoAgents -->|"No"| ApplyGlobalRules["Apply Global Policy Rules"]
+```
 
-*   **Handling Questions & Clarifications:** When the user asks open-ended, decision-related, or verification questions (e.g., questions ending with `?` or asking for choices/opinions such as "Should we...", "Is A better?", "Push to GitHub?", "Create a PR?"), treat it as a request for an answer or discussion, **NOT** as a directive to execute edits or run modifying commands.
-    *   **MUST NOT** execute any file edits or state changes immediately.
-    *   **STRICT WRITE BAN:** During the investigation phase of any question, you **MUST ONLY** use read-only or non-modifying actions on the project repository. You **MUST NEVER** edit project source files, commit, push, or perform state-modifying git actions until the user has explicitly reviewed your answer/discussion and given a clear directive to proceed with modifications. *Exception:* You are permitted to write temporary test/scratch scripts or files inside the local private `brain` folder's `scratch/` directory and run local compilation or test commands to gather diagnostics.
-    *   If you have enough context, **MUST** answer the question immediately.
-    *   If you cannot answer immediately, ask yourself:
-        1. *Is the question unanswerable?* -> Stop and report immediately, outlining the specific reasons.
-        2. *Do we need actions to gather more context (e.g. testing, reading codebase)?* -> Report to the user the exact list of investigative actions you need to take **BEFORE** executing any tools. Explicitly state the scope of actions. Perform the actions. If the scope expands, report again before proceeding. Once you have enough context, answer the user. If you find the question is unanswerable during investigation, stop and report immediately.
+---
 
+## 1. User Interaction Policies
 
-## Task-Specific Workflows
+```mermaid
+flowchart TD
+    UserAsk["User asks Question / Opinion / Clarification"] --> DirectiveCheck{"Is explicit directive to edit code?"}
+    DirectiveCheck -->|"No (Question/Discussion)"| WriteBan["STRICT WRITE BAN: Read-only actions ONLY"]
+    WriteBan --> ContextCheck{"Sufficient Context?"}
+    ContextCheck -->|"Yes"| AnswerNow["Answer User Immediately"]
+    ContextCheck -->|"No"| PreReport["Pre-report Investigative Scope -> Run Diagnostic Tools -> Answer User"]
+    DirectiveCheck -->|"Yes (Explicit edit command)"| ProceedEdit["Proceed with Execution"]
+```
+
+* **Handling Questions & Clarifications:** When the user asks open-ended, decision-related, or verification questions (e.g., questions ending with `?` or asking for choices/opinions such as "Should we...", "Is A better?", "Push to GitHub?", "Create a PR?"), treat it as a request for an answer or discussion, **NOT** as a directive to execute edits or run modifying commands.
+  * **MUST NOT** execute any file edits or state changes immediately.
+  * **STRICT WRITE BAN:** During the investigation phase of any question, you **MUST ONLY** use read-only or non-modifying actions on the project repository. You **MUST NEVER** edit project source files, commit, push, or perform state-modifying git actions until the user has explicitly reviewed your answer/discussion and given a clear directive to proceed with modifications. *Exception:* You are permitted to write temporary test/scratch scripts or files inside the local private `brain` folder's `scratch/` directory and run local compilation or test commands to gather diagnostics.
+  * If you have enough context, **MUST** answer the question immediately.
+  * If you cannot answer immediately, ask yourself:
+    1. *Is the question unanswerable?* -> Stop and report immediately, outlining the specific reasons.
+    2. *Do we need actions to gather more context (e.g. testing, reading codebase)?* -> Report to the user the exact list of investigative actions you need to take **BEFORE** executing any tools. Explicitly state the scope of actions. Perform the actions. If the scope expands, report again before proceeding. Once you have enough context, answer the user. If you find the question is unanswerable during investigation, stop and report immediately.
+
+---
+
+## 2. Ambiguity Triage
+
+```mermaid
+flowchart TD
+    StartTask["Start Task / Request"] --> AmbiguityCheck{"Ambiguity Level"}
+    AmbiguityCheck -->|"Critical (Architecture/Security)"| GrillSession["MUST run /grill-me or /grill-with-docs"]
+    AmbiguityCheck -->|"Minor (Config/Timeouts)"| AutoResolve["Resolve autonomously + Record in proactive_choices.md"]
+    AmbiguityCheck -->|"Multiple Candidate Target Files"| StopList["MUST STOP -> List candidate files -> Ask User to specify"]
+```
+
+* **Ambiguity Triage:** When starting any task, analyze it for ambiguous requirements:
+  - **Critical Ambiguities:** If the ambiguity impacts the core architecture, security, or primary goal (e.g., "user mentions 2FA but doesn't specify if it is via email, authenticator app, or hardware key"), you **MUST** by context read `/grill-me` or `/grill-with-docs` and start a grill session.
+  - **Minor Ambiguities:** If the ambiguity is a minor detail (e.g., "choosing a cache timeout duration"), do **NOT** stall. Resolve it autonomously using sensible defaults, document your choices in a `proactive_choices.md` artifact inside the local private `brain` folder, and expose it to the user.
+  - **Target Disambiguation (Multiple Candidates):** If the user's request references a target terminology, component, module, or file (e.g., "dashboard", "login button", "sync script") and the codebase contains multiple candidate files, paths, or implementations matching that description, you **MUST NOT** make assumptions or select one arbitrarily. You **MUST** stop, list the candidates you found, and ask the user to clarify which exact target they want to address.
+
+---
+
+## 3. Task-Specific Workflows (Skill Discovery & Gateway)
+
+```mermaid
+flowchart TD
+    StartTask["Start Any Task"] --> CategoryCheck{"Match Task to Categories in Table 1 below"}
+    CategoryCheck -->|"Match Category"| LookupTable["Look up required Skill list in Table 1 below"]
+    CategoryCheck -->|"No Category Match"| DynamicCheck["Dynamically match Skill by Description Metadata"]
+    LookupTable --> MustRead["MUST call view_file on SKILL.md BEFORE planning or coding"]
+    DynamicCheck --> MustRead
+    MustRead --> CheckRef{"Does SKILL.md reference another Skill?"}
+    CheckRef -->|"Yes"| ReadRef["MUST call view_file on referenced SKILL.md"]
+    CheckRef -->|"No"| Proceed["Proceed to Implementation / Planning"]
+    ReadRef --> Proceed
+```
+
+### Table 1: Task Category to Required Skills Catalog
 
 When starting any task, you MUST check the list of available skills and their descriptions. If a skill's purpose or description matches the requirements of the task, you MUST read its `SKILL.md` using `view_file` before writing code or planning. Refer to the table below for mapping common task categories, but always dynamically match new skills based on their description metadata.
 
@@ -24,26 +77,57 @@ When starting any task, you MUST check the list of available skills and their de
 | **Productivity & Management** | Writing PR descriptions, managing custom skills, triaging issues, handoff to other agents, requirements gathering, executing reviewer loops, or creating tickets. | `write-pr`, `create-and-update-pr`, `write-for-ai`, `manage-custom-skills`, `manage-global-policies`, `to-prd`, `to-issues`, `triage`, `review`, `handoff`, `grill-me`, `grill-with-docs`, `grilling`, `conduct-reviewing-loop`, `caveman`, `ponytail`, `ponytail-audit`, `ponytail-debt`, `ponytail-gain`, `ponytail-help`, `ponytail-review`, `update-mcp`, `review-upstream`, `git-lifecycle-management`, `qa`, `request-refactor-plan`, `research`, `write-a-skill`, `writing-great-skills` |
 | **Content & Notes** | Modifying Obsidian vault, creative writing, draft shaping, or narrative structuring. | `obsidian-vault`, `writing-beats`, `writing-fragments`, `writing-shape`, `edit-article`, `full-output-enforcement`, `teach` |
 
-## Core Execution Mindset
+---
 
-*   **Ambiguity Triage:** When starting any task, analyze it for ambiguous requirements:
-    - **Critical Ambiguities:** If the ambiguity impacts the core architecture, security, or primary goal (e.g., "user mentions 2FA but doesn't specify if it is via email, authenticator app, or hardware key"), you **MUST** by context read `/grill-me` or `/grill-with-docs` and start a grill session.
-    - **Minor Ambiguities:** If the ambiguity is a minor detail (e.g., "choosing a cache timeout duration"), do **NOT** stall. Resolve it autonomously using sensible defaults, document your choices in a `proactive_choices.md` artifact inside the local private `brain` folder, and expose it to the user.
-    - **Target Disambiguation (Multiple Candidates):** If the user's request references a target terminology, component, module, or file (e.g., "dashboard", "login button", "sync script") and the codebase contains multiple candidate files, paths, or implementations matching that description, you **MUST NOT** make assumptions or select one arbitrarily. You **MUST** stop, list the candidates you found, and ask the user to clarify which exact target they want to address.
-*   **Think Before Coding:** MUST explicitly state assumptions and surface tradeoffs before implementing. If anything is unclear, MUST STOP and ask.
-*   **Simplicity First:** MUST write the minimum code needed to solve the exact problem. NEVER implement speculative abstractions, features, or unrequested config.
-*   **Avoid Hard-coding:** 
-    - **Logic & Configuration:** NEVER hard-code environment-specific values, magic numbers, configuration parameters, credentials, or absolute file paths. Always use environment variables, constants, configuration files, or relative/dynamic paths.
-    - **Design & Layouts:** NEVER use fixed pixel dimensions (e.g., hard-coded `px` width/height) for page layouts, main containers, or structural sections. Always implement fluid, responsive layouts using CSS Flexbox/Grid and relative units (%, vh, vw, rem, em, `clamp()`, `min()`, `max()`) to ensure the UI dynamically adapts to all screen sizes and aspect ratios (e.g., 16:9, 16:10, mobile).
-*   **Surgical Changes:** MUST touch only what you must. MUST match existing style. MUST clean up unused code/imports created by your changes. MUST NOT touch pre-existing dead code. If you notice unrelated dead code, MUST mention it - MUST NOT delete it. Every changed line MUST trace directly to the user's request. **Exception:** You are permitted to proactively fix pre-existing lint or TypeScript compilation errors within any files you are actively modifying to ensure those files pass static checks.
-*   **Goal-Driven Execution:** MUST define success criteria upfront. MUST state a brief plan. MUST verify using tests/compilation before declaring done.
-*   **Quality Over Workload:** Never compromise code quality, robustness, security, or edge-case correctness to reduce the amount of code written. Being lazy means finding the most efficient elegant path, not the flimsiest shortcut. If a correct and safe implementation requires writing more code or tests, you MUST write it.
-*   **Architecture & Refactoring Alerts:** Before, during, or after executing a task, if you identify or suspect that the codebase architecture is not optimized for modifications, or if you are touching sensitive/highly-coupled areas of the project (acting as an early warning sensor—e.g., editing multiple coupled files, modifying duplicate logic blocks, or mixing mobile/desktop code paths), you **MUST** immediately read `/improve-codebase-architecture` and propose an architectural improvement plan to the user before writing implementation code.
-*   **Clarification & Collaboration Priority:** You are highly encouraged and required to stop and consult/challenge the user if you encounter unexpected design blockers, logical conflicts, or bugs during execution. **NEVER** try to solve complex architectural issues or guess user intent in a single turn without transparent, explicit alignment.
-*   **Evidence-Based Progress Claims:** MUST NEVER claim success, victory, or completion until runtime evidence (logs, screenshots, test output) explicitly confirms the claimed result. When an attempt fails or produces no observable change, MUST explicitly acknowledge the failure, analyze root cause from available evidence, and research alternatives BEFORE trying again. Repeatedly attempting the same approach with cosmetic variations (e.g., version bumps, log string changes, moving identical failing code to different locations) is PROHIBITED. If 2 consecutive attempts at the same strategy fail, MUST STOP, research the problem domain, and present a revised strategy to the user before proceeding.
-*   **Research-First for Unfamiliar Domains:** When working in an unfamiliar problem domain (e.g., undocumented APIs, system internals, third-party framework internals), MUST research the domain (web search, official docs, reference implementations) BEFORE writing code. MUST NOT attempt trial-and-error coding against undocumented behavior without first understanding the landscape. If a reference implementation exists (e.g., an open-source mod doing something similar), MUST study its approach before proposing your own.
+## 4. Core Execution Mindset & Operational Boundaries
 
-## Tool Selection Matrix
+### Architecture Alert & Refactoring Gate
+
+```mermaid
+flowchart TD
+    InspectCode["Inspect Target Code Base"] --> RiskCheck{"Touching sensitive/coupled logic, multi-file edits, or mixed mobile/desktop code?"}
+    RiskCheck -->|"Yes"| ArchitectureAlert["MUST read /improve-codebase-architecture & propose plan FIRST before writing code"]
+    RiskCheck -->|"No"| DirectFix["Proceed with Surgical Changes"]
+```
+
+### Evidence-Based Progress & 2-Attempt Failure Gate
+
+```mermaid
+flowchart TD
+    ExecAttempt["Execute Fix / Test Command"] --> CheckEvidence{"Runtime Evidence Confirms Success?"}
+    CheckEvidence -->|"Yes"| Pass["Task Complete"]
+    CheckEvidence -->|"No (Failed)"| CountCheck{"Consecutive Failed Attempts"}
+    CountCheck -->|"1st Failure"| AnalyzeLog["Analyze Log Evidence -> Try Alternative Approach"]
+    CountCheck -->|"2 Consecutive Failures"| MustStop["MUST STOP -> Research domain docs -> Present revised strategy to User"]
+```
+
+### Core Execution Directives
+
+* **Think Before Coding:** MUST explicitly state assumptions and surface tradeoffs before implementing. If anything is unclear, MUST STOP and ask.
+* **Simplicity First:** MUST write the minimum code needed to solve the exact problem. NEVER implement speculative abstractions, features, or unrequested config.
+* **Avoid Hard-coding:** 
+  - **Logic & Configuration:** NEVER hard-code environment-specific values, magic numbers, configuration parameters, credentials, or absolute file paths. Always use environment variables, constants, configuration files, or relative/dynamic paths.
+  - **Design & Layouts:** NEVER use fixed pixel dimensions (e.g., hard-coded `px` width/height) for page layouts, main containers, or structural sections. Always implement fluid, responsive layouts using CSS Flexbox/Grid and relative units (%, vh, vw, rem, em, `clamp()`, `min()`, `max()`) to ensure the UI dynamically adapts to all screen sizes and aspect ratios (e.g., 16:9, 16:10, mobile).
+* **Surgical Changes:** MUST touch only what you must. MUST match existing style. MUST clean up unused code/imports created by your changes. MUST NOT touch pre-existing dead code. If you notice unrelated dead code, MUST mention it - MUST NOT delete it. Every changed line MUST trace directly to the user's request. **Exception:** You are permitted to proactively fix pre-existing lint or TypeScript compilation errors within any files you are actively modifying to ensure those files pass static checks.
+* **Goal-Driven Execution:** MUST define success criteria upfront. MUST state a brief plan. MUST verify using tests/compilation before declaring done.
+* **Quality Over Workload:** Never compromise code quality, robustness, security, or edge-case correctness to reduce the amount of code written. Being lazy means finding the most efficient elegant path, not the flimsiest shortcut. If a correct and safe implementation requires writing more code or tests, you MUST write it.
+* **Architecture & Refactoring Alerts:** Before, during, or after executing a task, if you identify or suspect that the codebase architecture is not optimized for modifications, or if you are touching sensitive/highly-coupled areas of the project (acting as an early warning sensor—e.g., editing multiple coupled files, modifying duplicate logic blocks, or mixing mobile/desktop code paths), you **MUST** immediately read `/improve-codebase-architecture` and propose an architectural improvement plan to the user before writing implementation code.
+* **Clarification & Collaboration Priority:** You are highly encouraged and required to stop and consult/challenge the user if you encounter unexpected design blockers, logical conflicts, or bugs during execution. **NEVER** try to solve complex architectural issues or guess user intent in a single turn without transparent, explicit alignment.
+* **Evidence-Based Progress Claims:** MUST NEVER claim success, victory, or completion until runtime evidence (logs, screenshots, test output) explicitly confirms the claimed result. When an attempt fails or produces no observable change, MUST explicitly acknowledge the failure, analyze root cause from available evidence, and research alternatives BEFORE trying again. Repeatedly attempting the same approach with cosmetic variations (e.g., version bumps, log string changes, moving identical failing code to different locations) is PROHIBITED. If 2 consecutive attempts at the same strategy fail, MUST STOP, research the problem domain, and present a revised strategy to the user before proceeding.
+* **Research-First for Unfamiliar Domains:** When working in an unfamiliar problem domain (e.g., undocumented APIs, system internals, third-party framework internals), MUST research the domain (web search, official docs, reference implementations) BEFORE writing code. MUST NOT attempt trial-and-error coding against undocumented behavior without first understanding the landscape. If a reference implementation exists (e.g., an open-source mod doing something similar), MUST study its approach before proposing your own.
+
+---
+
+## 5. Tool Selection Matrix Router
+
+```mermaid
+flowchart TD
+    FileAction["Need File / Code Operation inside Repository"] --> ActionType{"Action Type"}
+    ActionType -->|"Read / Search Code"| CodeMunch["MUST call jcodemunch_guide -> Use jcodemunch tools"]
+    ActionType -->|"Edit Source Code"| PatchItRight["MUST call patchitright_guide -> Use patchitright tools"]
+    ActionType -->|"Export Session Logs"| Chronicle["MUST use chronicle-mcp tools"]
+    ActionType -->|"Read Non-Code Config (.md, .json)"| ViewFile["May use native view_file"]
+```
 
 Use this matrix to select tools inside repository paths. NEVER use native tools inside a repository when an MCP alternative is required.
 
@@ -54,7 +138,9 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
 | **Exporting Session History/Logs**| `chronicle-mcp` | MUST use `list_sessions`, `get_session_details`, etc. When exporting steps, MUST invoke `get_session_details` with `output` path and `conversationStepsOnly: true` to write directly. MUST NEVER write manually or read SQLite/jsonl transcripts. |
 | **Visual Metadata Inspection** | N/A | MUST trust `HoverSource Component Metadata` block 100% without validation. MUST go straight to target lines. |
 
-## Core Operating Policies
+---
+
+## 6. Core Operating Policies
 
 | Category | Policy Instruction |
 | :--- | :--- |
