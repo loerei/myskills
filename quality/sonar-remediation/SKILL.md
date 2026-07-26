@@ -11,6 +11,42 @@ Inspect, remediate, accept, and automate SonarQube/SonarCloud code quality issue
 
 ### 1. Issue Query & Inspection (MCP)
 
+```mermaid
+flowchart TD
+    Start["Sonar Issue Query Request"] --> DetermineScope{"Determine Query Scope"}
+
+    %% Branch 1: File Scope
+    DetermineScope -->|"1. By File Name"| FileScope["File Scope"]
+    FileScope --> FileCall["search_sonar_issues({ projectKey, componentKeys: ['<projectKey>:<filePath>'], issueStatuses: ['OPEN'] })"]
+
+    %% Branch 2: Commit Scope
+    DetermineScope -->|"2. By Commit"| CommitScope["Commit Scope"]
+    CommitScope --> CommitCall["1. git show --name-only <commit_hash><br>2. search_sonar_issues({ projectKey, componentKeys: [...], inNewCodePeriod: true })"]
+
+    %% Branch 3: PR Scope
+    DetermineScope -->|"3. By Pull Request (PR)"| PRScope["Pull Request Scope"]
+    PRScope --> PRCall["search_sonar_issues({ projectKey, pullRequest: '<pr_id>', issueStatuses: ['OPEN'] })"]
+
+    %% Branch 4: Branch Scope
+    DetermineScope -->|"4. By Branch"| BranchScope["Branch Scope"]
+    BranchScope --> BranchCall["search_sonar_issues({ projectKey, branch: '<branch_name>', issueStatuses: ['OPEN'] })"]
+
+    %% Branch 5: Repo Scope
+    DetermineScope -->|"5. Repository Scope"| RepoScope["Repository Scope"]
+    RepoScope --> RepoCall["search_sonar_issues({ projectKey, issueStatuses: ['OPEN'] })"]
+
+    %% Branch 6: Combined Scope
+    DetermineScope -->|"6. Combined (e.g. File + PR)"| CombinedScope["Combined Scope"]
+    CombinedScope --> CombinedCall["search_sonar_issues({ projectKey, pullRequest: '<pr_id>', componentKeys: ['<projectKey>:<filePath>'], issueStatuses: ['OPEN'] })"]
+
+    FileCall --> ProcessIssues["Analyze & Apply Remediation"]
+    CommitCall --> ProcessIssues
+    PRCall --> ProcessIssues
+    BranchCall --> ProcessIssues
+    RepoCall --> ProcessIssues
+    CombinedCall --> ProcessIssues
+```
+
 | Task | MCP Tool (`sonarcloud:` / `sonarqube:`) | Required Arguments & Constraints |
 | :--- | :--- | :--- |
 | **Search Projects** | `search_my_sonarqube_projects` / `search_sonar_projects` | None |
