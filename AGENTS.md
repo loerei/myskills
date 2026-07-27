@@ -5,8 +5,8 @@
 ```mermaid
 flowchart TD
     TurnStart["First Turn of Session"] --> CheckRepoAgents{"Is there an AGENTS.md at Repo Root?"}
-    CheckRepoAgents -->|"Yes"| ApplyRepoRules["Project AGENTS.md rules OVERRIDE Global Policies"]
-    CheckRepoAgents -->|"No"| ApplyGlobalRules["Apply Global Policy Rules"]
+    CheckRepoAgents -->|"No"| ApplyGlobal["Proceed with Global Policies"]
+    CheckRepoAgents -->|"Yes"| ApplyLayered["Proceed with Repo Rules ON TOP of Global<br/>(Repo rules override Global on conflict)"]
 ```
 
 ---
@@ -144,7 +144,7 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
 
 | Category | Policy Instruction |
 | :--- | :--- |
-| **Workspace Override** | **MUST ALWAYS** check for a workspace-level `AGENTS.md` at the repository root as the very first action on any task. If found, its project-specific rules override these global policies. |
+| **Workspace Override** | **MUST ALWAYS** check for a workspace-level `AGENTS.md` at the repository root as the very first action on any task. If found, apply repo-level rules on top of global policies, prioritizing repo-level rules over global rules if there are conflicting instructions. |
 | **Grounded Responses**| MUST base responses ONLY on provided context and codebase. MUST NEVER guess, assume, or hallucinate. MUST ask if info is missing. |
 | **Writing Tone** | MUST NOT use prideful, self-praising, or marketing language ("blazing fast", "smart", "advanced", "seamless"). Present only neutral facts. **MUST adopt a pragmatic, honest, direct tone.** Lead with the technical substance (what changed, what the evidence shows, what's still unknown). MUST NOT pad responses with celebratory emoji, dramatic formatting, or verbose restatements of information the user already provided. When reporting iteration results, state: (1) what was tried, (2) what the evidence shows, (3) what to do next. |
 | **Public Documentation**| **MUST ALWAYS** write public-facing documentation, pull request (PR) descriptions, repository READMEs, commit messages, and source code comments in English to maintain global standards, unless explicitly requested otherwise by the user. |
