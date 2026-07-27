@@ -11,25 +11,51 @@ flowchart TD
 
 ---
 
-## 1. User Interaction Policies
+## 1. User Interaction Policies & 3-Tier Execution Framework
 
 ```mermaid
 flowchart TD
-    UserAsk["User asks Question / Opinion / Clarification"] --> DirectiveCheck{"Is explicit directive to edit code?"}
-    DirectiveCheck -->|"No (Question/Discussion)"| WriteBan["STRICT WRITE BAN: Read-only actions ONLY"]
-    WriteBan --> ContextCheck{"Sufficient Context?"}
-    ContextCheck -->|"Yes"| AnswerNow["Answer User Immediately"]
-    ContextCheck -->|"No"| PreReport["Pre-report Investigative Scope -> Run Diagnostic Tools -> Answer User"]
-    DirectiveCheck -->|"Yes (Explicit edit command)"| ProceedEdit["Proceed with Execution"]
+    TurnStart["Start Any Turn or Request"] --> Tier1Default["Tier 1: Read & Debate Only (DEFAULT STATE)"]
+    
+    Tier1Default --> InputAnalysis{"Analyze User Prompt Type"}
+    
+    InputAnalysis -->|"Question / Proposal / Analysis / Prompt ends with '?'"| Tier1Exec["Tier 1 Execution:<br/>• Read codebase & docs<br/>• Propose plans & debate<br/>• STRICT WRITE BAN on repository"]
+    
+    InputAnalysis -->|"Diagnostic / Scratch File Operation"| PathCheck{"Target Path inside brain/scratch/?"}
+    PathCheck -->|"Yes"| Tier2Exec["Tier 2 Execution:<br/>• Write ONLY to private brain/scratch/<br/>• Run local diagnostic tests/builds<br/>• Report empirical evidence"]
+    PathCheck -->|"No (Repo Source Path)"| Tier3Gate
+    
+    InputAnalysis -->|"Source Edit / Commit / Push / PR / State Change"| Tier3Gate{"Explicit Approval Granted for Plan?"}
+    
+    Tier3Gate -->|"No / Ambiguous / Praise / Follow-up Question"| Tier3Block["> [!CAUTION]<br/>STRICT EXECUTION BLOCK:<br/>• STOP execution immediately<br/>• Present Plan / Walkthrough<br/>• Await explicit execution command"]
+    
+    Tier3Gate -->|"Explicit Execution Command ('Approve', 'Proceed', Directive)"| Tier3Exec["Tier 3 Execution:<br/>• Surgical source edits (patchitright)<br/>• Atomic Git commit, push, PR<br/>• Step-by-step evidence verification"]
 ```
 
-* **Handling Questions & Clarifications:** When the user asks open-ended, decision-related, or verification questions (e.g., questions ending with `?` or asking for choices/opinions such as "Should we...", "Is A better?", "Push to GitHub?", "Create a PR?"), treat it as a request for an answer or discussion, **NOT** as a directive to execute edits or run modifying commands.
-  * **MUST NOT** execute any file edits or state changes immediately.
-  * **STRICT WRITE BAN:** During the investigation phase of any question, you **MUST ONLY** use read-only or non-modifying actions on the project repository. You **MUST NEVER** edit project source files, commit, push, or perform state-modifying git actions until the user has explicitly reviewed your answer/discussion and given a clear directive to proceed with modifications. *Exception:* You are permitted to write temporary test/scratch scripts or files inside the local private `brain` folder's `scratch/` directory and run local compilation or test commands to gather diagnostics.
-  * If you have enough context, **MUST** answer the question immediately.
-  * If you cannot answer immediately, ask yourself:
-    1. *Is the question unanswerable?* -> Stop and report immediately, outlining the specific reasons.
-    2. *Do we need actions to gather more context (e.g. testing, reading codebase)?* -> Report to the user the exact list of investigative actions you need to take **BEFORE** executing any tools. Explicitly state the scope of actions. Perform the actions. If the scope expands, report again before proceeding. Once you have enough context, answer the user. If you find the question is unanswerable during investigation, stop and report immediately.
+### Execution Tiers & Operational Guardrails
+
+> [!IMPORTANT]
+> **Default State:** Every turn and task begins strictly in **Tier 1**. Transitioning to higher tiers requires meeting explicit path and approval gates.
+
+#### Tier 1: Read & Debate Only (DEFAULT STATE)
+* **Trigger:** Questions, discussions, analysis requests, or any user prompt ending with `?` (e.g., *"Should we...?"*, *"Is A better?"*, *"Push to GitHub?"*).
+* **Permitted Actions:** Read codebase files (`jcodemunch`, `view_file`), search documentation, analyze diagnostics, and propose architectural plans.
+* **STRICT WRITE BAN:** MUST NOT edit project source files, commit, push, create PRs, or modify repository state while in Tier 1.
+
+#### Tier 2: Controlled Diagnostic & Scratch Execution
+* **Trigger:** Need for empirical runtime evidence (test execution, build verification) to validate a Tier 1 proposal.
+* **Permitted Actions:** Write temporary test/scratch scripts strictly inside `<appDataDir>\brain\<conversation-id>\scratch\`, run local compilation/test checks.
+* **Hard Boundary:** Any file write target outside `brain/scratch/` is classified as a Tier 3 action and MUST NOT execute in Tier 2.
+
+#### Tier 3: State-Modifying Executions (Source Edits, Commit, Push, PR)
+* **Trigger:** Modifying repository source files, running `git commit`/`git push`, opening/updating PRs, or deleting branches.
+* **STRICT APPROVAL GATE:** MUST NOT execute any Tier 3 action without **EXPLICIT APPROVAL**.
+  - **Valid Approval Signals (`EXPLICIT_APPROVAL = TRUE`):** User explicitly states *"Approve"*, *"Proceed"*, *"Execute plan"*, or gives a direct, unambiguous edit command following a plan presentation.
+  - **Non-Approval Signals (`EXPLICIT_APPROVAL = FALSE`):** Praise (*"looks good"*, *"nice"*), open questions (*"what about X?"*), hypothetical discussions, or silence. These signals KEEP the agent in Tier 1.
+* **Mandatory Tier 3 Protocol:**
+  1. Present the technical Implementation Plan / Walkthrough in Tier 1.
+  2. STOP execution immediately and await explicit user approval.
+  3. Execute approved edits surgically (using `patchitright`). Verify runtime evidence after each step before proceeding to subsequent modifications.
 
 ---
 
