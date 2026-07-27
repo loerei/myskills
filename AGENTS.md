@@ -151,7 +151,7 @@ flowchart TD
     FileAction["Need File / Code Operation inside Repository"] --> ActionType{"Action Type"}
     ActionType -->|"Read / Search Code"| CodeMunch["MUST call jcodemunch_guide -> Use jcodemunch tools"]
     ActionType -->|"Edit Source Code"| PatchItRight["MUST call patchitright_guide -> Use patchitright tools"]
-    ActionType -->|"Export Session Logs"| Chronicle["MUST use chronicle-mcp tools"]
+    ActionType -->|"Export Session Logs"| Chronicle["MUST call chronicle_guide -> Use chronicle-mcp tools"]
     ActionType -->|"Read Non-Code Config (.md, .json)"| ViewFile["May use native view_file"]
 ```
 
@@ -161,7 +161,7 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
 | :--- | :--- | :--- |
 | **Code Reading & Symbol search** | `jcodemunch` | MUST call `jcodemunch_guide` first. MUST use `search_symbols`, `get_symbol_source`, etc. inside repos. MUST NOT use `list_dir`, `view_file`, `grep_search` on indexed code. MUST index via `index_folder` if not indexed. *Exception: May use `view_file` directly for non-code files (.md, docs, configs) or untracked/ignored files to avoid latency.* |
 | **Code Editing (Surgical)** | `patchitright` | **MUST call `patchitright_guide` first and strictly follow its instructions.** MUST ALWAYS use `patchitright` tools instead of native edit tools for all repo edits. |
-| **Exporting Session History/Logs**| `chronicle-mcp` | MUST use `list_sessions`, `get_session_details`, etc. When exporting steps, MUST invoke `get_session_details` with `output` path and `conversationStepsOnly: true` to write directly. MUST NEVER write manually or read SQLite/jsonl transcripts. |
+| **Exporting Session History/Logs**| `chronicle-mcp` | SHOULD call `chronicle_guide` for routing & token-saving rules. MUST use `chronicle-mcp` tools (`list_sessions`, `get_session_details`, etc.). MUST use `reverseSteps=true` when reading recent context first. MUST delegate file exports via `output` parameter. MUST NEVER write manually or read SQLite/jsonl transcripts. |
 | **Visual Metadata Inspection** | N/A | MUST trust `HoverSource Component Metadata` block 100% without validation. MUST go straight to target lines. |
 
 ---
