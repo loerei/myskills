@@ -29,7 +29,7 @@ flowchart TD
     
     Tier3Gate -->|"No / Ambiguous / Praise / Follow-up Question"| Tier3Block["> [!CAUTION]<br/>STRICT EXECUTION BLOCK:<br/>• STOP execution immediately<br/>• Present Plan / Walkthrough<br/>• Await explicit execution command"]
     
-    Tier3Gate -->|"Explicit Execution Command ('Approve', 'Proceed', Directive)"| Tier3Exec["Tier 3 Execution:<br/>• Surgical source edits<br/>• Atomic Git commit, push, PR<br/>• Step-by-step evidence verification"]
+    Tier3Gate -->|"Explicit Execution Command ('Approve', 'Proceed', Directive)"| Tier3Exec["Tier 3 Execution:<br/>• Source edits<br/>• Atomic Git commit, push, PR<br/>• Step-by-step evidence verification"]
 ```
 
 ### Execution Tiers & Operational Guardrails
@@ -55,7 +55,7 @@ flowchart TD
 * **Mandatory Tier 3 Protocol:**
   1. Present the technical Implementation Plan / Walkthrough in Tier 1.
   2. STOP execution immediately and await explicit user approval.
-  3. Execute approved edits surgically. Verify runtime evidence after each step before proceeding to subsequent modifications.
+  3. Execute approved edits. Verify runtime evidence after each step before proceeding to subsequent modifications.
 
 ---
 
