@@ -13,9 +13,9 @@ Run iterative, independent subagent reviews to stress-test plans, code designs, 
 flowchart TD
     Start["Start Review Loop"] --> Synth["1. Synthesize Review Criteria (User + System + Domain)"]
     Synth --> Draft["2. Prepare Target Artifact in draft path"]
-    Draft --> Spawn["3. Spawn Independent Reviewer Subagent (Role #N)"]
-    Spawn --> Eval{"4. Evaluate Reviewer Response"}
-    Eval -->|"STATUS: REVISIONS NEEDED"| ApplyEdits["Apply required edits to draft"] --> NextIter["Iteration N = N + 1"] --> Spawn
+    Draft --> BlindSpawn["3. Spawn Independent Reviewer (Blind Reviewer Protocol)"]
+    BlindSpawn --> Eval{"4. Evaluate Reviewer Response"}
+    Eval -->|"STATUS: REVISIONS NEEDED"| ApplyEdits["Apply required edits to draft"] --> NextIter["Iteration N = N + 1"] --> BlindSpawn
     Eval -->|"Contradictory Requirements"| ConsultUser["Consult user for alignment"] --> ApplyEdits
     Eval -->|"STATUS: PASS"| Present["5. Present Verified Final Output"]
 ```
@@ -40,12 +40,16 @@ Synthesize a custom review checklist from 3 sources:
 
 Write or update the target document/artifact in a draft path (e.g. `scratch/draft_<name>/`).
 
-### 4. Reviewer Loop Execution
+### 4. Reviewer Loop Execution (Blind Reviewer Protocol)
+
+> [!IMPORTANT]
+> **Blind Reviewer Protocol**: NEVER feed previous reviewer findings, past feedback points, or lists of fixed items to Reviewer #N+1. Passing past feedback creates **Anchoring Bias** (narrowing focus to old items) and **Confirmation Bias** (rubber-stamping approval). Every Reviewer subagent MUST evaluate the latest draft with completely fresh, unbiased eyes.
 
 For each iteration $N$ ($1, 2, 3...$):
 
 1. **Spawn Independent Reviewer**: Call `invoke_subagent` with a DIFFERENT Reviewer Role (`<Domain> Reviewer #N`), using the environment's most capable reasoning model tier (defaulting to `inherit` if unstated).
-   - Pass required file paths, guidelines, and synthesized checklist.
+   - Pass ONLY: latest target artifact path, codebase paths, guidelines, and general checklist.
+   - STRICTLY PROHIBIT including previous reviewer comments or lists of fixed points in the prompt.
    - Instruct reviewer to conclude strictly with **STATUS: PASS** or **STATUS: REVISIONS NEEDED** with numbered edits.
 2. **Evaluate Feedback**:
    - If **STATUS: REVISIONS NEEDED**: Apply required edits to the draft artifact. Proceed to iteration $N+1$ with a fresh subagent reviewer.
