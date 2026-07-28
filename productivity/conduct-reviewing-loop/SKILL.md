@@ -15,8 +15,8 @@ flowchart TD
     Synth --> Draft["2. Prepare Target Artifact in draft path"]
     Draft --> BlindSpawn["3. Spawn Independent Reviewer (Blind Reviewer Protocol)"]
     BlindSpawn --> CritEval{"4. Critical Evaluation of Feedback (Main Agent)"}
-    CritEval -->|"Valid Edits Needed"| ApplyEdits["Apply required edits to draft"] --> NextIter["Iteration N = N + 1"] --> BlindSpawn
-    CritEval -->|"Invalid/Over-engineered Suggestion"| RejectReject["Reject/Refine Suggestion"] --> NextIter
+    CritEval -->|"STATUS: REVISIONS NEEDED (Valid)"| ApplyEdits["Apply required edits to draft"] --> NextIter["Iteration N = N + 1"] --> BlindSpawn
+    CritEval -->|"Invalid/Over-engineered Suggestion"| RejectRefine["Reject/Refine Suggestion"] --> NextIter
     CritEval -->|"Contradictory Requirements"| ConsultUser["Consult user for alignment"] --> ApplyEdits
     CritEval -->|"STATUS: PASS"| Present["5. Present Verified Final Output"]
 ```
@@ -53,6 +53,10 @@ Write or update the target document/artifact in a draft path (e.g. `scratch/draf
 > 3. **Repository Rules (`AGENTS.md`)**: Ensure reviewer suggestions comply with project architecture principles.
 > If a reviewer suggestion is invalid, hallucinated, or over-engineered, REJECT or refine that suggestion.
 
+> [!CAUTION]
+> **Strict Loop Termination Guardrail**: The Main Agent MUST NEVER declare an artifact "finalized", "fully verified", "ready for execution", or prematurely conclude the review loop if the latest reviewer output was `STATUS: REVISIONS NEEDED`.
+> Applying edits to the draft after a `REVISIONS NEEDED` response MUST be followed by spawning iteration $N+1$ with a fresh reviewer. Loop termination and final presentation to the user are ONLY permitted after receiving an explicit `STATUS: PASS` from a reviewer subagent.
+
 For each iteration $N$ ($1, 2, 3...$):
 
 1. **Spawn Independent Reviewer**: Call `invoke_subagent` with a DIFFERENT Reviewer Role (`<Domain> Reviewer #N`), using the environment's most capable reasoning model tier (defaulting to `inherit` if unstated).
@@ -61,7 +65,7 @@ For each iteration $N$ ($1, 2, 3...$):
    - Instruct reviewer to conclude strictly with **STATUS: PASS** or **STATUS: REVISIONS NEEDED** with numbered edits.
 2. **Evaluate Feedback Critically**:
    - Filter feedback through the Critical Evaluation Rule.
-   - If **STATUS: REVISIONS NEEDED** contains valid, verified edits: Apply edits to draft artifact and proceed to iteration $N+1$ with a fresh subagent reviewer.
+   - If **STATUS: REVISIONS NEEDED** contains valid, verified edits: Apply edits to draft artifact and MUST proceed to iteration $N+1$ with a fresh subagent reviewer.
    - If **STATUS: PASS**: Terminate loop and proceed to presentation.
 3. **Conflict Resolution**: If consecutive reviewers highlight conflicting requirements, synthesize the contradictory points and consult the user for alignment.
 
