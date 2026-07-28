@@ -14,10 +14,11 @@ flowchart TD
     Start["Start Review Loop"] --> Synth["1. Synthesize Review Criteria (User + System + Domain)"]
     Synth --> Draft["2. Prepare Target Artifact in draft path"]
     Draft --> BlindSpawn["3. Spawn Independent Reviewer (Blind Reviewer Protocol)"]
-    BlindSpawn --> Eval{"4. Evaluate Reviewer Response"}
-    Eval -->|"STATUS: REVISIONS NEEDED"| ApplyEdits["Apply required edits to draft"] --> NextIter["Iteration N = N + 1"] --> BlindSpawn
-    Eval -->|"Contradictory Requirements"| ConsultUser["Consult user for alignment"] --> ApplyEdits
-    Eval -->|"STATUS: PASS"| Present["5. Present Verified Final Output"]
+    BlindSpawn --> CritEval{"4. Critical Evaluation of Feedback (Main Agent)"}
+    CritEval -->|"Valid Edits Needed"| ApplyEdits["Apply required edits to draft"] --> NextIter["Iteration N = N + 1"] --> BlindSpawn
+    CritEval -->|"Invalid/Over-engineered Suggestion"| RejectReject["Reject/Refine Suggestion"] --> NextIter
+    CritEval -->|"Contradictory Requirements"| ConsultUser["Consult user for alignment"] --> ApplyEdits
+    CritEval -->|"STATUS: PASS"| Present["5. Present Verified Final Output"]
 ```
 
 ### 1. Artifact & Review Matrix
@@ -40,10 +41,17 @@ Synthesize a custom review checklist from 3 sources:
 
 Write or update the target document/artifact in a draft path (e.g. `scratch/draft_<name>/`).
 
-### 4. Reviewer Loop Execution (Blind Reviewer Protocol)
+### 4. Reviewer Loop Execution (Blind Protocol & Critical Filter)
 
 > [!IMPORTANT]
 > **Blind Reviewer Protocol**: NEVER feed previous reviewer findings, past feedback points, or lists of fixed items to Reviewer #N+1. Passing past feedback creates **Anchoring Bias** (narrowing focus to old items) and **Confirmation Bias** (rubber-stamping approval). Every Reviewer subagent MUST evaluate the latest draft with completely fresh, unbiased eyes.
+
+> [!WARNING]
+> **Critical Evaluation Rule (Main Agent Gatekeeper)**: ALWAYS be critical of reviewers' feedback. Do NOT blindly apply every reviewer request. The Main Agent MUST filter and validate reviewer suggestions against:
+> 1. **User Requirements & Simplicity (YAGNI)**: Does the suggestion add unnecessary complexity or over-engineering?
+> 2. **Empirical Codebase Facts**: Verify directly in codebase whether the reviewer's claimed bug or gap is real.
+> 3. **Repository Rules (`AGENTS.md`)**: Ensure reviewer suggestions comply with project architecture principles.
+> If a reviewer suggestion is invalid, hallucinated, or over-engineered, REJECT or refine that suggestion.
 
 For each iteration $N$ ($1, 2, 3...$):
 
@@ -51,8 +59,9 @@ For each iteration $N$ ($1, 2, 3...$):
    - Pass ONLY: latest target artifact path, codebase paths, guidelines, and general checklist.
    - STRICTLY PROHIBIT including previous reviewer comments or lists of fixed points in the prompt.
    - Instruct reviewer to conclude strictly with **STATUS: PASS** or **STATUS: REVISIONS NEEDED** with numbered edits.
-2. **Evaluate Feedback**:
-   - If **STATUS: REVISIONS NEEDED**: Apply required edits to the draft artifact. Proceed to iteration $N+1$ with a fresh subagent reviewer.
+2. **Evaluate Feedback Critically**:
+   - Filter feedback through the Critical Evaluation Rule.
+   - If **STATUS: REVISIONS NEEDED** contains valid, verified edits: Apply edits to draft artifact and proceed to iteration $N+1$ with a fresh subagent reviewer.
    - If **STATUS: PASS**: Terminate loop and proceed to presentation.
 3. **Conflict Resolution**: If consecutive reviewers highlight conflicting requirements, synthesize the contradictory points and consult the user for alignment.
 

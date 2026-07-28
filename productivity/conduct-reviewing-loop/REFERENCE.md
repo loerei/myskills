@@ -58,5 +58,6 @@ Conclude explicitly with either:
 
 1. **Role Differentiation**: ALWAYS increment the Reviewer index (`Reviewer #1`, `Reviewer #2`, `Reviewer #3`) to enforce fresh, un-biased perspectives on each iteration.
 2. **Blind Reviewer Protocol (No Past Context Feeding)**: NEVER include previous reviewer findings, lists of fixed points, or past iteration logs in the subagent prompt. Feeding past feedback causes **Anchoring Bias** (limiting scope to old items) and **Confirmation Bias** (rubber-stamping approval).
-3. **Neutral & Un-biased Evaluation**: Do NOT tell the subagent reviewer that the draft is "almost finished" or "good". Keep prompt neutral to ensure objective critique.
-4. **Surgical Refinement**: Apply edits strictly addressing the reviewer's numbered feedback without introducing unrequested side-effects.
+3. **Critical Evaluation Gatekeeper (Always Question Reviewer Feedback)**: Do NOT blindly apply every reviewer request. The Main Agent MUST filter reviewer feedback against code realities, user intent, and YAGNI/simplicity principles before editing the draft. Reject or refine over-engineered or hallucinated reviewer suggestions.
+4. **Neutral & Un-biased Evaluation**: Do NOT tell the subagent reviewer that the draft is "almost finished" or "good". Keep prompt neutral to ensure objective critique.
+5. **Surgical Refinement**: Apply edits strictly addressing verified, valid reviewer feedback without introducing unrequested side-effects.
