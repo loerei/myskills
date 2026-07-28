@@ -9,6 +9,8 @@ flowchart TD
     CheckRepoAgents -->|"Yes"| ApplyLayered["Proceed with Repo Rules ON TOP of Global<br/>(Repo rules override Global on conflict)"]
 ```
 
+* **Workspace Override Rule:** MUST ALWAYS check for a workspace-level `AGENTS.md` at the repository root as the very first action on any task. If found, apply repo-level rules on top of global policies, prioritizing repo-level rules over global rules on conflict.
+
 ---
 
 ## 1. User Interaction Policies & 3-Tier Execution Framework
@@ -59,24 +61,7 @@ flowchart TD
 
 ---
 
-## 2. Ambiguity Triage
-
-```mermaid
-flowchart TD
-    StartTask["Start Task / Request"] --> AmbiguityCheck{"Ambiguity Level"}
-    AmbiguityCheck -->|"Critical (Architecture/Security)"| GrillSession["MUST run /grill-me or /grill-with-docs"]
-    AmbiguityCheck -->|"Minor (Config/Timeouts)"| AutoResolve["Resolve autonomously + Record in proactive_choices.md"]
-    AmbiguityCheck -->|"Multiple Candidate Target Files"| StopList["MUST STOP -> List candidate files -> Ask User to specify"]
-```
-
-* **Ambiguity Triage:** When starting any task, analyze it for ambiguous requirements:
-  - **Critical Ambiguities:** If the ambiguity impacts the core architecture, security, or primary goal (e.g., "user mentions 2FA but doesn't specify if it is via email, authenticator app, or hardware key"), you **MUST** by context read `/grill-me` or `/grill-with-docs` and start a grill session.
-  - **Minor Ambiguities:** If the ambiguity is a minor detail (e.g., "choosing a cache timeout duration"), do **NOT** stall. Resolve it autonomously using sensible defaults, document your choices in a `proactive_choices.md` artifact inside the local private `brain` folder, and expose it to the user.
-  - **Target Disambiguation (Multiple Candidates):** If the user's request references a target terminology, component, module, or file (e.g., "dashboard", "login button", "sync script") and the codebase contains multiple candidate files, paths, or implementations matching that description, you **MUST NOT** make assumptions or select one arbitrarily. You **MUST** stop, list the candidates you found, and ask the user to clarify which exact target they want to address.
-
----
-
-## 3. Task-Specific Workflows (Skill Discovery & Gateway)
+## 2. Task-Specific Skill Gateway & Tool Selection Router
 
 ```mermaid
 flowchart TD
@@ -93,7 +78,7 @@ flowchart TD
 
 ### Table 1: Task Category to Required Skills Catalog
 
-When starting any task, you MUST check the list of available skills and their descriptions. If a skill's purpose or description matches the requirements of the task, you MUST read its `SKILL.md` using `view_file` before writing code or planning. Refer to the table below for mapping common task categories, but always dynamically match new skills based on their description metadata.
+When starting any task, MUST check available skills and descriptions. If a skill's purpose matches task requirements, MUST read its `SKILL.md` using `view_file` before writing code or planning. If a `SKILL.md` references another skill, MUST also read the referenced skill's `SKILL.md`. Custom skills source repository is located at `D:\Projects\myskills`, and distribution script is at `D:\Projects\distribute-skills.js`.
 
 | Task Category | Trigger Conditions & Indicators | Required Skills to Read |
 | :--- | :--- | :--- |
@@ -103,48 +88,7 @@ When starting any task, you MUST check the list of available skills and their de
 | **Productivity & Management** | Writing PR descriptions, managing custom skills, triaging issues, handoff to other agents, requirements gathering, executing reviewer loops, or creating tickets. | `write-pr`, `create-and-update-pr`, `write-for-ai`, `manage-custom-skills`, `manage-global-policies`, `to-prd`, `to-issues`, `triage`, `review`, `handoff`, `grill-me`, `grill-with-docs`, `grilling`, `conduct-reviewing-loop`, `caveman`, `ponytail`, `ponytail-audit`, `ponytail-debt`, `ponytail-gain`, `ponytail-help`, `ponytail-review`, `update-mcp`, `review-upstream`, `git-lifecycle-management`, `qa`, `request-refactor-plan`, `research`, `write-a-skill`, `writing-great-skills` |
 | **Content & Notes** | Modifying Obsidian vault, creative writing, draft shaping, or narrative structuring. | `obsidian-vault`, `writing-beats`, `writing-fragments`, `writing-shape`, `edit-article`, `full-output-enforcement`, `teach` |
 
----
-
-## 4. Core Execution Mindset & Operational Boundaries
-
-### Architecture Alert & Refactoring Gate
-
-```mermaid
-flowchart TD
-    InspectCode["Inspect Target Code Base"] --> RiskCheck{"Touching sensitive/coupled logic, multi-file edits, or mixed mobile/desktop code?"}
-    RiskCheck -->|"Yes"| ArchitectureAlert["MUST read /improve-codebase-architecture & propose plan FIRST before writing code"]
-    RiskCheck -->|"No"| DirectFix["Proceed with Surgical Changes"]
-```
-
-### Evidence-Based Progress & 2-Attempt Failure Gate
-
-```mermaid
-flowchart TD
-    ExecAttempt["Execute Fix / Test Command"] --> CheckEvidence{"Runtime Evidence Confirms Success?"}
-    CheckEvidence -->|"Yes"| Pass["Task Complete"]
-    CheckEvidence -->|"No (Failed)"| CountCheck{"Consecutive Failed Attempts"}
-    CountCheck -->|"1st Failure"| AnalyzeLog["Analyze Log Evidence -> Try Alternative Approach"]
-    CountCheck -->|"2 Consecutive Failures"| MustStop["MUST STOP -> Research domain docs -> Present revised strategy to User"]
-```
-
-### Core Execution Directives
-
-* **Think Before Coding:** MUST explicitly state assumptions and surface tradeoffs before implementing. If anything is unclear, MUST STOP and ask.
-* **Simplicity First:** MUST write the minimum code needed to solve the exact problem. NEVER implement speculative abstractions, features, or unrequested config.
-* **Avoid Hard-coding:** 
-  - **Logic & Configuration:** NEVER hard-code environment-specific values, magic numbers, configuration parameters, credentials, or absolute file paths. Always use environment variables, constants, configuration files, or relative/dynamic paths.
-  - **Design & Layouts:** NEVER use fixed pixel dimensions (e.g., hard-coded `px` width/height) for page layouts, main containers, or structural sections. Always implement fluid, responsive layouts using CSS Flexbox/Grid and relative units (%, vh, vw, rem, em, `clamp()`, `min()`, `max()`) to ensure the UI dynamically adapts to all screen sizes and aspect ratios (e.g., 16:9, 16:10, mobile).
-* **Surgical Changes:** MUST touch only what you must. MUST match existing style. MUST clean up unused code/imports created by your changes. MUST NOT touch pre-existing dead code. If you notice unrelated dead code, MUST mention it - MUST NOT delete it. Every changed line MUST trace directly to the user's request. **Exception:** You are permitted to proactively fix pre-existing lint or TypeScript compilation errors within any files you are actively modifying to ensure those files pass static checks.
-* **Goal-Driven Execution:** MUST define success criteria upfront. MUST state a brief plan. MUST verify using tests/compilation before declaring done.
-* **Quality Over Workload:** Never compromise code quality, robustness, security, or edge-case correctness to reduce the amount of code written. Being lazy means finding the most efficient elegant path, not the flimsiest shortcut. If a correct and safe implementation requires writing more code or tests, you MUST write it.
-* **Architecture & Refactoring Alerts:** Before, during, or after executing a task, if you identify or suspect that the codebase architecture is not optimized for modifications, or if you are touching sensitive/highly-coupled areas of the project (acting as an early warning sensor—e.g., editing multiple coupled files, modifying duplicate logic blocks, or mixing mobile/desktop code paths), you **MUST** immediately read `/improve-codebase-architecture` and propose an architectural improvement plan to the user before writing implementation code.
-* **Clarification & Collaboration Priority:** You are highly encouraged and required to stop and consult/challenge the user if you encounter unexpected design blockers, logical conflicts, or bugs during execution. **NEVER** try to solve complex architectural issues or guess user intent in a single turn without transparent, explicit alignment.
-* **Evidence-Based Progress Claims:** MUST NEVER claim success, victory, or completion until runtime evidence (logs, screenshots, test output) explicitly confirms the claimed result. When an attempt fails or produces no observable change, MUST explicitly acknowledge the failure, analyze root cause from available evidence, and research alternatives BEFORE trying again. Repeatedly attempting the same approach with cosmetic variations (e.g., version bumps, log string changes, moving identical failing code to different locations) is PROHIBITED. If 2 consecutive attempts at the same strategy fail, MUST STOP, research the problem domain, and present a revised strategy to the user before proceeding.
-* **Research-First for Unfamiliar Domains:** When working in an unfamiliar problem domain (e.g., undocumented APIs, system internals, third-party framework internals), MUST research the domain (web search, official docs, reference implementations) BEFORE writing code. MUST NOT attempt trial-and-error coding against undocumented behavior without first understanding the landscape. If a reference implementation exists (e.g., an open-source mod doing something similar), MUST study its approach before proposing your own.
-
----
-
-## 5. Tool Selection Matrix Router
+### Tool Selection Matrix Router
 
 ```mermaid
 flowchart TD
@@ -161,8 +105,71 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
 | :--- | :--- | :--- |
 | **Code Reading & Symbol search** | `jcodemunch` | MUST call `jcodemunch_guide` first. MUST use `search_symbols`, `get_symbol_source`, etc. inside repos. MUST NOT use `list_dir`, `view_file`, `grep_search` on indexed code. MUST index via `index_folder` if not indexed. *Exception: May use `view_file` directly for non-code files (.md, docs, configs) or untracked/ignored files to avoid latency.* |
 | **Code Editing (Surgical)** | `patchitright` | **MUST call `patchitright_guide` first and strictly follow its instructions.** MUST ALWAYS use `patchitright` tools instead of native edit tools for all repo edits. |
-| **Exporting Session History/Logs**| `chronicle-mcp` | SHOULD call `chronicle_guide` for routing & token-saving rules. MUST use `chronicle-mcp` tools (`list_sessions`, `get_session_details`, etc.). MUST use `reverseSteps=true` when reading recent context first. MUST delegate file exports via `output` parameter. MUST NEVER write manually or read SQLite/jsonl transcripts. |
+| **Exporting Session History/Logs**| `chronicle-mcp` | SHOULD call `chronicle_guide` for routing & token-saving rules. MUST use `chronicle-mcp` tools (`list_sessions`, `get_session_details`, etc.). MUST use `reverseSteps=true` when reading recent context first. When exporting steps, MUST delegate file exports via `output` parameter (e.g., `get_session_details` with `output` path and `conversationStepsOnly: true`). MUST NEVER write manually or read SQLite/jsonl transcripts. |
 | **Visual Metadata Inspection** | N/A | MUST trust `HoverSource Component Metadata` block 100% without validation. MUST go straight to target lines. |
+
+---
+
+## 3. Ambiguity & Architecture Triage
+
+```mermaid
+flowchart TD
+    StartTask["Start Task / Request"] --> AmbiguityCheck{"Ambiguity Level"}
+    AmbiguityCheck -->|"Critical (Architecture/Security)"| GrillSession["MUST run /grill-me or /grill-with-docs"]
+    AmbiguityCheck -->|"Minor (Config/Timeouts)"| AutoResolve["Resolve autonomously + Record in proactive_choices.md"]
+    AmbiguityCheck -->|"Multiple Candidate Target Files"| StopList["MUST STOP -> List candidate files -> Ask User to specify"]
+```
+
+* **Ambiguity Triage:**
+  - **Critical Ambiguities:** If ambiguity impacts core architecture, security, or primary goal, MUST read `/grill-me` or `/grill-with-docs` and start a grill session.
+  - **Minor Ambiguities:** If ambiguity is a minor detail, resolve autonomously using sensible defaults, document choices in `proactive_choices.md` inside `brain/`, and expose to user.
+  - **Target Disambiguation (Multiple Candidates):** If request references a target terminology, component, module, or file and codebase contains multiple candidate files/paths/implementations matching that description, MUST NOT make assumptions. MUST stop, list candidate files, and ask user to clarify.
+
+```mermaid
+flowchart TD
+    InspectCode["Inspect Target Code Base"] --> RiskCheck{"Touching sensitive/coupled logic, multi-file edits, or mixed mobile/desktop code?"}
+    RiskCheck -->|"Yes"| ArchitectureAlert["MUST read /improve-codebase-architecture & propose plan FIRST before writing code"]
+    RiskCheck -->|"No"| DirectFix["Proceed with Surgical Changes"]
+```
+
+* **Architecture Alert & Refactoring Gate:** Before, during, or after executing a task, if codebase architecture is not optimized for modifications, or when touching sensitive/highly-coupled areas (editing multiple coupled files, modifying duplicate logic blocks, or mixing mobile/desktop code paths), MUST immediately read `/improve-codebase-architecture` and propose an architectural improvement plan to user before writing code.
+
+---
+
+## 4. Core Execution Mindset & Evidence-Based Progress
+
+```mermaid
+flowchart TD
+    ExecAttempt["Execute Fix / Test Command"] --> CheckEvidence{"Runtime Evidence Confirms Success?"}
+    CheckEvidence -->|"Yes"| Pass["Task Complete"]
+    CheckEvidence -->|"No (Failed)"| CountCheck{"Consecutive Failed Attempts"}
+    CountCheck -->|"1st Failure"| AnalyzeLog["Analyze Log Evidence -> Try Alternative Approach"]
+    CountCheck -->|"2 Consecutive Failures"| MustStop["MUST STOP -> Research domain docs -> Present revised strategy to User"]
+```
+
+### Core Execution Directives
+
+* **Think Before Coding:** MUST explicitly state assumptions and surface tradeoffs before implementing. If anything is unclear, MUST STOP and ask.
+* **Simplicity First:** MUST write minimum code needed to solve exact problem. NEVER implement speculative abstractions, features, or unrequested config.
+* **Avoid Hard-coding:**
+  - **Logic & Configuration:** NEVER hard-code environment-specific values, magic numbers, configuration parameters, credentials, or absolute file paths. Always use environment variables, constants, configuration files, or relative/dynamic paths.
+  - **Design & Layouts:** NEVER use fixed pixel dimensions (e.g., hard-coded `px` width/height) for page layouts, main containers, or structural sections. Always implement fluid, responsive layouts using CSS Flexbox/Grid and relative units (%, vh, vw, rem, em, `clamp()`, `min()`, `max()`) to ensure UI dynamically adapts to all screen sizes and aspect ratios.
+* **Surgical Changes:** MUST touch only what you must. MUST match existing style. MUST clean up unused code/imports created by your changes. MUST NOT touch pre-existing dead code. If you notice unrelated dead code, MUST mention it - MUST NOT delete it. Every changed line MUST trace directly to user's request. **Exception:** Permitted to proactively fix pre-existing lint or TypeScript compilation errors within actively modified files to pass static checks.
+* **Goal-Driven Execution:** MUST define success criteria upfront. MUST state brief plan. MUST verify using tests/compilation before declaring done.
+* **Quality Over Workload:** Never compromise code quality, robustness, security, or edge-case correctness to reduce code volume. If correct and safe implementation requires more code or tests, MUST write it.
+* **Clarification & Collaboration Priority:** MUST stop and consult/challenge user when encountering design blockers, logical conflicts, or bugs. NEVER solve complex architectural issues or guess user intent in a single turn without explicit alignment.
+* **Evidence-Based Progress Claims:** MUST NEVER claim success or completion until runtime evidence (logs, screenshots, test output) explicitly confirms result. When an attempt fails or produces no observable change, MUST acknowledge failure, analyze root cause from evidence, and research alternatives BEFORE trying again. Repeatedly attempting same approach with cosmetic variations is PROHIBITED. If 2 consecutive attempts fail, MUST STOP, research problem domain, and present revised strategy to user before proceeding.
+* **Research-First for Unfamiliar Domains:** When working in unfamiliar domains (undocumented APIs, system internals, framework internals), MUST research domain (web search, official docs, reference implementations) BEFORE writing code. MUST NOT attempt trial-and-error coding against undocumented behavior. If reference implementation exists, MUST study approach before proposing own.
+
+---
+
+## 5. Git Workflow & Operational Safeguards
+
+* **Pre-Task Rebase & Fresh State:** Before starting state-modifying work or creating new commits, MUST run `git fetch origin` and `git rebase origin/<default-branch>` (or target branch) to ensure work is built on latest upstream state. MUST NOT create unneeded merge commits (`Merge branch 'main' into ...`).
+* **Atomic Commits & Conventional Formatting:** MUST keep commits atomic — each commit MUST solve exactly one logical change. Commit messages MUST follow **Conventional Commits** format in English (`feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `style:`).
+* **Working Tree Protection (Stash First):** Before performing `git checkout`, `git switch`, or `git rebase`, MUST check `git status`. If uncommitted local changes exist, MUST `git stash` or commit them first. NEVER run checkout/rebase over a dirty working tree.
+* **Destructive Command Ban:** MUST NOT run `git push --force` (only `--force-with-lease` when explicitly authorized for PR branch updates), `git reset --hard` without explicit confirmation, or `git clean -fd` on untracked files without inspecting them first.
+* **Pre-push Conflict Resolution:** MUST resolve all merge/rebase conflicts locally and verify that tests/build pass before pushing commits or creating/updating pull requests.
 
 ---
 
@@ -170,23 +177,10 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
 
 | Category | Policy Instruction |
 | :--- | :--- |
-| **Workspace Override** | **MUST ALWAYS** check for a workspace-level `AGENTS.md` at the repository root as the very first action on any task. If found, apply repo-level rules on top of global policies, prioritizing repo-level rules over global rules if there are conflicting instructions. |
 | **Grounded Responses**| MUST base responses ONLY on provided context and codebase. MUST NEVER guess, assume, or hallucinate. MUST ask if info is missing. |
-| **Writing Tone** | MUST NOT use prideful, self-praising, or marketing language ("blazing fast", "smart", "advanced", "seamless"). Present only neutral facts. **MUST adopt a pragmatic, honest, direct tone.** Lead with the technical substance (what changed, what the evidence shows, what's still unknown). MUST NOT pad responses with celebratory emoji, dramatic formatting, or verbose restatements of information the user already provided. When reporting iteration results, state: (1) what was tried, (2) what the evidence shows, (3) what to do next. |
-| **Public Documentation**| **MUST ALWAYS** write public-facing documentation, pull request (PR) descriptions, repository READMEs, commit messages, and source code comments in English to maintain global standards, unless explicitly requested otherwise by the user. |
+| **Writing Tone** | MUST NOT use prideful, self-praising, or marketing language ("blazing fast", "smart", "advanced", "seamless"). Present only neutral facts. **MUST adopt a pragmatic, honest, direct tone.** Lead with technical substance (what changed, what evidence shows, what's still unknown). MUST NOT pad responses with celebratory emoji, dramatic formatting, or verbose restatements. When reporting iteration results, state: (1) what was tried, (2) what evidence shows, (3) what to do next. |
+| **Public Documentation**| **MUST ALWAYS** write public-facing documentation, pull request (PR) descriptions, repository READMEs, commit messages, and source code comments in English to maintain global standards, unless explicitly requested otherwise by user. |
 | **Subagents** | Spawned subagents MUST be passed their corresponding rules from `C:\Users\sayus\.gemini\config\subagent_rules\` (e.g. `developer.md`, `reviewer.md`). |
-| **Private Data & Commits**| **MUST NEVER** commit or push private session data, conversation logs, scratch scripts, or transcripts to public repositories. All exports, logs, plans, and walkthroughs **MUST** remain strictly in the local private `brain` folder (or a temporary directory outside the repository) unless their target locations inside the repository are explicitly stated and requested by the user. |
-| **Incremental API Design** | When building API backup or sync scripts (e.g., GitHub, Jira), **MUST ALWAYS** implement **incremental updates** rather than full fetches: MUST read existing local data to find the last sync timestamp, MUST use early-exit pagination, MUST reuse unchanged data, and MUST skip redundant disk/git actions. |
-| **Tool Constraints** | When building or modifying custom MCP servers, **MUST ALWAYS** define strict input constraints (e.g., maximum code line limits for edits) directly in the **Tool and Parameter JSON Descriptions** at the schema level, rather than relying only on local markdown docs, to ensure global enforcement across client workspaces. |
-| **Skill Discovery** | **MUST ALWAYS** check the list of available skills at the start of any task. If any skill is relevant (e.g., `design-taste-frontend` for frontend UI tasks, `tdd` for testing/implementation, `diagnose` for debugging, `review` for PR reviews, etc.), **MUST** read its `SKILL.md` file using `view_file` before writing code or plans. If a skill's documentation or `SKILL.md` references or mentions another skill, you **MUST** also read the referenced skill's `SKILL.md`. The local custom skills source repository is located at `D:\Projects\myskills`, and the distribution script is at `D:\Projects\distribute-skills.js`. |
-
----
-
-## 7. Git Workflow & Operational Safeguards
-
-* **Pre-Task Rebase & Fresh State:** Before starting any state-modifying work or creating new commits, MUST run `git fetch origin` and `git rebase origin/<default-branch>` (or target branch) to ensure work is built on the latest upstream state. MUST NOT create unneeded merge commits (`Merge branch 'main' into ...`).
-* **Atomic Commits & Conventional Formatting:** MUST keep commits atomic — each commit MUST solve exactly one logical change. Commit messages MUST follow **Conventional Commits** format in English (`feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `style:`).
-* **Working Tree Protection (Stash First):** Before performing any `git checkout`, `git switch`, or `git rebase`, MUST check `git status`. If uncommitted local changes exist, MUST `git stash` or commit them first. NEVER run checkout/rebase over a dirty working tree that could cause unrecoverable loss.
-* **Destructive Command Ban:** MUST NOT run `git push --force` (only `--force-with-lease` when explicitly authorized for PR branch updates), `git reset --hard` without explicit confirmation, or `git clean -fd` on untracked files without inspecting them first.
-* **Pre-push Conflict Resolution:** MUST resolve all merge/rebase conflicts locally and verify that tests/build pass before pushing commits or creating/updating pull requests.
-
+| **Private Data & Commits**| **MUST NEVER** commit or push private session data, conversation logs, scratch scripts, or transcripts to public repositories. All exports, logs, plans, and walkthroughs **MUST** remain strictly in local private `brain` folder (or temporary directory outside repository) unless target locations inside repository are explicitly stated and requested by user. |
+| **Incremental API Design** | When building API backup or sync scripts (e.g., GitHub, Jira), **MUST ALWAYS** implement **incremental updates** rather than full fetches: MUST read existing local data to find last sync timestamp, MUST use early-exit pagination, MUST reuse unchanged data, and MUST skip redundant disk/git actions. |
+| **Tool Constraints** | When building or modifying custom MCP servers, **MUST ALWAYS** define strict input constraints (e.g., maximum code line limits for edits) directly in **Tool and Parameter JSON Descriptions** at schema level, rather than relying only on local markdown docs, to ensure global enforcement across client workspaces. |
