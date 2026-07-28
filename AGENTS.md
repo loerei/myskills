@@ -78,7 +78,7 @@ flowchart TD
 
 ### Table 1: Task Category to Required Skills Catalog
 
-When starting any task, MUST check available skills and descriptions. If a skill's purpose matches task requirements, MUST read its `SKILL.md` using `view_file` before writing code or planning. If a `SKILL.md` references another skill, MUST also read the referenced skill's `SKILL.md`. Custom skills source repository is located at `D:\Projects\myskills`, and distribution script is at `D:\Projects\distribute-skills.js`.
+When starting any task, MUST check available skills and descriptions. If a skill's purpose matches task requirements, MUST read its `SKILL.md` using `view_file` before writing code or planning. If a `SKILL.md` references another skill, MUST also read the referenced skill's `SKILL.md`. Custom skills source repository is located at `<custom-skills-repo-root>` (e.g., `myskills/`), and distribution script is at `<projects_root>/distribute-skills.js` (e.g., `projects/distribute-skills.js`).
 
 | Task Category | Trigger Conditions & Indicators | Required Skills to Read |
 | :--- | :--- | :--- |
@@ -180,7 +180,7 @@ flowchart TD
 | **Grounded Responses**| MUST base responses ONLY on provided context and codebase. MUST NEVER guess, assume, or hallucinate. MUST ask if info is missing. |
 | **Writing Tone** | MUST NOT use prideful, self-praising, or marketing language ("blazing fast", "smart", "advanced", "seamless"). Present only neutral facts. **MUST adopt a pragmatic, honest, direct tone.** Lead with technical substance (what changed, what evidence shows, what's still unknown). MUST NOT pad responses with celebratory emoji, dramatic formatting, or verbose restatements. When reporting iteration results, state: (1) what was tried, (2) what evidence shows, (3) what to do next. |
 | **Public Documentation**| **MUST ALWAYS** write public-facing documentation, pull request (PR) descriptions, repository READMEs, commit messages, and source code comments in English to maintain global standards, unless explicitly requested otherwise by user. |
-| **Subagents** | Spawned subagents MUST be passed their corresponding rules from `C:\Users\sayus\.gemini\config\subagent_rules\` (e.g. `developer.md`, `reviewer.md`). |
+| **Subagents** | Spawned subagents MUST be passed their corresponding rules from the active user config directory: `<user_home>/<active_platform>/subagent_rules/<role>.md` (e.g. `~/.gemini/config/subagent_rules/` or `~/.claude/subagent_rules/`). |
 | **Private Data & Commits**| **MUST NEVER** commit or push private session data, conversation logs, scratch scripts, or transcripts to public repositories. All exports, logs, plans, and walkthroughs **MUST** remain strictly in local private `brain` folder (or temporary directory outside repository) unless target locations inside repository are explicitly stated and requested by user. |
 | **Incremental API Design** | When building API backup or sync scripts (e.g., GitHub, Jira), **MUST ALWAYS** implement **incremental updates** rather than full fetches: MUST read existing local data to find last sync timestamp, MUST use early-exit pagination, MUST reuse unchanged data, and MUST skip redundant disk/git actions. |
 | **Tool Constraints** | When building or modifying custom MCP servers, **MUST ALWAYS** define strict input constraints (e.g., maximum code line limits for edits) directly in **Tool and Parameter JSON Descriptions** at schema level, rather than relying only on local markdown docs, to ensure global enforcement across client workspaces. |
