@@ -13,12 +13,22 @@ Run iterative, independent subagent reviews to stress-test plans, code designs, 
 flowchart TD
     Start["Start Review Loop"] --> Synth["1. Synthesize Review Criteria (User + System + Domain)"]
     Synth --> Draft["2. Prepare Target Artifact in draft path"]
-    Draft --> BlindSpawn["3. Spawn Independent Reviewer (Blind Reviewer Protocol)"]
-    BlindSpawn --> CritEval{"4. Critical Evaluation of Feedback (Main Agent)"}
-    CritEval -->|"Valid Edits Needed"| ApplyEdits["Apply required edits to draft"] --> NextIter["Iteration N = N + 1"] --> BlindSpawn
-    CritEval -->|"All Points Evaluated Invalid"| JustifyUser["Document Justifications & Report to User"] --> UserGate{"User Approves Rationale?"}
-    UserGate -->|"Approved"| Present["5. Present Verified Final Output"]
-    UserGate -->|"User Rejects Rationale"| ApplyEdits
+    Draft --> SavePromptV1["3. Save Prompt to scratch/reviewer_prompt_v1.md"]
+    SavePromptV1 --> UserGateV1{"4. User Approves reviewer_prompt_v1.md?"}
+    UserGateV1 -->|"Approved"| FreezeV1["5. Freeze Prompt v1"]
+    UserGateV1 -->|"Revisions Requested"| Synth
+    FreezeV1 --> BlindSpawn["6. Spawn Independent Reviewer #N (Using Frozen Prompt)"]
+    BlindSpawn --> CritEval{"7. Critical Evaluation of Feedback (Main Agent)"}
+    
+    CritEval -->|"Valid Edits Needed"| CheckExc{"New User Request OR New High-Level Spec?"}
+    CheckExc -->|"No (Standard Fix)"| ApplyEdits["Apply required edits to draft"] --> NextIter["Iteration N = N + 1"] --> BlindSpawn
+    CheckExc -->|"Yes (Exception Occurred)"| SavePromptV2["Save scratch/reviewer_prompt_v2.md"] --> UserGateV2{"User Approves Prompt v2?"}
+    UserGateV2 -->|"Approved"| ApplyEdits
+    UserGateV2 -->|"Rejects Prompt v2"| ApplyEdits
+    
+    CritEval -->|"All Points Evaluated Invalid"| JustifyUser["Document Justifications & Report to User"] --> UserGateFinal{"User Approves Rationale?"}
+    UserGateFinal -->|"Approved"| Present["8. Present Verified Final Output"]
+    UserGateFinal -->|"User Rejects Rationale"| ApplyEdits
     CritEval -->|"STATUS: PASS"| Present
 ```
 
@@ -45,10 +55,16 @@ Write or update the target document/artifact in a draft path (e.g. `scratch/draf
 ### 4. Reviewer Loop Execution (Blind Protocol & Critical Filter)
 
 > [!IMPORTANT]
-> **Blind Reviewer Protocol & No-Hint Checklist**:
-> NEVER feed previous reviewer findings, past feedback points, or lists of fixed items to Reviewer #N+1.
-> Furthermore, the Synthesized Audit Checklist in the prompt MUST remain strictly at the **High-Level Domain Specification Level** (verifying correctness, edge-case safety principles, and system guidelines). The checklist MUST NEVER name specific internal function names (`_commit_transaction_with_delay`), private flags (`old_start=0`), file markers (`.missing`), or code snippets introduced during previous iterations.
-> Listing implementation details from previous iterations causes **Prompt Poisoning & Anchoring Bias**, forcing the reviewer to act as a checklist checker instead of an independent auditor.
+> **Blind Reviewer Protocol, Prompt Persistence & Approval Gate**:
+> 1. **Prompt Persistence (.md in brain/scratch)**: Every reviewer prompt MUST be saved as a markdown artifact inside `<appDataDir>\brain\<conversation-id>\scratch\` (e.g. `scratch/reviewer_prompt_v1.md`).
+> 2. **Initial User Approval Gate**: The Main Agent MUST present `scratch/reviewer_prompt_v1.md` to the user and **AWAIT EXPLICIT USER APPROVAL** before spawning Reviewer #1.
+> 3. **Immutable Prompt Reuse**: The approved `reviewer_prompt_v1.md` prompt MUST be **FROZEN** and reused 100% identically for Reviewer #2, #3... #N (only updating the Reviewer ID `#N`).
+> 4. **Anti-Anchoring Guarantee**: NEVER feed previous reviewer findings, past feedback points, specific internal function names, or lists of fixed items into subsequent reviewer prompts.
+> 5. **Prompt Revision Exception & Gate**:
+>    - The prompt MAY ONLY be revised if:
+>      - (a) The **USER** explicitly introduces new requirements/constraints during the conversation, OR
+>      - (b) A **NEW High-Level Specification** (global architectural constraint) is discovered during the review process.
+>    - When an exception occurs, the Main Agent MUST save `scratch/reviewer_prompt_v2.md`, present the proposed revisions to the user, and **AWAIT EXPLICIT USER APPROVAL** before modifying the prompt and launching Reviewer #N.
 
 > [!WARNING]
 > **Critical Evaluation Rule (Main Agent Gatekeeper)**: ALWAYS be critical of reviewers' feedback. Do NOT blindly apply every reviewer request. The Main Agent MUST filter and validate reviewer suggestions against:

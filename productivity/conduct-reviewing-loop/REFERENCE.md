@@ -50,7 +50,7 @@ Conclude explicitly with either:
 
 ### C. PRDs & Feature Specifications
 - [ ] Problem statement & clear scope boundaries defined
-- [ ] User user stories & acceptance criteria unambiguous
+- [ ] User stories & acceptance criteria unambiguous
 - [ ] Security, permission, and data isolation requirements specified
 - [ ] Edge cases (network timeouts, empty data states, rate limits) covered
 
@@ -68,3 +68,4 @@ Conclude explicitly with either:
    - **User Approval Gate**: In ALL cases (Case A & Case B), report results to user. In Case B, document specific technical justifications for every rejected point and await explicit user approval before proceeding to Tier 3 execution.
 6. **Neutral & Un-biased Evaluation**: Do NOT tell the subagent reviewer that the draft is "almost finished" or "good". Keep prompt neutral to ensure objective critique.
 7. **Surgical Refinement**: Apply edits strictly addressing verified, valid reviewer feedback without introducing unrequested side-effects.
+8. **Prompt Persistence & Approval Gate Protocol**: Save every reviewer prompt as a markdown file inside `scratch/reviewer_prompt_v1.md`. Present `reviewer_prompt_v1.md` to the user and AWAIT EXPLICIT USER APPROVAL before spawning Reviewer #1. Freeze `reviewer_prompt_v1.md` and reuse it 100% identically across subsequent reviewers (#2, #3... #N), changing only the Reviewer ID. Prompt updates (`reviewer_prompt_v2.md`) are strictly prohibited unless triggered by explicit user instructions or a newly discovered High-Level Specification, BOTH of which REQUIRE prior explicit user approval before updating the prompt and launching Reviewer #N.
