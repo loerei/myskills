@@ -179,3 +179,14 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
 | **Incremental API Design** | When building API backup or sync scripts (e.g., GitHub, Jira), **MUST ALWAYS** implement **incremental updates** rather than full fetches: MUST read existing local data to find the last sync timestamp, MUST use early-exit pagination, MUST reuse unchanged data, and MUST skip redundant disk/git actions. |
 | **Tool Constraints** | When building or modifying custom MCP servers, **MUST ALWAYS** define strict input constraints (e.g., maximum code line limits for edits) directly in the **Tool and Parameter JSON Descriptions** at the schema level, rather than relying only on local markdown docs, to ensure global enforcement across client workspaces. |
 | **Skill Discovery** | **MUST ALWAYS** check the list of available skills at the start of any task. If any skill is relevant (e.g., `design-taste-frontend` for frontend UI tasks, `tdd` for testing/implementation, `diagnose` for debugging, `review` for PR reviews, etc.), **MUST** read its `SKILL.md` file using `view_file` before writing code or plans. If a skill's documentation or `SKILL.md` references or mentions another skill, you **MUST** also read the referenced skill's `SKILL.md`. The local custom skills source repository is located at `D:\Projects\myskills`, and the distribution script is at `D:\Projects\distribute-skills.js`. |
+
+---
+
+## 7. Git Workflow & Operational Safeguards
+
+* **Pre-Task Rebase & Fresh State:** Before starting any state-modifying work or creating new commits, MUST run `git fetch origin` and `git rebase origin/<default-branch>` (or target branch) to ensure work is built on the latest upstream state. MUST NOT create unneeded merge commits (`Merge branch 'main' into ...`).
+* **Atomic Commits & Conventional Formatting:** MUST keep commits atomic — each commit MUST solve exactly one logical change. Commit messages MUST follow **Conventional Commits** format in English (`feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `style:`).
+* **Working Tree Protection (Stash First):** Before performing any `git checkout`, `git switch`, or `git rebase`, MUST check `git status`. If uncommitted local changes exist, MUST `git stash` or commit them first. NEVER run checkout/rebase over a dirty working tree that could cause unrecoverable loss.
+* **Destructive Command Ban:** MUST NOT run `git push --force` (only `--force-with-lease` when explicitly authorized for PR branch updates), `git reset --hard` without explicit confirmation, or `git clean -fd` on untracked files without inspecting them first.
+* **Pre-push Conflict Resolution:** MUST resolve all merge/rebase conflicts locally and verify that tests/build pass before pushing commits or creating/updating pull requests.
+
