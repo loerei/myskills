@@ -9,7 +9,7 @@ Templates, checklist builders, and dual-mode protocols for stress-testing plans 
 Use when auditing an unapproved plan, RFC, PRD, or skill draft BEFORE writing code:
 
 ```markdown
-You are <Domain> Reviewer #<N>. You are conducting an independent, blind audit of the proposed <Artifact Type> draft.
+You are <Domain> Reviewer #<N>. Audit the proposed <Artifact Type> draft.
 
 ### Required Reading (MUST read using view_file / jcodemunch):
 1. Target Artifact Draft: `<draft_path>`
@@ -37,7 +37,7 @@ Conclude explicitly with either:
 Use when auditing actual code changes against an APPROVED plan:
 
 ```markdown
-You are Implementation Coverage Validator #<N>. You are conducting an independent audit of the actual codebase implementation against the approved Implementation Plan (`<plan_path>`).
+You are Implementation Coverage Validator #<N>. Audit the codebase implementation against the approved Implementation Plan (`<plan_path>`).
 
 ### Audit Goal:
 Verify that 100% of the features, safety guarantees, edge-case fixes, and schema definitions specified in the approved plan are accurately, completely, and correctly implemented in the real codebase. Do NOT invent new requirements or alter the approved implementation plan.
