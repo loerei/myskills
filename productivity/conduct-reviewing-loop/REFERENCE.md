@@ -25,6 +25,7 @@ Return your evaluation to the parent agent using `send_message` containing your 
 
 > [!CAUTION]
 > **Blind Protocol Enforcement**: You are auditing this draft with fresh eyes. Focus strictly on discovering any architectural flaws, missing edge cases, or invalid logic in the current draft.
+> **Prompt Approval Keyword**: When presenting this prompt to the user for initial authorization, ALWAYS ask using the keyword **"Conduct?"** (or *"Conduct review?"*) to avoid lower-tier models confusing prompt authorization with direct Tier 3 plan/source approval.
 
 Conclude explicitly with either:
 - **STATUS: REVISIONS NEEDED** (with a numbered list of required edits to the draft document), OR
@@ -61,6 +62,7 @@ Return your evaluation to the parent agent using `send_message` containing your 
 
 > [!CAUTION]
 > **Blind Protocol Enforcement**: You are auditing this implementation with fresh eyes. Do NOT ask for or expect previous iteration logs or past reviewer notes. Focus strictly on discovering whether 100% of the plan's specifications are implemented in the code without any missing gaps or broken contracts.
+> **Prompt Approval Keyword**: When presenting this prompt to the user for initial authorization, ALWAYS ask using the keyword **"Conduct?"** (or *"Conduct review?"*) to avoid lower-tier models confusing prompt authorization with direct Tier 3 plan/source approval.
 
 Conclude explicitly with either:
 - **STATUS: REVISIONS NEEDED** (with a numbered list of missing plan implementations or defects in the codebase), OR

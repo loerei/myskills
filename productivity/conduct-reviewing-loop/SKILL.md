@@ -20,8 +20,8 @@ flowchart TD
     
     ModeB --> SynthB["1. Synthesize Coverage Verification Checklist"] --> GenDiff["2. Generate scratch/patch_changes.diff"] --> SavePromptV
     
-    SavePromptV --> UserGateV{"4. User Approves reviewer_prompt_v1.md?"}
-    UserGateV -->|"Approved"| FreezeV["5. Freeze Prompt v1 as Active Prompt"]
+    SavePromptV --> UserGateV{"4. User Confirms Prompt?<br/>(Keyword: 'Conduct?')"}
+    UserGateV -->|"Confirmed ('Conduct?')"| FreezeV["5. Freeze Prompt v1 as Active Prompt"]
     UserGateV -->|"Prompt Feedback Given"| RefinePrompt["Refine Prompt v1"] --> SavePromptV
     FreezeV --> BlindSpawn["6. Spawn Independent Reviewer #N (Using Active Frozen Prompt)"]
     BlindSpawn --> CritEval{"7. Critical Evaluation of Feedback (Main Agent)"}
@@ -30,8 +30,8 @@ flowchart TD
     CheckExc -->|"No (Standard Fix)"| ApplyFix["Apply fixes (Mode A: Draft / Mode B: Code)"] --> BranchMode{"Mode?"}
     BranchMode -->|"Mode B"| Regendiff["Re-generate .diff"] --> NextIter["Iteration N = N + 1"] --> BlindSpawn
     BranchMode -->|"Mode A"| NextIter
-    CheckExc -->|"Yes (Exception)"| IncVer["Version = Version + 1"] --> SavePromptNew["Save scratch/reviewer_prompt_v<Version>.md"] --> UserGateNew{"User Approves Prompt v<Version>?"}
-    UserGateNew -->|"Approved"| FreezeNew["Freeze v<Version> as Active Prompt"] --> ApplyFix
+    CheckExc -->|"Yes (Exception)"| IncVer["Version = Version + 1"] --> SavePromptNew["Save scratch/reviewer_prompt_v<Version>.md"] --> UserGateNew{"User Confirms Prompt?<br/>(Keyword: 'Conduct?')"}
+    UserGateNew -->|"Confirmed ('Conduct?')"| FreezeNew["Freeze v<Version> as Active Prompt"] --> ApplyFix
     UserGateNew -->|"Keep Previous"| KeepPrev["Keep Previous Active Prompt"] --> ApplyFix
     
     CritEval -->|"All Points Evaluated Invalid"| JustifyUser["Document Exclusions & Report to User"] --> UserGateFinal{"User Approves Rationale?"}
@@ -63,7 +63,7 @@ For **Mode B (Post-Implementation Validation)**:
 > [!IMPORTANT]
 > **Prompt Persistence & Approval Gate Protocol**:
 > 1. **Save Prompt to File**: Save every reviewer prompt as a markdown file inside `<appDataDir>\brain\<conversation-id>\scratch\reviewer_prompt_v1.md`.
-> 2. **Initial User Approval Gate**: Present `scratch/reviewer_prompt_v1.md` to the user and **AWAIT EXPLICIT USER APPROVAL** before spawning Reviewer #1.
+> 2. **Initial User Approval Gate (Disambiguated)**: Present `scratch/reviewer_prompt_v1.md` to the user and **AWAIT EXPLICIT KEYWORD "Conduct?"** (or *"Conduct review"*) before spawning Reviewer #1. *Do NOT ask using "Approve" or "Proceed" for prompt authorization to prevent lower-tier models from confusing prompt confirmation with direct Tier 3 plan/source approval.*
 > 3. **Immutable Active Prompt Reuse**: Freeze the approved prompt as Active Prompt ($P_{active}$) and reuse it 100% identically for subsequent reviewers (#2, #3... #N), changing only the Reviewer ID.
 > 4. **Prompt Revision Exception (v1 $\rightarrow$ vN)**: Prompt updates (`reviewer_prompt_v<Version>.md`) are permitted ONLY if triggered by explicit user instructions, a newly discovered High-Level Specification, or user-approved exclusions/non-goals (Mode B), all of which require prior user approval.
 > 5. **Preventing Blind Reviewer Deadlocks**: If reviewer suggestions are evaluated as invalid/YAGNI by the Main Agent and approved by the User, the rejected items MUST be recorded under an explicit **Out-of-Scope / Non-Goals** section in the document (Mode A) or added as non-goals in `reviewer_prompt_v<Version>.md` (Mode B) so subsequent blind reviewers do not re-raise them.
