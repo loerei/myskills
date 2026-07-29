@@ -14,11 +14,13 @@ You are <Domain> Reviewer #<N>. You are conducting an independent, blind audit o
 ### Required Reading (MUST read using view_file / jcodemunch):
 1. Target Artifact Draft: `<draft_path>`
 2. System Guidelines / Rules: `<rule_paths>`
+3. Task-Specific Domain Skills: `<task_domain_skill_paths>` (e.g., /write-a-skill, /write-for-ai, /writing-great-skills for skill drafts, /tdd for tests, /design-taste-frontend for UI)
 
 ### Synthesized Audit Checklist:
 1. **User Requirements**: <User-defined high-level constraints and preferences>
 2. **System Guidelines**: <Rules from AGENTS.md, /codebase-design, etc.>
-3. **Domain & Edge-Case Completeness**: <High-level correctness, safety, or performance checks>
+3. **Task-Specific Domain Skill Adherence**: <Adherence to /write-a-skill, /write-for-ai, /tdd, etc.>
+4. **Domain & Edge-Case Completeness**: <High-level correctness, safety, or performance checks>
 
 ### Output Directive:
 Return your evaluation to the parent agent using `send_message` containing your explicit status (`STATUS: PASS` or `STATUS: REVISIONS NEEDED`) and a numbered list of findings/required edits.
@@ -49,6 +51,7 @@ Verify that 100% of the features, safety guarantees, edge-case fixes, and schema
 2. Diff Artifact: `<diff_path>` (e.g. `scratch/patch_changes.diff`)
 3. Key Codebase Implementation Files: `<code_file_paths>`
 4. Repository Guidelines: `AGENTS.md`
+5. Task-Specific Domain Skills: `<task_domain_skill_paths>`
 
 ### Implementation Coverage Verification Checklist:
 1. **Plan Feature Coverage**: Does the `.diff` and codebase implement 100% of the specified features in the plan?
@@ -75,6 +78,7 @@ Conclude explicitly with either:
 
 ### Pre-Implementation Plan Audit (Mode A)
 - [ ] User goals & constraints explicitly addressed
+- [ ] Adherence to task-specific domain skills (<task_domain_skill_paths>) verified
 - [ ] No hardcoded env values, magic numbers, or fixed pixel layouts
 - [ ] Surgical changes: only touch required files
 - [ ] Empirical verification plan included (build, test, lint)
@@ -84,6 +88,7 @@ Conclude explicitly with either:
 
 ### Post-Implementation Coverage Validation (Mode B)
 - [ ] 100% of plan components verified in `.diff` and target files
+- [ ] Adherence to task-specific domain skills (<task_domain_skill_paths>) verified
 - [ ] Unit tests added covering new edge cases specified in plan
 - [ ] Tool schemas (`server.py` / parameter schemas) match plan definitions
 - [ ] Optimistic locking, cleanup post-rollback, and startup recovery verified in code

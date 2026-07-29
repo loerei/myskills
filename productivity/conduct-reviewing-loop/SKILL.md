@@ -16,7 +16,7 @@ flowchart TD
     ModeSelect -->|"Mode A (Pre-Implementation)"| ModeA["Mode A: Design & Plan Audit<br/>(Refine unapproved draft plan/spec)"]
     ModeSelect -->|"Mode B (Post-Implementation)"| ModeB["Mode B: Implementation Validation<br/>(Audit code .diff against approved plan)"]
 
-    ModeA --> SynthA["1. Synthesize Design Review Criteria"] --> PrepDraftA["2. Identify/Prepare Target Draft"] --> ReadRef["3. Read REFERENCE.md Templates"] --> SavePromptV["4. Save Prompt to scratch/reviewer_prompt_v1.md"]
+    ModeA --> SynthA["1. Synthesize Criteria & Task Domain Skills"] --> PrepDraftA["2. Identify/Prepare Target Draft"] --> ReadRef["3. Read REFERENCE.md Templates"] --> SavePromptV["4. Save Prompt to scratch/reviewer_prompt_v1.md"]
     
     ModeB --> SynthB["1. Synthesize Coverage Verification Checklist"] --> GenDiff["2. Generate scratch/patch_changes.diff"] --> ReadRef
     
@@ -62,7 +62,7 @@ For **Mode B (Post-Implementation Validation)**:
 
 > [!IMPORTANT]
 > **Prompt Persistence & Approval Gate Protocol**:
-> 1. **Read REFERENCE.md First**: Call `view_file` on `REFERENCE.md` to retrieve the active Mode A or Mode B prompt template and checklist builder before drafting.
+> 1. **Synthesize Task Domain Skills & Read REFERENCE.md**: Call `view_file` on `REFERENCE.md` to retrieve prompt templates. Always identify and include task-specific domain skills (e.g., `/write-a-skill`, `/write-for-ai`, `/writing-great-skills` when auditing skills; `/tdd` for tests; `/design-taste-frontend` for UI) under `Required Reading` in the reviewer prompt.
 > 2. **Save Prompt to File**: Save every reviewer prompt as a markdown file inside `<appDataDir>\brain\<conversation-id>\scratch\reviewer_prompt_v1.md`.
 > 3. **Initial User Approval Gate (Disambiguated)**: Present `scratch/reviewer_prompt_v1.md` to the user and **AWAIT EXPLICIT KEYWORD "Conduct?"** (or *"Conduct review"*) before spawning Reviewer #1. *Do NOT ask using "Approve" or "Proceed" for prompt authorization to prevent lower-tier models from confusing prompt confirmation with direct Tier 3 plan/source approval.*
 > 4. **Immutable Active Prompt Reuse**: Freeze the approved prompt as Active Prompt ($P_{active}$) and reuse it 100% identically for subsequent reviewers (#2, #3... #N), changing only the Reviewer ID.
