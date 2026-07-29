@@ -23,7 +23,10 @@ You are <Domain> Reviewer #<N>. Audit the proposed <Artifact Type> draft.
 4. **Domain & Edge-Case Completeness**: <High-level correctness, safety, or performance checks>
 
 ### Output Directive:
-Return your evaluation to the parent agent using `send_message` containing your explicit status (`STATUS: PASS` or `STATUS: REVISIONS NEEDED`) and a numbered list of findings/required edits.
+Return your evaluation to the parent agent using `send_message` containing:
+1. Explicit status (`STATUS: PASS` or `STATUS: REVISIONS NEEDED`)
+2. Numbered list of findings/required edits (blocking issues)
+3. (Optional) `Suggestions for Improvement (Non-blocking)`: Polish or future considerations that do NOT affect PASS status.
 
 Conclude explicitly with either:
 - **STATUS: REVISIONS NEEDED** (with a numbered list of required edits to the draft document), OR
@@ -57,7 +60,10 @@ Verify that 100% of the features, safety guarantees, edge-case fixes, and schema
 5. **Backward Compatibility**: Are legacy wrappers and public API schemas fully preserved?
 
 ### Output Directive:
-Return your evaluation to the parent agent using `send_message` containing your explicit status (`STATUS: PASS` or `STATUS: REVISIONS NEEDED`) and a numbered list of findings/required edits.
+Return your evaluation to the parent agent using `send_message` containing:
+1. Explicit status (`STATUS: PASS` or `STATUS: REVISIONS NEEDED`)
+2. Numbered list of missing plan implementations or defects in the codebase (blocking issues)
+3. (Optional) `Suggestions for Improvement (Non-blocking)`: Polish or future considerations that do NOT affect PASS status.
 
 Conclude explicitly with either:
 - **STATUS: REVISIONS NEEDED** (with a numbered list of missing plan implementations or defects in the codebase), OR

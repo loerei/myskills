@@ -70,7 +70,7 @@ For **Mode B (Post-Implementation Validation)**:
 > 6. **Preventing Blind Reviewer Deadlocks**: If reviewer suggestions are evaluated as invalid/YAGNI by the Main Agent and approved by the User, the rejected items MUST be recorded under an explicit **Out-of-Scope / Non-Goals** section in the document (Mode A) or added as non-goals in `reviewer_prompt_v<Version>.md` (Mode B) so subsequent blind reviewers do not re-raise them.
 
 > [!WARNING]
-> **Critical Evaluation Rule (Main Agent Gatekeeper)**: ALWAYS evaluate reviewer feedback critically against YAGNI, empirical codebase facts, and repository rules (`AGENTS.md`). Do NOT blindly apply over-engineered or hallucinated reviewer suggestions.
+> **Critical Evaluation Rule (Main Agent Gatekeeper)**: ALWAYS evaluate reviewer feedback critically against YAGNI, empirical codebase facts, and repository rules (`AGENTS.md`). Do NOT blindly apply over-engineered or hallucinated reviewer suggestions. Items listed under `Suggestions for Improvement (Optional / Non-blocking)` do NOT affect `STATUS: PASS` and are non-blocking considerations that must never trigger unnecessary revision iterations.
 
 ---
 
