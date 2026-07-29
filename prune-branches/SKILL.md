@@ -20,7 +20,7 @@ flowchart TD
     
     CheckUnmerged --> DeepReview{"Deep Review per Unmerged Branch"}
     
-    DeepReview -->|"git cherry = - OR diff = 0"| IndirectMerged["Indirectly Merged (Squash/Cherry-pick)"]
+    DeepReview -->|"diff = 0 OR PR merged in log OR git cherry = -"| IndirectMerged["Indirectly Merged (Squash/Cherry-pick)"]
     DeepReview -->|"git cherry = +"| Unmerged["Active / Unmerged Branch"]
     
     IndirectMerged --> Report["Generate Audit Report & Recommendations"]
@@ -48,9 +48,14 @@ flowchart TD
 4. **Deep Review Unmerged Branches**: For each branch in `git branch -r --no-merged origin/<DEFAULT_BRANCH>`:
    - Check patch equivalence: `git cherry origin/<DEFAULT_BRANCH> origin/<branch>`
    - Check 3-dot diff: `git diff origin/<DEFAULT_BRANCH>...origin/<branch> --stat`
+   - **Squash-Merge & Rebase Audit**:
+     1. **Tree Diff Check**: If 3-dot diff shows `0 insertions(+), 0 deletions(-)`, all changes are already incorporated into `<DEFAULT_BRANCH>` via squash-merge or rebase.
+     2. **PR / Commit Log Grep**: Check if the branch name or associated PR number appears in `<DEFAULT_BRANCH>` history:
+        `git log origin/<DEFAULT_BRANCH> --grep="<branch-name>" --oneline` or `git log origin/<DEFAULT_BRANCH> --grep="(#<PR_NUMBER>)" --oneline`.
+     3. **Patch Equality**: If `git cherry` returns `-` for all commits on the branch, commits were cherry-picked/rebased.
    - **Classification Rules**:
-     - **Indirectly Merged (Safe to prune)**: `git cherry` returns `-` or 3-dot diff has 0 changes.
-     - **Unmerged Active**: `git cherry` returns `+`. Assess changes and assign 1 of 3 recommendations:
+     - **Indirectly Merged (Safe to prune)**: 3-dot diff is empty (`0 insertions, 0 deletions`), PR/branch mention found in squash merge commit message, or `git cherry` returns `-`.
+     - **Unmerged Active**: `git cherry` returns `+` and changes are absent from `<DEFAULT_BRANCH>`. Assess changes and assign 1 of 3 recommendations:
        1. *Create PR & Merge*: Large feature/fix needing code review.
        2. *Direct Commit to default branch*: Small doc/config tweak safe for direct cherry-pick.
        3. *Abandon Branch*: Hardcoded secrets, obsolete code, or rejected draft.
