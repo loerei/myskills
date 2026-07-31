@@ -45,12 +45,13 @@ flowchart TD
 > [!IMPORTANT]
 > **Default State:** Every turn and task begins strictly in **Tier 1**. Transitioning to higher tiers requires meeting explicit path, approval, or explicit tier override tag gates.
 
-#### Explicit Tier Override Tags (T1 / T2 / T3)
-* **Trigger:** User prompt explicitly includes `T1`, `T2`, or `T3` (case-insensitive, with or without brackets, e.g., `T1`, `[T2]`, `t3`).
+#### Explicit Tier Override & Modifier Tags (T1 / T2 / T3 / SQ)
+* **Trigger:** User prompt explicitly includes `T1`, `T2`, `T3`, or `SQ` (case-insensitive, with or without brackets, e.g., `T1`, `[T2]`, `t3`, `SQ`, `[SQ]`).
 * **Tag Behaviors:**
   * **`T1` / `[T1]` (Force Tier 1 - Read & Debate Only):** Strictly forces Tier 1 execution regardless of prompt phrasing or directives. BANS ALL file writes (including `brain/scratch/`).
   * **`T2` / `[T2]` (Allow Tier 2 - Controlled Diagnostic):** Explicitly grants Tier 2 permissions for scratch scripts and builds in `brain/<conversation-id>/scratch/`. BANS source edits outside `brain/scratch/`.
   * **`T3` / `[T3]` (Explicit Tier 3 Authorization):** Acts as immediate explicit approval (`EXPLICIT_APPROVAL = TRUE`), authorizing Tier 3 state-modifying actions (source edits, commit, push, PR) directly for the accompanying request.
+  * **`SQ` / `[SQ]` (Self-Skill Querying Modifier):** Forces an immediate comprehensive Skill Audit across all available skill metadata and matching `SKILL.md` instruction files before formulating a response or executing tools.
 
 #### Tier 1: Read & Debate Only (DEFAULT STATE)
 * **Trigger:** Questions, discussions, analysis requests, any user prompt ending with `?` (e.g., *"Should we...?"*, *"Is A better?"*, *"Push to GitHub?"*), or prompt containing `T1`/`[T1]`.
@@ -78,11 +79,14 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    StartTask["Start Any Task"] --> CategoryCheck{"Match Task to Categories in Table 1 below"}
+    StartTask["Start Any Task"] --> SQCheck{"Prompt Contains 'SQ' Tag?"}
+    SQCheck -->|"Yes"| FullAudit["Force Full Skill Audit<br/>(Scan all skill metadata & read matching SKILL.md)"]
+    SQCheck -->|"No"| CategoryCheck{"Match Task to Categories in Table 1 below"}
     CategoryCheck -->|"Match Category"| LookupTable["Look up required Skill list in Table 1 below"]
     CategoryCheck -->|"No Category Match"| DynamicCheck["Dynamically match Skill by Description Metadata"]
     LookupTable --> MustRead["MUST call view_file on SKILL.md BEFORE planning or coding"]
     DynamicCheck --> MustRead
+    FullAudit --> MustRead
     MustRead --> CheckRef{"Does SKILL.md reference another Skill?"}
     CheckRef -->|"Yes"| ReadRef["MUST call view_file on referenced SKILL.md"]
     CheckRef -->|"No"| Proceed["Proceed to Implementation / Planning"]
