@@ -17,7 +17,7 @@ A **subdoc (sub-document)** is a auxiliary Markdown file (`REFERENCE.md` or `<TY
 
 ```mermaid
 flowchart TD
-    TargetSKILL["Target SKILL.md"] --> InitReport["Log brain/REPORT.md"] --> EvaluateCandidates{"Need Subdoc Extraction?"}
+    TargetSKILL["Target SKILL.md"] --> InitRationale["Log brain/RATIONALE.md"] --> EvaluateCandidates{"Need Subdoc Extraction?"}
     
     EvaluateCandidates -->|"No (Inline <= 100 lines, no heavy tables)"| Gate0["Gate 0: No Extraction Needed<br/>(Log rationale & exit)"]
     EvaluateCandidates -->|"Yes (Extractable blocks present)"| GroupContext["Analyze Context Co-location"] --> CheckGates{"Evaluate Routing Gates"}
@@ -28,19 +28,19 @@ flowchart TD
     Gate1 --> PlanSkillEdit["Define Changes in Target SKILL.md"]
     Gate2 --> PlanSkillEdit
     
-    Gate0 --> OutputUser["Present REPORT.md & Subdoc Drafts to User"]
+    Gate0 --> OutputUser["Present RATIONALE.md & Subdoc Drafts to User"]
     PlanSkillEdit --> OutputUser
     OutputUser --> ExecStep["Apply Approved Edits & Distribute"]
 ```
 
 ## Execution Protocol
 
-### Step 0: Target Skill Audit & Report Initialization
+### Step 0: Target Skill Audit & Rationale Log Initialization
 1. Read the target `SKILL.md` thoroughly using `view_file` or `jcodemunch`.
-2. Create and initialize an incremental reasoning log at `<appDataDir>\brain\<conversation-id>\REPORT.md`.
+2. Create and initialize an incremental reasoning log at `<appDataDir>\brain\<conversation-id>\RATIONALE.md`.
 
 ### Step 1: Information Component Analysis
-Categorize all information inside `SKILL.md` and log rationale for each in `REPORT.md`:
+Categorize all information inside `SKILL.md` and log rationale for each in `RATIONALE.md`:
 - **Keep Inline**: Core workflow steps, primary decision tree, and mandatory completion criteria.
 - **Extract to Subdoc**: Heavy lookup tables, parameter schemas, detailed code templates, rule matrices, troubleshooting lists, and branch-specific guidelines.
 
@@ -54,7 +54,7 @@ Map every execution path (Branch A, Branch B) in the skill to the minimal set of
 
 #### Gate 0: No Extraction Needed
 - **Condition**: Target `SKILL.md` is under 100 lines, has no heavy lookup tables/templates, and contains no independent branch-specific references.
-- **Action**: Log "No extraction needed" in `REPORT.md` and present conclusion to user without modifying files.
+- **Action**: Log "No extraction needed" in `RATIONALE.md` and present conclusion to user without modifying files.
 
 #### Gate 1: Single Subdoc (`REFERENCE.md` or `<SINGLE_NAME>.md`)
 - **Condition**: All extracted reference blocks are globally required across every execution branch of the skill.
@@ -72,7 +72,7 @@ Map every execution path (Branch A, Branch B) in the skill to the minimal set of
 2. **Prune Moved Content**: Remove extracted raw templates, long tables, and detailed checklists from `SKILL.md` to keep it under 100 lines.
 
 ### Step 6: User Reporting & Approval Gate
-Present `REPORT.md` and the draft sub-documents to the user. Await explicit user approval before applying changes to the target repository.
+Present `RATIONALE.md` and the draft sub-documents to the user. Await explicit user approval before applying changes to the target repository.
 
 ### Step 7: Approved Execution & Skill Distribution
 Upon receiving explicit user approval:
