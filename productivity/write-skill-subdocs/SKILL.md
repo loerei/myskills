@@ -7,6 +7,12 @@ description: "Extract and structure sub-documents (REFERENCE.md or domain subdoc
 
 Extract supporting material from a target `SKILL.md` into disclosed sub-documents (`REFERENCE.md` or `TYPE/DOMAIN.md`).
 
+## Subdoc Concept & Definition
+
+A **subdoc (sub-document)** is a auxiliary Markdown file (`REFERENCE.md` or `<TYPE/DOMAIN>.md`) linked from a parent `SKILL.md` via progressive disclosure.
+- **Purpose**: Keep `SKILL.md` under 100 lines (focusing strictly on primary workflow steps and decision trees) while isolating heavy reference material (lookup tables, schemas, code templates, edge-case matrices).
+- **Scope**: Loaded on-demand via `view_file` only when an agent executes the specific branch requiring that reference material.
+
 ## Subdoc Extraction & Routing Workflow
 
 ```mermaid
