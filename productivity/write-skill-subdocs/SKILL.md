@@ -62,10 +62,7 @@ Map every execution path (Branch A, Branch B) in the skill to the minimal set of
 
 #### Gate 2: Multiple Subdocs (`TYPE/DOMAIN.md`)
 - **Condition**: The skill contains independent execution branches, and specific branches only require a subset of reference blocks.
-- **Overlapping Subdocs Principle**: If Branch A requires blocks [X, Z] and Branch B requires blocks [Y, Z], create two separate files:
-  - `DOMAIN-A.md` containing blocks [X, Z]
-  - `DOMAIN-B.md` containing blocks [Y, Z]
-  - **NEVER** force a combined `ALL.md` containing [X, Y, Z] if no execution path requires both X and Y simultaneously.
+- **Overlapping Subdocs Principle**: Create the smallest set of subdocs such that every execution path loads only the reference blocks it needs. NEVER force a combined monolithic subdoc if no single execution path requires all blocks simultaneously.
 
 ### Step 5: Target `SKILL.md` Refactoring Spec
 1. **Add Context Pointers**: Replace extracted sections with explicit relative Markdown links containing trigger instructions for when to inspect them via `view_file` (e.g., `If executing [Branch A], read [DOMAIN-A.md](DOMAIN-A.md) via view_file`).
