@@ -13,6 +13,21 @@ Whenever invoked via `/browser` or `/brave-browsing`, agents MUST run the helper
 node D:\Projects\myskills\productivity\brave-browsing\scripts\ensure-brave.js
 ```
 
+### Workflows
+
+```mermaid
+flowchart TD
+    Start["User Requests /browser or /brave-browsing"] --> RunEnsure["Run: node ensure-brave.js"]
+    
+    RunEnsure --> State1["[✔] Brave 9222 ready"]
+    RunEnsure --> State2["[🚀] Launched Brave with port 9222 (Registry configured)"]
+    RunEnsure --> State3["[🚀] Launched Brave with port 9222 (Registry NOT configured)"]
+    
+    State1 --> DirectWork["Execute Web Task Immediately"]
+    State2 --> DirectWork
+    State3 -->|"Shortly offer user Registry setup"| DirectWork
+```
+
 ### Script Output States:
 
 1. **`[✔] Brave 9222 ready`**
@@ -40,21 +55,6 @@ Ensure `mcp_config.json` (located at `~/.gemini/config/mcp_config.json`) points 
     }
   }
 }
-```
-
-## Workflows
-
-```mermaid
-flowchart TD
-    Start["User Requests /browser or /brave-browsing"] --> RunEnsure["Run: node ensure-brave.js"]
-    
-    RunEnsure --> State1["[✔] Brave 9222 ready"]
-    RunEnsure --> State2["[🚀] Launched Brave with port 9222 (Registry configured)"]
-    RunEnsure --> State3["[🚀] Launched Brave with port 9222 (Registry NOT configured)"]
-    
-    State1 --> DirectWork["Execute Web Task Immediately"]
-    State2 --> DirectWork
-    State3 -->|"Shortly offer user Registry setup"| DirectWork
 ```
 
 ## Setup Modes
