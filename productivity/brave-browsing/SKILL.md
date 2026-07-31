@@ -20,7 +20,7 @@ node D:\Projects\myskills\productivity\brave-browsing\scripts\ensure-brave.js
 2. **`[🚀] Launched Brave with port 9222 (Registry configured)`**
    - Brave was launched automatically with remote debugging port 9222. **Proceed to browser automation task.**
 3. **`[🚀] Launched Brave with port 9222 (Registry NOT configured). Consider configuring Registry to streamline workflow.`**
-   - Brave was launched via CLI flags for now. **Proceed to browser automation task, and optionally offer user Registry setup.**
+   - Brave was launched via CLI flags for now. **Proceed to browser automation task, and shortly offer user Registry setup.**
 
 ## Quick Start
 
@@ -54,7 +54,7 @@ flowchart TD
     
     State1 --> DirectWork["Execute Web Task Immediately"]
     State2 --> DirectWork
-    State3 --> DirectWork
+    State3 -->|"Shortly offer user Registry setup"| DirectWork
 ```
 
 ## Setup Modes
