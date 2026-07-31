@@ -100,12 +100,14 @@ Conclude explicitly with either:
 
 When updating draft artifacts between review iterations, integrate all fixes seamlessly as native, first-class specifications. NEVER include past reviewer references, version tags based on reviewers, or meta-changelogs inside the document body.
 
+For example, after Reviewer #3 points out an edge case or problem:
+
 - **BAD (Meta-Contaminated / Anchoring Bias)**:
   > `# Plan v4 (Per Reviewer #3 Feedback)`  
   > `This plan resolves 100% of technical requirements and barriers raised by Reviewer #3.`  
-  > `Fixes media-only key duplication pointed out by Reviewer #3.`
+  > `Fixes edgecase A pointed out by Reviewer #3 by...` *(Impact on Reviewer #4: Anchors on "This is THE resolved edgecase" rather than auditing freshly)*
 
 - **GOOD (Clean Specification / Neutral)**:
   > `# Comprehensive Feature Upgrade Plan`  
   > `### Media-Only Message PairKey Deduplication`  
-  > `Normalizes effectiveText using cleanText || media.url to ensure unique pairKey generation for media-only messages.`
+  > `Normalizes effectiveText using cleanText || media.url to ensure unique pairKey generation for media-only messages.` *(Impact on Reviewer #4: Evaluates the problem/solution neutrally as a standard, first-class specification)*
