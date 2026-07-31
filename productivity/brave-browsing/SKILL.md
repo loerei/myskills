@@ -5,9 +5,21 @@ description: Configure and execute Chrome DevTools MCP server using Brave browse
 
 # Brave Browsing with Chrome DevTools MCP
 
+## Step 0: Fast Connection Protocol (Agent Execution Rule)
+
+Whenever invoked via `/browser` or `/brave-browsing`, agents MUST follow this priority sequence BEFORE asking any questions:
+
+1. **Attempt Direct MCP Connection First:** Immediately call `call_mcp_tool` (`chrome-devtools-mcp` -> `list_pages`).
+   - **If SUCCESSFUL:** Port 9222 is ALREADY listening (Registry configured or Brave already running). **Proceed directly to the user's web task with zero delay.**
+2. **If Connection FAILS (Port 9222 not reachable):**
+   - Check if Brave process is running: `Get-Process brave -ErrorAction SilentlyContinue`.
+   - Check Registry status: `(Get-ItemProperty "HKCU:\Software\Classes\http\shell\open\command").'(default)'`.
+     - **Case A (Registry contains `--remote-debugging-port=9222`):** Launch Brave via `Start-Process brave.exe` or ask user to open Brave normally. Then retry `list_pages`.
+     - **Case B (Registry NOT configured):** Present Mode 1 (CLI launch) or ask user if they want to configure Registry (Tier 3 Gate).
+
 ## Quick Start
 
-Configure `mcp_config.json` (located at `~/.gemini/config/mcp_config.json`) to connect via Remote Debugging Port:
+Ensure `mcp_config.json` (at `~/.gemini/config/mcp_config.json`) points to `--browserUrl`:
 
 ```json
 {
@@ -25,40 +37,28 @@ Configure `mcp_config.json` (located at `~/.gemini/config/mcp_config.json`) to c
 }
 ```
 
-Launch Brave with secure origin debugging enabled:
-
-```powershell
-& "C:\Users\<username>\AppData\Local\BraveSoftware\Brave-Browser\Application\brave.exe" --remote-debugging-port=9222 --remote-allow-origins=http://127.0.0.1:9222,http://localhost:9222
-```
-
 ## Workflows
 
 ```mermaid
 flowchart TD
-    Start["User Requests Brave Automation / /browser"] --> Strategy{"Select Setup Mode"}
+    Start["User Requests /browser or /brave-browsing"] --> FastCheck{"Step 0: Call list_pages tool"}
     
-    Strategy -->|"Remote Debugging Port (Recommended)"| CheckMode{"Select Port Execution Method"}
-    CheckMode -->|"CLI Launch"| StartBravePort["Launch Brave with --remote-debugging-port=9222 --remote-allow-origins=http://127.0.0.1:9222,http://localhost:9222"]
-    CheckMode -->|"Registry Level (Persistent)"| RegGate{"Ask Explicit User Approval (Tier 3 Gate)"}
-    RegGate -->|"Approved"| ApplyReg["Apply Windows Registry Command Modification"]
-    RegGate -->|"Denied"| StartBravePort
+    FastCheck -->|"CONNECTED (Port 9222 active)"| DirectWork["Execute Web Task Immediately"]
     
-    Strategy -->|"Isolated Profile (Automated)"| LaunchExecPath["Use --executablePath + --userDataDir in mcp_config.json"]
+    FastCheck -->|"FAILED (Port 9222 unreachable)"| CheckReg{"Check Registry Status"}
     
-    StartBravePort --> ConnectPort["Use --browserUrl http://127.0.0.1:9222 in mcp_config.json"]
-    ApplyReg --> ConnectPort
-    LaunchExecPath --> RestartMCP["Restart IDE / MCP Server Session"]
-    ConnectPort --> RestartMCP
-    RestartMCP --> Verify["Call list_pages / navigate_page tool"]
+    CheckReg -->|"Registry Configured"| LaunchBrave["Start-Process brave.exe"] --> DirectWork
+    CheckReg -->|"Registry NOT Configured"| RegGate{"Offer Registry Setup (Tier 3 Gate)"}
+    
+    RegGate -->|"Approved"| ApplyReg["Apply HKCU Registry Keys"] --> LaunchBrave
+    RegGate -->|"Denied / Manual"| CLILaunch["Launch brave.exe with --remote-debugging-port=9222"] --> DirectWork
 ```
 
 ## Setup Modes
 
 ### Mode 1: Remote Debugging Port (--browserUrl) - Recommended
-- **Use when:** Interacting with authenticated web sessions (Facebook E2EE, Gmail, GitHub) while maintaining full extension support.
 - **Command:** `brave.exe --remote-debugging-port=9222 --remote-allow-origins=http://127.0.0.1:9222,http://localhost:9222`
 - **MCP Config:** `--browserUrl http://127.0.0.1:9222`
-- **Security:** Always use explicit origins (`http://127.0.0.1:9222,http://localhost:9222`) instead of wildcard `*`.
 
 ### Mode 2: System-Wide Registry Automation (Persistent)
 > [!CAUTION]
@@ -68,15 +68,11 @@ flowchart TD
   1. `HKCU:\Software\Classes\BraveHTML\shell\open\command`
   2. `HKCU:\Software\Classes\http\shell\open\command`
   3. `HKCU:\Software\Classes\https\shell\open\command`
-- **Value to set:**
-  `"C:\Users\<username>\AppData\Local\BraveSoftware\Brave-Browser\Application\brave.exe" --remote-debugging-port=9222 --remote-allow-origins=http://127.0.0.1:9222,http://localhost:9222 -- "%1"`
+- **Value:** `"C:\Users\<username>\AppData\Local\BraveSoftware\Brave-Browser\Application\brave.exe" --remote-debugging-port=9222 --remote-allow-origins=http://127.0.0.1:9222,http://localhost:9222 -- "%1"`
 
-#### How to restore Registry to Default:
-- **Registry default value:**
-  `"C:\Users\<username>\AppData\Local\BraveSoftware\Brave-Browser\Application\brave.exe" -- "%1"`
+#### Restore Default:
+- **Value:** `"C:\Users\<username>\AppData\Local\BraveSoftware\Brave-Browser\Application\brave.exe" -- "%1"`
 
 ## Completion Checklist
-- [ ] Explicit user approval granted if executing Registry setup.
-- [ ] Brave running with `--remote-debugging-port=9222` and secure origins.
-- [ ] `mcp_config.json` configured with `--browserUrl http://127.0.0.1:9222`.
-- [ ] `call_mcp_tool` (`chrome-devtools-mcp`/`list_pages`) connects cleanly.
+- [ ] Direct `list_pages` call attempted first in Step 0.
+- [ ] Web task executed without unnecessary user prompt if port 9222 is active.
