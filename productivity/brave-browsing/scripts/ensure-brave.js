@@ -8,7 +8,8 @@
  * 3. [🚀] Launched Brave with port 9222 (Registry NOT configured). Consider configuring Registry to streamline workflow.
  */
 
-const { exec, execSync } = require('child_process');
+const { execSync, spawn } = require('child_process');
+const fs = require('fs');
 const os = require('os');
 const path = require('path');
 
@@ -31,6 +32,22 @@ function isRegistryConfigured() {
   }
 }
 
+function launchBraveGUI(braveExe, flags) {
+  const defaultFlags = '--remote-debugging-port=9222 --remote-allow-origins=http://127.0.0.1:9222,http://localhost:9222';
+  const effectiveFlags = flags || defaultFlags;
+
+  if (os.platform() === 'win32') {
+    // Launch via explorer.exe to transfer execution to active interactive desktop session
+    const tmpCmdPath = path.join(os.tmpdir(), 'launch-brave-gui.cmd');
+    fs.writeFileSync(tmpCmdPath, `@echo off\r\nstart "" "${braveExe}" ${effectiveFlags}\r\n`, 'utf8');
+    execSync(`explorer.exe "${tmpCmdPath}"`);
+  } else {
+    const args = effectiveFlags.split(' ');
+    const p = spawn(braveExe, args, { detached: true, stdio: 'ignore' });
+    p.unref();
+  }
+}
+
 async function main() {
   // 1. Check if Port 9222 is already listening
   if (await checkPort9222()) {
@@ -41,13 +58,12 @@ async function main() {
   // 2. Check Registry status
   const hasReg = isRegistryConfigured();
   const braveExe = path.join(os.homedir(), 'AppData', 'Local', 'BraveSoftware', 'Brave-Browser', 'Application', 'brave.exe');
-  const flags = '--remote-debugging-port=9222 --remote-allow-origins=http://127.0.0.1:9222,http://localhost:9222';
 
   if (hasReg) {
-    exec(`start "" "${braveExe}" ${flags}`);
+    launchBraveGUI(braveExe);
     console.log('[🚀] Launched Brave with port 9222 (Registry configured)');
   } else {
-    exec(`start "" "${braveExe}" ${flags}`);
+    launchBraveGUI(braveExe);
     console.log('[🚀] Launched Brave with port 9222 (Registry NOT configured). Consider configuring Registry to streamline workflow.');
   }
 
