@@ -52,7 +52,7 @@ flowchart TD
 
 | ID | Information Component | Needed Every Run? | Trigger | Dependencies | Decision |
 | :---: | :--- | :---: | :--- | :--- | :--- |
-| <ID> | <Component Name> | YES / NO | [Quoted from HEURISTICS.md] | <Other IDs / Not-yet-exist Reference / None> | <Keep At SKILL.md / Extract to DESTINATION.md / Needs Reference Info?> |
+| <ID> | <Component Name> | YES / NO | [Quoted from HEURISTICS.md] | <Other IDs / Not-yet-exist Reference / None> | <Keep At SKILL.md / Keep At SUBDOC.md / Extract to DESTINATION.md / Needs Reference Info?> |
 
 ## Routing Decision
 - **Applied Gate**: Gate X
@@ -66,7 +66,7 @@ Categorize all information inside `SKILL.md` and existing subdocs against [HEURI
 - **`Needed Every Run?`**: `YES` if required by all execution paths of `SKILL.md`; `NO` if required only on specific branches (Axis 1 in `HEURISTICS.md`).
 - **`Trigger`**: Exact reason(s) quoted from `HEURISTICS.md` (e.g. *Primary Signal: Heavy Lookup Tables*, *Primary Signal: Branch-Specific References*, *Secondary Signal: Audit Threshold ~100 lines*, *Inline Execution Protocol*).
 - **`Dependencies`**: List of other component IDs required by this block (`Other IDs`), `Not-yet-exist Reference`, or `None`.
-- **`Decision`**: Exact action to take: `Keep At SKILL.md`, `Extract to <DESTINATION>.md`, or `Needs Reference Info?`.
+- **`Decision`**: Exact action to take: `Keep At SKILL.md`, `Keep At <SUBDOC>.md`, `Extract to <DESTINATION>.md`, or `Needs Reference Info?`.
 
 ### Step 2: Reference Block Formulation
 Define each extracted component as a distinct **Reference Block** (Block 1, Block 2, ...) with a title, scope, and estimated line count.
