@@ -77,6 +77,7 @@ Conclude explicitly with either:
 ### Pre-Implementation Plan Audit (Mode A)
 - [ ] User goals & constraints explicitly addressed
 - [ ] Adherence to task-specific domain skills (<task_domain_skill_paths>) verified
+- [ ] Neutral document check: No past reviewer references, meta-changelogs, or anchoring tags inside draft content
 - [ ] No hardcoded env values, magic numbers, or fixed pixel layouts
 - [ ] Surgical changes: only touch required files
 - [ ] Empirical verification plan included (build, test, lint)
@@ -92,3 +93,19 @@ Conclude explicitly with either:
 - [ ] Optimistic locking, cleanup post-rollback, and startup recovery verified in code
 - [ ] Zero unhandled exception paths or hidden `AttributeError` / `NameError` bugs
 - [ ] Out-of-Scope / Non-Goals exclusions explicitly recorded
+
+---
+
+## 4. Clean & Neutral Artifact Protocol (Anti-Anchoring)
+
+When updating draft artifacts between review iterations, integrate all fixes seamlessly as native, first-class specifications. NEVER include past reviewer references, version tags based on reviewers, or meta-changelogs inside the document body.
+
+- **BAD (Meta-Contaminated / Anchoring Bias)**:
+  > `# Plan v4 (Per Reviewer #3 Feedback)`  
+  > `This plan resolves 100% of technical requirements and barriers raised by Reviewer #3.`  
+  > `Fixes media-only key duplication pointed out by Reviewer #3.`
+
+- **GOOD (Clean Specification / Neutral)**:
+  > `# Comprehensive Feature Upgrade Plan`  
+  > `### Media-Only Message PairKey Deduplication`  
+  > `Normalizes effectiveText using cleanText || media.url to ensure unique pairKey generation for media-only messages.`
