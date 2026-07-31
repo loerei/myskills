@@ -1,7 +1,8 @@
 /**
  * sync-brave-extensions.js
  * Automatically detects packed AND unpacked extensions from Brave User Data
- * and updates mcp_config.json using separate --chromeArg entries for each extension.
+ * and updates mcp_config.json using separate --chromeArg entries for each extension
+ * and explicitly targets --profile-directory=Default.
  */
 
 const fs = require('fs');
@@ -90,6 +91,8 @@ function main() {
     braveExePath,
     '--userDataDir',
     braveUserDataDir,
+    '--chromeArg',
+    '--profile-directory=Default',
     '--ignoreDefaultChromeArg',
     '--disable-extensions'
   ];
@@ -104,7 +107,7 @@ function main() {
   };
 
   fs.writeFileSync(mcpConfigPath, JSON.stringify(config, null, 2), 'utf8');
-  console.log(`[✔] Successfully updated ${mcpConfigPath} with ${extensionPaths.length} Brave extensions!`);
+  console.log(`[✔] Successfully updated ${mcpConfigPath} with ${extensionPaths.length} Brave extensions & Default profile!`);
 }
 
 main();
