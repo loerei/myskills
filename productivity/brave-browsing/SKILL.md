@@ -20,7 +20,9 @@ Update `mcp_config.json` (located at `~/.gemini/config/mcp_config.json` or platf
         "--executablePath",
         "C:\\Users\\<username>\\AppData\\Local\\BraveSoftware\\Brave-Browser\\Application\\brave.exe",
         "--userDataDir",
-        "C:\\Users\\<username>\\AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data"
+        "C:\\Users\\<username>\\AppData\\Local\\BraveSoftware\\Brave-Browser\\User Data",
+        "--ignoreDefaultChromeArg",
+        "--disable-extensions"
       ]
     }
   }
