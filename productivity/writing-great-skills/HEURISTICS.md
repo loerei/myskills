@@ -10,7 +10,19 @@ Every decision to inline or extract material must serve this balance:
 - **Inline** what every execution path needs to run cleanly.
 - **Disclose** behind pointers what only specific paths require or what bloats context.
 
-## 2. Complexity Signals
+## 2. Component Evaluation Criteria
+
+Evaluate every information component in a skill across two binary axes:
+
+### Axis 1: Execution Frequency
+- **`Needed for every run of SKILL.md`**: Core workflow steps, primary decision tree, and universal rules required by all execution paths.
+- **`Not Needed for every run of SKILL.md`**: Branch-bound guides, environment setup snippets, or edge-case troubleshooting needed only on specific runs.
+
+### Axis 2: Extraction Value
+- **`Worth Extracting to Subdocs`**: Material triggering primary/secondary signals where extraction reduces context bloat without adding pointer friction.
+- **`Not Worth Extracting to Subdocs`**: Trivial 1-2 line notes or core protocol steps where extraction creates unnecessary pointer friction.
+
+## 3. Complexity Signals
 
 ### Primary Signals
 High-density or branch-bound material that inflates retrieval cost:
@@ -22,13 +34,13 @@ High-density or branch-bound material that inflates retrieval cost:
 ### Secondary Signal
 - **Audit Threshold (`~100 lines` or large byte footprint)**: Trigger to inspect unextracted primary signals. Purely linear, unbranched prose under the `~150 lines` upper ceiling without primary signals may remain inline.
 
-## 3. Structural Routing
+## 4. Structural Routing
 
 - **Inline Execution**: Keep material inline if needed by all execution paths without triggering primary signals.
 - **Single Subdoc (`REFERENCE.md`)**: Disclose into a single reference file when primary signals are triggered globally across all execution paths.
 - **Multiple Subdocs (`TYPE/DOMAIN.md`)**: Disclose into domain-scoped subdocs when primary signals are isolated to specific execution branches.
 - **Overlapping Subdocs Principle**: Create the smallest set of subdocs such that every execution path loads only the reference blocks it requires, preventing monolithic subdocs.
 
-## 4. Protocol Reference
+## 5. Protocol Reference
 
 To execute subdoc extraction based on these heuristics, invoke the [write-skill-subdocs](../write-skill-subdocs/SKILL.md) skill.
