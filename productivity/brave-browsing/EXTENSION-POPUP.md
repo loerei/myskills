@@ -1,5 +1,7 @@
 # Extension Popup Automation & Tab Bypass Guide
 
+> Auxiliary domain sub-document for [brave-browsing](SKILL.md). Read via `view_file` when automating Chrome Extension Popups (`chrome-extension://...`).
+
 ## Failure Condition
 When interacting with Chrome Extension Popups (`chrome-extension://<EXTENSION_ID>/popup.html`) running in standalone tabs or background contexts, clicking action buttons often triggers:
 `⚠️ Please open <Target Page> (e.g. facebook.com/messages) first`

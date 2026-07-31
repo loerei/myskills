@@ -39,18 +39,33 @@ flowchart TD
 
 ### Step 0: Target Skill Audit & Rationale Log Initialization
 1. Inventory and inspect target `SKILL.md` and any pre-existing sub-documents (`.md` files) in the target skill directory using `view_file` or `list_dir` to establish a complete baseline.
-2. Create and initialize an incremental reasoning log at `<appDataDir>\brain\<conversation-id>\RATIONALE.md` following this structure:
-   ```md
-   # Subdoc Extraction Rationale: <skill-name>
-   - **Baseline Audit**: SKILL.md lines: X | Existing subdocs: [list or "None"]
-   - **Component Breakdown**: Block 1 (Scope & Lines), Block 2...
-   - **Routing Decision**: Gate X applied because [concise rationale per HEURISTICS.md]
-   ```
+2. Create and initialize an incremental reasoning log at `<appDataDir>\brain\<conversation-id>\RATIONALE.md` using the human-optimized matrix template:
+
+```md
+# Subdoc Extraction Rationale: <skill-name>
+
+## Baseline Audit
+- **SKILL.md Size**: X lines | Y bytes
+- **Existing Subdocs**: [list or "None"]
+
+## Information Component Analysis
+
+| Information Component | Status | Reasoning | Recommendation |
+| :--- | :--- | :--- | :--- |
+| <Component Name> | • Needed for every run of SKILL.md (or Not Needed for every run)<br/>• (Not) Worth Extracting to Subdocs<br/>• Reason: [Quoted from HEURISTICS.md] | <Brief rationale> | <Keep Inline / Extract to DOMAIN.md> |
+
+## Routing Decision
+- **Applied Gate**: Gate X
+- **Overlapping Subdocs Principle**: <Concise routing summary>
+```
 
 ### Step 1: Information Component Analysis
-Categorize all information inside `SKILL.md` and existing subdocs against Primary and Secondary Indicators in [HEURISTICS.md](../writing-great-skills/HEURISTICS.md) and log rationale in `RATIONALE.md`:
-- **Keep Inline**: Core workflow steps, primary decision tree, and mandatory completion criteria.
-- **Extract to Subdoc**: Primary indicators (heavy lookup tables, parameter schemas, detailed code templates, rule matrices, troubleshooting lists, and branch-specific guidelines).
+Categorize all information inside `SKILL.md` and existing subdocs against Primary and Secondary Indicators in [HEURISTICS.md](../writing-great-skills/HEURISTICS.md) and record in the `Information Component Analysis` matrix in `RATIONALE.md`:
+- **Status Column Criteria**:
+  - `Needed for every run of SKILL.md` OR `Not Needed for every run of SKILL.md`
+  - `Worth Extracting to Subdocs` OR `Not Worth Extracting to Subdocs`
+  - `Reason(s) quoted from HEURISTICS.md` (e.g., *Primary Signal: Heavy Lookup Tables*, *Primary Signal: Branch-Specific References*, *Secondary Signal: Audit Threshold ~100 lines*).
+- **Recommendation**: Specify `Keep Inline in SKILL.md` or `Extract to <DOMAIN>.md`.
 
 ### Step 2: Reference Block Formulation
 Define each extracted component as a distinct **Reference Block** (Block 1, Block 2, ...) with a title, scope, and estimated line count.
