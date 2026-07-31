@@ -50,9 +50,9 @@ flowchart TD
 
 ## Information Component Analysis
 
-| ID | Information Component | Needed Every Run? | Trigger (Reasons quoted from HEURISTICS.md) | Dependencies | Decision |
+| ID (A-Z) | Information Component | Needed Every Run? | Trigger (Reasons quoted from HEURISTICS.md) | Dependencies (Other IDs / Not-yet-exist Reference / None) | Decision (Keep At SKILL.md / Extract to <DESTINATION>.md / Needs Reference Info?) |
 | :---: | :--- | :---: | :--- | :--- | :--- |
-| <ID> | <Component Name> | YES / NO | [Quoted from HEURISTICS.md] | <Other IDs / None> | <Keep At SKILL.md / Extract to DESTINATION.md> |
+| <ID> | <Component Name> | YES / NO | [Quoted from HEURISTICS.md] | <Other IDs / Not-yet-exist Reference / None> | <Keep At SKILL.md / Extract to DESTINATION.md / Needs Reference Info?> |
 
 ## Routing Decision
 - **Applied Gate**: Gate X
@@ -60,7 +60,13 @@ flowchart TD
 ```
 
 ### Step 1: Information Component Analysis
-Categorize all information inside `SKILL.md` and existing subdocs against the evaluation criteria (`Axis 1: Execution Frequency` & `Axis 2: Extraction Value`) and Complexity Signals defined in [HEURISTICS.md](../writing-great-skills/HEURISTICS.md), recording in the 6-column matrix (`ID | Component | Needed Every Run? | Trigger | Dependencies | Decision`) in `RATIONALE.md` with explicit reasons quoted from [HEURISTICS.md](../writing-great-skills/HEURISTICS.md).
+Categorize all information inside `SKILL.md` and existing subdocs against [HEURISTICS.md](../writing-great-skills/HEURISTICS.md), recording in the 6-column matrix in `RATIONALE.md` with explicit column options:
+- **`ID`**: Sequential uppercase letter (`A-Z`) assigned to each component for clean dependency tracking.
+- **`Information Component`**: Concise title or summary of the target information block.
+- **`Needed Every Run?`**: `YES` if required by all execution paths of `SKILL.md`; `NO` if required only on specific branches (Axis 1 in `HEURISTICS.md`).
+- **`Trigger`**: Exact reason(s) quoted from `HEURISTICS.md` (e.g. *Primary Signal: Heavy Lookup Tables*, *Primary Signal: Branch-Specific References*, *Secondary Signal: Audit Threshold ~100 lines*, *Inline Execution Protocol*).
+- **`Dependencies`**: List of other component IDs required by this block (`Other IDs`), `Not-yet-exist Reference`, or `None`.
+- **`Decision`**: Exact action to take: `Keep At SKILL.md`, `Extract to <DESTINATION>.md`, or `Needs Reference Info?`.
 
 ### Step 2: Reference Block Formulation
 Define each extracted component as a distinct **Reference Block** (Block 1, Block 2, ...) with a title, scope, and estimated line count.
