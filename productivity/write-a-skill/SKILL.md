@@ -8,8 +8,9 @@ description: Create new agent skills with proper structure, progressive disclosu
 ## Process
 
 1. **Gather requirements**: Domain scope, specific use cases, scripts needed, reference materials.
-2. **Draft skill**: SKILL.md instructions, Mermaid decision trees for multi-branch workflows, reference files if >100 lines, utility scripts for deterministic tasks.
+2. **Draft skill**: SKILL.md instructions, Mermaid decision trees for multi-branch workflows, reference files based on complexity heuristics, utility scripts for deterministic tasks.
 3. **Review with user**: Confirm use case coverage, clarity, and detail level.
+4. **Distribute skill**: Sync across workspace targets using `node <projects_root>/distribute-skills.js --target <target-repo>`.
 
 ## Skill Structure
 
@@ -49,7 +50,7 @@ flowchart TD
 
 ## Advanced features
 
-[Link to separate files: See [REFERENCE.md](REFERENCE.md)]
+See [REFERENCE.md](REFERENCE.md) for advanced configuration and tool parameters.
 ````
 
 ## Description Requirements
@@ -69,14 +70,15 @@ The bad example gives your agent no way to distinguish this from other document 
 ## File Splitting & Scripts
 
 - **Scripts**: Add when operation is deterministic (validation, formatting), same code would be generated repeatedly, or errors need explicit handling.
-- **File Split**: Move content out of SKILL.md when line count exceeds 100, content has distinct domains (finance vs sales schemas), or advanced features are rarely needed.
+- **File Split**: Move content out of SKILL.md when primary or secondary indicators are triggered per [HEURISTICS.md](../writing-great-skills/HEURISTICS.md).
 
 ## Review Checklist
 
 - [ ] Description includes explicit triggers ("Use when...")
-- [ ] SKILL.md strictly under 100 lines
+- [ ] SKILL.md kept lean via complexity heuristics — see [HEURISTICS.md](../writing-great-skills/HEURISTICS.md)
 - [ ] Mermaid decision tree used for workflows with 3+ branches
 - [ ] No time-sensitive info
 - [ ] Consistent terminology
 - [ ] Concrete examples included
 - [ ] References one level deep
+- [ ] Skill distributed via `distribute-skills.js`
