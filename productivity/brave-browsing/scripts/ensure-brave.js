@@ -8,9 +8,9 @@
  * 3. [🚀] Launched Brave with port 9222 (Registry NOT configured). Consider configuring Registry to streamline workflow.
  */
 
-const { execSync } = require('child_process');
-const os = require('os');
-const path = require('path');
+const { execSync, spawn } = require('node:child_process');
+const os = require('node:os');
+const path = require('node:path');
 
 async function checkPort9222() {
   try {
@@ -45,24 +45,21 @@ function launchBraveGUI(braveExe, flags) {
   const effectiveFlags = flags || defaultFlags;
 
   if (os.platform() === 'win32') {
-    // Launch via Task Scheduler to break out of agent background process tree into interactive desktop session
     ensureScheduledTaskRegistered(braveExe, effectiveFlags);
     execSync('powershell -NoProfile -Command "Start-ScheduledTask -TaskName \'LaunchBraveGUI\'"');
   } else {
     const args = effectiveFlags.split(' ');
-    const p = require('child_process').spawn(braveExe, args, { detached: true, stdio: 'ignore' });
+    const p = spawn(braveExe, args, { detached: true, stdio: 'ignore' });
     p.unref();
   }
 }
 
-async function main() {
-  // 1. Check if Port 9222 is already listening
+(async () => {
   if (await checkPort9222()) {
     console.log('[✔] Brave 9222 ready');
     process.exit(0);
   }
 
-  // 2. Check Registry status
   const hasReg = isRegistryConfigured();
   const braveExe = path.join(os.homedir(), 'AppData', 'Local', 'BraveSoftware', 'Brave-Browser', 'Application', 'brave.exe');
 
@@ -74,8 +71,5 @@ async function main() {
     console.log('[🚀] Launched Brave with port 9222 (Registry NOT configured). Consider configuring Registry to streamline workflow.');
   }
 
-  // Wait 2 seconds for process initialization
   await new Promise(r => setTimeout(r, 2000));
-}
-
-main();
+})();
