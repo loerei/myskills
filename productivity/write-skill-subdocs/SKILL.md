@@ -50,7 +50,7 @@ flowchart TD
 
 ## Information Component Analysis
 
-| ID (A-Z) | Information Component | Needed Every Run? | Trigger (Reasons quoted from HEURISTICS.md) | Dependencies (Other IDs / Not-yet-exist Reference / None) | Decision (Keep At SKILL.md / Extract to <DESTINATION>.md / Needs Reference Info?) |
+| ID | Information Component | Needed Every Run? | Trigger | Dependencies | Decision |
 | :---: | :--- | :---: | :--- | :--- | :--- |
 | <ID> | <Component Name> | YES / NO | [Quoted from HEURISTICS.md] | <Other IDs / Not-yet-exist Reference / None> | <Keep At SKILL.md / Extract to DESTINATION.md / Needs Reference Info?> |
 
