@@ -8,8 +8,7 @@
  * 3. [🚀] Launched Brave with port 9222 (Registry NOT configured). Consider configuring Registry to streamline workflow.
  */
 
-const { execSync, spawn } = require('child_process');
-const fs = require('fs');
+const { execSync } = require('child_process');
 const os = require('os');
 const path = require('path');
 
@@ -32,18 +31,26 @@ function isRegistryConfigured() {
   }
 }
 
+function ensureScheduledTaskRegistered(braveExe, flags) {
+  const psRegister = `$action = New-ScheduledTaskAction -Execute '${braveExe}' -Argument '${flags}'; Register-ScheduledTask -TaskName 'LaunchBraveGUI' -Action $action -Force | Out-Null`;
+  try {
+    execSync(`powershell -NoProfile -Command "${psRegister}"`);
+  } catch (e) {
+    console.warn('[⚠️] Warning registering Scheduled Task:', e.message);
+  }
+}
+
 function launchBraveGUI(braveExe, flags) {
   const defaultFlags = '--remote-debugging-port=9222 --remote-allow-origins=http://127.0.0.1:9222,http://localhost:9222';
   const effectiveFlags = flags || defaultFlags;
 
   if (os.platform() === 'win32') {
-    // Launch via explorer.exe to transfer execution to active interactive desktop session
-    const tmpCmdPath = path.join(os.tmpdir(), 'launch-brave-gui.cmd');
-    fs.writeFileSync(tmpCmdPath, `@echo off\r\nstart "" "${braveExe}" ${effectiveFlags}\r\n`, 'utf8');
-    execSync(`explorer.exe "${tmpCmdPath}"`);
+    // Launch via Task Scheduler to break out of agent background process tree into interactive desktop session
+    ensureScheduledTaskRegistered(braveExe, effectiveFlags);
+    execSync('powershell -NoProfile -Command "Start-ScheduledTask -TaskName \'LaunchBraveGUI\'"');
   } else {
     const args = effectiveFlags.split(' ');
-    const p = spawn(braveExe, args, { detached: true, stdio: 'ignore' });
+    const p = require('child_process').spawn(braveExe, args, { detached: true, stdio: 'ignore' });
     p.unref();
   }
 }
