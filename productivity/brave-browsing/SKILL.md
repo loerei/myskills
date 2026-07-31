@@ -76,6 +76,10 @@ Ensure `mcp_config.json` (located at `~/.gemini/config/mcp_config.json`) points 
 #### Restore Default:
 - **Value:** `"C:\Users\<username>\AppData\Local\BraveSoftware\Brave-Browser\Application\brave.exe" -- "%1"`
 
+## Advanced Features
+
+- For interacting with Extension Popups (`chrome-extension://...`) that check active tab context, see [REFERENCE.md](REFERENCE.md).
+
 ## Completion Checklist
 - [ ] Ran `ensure-brave.js` helper script.
 - [ ] Confirmed Brave connection on port 9222.
