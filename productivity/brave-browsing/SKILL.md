@@ -5,21 +5,26 @@ description: Configure and execute Chrome DevTools MCP server using Brave browse
 
 # Brave Browsing with Chrome DevTools MCP
 
-## Step 0: Fast Connection Protocol (Agent Execution Rule)
+## Fast Connection Protocol (Agent Execution Rule)
 
-Whenever invoked via `/browser` or `/brave-browsing`, agents MUST follow this priority sequence BEFORE asking any questions:
+Whenever invoked via `/browser` or `/brave-browsing`, agents MUST run the helper script FIRST before taking any other action:
 
-1. **Attempt Direct MCP Connection First:** Immediately call `call_mcp_tool` (`chrome-devtools-mcp` -> `list_pages`).
-   - **If SUCCESSFUL:** Port 9222 is ALREADY listening (Registry configured or Brave already running). **Proceed directly to the user's web task with zero delay.**
-2. **If Connection FAILS (Port 9222 not reachable):**
-   - Check if Brave process is running: `Get-Process brave -ErrorAction SilentlyContinue`.
-   - Check Registry status: `(Get-ItemProperty "HKCU:\Software\Classes\http\shell\open\command").'(default)'`.
-     - **Case A (Registry contains `--remote-debugging-port=9222`):** Launch Brave via `Start-Process brave.exe` or ask user to open Brave normally. Then retry `list_pages`.
-     - **Case B (Registry NOT configured):** Present Mode 1 (CLI launch) or ask user if they want to configure Registry (Tier 3 Gate).
+```powershell
+node D:\Projects\myskills\productivity\brave-browsing\scripts\ensure-brave.js
+```
+
+### Script Output States:
+
+1. **`[✔] Brave 9222 ready`**
+   - Port 9222 is active and listening. **Proceed directly to browser automation task with zero delay.**
+2. **`[🚀] Launched Brave with port 9222 (Registry configured)`**
+   - Brave was launched automatically with remote debugging port 9222. **Proceed to browser automation task.**
+3. **`[🚀] Launched Brave with port 9222 (Registry NOT configured). Consider configuring Registry to streamline workflow.`**
+   - Brave was launched via CLI flags for now. **Proceed to browser automation task, and optionally offer user Registry setup.**
 
 ## Quick Start
 
-Ensure `mcp_config.json` (at `~/.gemini/config/mcp_config.json`) points to `--browserUrl`:
+Ensure `mcp_config.json` (located at `~/.gemini/config/mcp_config.json`) points to `--browserUrl`:
 
 ```json
 {
@@ -41,17 +46,15 @@ Ensure `mcp_config.json` (at `~/.gemini/config/mcp_config.json`) points to `--br
 
 ```mermaid
 flowchart TD
-    Start["User Requests /browser or /brave-browsing"] --> FastCheck{"Step 0: Call list_pages tool"}
+    Start["User Requests /browser or /brave-browsing"] --> RunEnsure["Run: node ensure-brave.js"]
     
-    FastCheck -->|"CONNECTED (Port 9222 active)"| DirectWork["Execute Web Task Immediately"]
+    RunEnsure --> State1["[✔] Brave 9222 ready"]
+    RunEnsure --> State2["[🚀] Launched Brave with port 9222 (Registry configured)"]
+    RunEnsure --> State3["[🚀] Launched Brave with port 9222 (Registry NOT configured)"]
     
-    FastCheck -->|"FAILED (Port 9222 unreachable)"| CheckReg{"Check Registry Status"}
-    
-    CheckReg -->|"Registry Configured"| LaunchBrave["Start-Process brave.exe"] --> DirectWork
-    CheckReg -->|"Registry NOT Configured"| RegGate{"Offer Registry Setup (Tier 3 Gate)"}
-    
-    RegGate -->|"Approved"| ApplyReg["Apply HKCU Registry Keys"] --> LaunchBrave
-    RegGate -->|"Denied / Manual"| CLILaunch["Launch brave.exe with --remote-debugging-port=9222"] --> DirectWork
+    State1 --> DirectWork["Execute Web Task Immediately"]
+    State2 --> DirectWork
+    State3 --> DirectWork
 ```
 
 ## Setup Modes
@@ -74,5 +77,6 @@ flowchart TD
 - **Value:** `"C:\Users\<username>\AppData\Local\BraveSoftware\Brave-Browser\Application\brave.exe" -- "%1"`
 
 ## Completion Checklist
-- [ ] Direct `list_pages` call attempted first in Step 0.
-- [ ] Web task executed without unnecessary user prompt if port 9222 is active.
+- [ ] Ran `ensure-brave.js` helper script.
+- [ ] Confirmed Brave connection on port 9222.
+- [ ] Executed user's web task without hesitation.
