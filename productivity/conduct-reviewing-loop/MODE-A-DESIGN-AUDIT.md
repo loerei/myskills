@@ -1,6 +1,6 @@
-# Conduct Reviewing Loop Reference & Prompt Templates
+# Mode A: Pre-Implementation Design Audit Reference
 
-Templates, checklist builders, and dual-mode protocols for stress-testing plans (Mode A) and validating codebase diff implementations (Mode B).
+Templates, checklist builders, and anti-anchoring protocols for stress-testing and auditing unapproved plans, RFCs, PRDs, or skill drafts BEFORE writing code.
 
 ---
 
@@ -35,46 +35,8 @@ Conclude explicitly with either:
 
 ---
 
-## 2. Mode B: Post-Implementation Coverage Validation Prompt Template
+## 2. Pre-Implementation Plan Audit Checklist
 
-Use when auditing actual code changes against an APPROVED plan:
-
-```markdown
-You are Implementation Coverage Validator #<N>. Audit the codebase implementation against the approved Implementation Plan (`<plan_path>`).
-
-### Audit Goal:
-Verify that 100% of the features, safety guarantees, edge-case fixes, and schema definitions specified in the approved plan are accurately, completely, and correctly implemented in the real codebase. Do NOT invent new requirements or alter the approved implementation plan.
-
-### Required Reading (MUST read using view_file / jcodemunch):
-1. Approved Implementation Plan: `<plan_path>`
-2. Diff Artifact: `<diff_path>` (e.g. `scratch/patch_changes.diff`)
-3. Key Codebase Implementation Files: `<code_file_paths>`
-4. Repository Guidelines: `AGENTS.md`
-5. Task-Specific Domain Skills: `<task_domain_skill_paths>`
-
-### Implementation Coverage Verification Checklist:
-1. **Plan Feature Coverage**: Does the `.diff` and codebase implement 100% of the specified features in the plan?
-2. **Safety & Transactional Guarantees**: Are rollback, directory creation, cleanup, and crash recovery mechanisms fully present?
-3. **Edge-Case & Line Handling**: Are empty/new file creation, boundary checks, and line end encodings handled correctly?
-4. **Validation & State Consistency**: Are duplicate path checks, cache flags, and state initializations accurate?
-5. **Backward Compatibility**: Are legacy wrappers and public API schemas fully preserved?
-
-### Output Directive:
-Return your evaluation to the parent agent using `send_message` containing:
-1. Explicit status (`STATUS: PASS` or `STATUS: REVISIONS NEEDED`)
-2. Numbered list of missing plan implementations or defects in the codebase (blocking issues)
-3. (Optional) `Suggestions for Improvement (Non-blocking)`: Polish or future considerations that do NOT affect PASS status.
-
-Conclude explicitly with either:
-- **STATUS: REVISIONS NEEDED** (with a numbered list of missing plan implementations or defects in the codebase), OR
-- **STATUS: PASS** (if 100% of the plan is fully and accurately implemented in the codebase).
-```
-
----
-
-## 3. Checklist Builders
-
-### Pre-Implementation Plan Audit (Mode A)
 - [ ] User goals & constraints explicitly addressed
 - [ ] Adherence to task-specific domain skills (<task_domain_skill_paths>) verified
 - [ ] Neutral document check: No past reviewer references, meta-changelogs, or anchoring tags inside draft content
@@ -85,18 +47,9 @@ Conclude explicitly with either:
 - [ ] Boundary validation, path normalization, and payload ambiguity prevented
 - [ ] Out-of-Scope / Non-Goals exclusions explicitly recorded
 
-### Post-Implementation Coverage Validation (Mode B)
-- [ ] 100% of plan components verified in `.diff` and target files
-- [ ] Adherence to task-specific domain skills (<task_domain_skill_paths>) verified
-- [ ] Unit tests added covering new edge cases specified in plan
-- [ ] Tool schemas (`server.py` / parameter schemas) match plan definitions
-- [ ] Optimistic locking, cleanup post-rollback, and startup recovery verified in code
-- [ ] Zero unhandled exception paths or hidden `AttributeError` / `NameError` bugs
-- [ ] Out-of-Scope / Non-Goals exclusions explicitly recorded
-
 ---
 
-## 4. Clean & Neutral Artifact Protocol (Anti-Anchoring)
+## 3. Clean & Neutral Artifact Protocol (Anti-Anchoring)
 
 When updating draft artifacts between review iterations, integrate all fixes seamlessly as native, first-class specifications. NEVER include past reviewer references, version tags based on reviewers, or meta-changelogs inside the document body.
 
