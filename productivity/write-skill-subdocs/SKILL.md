@@ -60,12 +60,7 @@ flowchart TD
 ```
 
 ### Step 1: Information Component Analysis
-Categorize all information inside `SKILL.md` and existing subdocs against the binary evaluation axes (`Axis 1: Execution Frequency` & `Axis 2: Extraction Value`) and Complexity Signals defined in [HEURISTICS.md](../writing-great-skills/HEURISTICS.md), recording in `RATIONALE.md`:
-- **Status Column Criteria**:
-  - `Needed for every run of SKILL.md` OR `Not Needed for every run of SKILL.md` (Axis 1)
-  - `Worth Extracting to Subdocs` OR `Not Worth Extracting to Subdocs` (Axis 2)
-  - `Reason(s) quoted from HEURISTICS.md` (e.g., *Primary Signal: Heavy Lookup Tables*, *Primary Signal: Branch-Specific References*, *Secondary Signal: Audit Threshold ~100 lines*).
-- **Recommendation**: Specify `Keep Inline in SKILL.md` or `Extract to <DOMAIN>.md`.
+Categorize all information inside `SKILL.md` and existing subdocs against the evaluation criteria (`Axis 1: Execution Frequency` & `Axis 2: Extraction Value`) and Complexity Signals defined in [HEURISTICS.md](../writing-great-skills/HEURISTICS.md), recording in the matrix in `RATIONALE.md` with explicit reasons quoted from [HEURISTICS.md](../writing-great-skills/HEURISTICS.md) (e.g., *Primary Signal: Heavy Lookup Tables*, *Primary Signal: Branch-Specific References*, *Secondary Signal: Audit Threshold ~100 lines*).
 
 ### Step 2: Reference Block Formulation
 Define each extracted component as a distinct **Reference Block** (Block 1, Block 2, ...) with a title, scope, and estimated line count.
