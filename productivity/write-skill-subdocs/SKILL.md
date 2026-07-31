@@ -50,17 +50,17 @@ flowchart TD
 
 ## Information Component Analysis
 
-| Information Component | Status | Reasoning | Recommendation |
-| :--- | :--- | :--- | :--- |
-| <Component Name> | • Needed for every run of SKILL.md (or Not Needed for every run)<br/>• (Not) Worth Extracting to Subdocs<br/>• Reason: [Quoted from HEURISTICS.md] | <Brief rationale> | <Keep Inline / Extract to DOMAIN.md> |
+| ID | Information Component | Needed Every Run? | Trigger (Reasons quoted from HEURISTICS.md) | Dependencies | Decision |
+| :---: | :--- | :---: | :--- | :--- | :--- |
+| <ID> | <Component Name> | YES / NO | [Quoted from HEURISTICS.md] | <Other IDs / None> | <Keep At SKILL.md / Extract to DESTINATION.md> |
 
 ## Routing Decision
 - **Applied Gate**: Gate X
-- **Overlapping Subdocs Principle**: <Concise routing summary>
+- **Overlapping Subdocs Principle**: <Concise routing summary minimizing \(\sum(\text{bytes loaded per path})\)>
 ```
 
 ### Step 1: Information Component Analysis
-Categorize all information inside `SKILL.md` and existing subdocs against the evaluation criteria (`Axis 1: Execution Frequency` & `Axis 2: Extraction Value`) and Complexity Signals defined in [HEURISTICS.md](../writing-great-skills/HEURISTICS.md), recording in the matrix in `RATIONALE.md` with explicit reasons quoted from [HEURISTICS.md](../writing-great-skills/HEURISTICS.md) (e.g., *Primary Signal: Heavy Lookup Tables*, *Primary Signal: Branch-Specific References*, *Secondary Signal: Audit Threshold ~100 lines*).
+Categorize all information inside `SKILL.md` and existing subdocs against the evaluation criteria (`Axis 1: Execution Frequency` & `Axis 2: Extraction Value`) and Complexity Signals defined in [HEURISTICS.md](../writing-great-skills/HEURISTICS.md), recording in the 6-column matrix (`ID | Component | Needed Every Run? | Trigger | Dependencies | Decision`) in `RATIONALE.md` with explicit reasons quoted from [HEURISTICS.md](../writing-great-skills/HEURISTICS.md).
 
 ### Step 2: Reference Block Formulation
 Define each extracted component as a distinct **Reference Block** (Block 1, Block 2, ...) with a title, scope, and estimated line count.

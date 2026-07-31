@@ -4,9 +4,9 @@ Reference framework for evaluating and refactoring skill complexity via objectiv
 
 ## 1. Optimization Objective
 
-**Goal**: Minimize retrieval cost per execution path while keeping `SKILL.md` readable.
+**Goal**: Minimize $\sum(\text{reference bytes loaded per execution path})$ while keeping `SKILL.md` readable.
 
-Every decision to inline or extract material must serve this balance:
+Every decision to inline or extract material must serve this mathematical invariant:
 - **Inline** what every execution path needs to run cleanly.
 - **Disclose** behind pointers what only specific paths require or what bloats context.
 
@@ -39,7 +39,7 @@ High-density or branch-bound material that inflates retrieval cost:
 - **Inline Execution**: Keep material inline if needed by all execution paths without triggering primary signals.
 - **Single Subdoc (`REFERENCE.md`)**: Disclose into a single reference file when primary signals are triggered globally across all execution paths.
 - **Multiple Subdocs (`TYPE/DOMAIN.md`)**: Disclose into domain-scoped subdocs when primary signals are isolated to specific execution branches.
-- **Overlapping Subdocs Principle**: Create the smallest set of subdocs such that every execution path loads only the reference blocks it requires, preventing monolithic subdocs.
+- **Overlapping Subdocs Principle**: Structure sub-documents to minimize $\sum(\text{reference bytes loaded per execution path})$ across all execution branches. NEVER force a combined monolithic subdoc if independent paths load unnecessary bytes.
 
 ## 5. Protocol Reference
 
