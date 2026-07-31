@@ -24,7 +24,7 @@ async function checkPort9222() {
 function isRegistryConfigured() {
   if (os.platform() !== 'win32') return false;
   try {
-    const out = execSync('powershell -NoProfile -Command "(Get-ItemProperty \'HKCU:\\Software\\Classes\\http\\shell\\open\\command\').\'(default)\'"', { encoding: 'utf8' });
+    const out = execSync(String.raw`powershell -NoProfile -Command "(Get-ItemProperty 'HKCU:\Software\Classes\http\shell\open\command').'(default)'"`, { encoding: 'utf8' });
     return out.includes('--remote-debugging-port=9222');
   } catch {
     return false;
