@@ -1,7 +1,7 @@
 /**
  * sync-brave-extensions.js
  * Automatically detects packed AND unpacked extensions from Brave User Data
- * (via Secure Preferences/Preferences & Extensions folder) and updates mcp_config.json.
+ * and updates mcp_config.json using separate --chromeArg entries for each extension.
  */
 
 const fs = require('fs');
@@ -94,8 +94,8 @@ function main() {
     '--disable-extensions'
   ];
 
-  if (extensionPaths.length > 0) {
-    args.push('--chromeArg', `--load-extension=${extensionPaths.join(',')}`);
+  for (const extPath of extensionPaths) {
+    args.push('--chromeArg', `--load-extension=${extPath}`);
   }
 
   config.mcpServers['chrome-devtools-mcp'] = {
