@@ -19,44 +19,57 @@ flowchart TD
 flowchart TD
     TurnStart["Start Any Turn or Request"] --> Tier1Default["Tier 1: Read & Debate Only (DEFAULT STATE)"]
     
-    Tier1Default --> InputAnalysis{"Analyze User Prompt Type"}
+    Tier1Default --> TagCheck{"Prompt Contains Explicit Tier Tag (T1 / T2 / T3)?"}
     
-    InputAnalysis -->|"Question / Proposal / Analysis / Prompt ends with '?'"| Tier1Exec["Tier 1 Execution:<br/>• Read codebase & docs<br/>• Propose plans & debate<br/>• STRICT WRITE BAN on repository"]
+    TagCheck -->|"Yes: 'T1' / '[T1]'"| Tier1Exec["Tier 1 Execution:<br/>• Read codebase & docs<br/>• Propose plans & debate<br/>• STRICT WRITE BAN on repository"]
+    TagCheck -->|"Yes: 'T2' / '[T2]'"| Tier2Exec["Tier 2 Execution:<br/>• Write ONLY to private brain/scratch/<br/>• Run local diagnostic tests/builds<br/>• Report empirical evidence"]
+    TagCheck -->|"Yes: 'T3' / '[T3]'"| Tier3Exec["Tier 3 Execution:<br/>• Direct Source edits<br/>• Atomic Git commit, push, PR<br/>• Step-by-step evidence verification"]
+    
+    TagCheck -->|"No Tag"| InputAnalysis{"Analyze User Prompt Type"}
+    
+    InputAnalysis -->|"Question / Proposal / Analysis / Prompt ends with '?'"| Tier1Exec
     
     InputAnalysis -->|"Diagnostic / Scratch File Operation"| PathCheck{"Target Path inside brain/scratch/?"}
-    PathCheck -->|"Yes"| Tier2Exec["Tier 2 Execution:<br/>• Write ONLY to private brain/scratch/<br/>• Run local diagnostic tests/builds<br/>• Report empirical evidence"]
+    PathCheck -->|"Yes"| Tier2Exec
     PathCheck -->|"No (Repo Source Path)"| Tier3Gate
     
     InputAnalysis -->|"Source Edit / Commit / Push / PR / State Change"| Tier3Gate{"Explicit Approval Granted for Plan?"}
     
     Tier3Gate -->|"No / Ambiguous / Praise / Follow-up Question"| Tier3Block["> [!CAUTION]<br/>STRICT EXECUTION BLOCK:<br/>• STOP execution immediately<br/>• Present Plan / Walkthrough<br/>• Await explicit execution command"]
     
-    Tier3Gate -->|"Explicit Execution Command ('Approve', 'Proceed', Directive)"| Tier3Exec["Tier 3 Execution:<br/>• Source edits<br/>• Atomic Git commit, push, PR<br/>• Step-by-step evidence verification"]
+    Tier3Gate -->|"Explicit Execution Command ('Approve', 'Proceed', Directive)"| Tier3Exec
 ```
 
 ### Execution Tiers & Operational Guardrails
 
 > [!IMPORTANT]
-> **Default State:** Every turn and task begins strictly in **Tier 1**. Transitioning to higher tiers requires meeting explicit path and approval gates.
+> **Default State:** Every turn and task begins strictly in **Tier 1**. Transitioning to higher tiers requires meeting explicit path, approval, or explicit tier override tag gates.
+
+#### Explicit Tier Override Tags (T1 / T2 / T3)
+* **Trigger:** User prompt explicitly includes `T1`, `T2`, or `T3` (case-insensitive, with or without brackets, e.g., `T1`, `[T2]`, `t3`).
+* **Tag Behaviors:**
+  * **`T1` / `[T1]` (Force Tier 1 - Read & Debate Only):** Strictly forces Tier 1 execution regardless of prompt phrasing or directives. BANS ALL file writes (including `brain/scratch/`).
+  * **`T2` / `[T2]` (Allow Tier 2 - Controlled Diagnostic):** Explicitly grants Tier 2 permissions for scratch scripts and builds in `brain/<conversation-id>/scratch/`. BANS source edits outside `brain/scratch/`.
+  * **`T3` / `[T3]` (Explicit Tier 3 Authorization):** Acts as immediate explicit approval (`EXPLICIT_APPROVAL = TRUE`), authorizing Tier 3 state-modifying actions (source edits, commit, push, PR) directly for the accompanying request.
 
 #### Tier 1: Read & Debate Only (DEFAULT STATE)
-* **Trigger:** Questions, discussions, analysis requests, or any user prompt ending with `?` (e.g., *"Should we...?"*, *"Is A better?"*, *"Push to GitHub?"*).
+* **Trigger:** Questions, discussions, analysis requests, any user prompt ending with `?` (e.g., *"Should we...?"*, *"Is A better?"*, *"Push to GitHub?"*), or prompt containing `T1`/`[T1]`.
 * **Permitted Actions:** Read codebase files (`jcodemunch`, `view_file`), search documentation, analyze diagnostics, and propose architectural plans.
 * **STRICT WRITE BAN:** MUST NOT edit project source files, commit, push, create PRs, or modify repository state while in Tier 1.
 
 #### Tier 2: Controlled Diagnostic & Scratch Execution
-* **Trigger:** Need for empirical runtime evidence (test execution, build verification) to validate a Tier 1 proposal.
+* **Trigger:** Need for empirical runtime evidence (test execution, build verification) to validate a Tier 1 proposal, or prompt containing `T2`/`[T2]`.
 * **Permitted Actions:** Write temporary test/scratch scripts strictly inside `<appDataDir>\brain\<conversation-id>\scratch\`, run local compilation/test checks.
 * **Hard Boundary:** Any file write target outside `brain/scratch/` is classified as a Tier 3 action and MUST NOT execute in Tier 2.
 
 #### Tier 3: State-Modifying Executions (Source Edits, Commit, Push, PR)
-* **Trigger:** Modifying repository source files, running `git commit`/`git push`, opening/updating PRs, or deleting branches.
+* **Trigger:** Modifying repository source files, running `git commit`/`git push`, opening/updating PRs, deleting branches, or prompt containing `T3`/`[T3]`.
 * **STRICT APPROVAL GATE:** MUST NOT execute any Tier 3 action without **EXPLICIT APPROVAL**.
-  - **Valid Approval Signals (`EXPLICIT_APPROVAL = TRUE`):** User explicitly states *"Approve"*, *"Proceed"*, *"Execute plan"*, or gives a direct, unambiguous edit command following a plan presentation.
+  - **Valid Approval Signals (`EXPLICIT_APPROVAL = TRUE`):** User explicitly states *"Approve"*, *"Proceed"*, *"Execute plan"*, gives a direct unambiguous edit command following a plan presentation, or includes tag `T3`/`[T3]`.
   - **Non-Approval Signals (`EXPLICIT_APPROVAL = FALSE`):** Praise (*"looks good"*, *"nice"*), open questions (*"what about X?"*), hypothetical discussions, or silence. These signals KEEP the agent in Tier 1.
 * **Mandatory Tier 3 Protocol:**
-  1. Present the technical Implementation Plan / Walkthrough in Tier 1.
-  2. STOP execution immediately and await explicit user approval.
+  1. Present the technical Implementation Plan / Walkthrough in Tier 1 (unless explicitly bypassed via `T3` tag in user request).
+  2. STOP execution immediately and await explicit user approval (or `T3` tag).
   3. Execute approved edits. Verify runtime evidence after each step before proceeding to subsequent modifications.
 
 ---
