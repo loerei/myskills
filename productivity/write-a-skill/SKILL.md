@@ -70,7 +70,7 @@ The bad example gives your agent no way to distinguish this from other document 
 ## File Splitting & Scripts
 
 - **Scripts**: Add when operation is deterministic (validation, formatting), same code would be generated repeatedly, or errors need explicit handling.
-- **File Split**: Move content out of SKILL.md when primary or secondary indicators are triggered per [HEURISTICS.md](../writing-great-skills/HEURISTICS.md).
+- **File Split**: Move content out of SKILL.md when primary or secondary indicators are triggered per [HEURISTICS.md](../writing-great-skills/HEURISTICS.md) — execute extraction via [write-skill-subdocs](../write-skill-subdocs/SKILL.md).
 
 ## Review Checklist
 

@@ -39,7 +39,13 @@ flowchart TD
 
 ### Step 0: Target Skill Audit & Rationale Log Initialization
 1. Inventory and inspect target `SKILL.md` and any pre-existing sub-documents (`.md` files) in the target skill directory using `view_file` or `list_dir` to establish a complete baseline.
-2. Create and initialize an incremental reasoning log at `<appDataDir>\brain\<conversation-id>\RATIONALE.md`.
+2. Create and initialize an incremental reasoning log at `<appDataDir>\brain\<conversation-id>\RATIONALE.md` following this structure:
+   ```md
+   # Subdoc Extraction Rationale: <skill-name>
+   - **Baseline Audit**: SKILL.md lines: X | Existing subdocs: [list or "None"]
+   - **Component Breakdown**: Block 1 (Scope & Lines), Block 2...
+   - **Routing Decision**: Gate X applied because [concise rationale per HEURISTICS.md]
+   ```
 
 ### Step 1: Information Component Analysis
 Categorize all information inside `SKILL.md` and existing subdocs against Primary and Secondary Indicators in [HEURISTICS.md](../writing-great-skills/HEURISTICS.md) and log rationale in `RATIONALE.md`:
@@ -55,7 +61,7 @@ Map every execution path (Branch A, Branch B) in the skill to the minimal set of
 ### Step 4: Subdoc Routing Gates (evaluating indicators per [HEURISTICS.md](../writing-great-skills/HEURISTICS.md))
 
 #### Gate 0: No Extraction Needed
-- **Condition**: Target `SKILL.md` triggers NO Primary Indicators per [HEURISTICS.md](../writing-great-skills/HEURISTICS.md) AND total size is under ~150 lines of linear prose.
+- **Condition**: Target `SKILL.md` triggers NO Primary Indicators per [HEURISTICS.md](../writing-great-skills/HEURISTICS.md) AND total size is under ~150 lines of linear prose (verify against the ~100 line Audit Threshold to ensure no hidden primary signals exist).
 - **Action**: Log "No extraction needed" in `RATIONALE.md` and present conclusion to user without modifying files.
 
 #### Gate 1: Single Subdoc (`REFERENCE.md` or `<SINGLE_NAME>.md`)
@@ -64,7 +70,7 @@ Map every execution path (Branch A, Branch B) in the skill to the minimal set of
 
 #### Gate 2: Multiple Subdocs (`TYPE/DOMAIN.md`)
 - **Condition**: Primary Indicators per [HEURISTICS.md](../writing-great-skills/HEURISTICS.md) are triggered AND contain branch-specific references required only by independent execution paths.
-- **Overlapping Subdocs Principle**: Create the smallest set of subdocs such that every execution path loads only the reference blocks it needs. NEVER force a combined monolithic subdoc if no single execution path requires all blocks simultaneously.
+- **Overlapping Subdocs Principle**: Create the smallest set of subdocs such that every execution path loads only the reference blocks it needs. NEVER force a combined monolithic subdoc if no single execution path requires all blocks simultaneously. See [HEURISTICS.md](../writing-great-skills/HEURISTICS.md).
 
 ### Step 5: Target `SKILL.md` Refactoring Spec
 1. **Add Context Pointers**: Replace extracted sections with explicit relative Markdown links containing trigger instructions for when to inspect them via `view_file` (e.g., `If executing [Branch A], read [DOMAIN-A.md](DOMAIN-A.md) via view_file`).
@@ -78,7 +84,9 @@ Present `RATIONALE.md` and draft sub-documents to the user.
 
 ### Step 7: Approved Execution & Skill Distribution
 Upon receiving explicit user approval:
-1. **Sub-document Collision Check**: Inspect target skill directory before writing. If a target subdoc file already exists, merge newly extracted blocks into it or pick non-conflicting domain names under Gate 2 rather than blindly overwriting.
+1. **Sub-document Collision & Cleanup Check**:
+   - Inspect target skill directory before writing. If a target subdoc file already exists, merge newly extracted blocks into it or pick non-conflicting domain names under Gate 2 rather than blindly overwriting.
+   - Identify and remove/archive any pre-existing sub-documents in the target skill directory that have been replaced or renamed during extraction.
 2. Write the created or updated sub-documents into the skill directory.
 3. Apply the refactored content to the target `SKILL.md`.
 4. Run `node <projects_root>/distribute-skills.js --target <target-repo>` (e.g. `node d:\Projects\distribute-skills.js --target d:\Projects\myskills`) to validate syntax and sync changes across workspace targets.
