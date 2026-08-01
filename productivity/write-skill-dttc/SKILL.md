@@ -18,7 +18,7 @@ flowchart TD
     CheckFriction -->|"Yes"| Step2["2. Design DTTC (Terms & Tags)"]
     CheckFriction -->|"No (Minimal Friction)"| NoFrictionExit["Log Rationale & Exit"]
     
-    Step2 --> DesignCategories["Categorize Tags:<br/>• Start-time override tags<br/>• Mid-flight control tags"]
+    Step2 --> DesignCategories["Categorize Tags:<br/>• Start-time override tags<br/>• Mid-flight control tags<br/>• Emergency stop tags"]
     
     DesignCategories --> UserGate{"3. User Review Gate<br/>(Present DTTC Proposal)"}
     UserGate -->|"Revisions Requested"| Step2
@@ -37,7 +37,7 @@ Inspect target `SKILL.md` workflow and answer two audit questions:
 2. **UX Friction points**: Identify which HITL points create friction:
    - High typing volume (requiring paragraphs instead of short flags).
    - Inflexible defaults (requiring manual plan edits to change a single integer/threshold).
-   - Inability to pause or update parameters mid-flight.
+   - Inability to pause, update parameters, or force-stop mid-flight.
 
 *Exit Condition*: If the audit reveals minimal or no UX friction, log the rationale explaining why interactive tags are unneeded and exit execution without modifying target `SKILL.md`.
 
@@ -54,6 +54,7 @@ MUST read [REFERENCE.md](REFERENCE.md) via `view_file` before designing tag comm
   - **Timing & Purpose Categories**:
     - **Start-time tags**: Override launch parameters, flags, or default thresholds at initial skill invocation.
     - **Mid-flight control tags**: Adjust execution flow, request prompt updates, or pause after completing a step/iteration.
+    - **Emergency stop tags**: Abort running subagents, cancel operations, or halt execution immediately.
 
 ### Step 3: User Review Gate
 Present the proposed DTTC specification (Domain Terms, Tag syntax, defaults, and trigger behaviors) to the user for review.
@@ -84,6 +85,6 @@ The <skill-name> supports specialized modifier tags and domain terminology to co
 - **`<DOMAIN_TERM>`**: [Concise definition of the shared concept].
 - **`!<TAG><ARG>` (<Full Name>)**: [Primary purpose].
   - **Syntax/Parameter**: `!<TAG><ARG>` (Default: `<default_value>`).
-  - **Timing**: [Start-time / Mid-flight].
+  - **Timing**: [Start-time / Mid-flight / Emergency stop].
   - **Agent Action**: [Explicit step-by-step action taken by agent upon receiving tag].
 ```
