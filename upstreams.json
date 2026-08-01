@@ -6,5 +6,9 @@
   "ponytail": {
     "url": "https://github.com/DietrichGebert/ponytail",
     "branch": "main"
+  },
+  "claude-video": {
+    "url": "https://github.com/bradautomates/claude-video",
+    "branch": "main"
   }
 }
