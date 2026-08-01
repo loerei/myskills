@@ -98,10 +98,24 @@ See [MODE-A-DESIGN-AUDIT.md](MODE-A-DESIGN-AUDIT.md) for Mode A (Pre-Implementat
 
 ## Domain Terms and Tag Commands
 
-The reviewing loop supports specialized modifier tags and domain terminology to control execution flow, reviewer pass counts, and prompt updates:
+The conduct-reviewing-loop supports specialized modifier tags and domain terminology to control execution flow, reviewer pass counts, and prompt updates. User might invoke these commands in either uppercase or lowercase:
 
-- **`!SP<N>` (Set Pass-count Threshold)**: Specifies the number of **CONTINUOUS PASS(es)** required from reviewers for the reviewed object to be officially considered as passed (e.g., `!SP2`, `!SP3`). Default is `1`. `PassCount` increments on `STATUS: PASS` and immediately **RESETS TO 0** if any reviewer returns `STATUS: REVISIONS NEEDED` (requiring a new unbroken streak of $N$ PASSes).
-- **`Final PASS`**: The last required PASS (the $N$-th continuous PASS where $\text{PassCount} = \text{SP}$) for the reviewed object to be officially verified, concluding the review loop.
-- **`!PU` (Prompt Update)**: Triggers an explicit prompt revision (format: `!PU [Instructions/Criteria]`). Advances prompt version to $v(\text{Version}+1)$, writes `scratch/reviewer_prompt_v<Version+1>.md` incorporating the new instructions, and presents it to the user for approval before continuing the loop. Can be invoked at loop start or sent mid-loop.
-- **`!PA` (Pause After)**: Pauses the reviewing loop **AFTER** applying fixes/updates according to the current reviewer's feedback (or after a non-final PASS, updating non-blocking suggestions if present). Skipped if the reviewer returns a `Final PASS`. Can be sent at loop start or mid-loop.
-- **`!FPA` (Force-Pause)**: Emergency mid-loop brake sent while a reviewer is actively running. Immediately kills the running reviewer subagent via `manage_subagents` (Action: `kill`), discards its feedback (if any), prevents applying any code/draft edits, and pauses execution awaiting user instructions.
+- **`PassCount`**: The current unbroken streak of continuous reviewer `STATUS: PASS` evaluations. Increments on `PASS` and resets to `0` if any reviewer returns `STATUS: REVISIONS NEEDED`.
+- **`Final PASS`**: The last required PASS (where $\text{PassCount} = \text{SP}$) verifying the reviewed object and concluding the review loop.
+- **`Active Prompt`**: The frozen, user-approved reviewer prompt file (`scratch/reviewer_prompt_v<Version>.md`) reused identically for all blind reviewers in the active loop.
+- **`!SP<N>` (Set Pass-count Threshold)**: Specifies the number of continuous PASSes required from independent subagents to conclude the review loop.
+  - **Syntax/Parameter**: `!SP<N>` (Default: `1`).
+  - **Timing**: Start-time.
+  - **Agent Action**: Sets pass threshold `SP = N`. Requires $N$ continuous PASSes before declaring `Final PASS`.
+- **`!PU [Instructions]` (Prompt Update)**: Triggers an explicit prompt revision mid-loop.
+  - **Syntax/Parameter**: `!PU [Instructions/Criteria]` (Default: Prompt update instructions provided in argument).
+  - **Timing**: Mid-flight.
+  - **Agent Action**: Advances prompt version to $v(\text{Version}+1)$, writes `scratch/reviewer_prompt_v<Version+1>.md` incorporating new instructions, presents it for user confirmation (awaiting keyword `"Conduct?"`), and freezes it as active prompt upon approval.
+- **`!PA` (Pause After)**: Pauses the review loop after applying reviewer fixes.
+  - **Syntax/Parameter**: `!PA`.
+  - **Timing**: Mid-flight.
+  - **Agent Action**: Pauses execution after applying fixes per current reviewer feedback (or after non-blocking updates), presents edit summary, and awaits explicit user resume command before spawning reviewer $N+1$. Skipped on `Final PASS`.
+- **`!FPA` (Force-Pause)**: Emergency mid-loop brake sent while a reviewer is actively running.
+  - **Syntax/Parameter**: `!FPA`.
+  - **Timing**: Mid-flight.
+  - **Agent Action**: Immediately kills running reviewer subagent via `manage_subagents` (Action: `kill`), discards feedback, prevents code/draft edits, and pauses execution awaiting user instructions.
