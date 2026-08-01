@@ -47,4 +47,5 @@ Model- or user-reachable (rich trigger phrasing so the model can reach for them)
 - **[write-a-skill](./write-a-skill/SKILL.md)** — Create new agent skills with proper structure, progressive disclosure, and bundled resources.
 - **[write-for-ai](./write-for-ai/SKILL.md)** — Review, edit, or write AI-facing text for maximum signal-to-noise ratio and token efficiency.
 - **[write-pr](./write-pr/SKILL.md)** — Write and format GitHub Pull Requests according to standard repository guidelines.
+- **[write-skill-dttc](./write-skill-dttc/SKILL.md)** — Audit human-in-the-loop UX friction in target skill workflows and append standardized Domain Terms and Tag Commands (DTTC). Subdocs: [REFERENCE.md](./write-skill-dttc/REFERENCE.md)
 - **[write-skill-subdocs](./write-skill-subdocs/SKILL.md)** — Extract supporting material from `SKILL.md` into disclosed sub-documents (`REFERENCE.md` or `TYPE/DOMAIN.md`) using mathematical invariant $\sum(\text{reference bytes loaded per execution path})$ and 6-column matrix (`ID | Component | Needed Every Run? | Trigger | Dependencies | Decision`). Core SSOT: [HEURISTICS.md](./writing-great-skills/HEURISTICS.md)
