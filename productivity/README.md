@@ -43,6 +43,7 @@ Model- or user-reachable (rich trigger phrasing so the model can reach for them)
 - **[to-issues](./to-issues/SKILL.md)** — Break a plan, spec, or PRD into independently-grabbable issues using tracer-bullet vertical slices.
 - **[to-prd](./to-prd/SKILL.md)** — Turn current conversation context into a PRD and publish it to the project issue tracker.
 - **[to-questionnaire](./to-questionnaire/SKILL.md)** — Generate structured questionnaires to solicit requirements from users.
+- **[update-mcp](./update-mcp/SKILL.md)** — Update Model Context Protocol (MCP) servers from upstream git repositories, rebuild packages, and resolve file-lock conflicts.
 - **[write-a-skill](./write-a-skill/SKILL.md)** — Create new agent skills with proper structure, progressive disclosure, and bundled resources.
 - **[write-for-ai](./write-for-ai/SKILL.md)** — Review, edit, or write AI-facing text for maximum signal-to-noise ratio and token efficiency.
 - **[write-pr](./write-pr/SKILL.md)** — Write and format GitHub Pull Requests according to standard repository guidelines.
