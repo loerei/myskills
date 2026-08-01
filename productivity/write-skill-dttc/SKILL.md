@@ -79,11 +79,11 @@ Place this exact structure at the bottom of target `SKILL.md`:
 ```markdown
 ## Domain Terms and Tag Commands
 
-The <skill-name> supports specialized modifier tags and domain terminology to control execution flow and parameters:
+The <skill-name> supports specialized modifier tags and domain terminology to control execution flow and parameters. User might invoke these commands in either uppercase or lowercase:
 
 - **`<DOMAIN_TERM>`**: [Concise definition of the shared concept].
 - **`!<TAG><ARG>` (<Full Name>)**: [Primary purpose].
-  - **Syntax/Parameter**: `!<TAG><ARG>` (Default: `<default_value>`).
+  - **Syntax/Parameter**: `!<TAG><ARG>` (Default: `<default_value>` - include default only if tag accepts an <ARG>).
   - **Timing**: [Start-time / Mid-flight].
   - **Agent Action**: [Explicit step-by-step action taken by agent upon receiving tag].
 ```
