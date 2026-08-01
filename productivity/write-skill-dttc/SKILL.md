@@ -48,13 +48,13 @@ MUST read [REFERENCE.md](REFERENCE.md) via `view_file` before designing tag comm
 
 - **Tag Worthiness Test (Preventing Tag Inflation)**:
   - **Create Tag ONLY IF**:
-    - ✓ High Repetition: Interactively used repeatedly across sessions/iterations.
-    - ✓ Parameter Override: Modifies a parameter/flag without altering the core workflow.
-    - ✓ Compact Notation: Can be expressed in 2-3 uppercase letters.
+    - High Repetition: Interactively used repeatedly across sessions/iterations.
+    - Parameter Override: Modifies a parameter/flag without altering the core workflow.
+    - Compact Notation: Can be expressed in 2-3 uppercase letters.
   - **REJECT Tag IF**:
-    - ✗ One-off action or rarely executed.
-    - ✗ Requires verbose explanations or alters the primary execution protocol.
-    - ✗ Low Savings: Saves only a few keystrokes while adding permanent context load.
+    - One-off action or rarely executed.
+    - Requires verbose explanations or alters the primary execution protocol.
+    - Low Savings: Saves only a few keystrokes while adding permanent context load.
 
 - **Domain Terms**: Define shared concepts, roles, or metrics for human and agent alignment.
 - **Tag Command Syntax & Naming Rules**:
