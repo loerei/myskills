@@ -69,6 +69,22 @@ In an iterative review loop, after a reviewer returns `STATUS: REVISIONS NEEDED`
 
 ---
 
+## Tag Worthiness Test & Anti-Inflation Heuristics
+
+To prevent **Tag Inflation** (bloating `SKILL.md` with unnecessary tags that consume context load and increase user cognitive burden), evaluate every candidate tag against the **Tag Worthiness Test**:
+
+### Evaluation Matrix
+
+| Candidate Tag | Criterion Checked | Decision | Rationale |
+| :--- | :--- | :---: | :--- |
+| `!SP<N>` | High repetition + Parameter override | **APPROVED** | Overrides numeric pass threshold cleanly without changing workflow logic. |
+| `!PU [Text]` | High repetition + Mid-flight prompt adjustment | **APPROVED** | Automates complex prompt file versioning & confirmation gate in 1 concise tag. |
+| `!CR` (*Create Report*) | Low savings + One-off action | **REJECTED** | Saves only 5 keystrokes vs "Write report". Requires complex context explanations. |
+| `!CS` (*Change Strategy*) | Protocol alteration | **REJECTED** | Mutates primary decision tree of the skill. Must be expressed via explicit prompt instructions instead. |
+| `!NL` (*No Logging*) | Infrequent edge case | **REJECTED** | Rarely used flag. Adding it inflates context load permanently for all standard runs. |
+
+---
+
 ## Anti-Pattern Checklist for DTTC Design
 
 | Anti-Pattern | Description | Remediation |

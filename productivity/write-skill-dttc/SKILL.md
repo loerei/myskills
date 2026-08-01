@@ -41,10 +41,20 @@ Inspect target `SKILL.md` workflow and answer two audit questions:
 
 *Exit Condition*: If the audit reveals minimal or no UX friction, log the rationale explaining why interactive tags are unneeded and exit execution without modifying target `SKILL.md`.
 
-### Step 2: DTTC Design & Tag Command Syntax
+### Step 2: DTTC Design & Tag Worthiness Test
 Design explicit Domain Terms and Tag Commands specific to the target skill domain:
 
 MUST read [REFERENCE.md](REFERENCE.md) via `view_file` before designing tag commands to evaluate case studies comparing HITL friction against DTTC solutions.
+
+- **Tag Worthiness Test (Preventing Tag Inflation)**:
+  - **Create Tag ONLY IF**:
+    - ✓ High Repetition: Interactively used repeatedly across sessions/iterations.
+    - ✓ Parameter Override: Modifies a parameter/flag without altering the core workflow.
+    - ✓ Compact Notation: Can be expressed in 2-3 uppercase letters.
+  - **REJECT Tag IF**:
+    - ✗ One-off action or rarely executed.
+    - ✗ Requires verbose explanations or alters the primary execution protocol.
+    - ✗ Low Savings: Saves only a few keystrokes while adding permanent context load.
 
 - **Domain Terms**: Define shared concepts, roles, or metrics for human and agent alignment.
 - **Tag Command Syntax & Naming Rules**:
