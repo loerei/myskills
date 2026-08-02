@@ -73,9 +73,9 @@ git commit -m "test: <dev-bypass-or-test-description>"
 ```
 
 ### Phase 4: Per-File Diff & Multi-Subagent Audit
-1. Export individual `.diff` files against base target branch (`origin/<default-branch>`):
+1. Export individual `.diff` files against base target branch (`origin/<target-base-branch>`):
    ```bash
-   git diff origin/<default-branch> <clean-tag> -- path/to/<filename> > "<appDataDir>\brain\<conversation-id>\<filename>.diff"
+   git diff origin/<target-base-branch> <clean-tag> -- path/to/<filename> > "<appDataDir>\brain\<conversation-id>\<filename>.diff"
    ```
 2. Spawn $N$ subagents concurrently using `invoke_subagent` (1 subagent per diff file).
 3. Supply each subagent with: assigned `.diff` path, full codebase access (`file://`), goal baseline metrics, and bug symptoms.
