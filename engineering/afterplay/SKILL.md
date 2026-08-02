@@ -52,8 +52,8 @@ flowchart TD
    ```
 2. Tag dirty reference and clean baseline states:
    ```bash
-   git tag -a "dirty-code-<goal>-but-<symptom>" -m "dirty reference baseline"
-   git tag -a "clean-code-<goal>-but-<symptom>" -m "clean target baseline"
+   git tag -a "dirty-code-<goal>-but-<symptom/bug>" -m "dirty reference baseline"
+   git tag -a "clean-code-<goal>-but-<symptom/bug>" -m "clean target baseline"
    ```
 3. Record quantitative baseline performance metrics (e.g. latency drop from ~80ms to ~30ms at 100k offset).
 
