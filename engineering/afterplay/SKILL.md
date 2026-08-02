@@ -27,11 +27,15 @@ flowchart TD
     
     Phase4 --> Phase5["5. Confidence Voting & Bug Taxonomy<br/>(!SV<N> Confidence Threshold)"]
     
-    Phase5 --> CheckType{"Subagent Assessment Synthesis"}
-    CheckType -->|"Type 0 / 0 Contribution to Goal"| StripCode["Filter & Discard Non-Goal Code"]
-    CheckType -->|"Type 2 / Type 3 (Existing Code Bug)"| SurgicalFix["Identify Single-Point Surgical Fix<br/>(e.g. super.onTouchEvent)"]
+    Phase5 --> CheckGoal{"1. Goal Contribution Check"}
+    CheckGoal -->|"0 Contribution to Goal"| StripCode["Filter & Discard Non-Goal Code"]
+    CheckGoal -->|"Valid Goal Contribution"| CheckBug{"2. Bug Taxonomy (Type 0-3)"}
+    
+    CheckBug -->|"Type 0 (Clean Goal Code)"| KeepCode["Keep Clean Goal Code"]
+    CheckBug -->|"Type 2 / Type 3 (Existing Code Bug)"| SurgicalFix["Identify Single-Point Surgical Fix<br/>(e.g. super.onTouchEvent)"]
     
     StripCode --> Verify["Verify Build & Test Execution"]
+    KeepCode --> Verify
     SurgicalFix --> Verify
     
     Verify --> Done["Clean Production-Ready PR"]
@@ -88,7 +92,7 @@ git commit -m "test: dev offline mode bypass (skip login)"
 | **Type 3** | **Both** | Bug is caused by a combination of pre-existing code defects AND missing code. |
 
 2. Compile all assessments into `<appDataDir>\brain\<conversation-id>\subagents_diff_and_scrolling_bug_analysis.md`.
-3. Filter out diffs with 0 Contribution to Goal (non-essential code) and pinpoint the minimal surgical fix line edit.
+3. Filter out diffs with 0 Contribution to Goal (non-essential bloat), retain Type 0 clean goal code, and pinpoint the minimal surgical fix line edit for Type 2/3 bug findings.
 4. See [REFERENCE.md](REFERENCE.md) via `view_file` for subagent markdown/JSON schemas and consensus report templates.
 
 ---

@@ -90,7 +90,8 @@ Use this markdown template to aggregate all subagent findings into `<appDataDir>
 
 ## 2. Synthesis & Fix Plan
 
-1. **Non-Critical Code to Strip**: <List diffs with 0 Contribution to Goal to discard>
-2. **Identified Surgical Fix**: <Minimal edit required based on Type 2/3 findings>
-3. **Verification Command**: <Build and test execution commands>
+1. **Non-Goal Code to Strip**: <List diffs with 0 Contribution to Goal to discard>
+2. **Clean Goal Code to Retain (Type 0)**: <List clean diffs contributing to Goal with zero bug association>
+3. **Identified Surgical Fix**: <Minimal edit required based on Type 2/3 bug findings>
+4. **Verification Command**: <Build and test execution commands>
 ```
