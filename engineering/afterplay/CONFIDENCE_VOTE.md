@@ -30,6 +30,31 @@ Each subagent output MUST be formatted as follows:
 4. **Cross-File Pointing (Optional)**: Points to `<other-file>` as potential root cause (Confidence: Z%).
 ```
 
+### JSON Schema for Programmatic Aggregation:
+```json
+{
+  "targetFile": "path/to/File.java",
+  "diffFile": "<appDataDir>/brain/<conversation-id>/File.java.diff",
+  "performanceImpact": {
+    "isCritical": true,
+    "canDiscard": false,
+    "confidenceScore": 95
+  },
+  "bugClassification": {
+    "type": "Type 3",
+    "description": "Both missing code and pre-existing bug",
+    "confidenceScore": 95
+  },
+  "crossFilePointers": [
+    {
+      "pointedFile": "path/to/OtherFile.java",
+      "reason": "Missing super call in onTouchEvent",
+      "confidenceScore": 95
+    }
+  ]
+}
+```
+
 ---
 
 ## 3. Synthesis & Surgical Fix Strategy

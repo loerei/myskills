@@ -27,4 +27,4 @@ flowchart TD
 ### Scenario B: Bug Belongs to Goal Implementation
 - **Symptom**: The bug persists on the clean branch even after stripping dirty boilerplate.
 - **Root Cause**: The change required to achieve the goal (e.g. removing `NestedScrollView` to fix 100k line layout) introduced a side-effect (e.g. breaking touch-drag scrolling).
-- **Action**: Proceed immediately to **Phase 4 (`DIFF_REVIEW.md`)** to spawn per-file subagents.
+- **Action**: Proceed immediately to Phase 4 (`DIFF_REVIEW.md`) via `SKILL.md` to spawn per-file subagents.
