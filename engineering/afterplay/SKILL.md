@@ -17,11 +17,11 @@ Afterplay provides a disciplined 5-phase pipeline to isolate bugs, extract minim
 flowchart TD
     Start["Dirty Prototype with Performance/Goal Win"] --> Phase1["1. Reconstruct Goal & Tagging<br/>(!BA Baseline Audit)"]
     
-    Phase1 --> Phase2{"2. Isolate Bug Origin<br/>(!SC<A|B> Override)"}
+    Phase1 --> Phase2{"2. Isolate Bug Origin by Discarding Dirty Code of Prototype Branch<br/>(!SC<A|B> Override)"}
     
-    Phase2 -->|"Scenario A (Dirty Code Bug)"| DiscardDirty["Discard Dirty Prototype Wrappers"] --> PR_Direct["Create Clean Production PR"]
+    Phase2 -->|"Scenario A (Dirty Code Bug Disappears)"| Verify["Verify Build & Test Execution"]
     
-    Phase2 -->|"Scenario B (Goal Code Bug)"| Phase3["3. Extract Minimal Implementation<br/>(Atomic Commits: feat vs test)"]
+    Phase2 -->|"Scenario B (Goal Code Bug Persists)"| Phase3["3. Extract Minimal Implementation<br/>(Atomic Commits: feat vs test)"]
     
     Phase3 --> Phase4["4. Per-File Diff & Multi-Subagent Audit<br/>(Export .diff files & Spawn N Subagents)"]
     
@@ -34,7 +34,7 @@ flowchart TD
     CheckBug -->|"Type 0 (Clean Goal Code)"| KeepCode["Keep Clean Goal Code"]
     CheckBug -->|"Type 2 / Type 3 (Existing Code Bug)"| SurgicalFix["Identify Single-Point Surgical Fix<br/>(Minimal Code Edit)"]
     
-    StripCode --> Verify["Verify Build & Test Execution"]
+    StripCode --> Verify
     KeepCode --> Verify
     SurgicalFix --> Verify
     
