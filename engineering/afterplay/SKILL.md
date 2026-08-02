@@ -1,6 +1,6 @@
 ---
 name: afterplay
-description: Post-prototype distillation workflow. Use when refining a dirty prototype branch, isolating bug origins after achieving a performance goal, or running parallel subagent diff audits with confidence voting for production PRs.
+description: Post-prototype distillation and production extraction workflow. Use when refining a dirty prototype branch, isolating bug origins after achieving a performance goal, or running parallel subagent diff audits with confidence voting for production PRs.
 ---
 
 # Afterplay: Post-Prototype Distillation & Diff Audit
