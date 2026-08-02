@@ -24,7 +24,7 @@ Answer these 3 questions in detail:
 2. How critical are these changes to achieving the Goal (feature/perf/bugfix/refactor)? (Could this change be reverted/discarded without degrading the Goal?) Include confidence level (0-100%).
 3. Does this diff contain the root cause of the bug? If so, which category does it fall under:
    - Type 0: Unrelated to bug.
-   - Type 1: Missing scrolling/feature code (existing code is fine).
+   - Type 1: Missing feature/implementation code (existing code is fine).
    - Type 2: Bug in existing code (defect in pre-existing implementation).
    - Type 3: Both (existing code defect + missing code).
    Include confidence level (0-100%). Optionally point to any other diff file if relevant.
@@ -62,7 +62,7 @@ Answer these 3 questions in detail:
   "crossFilePointers": [
     {
       "pointedFile": "path/to/OtherFile.java",
-      "reason": "Missing super call in onTouchEvent",
+      "reason": "Defect or missing delegation in target method",
       "confidenceScore": 95
     }
   ]
@@ -73,7 +73,7 @@ Answer these 3 questions in detail:
 
 ## 3. Subagent Consensus Matrix & Report Template
 
-Use this markdown template to aggregate all subagent findings into `<appDataDir>\brain\<conversation-id>\subagents_diff_and_scrolling_bug_analysis.md`:
+Use this markdown template to aggregate all subagent findings into `<appDataDir>\brain\<conversation-id>\subagents_diff_and_bug_analysis.md`:
 
 ```markdown
 # Multi-Subagent Diff Audit & Bug Analysis Summary

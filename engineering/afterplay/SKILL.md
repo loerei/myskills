@@ -32,7 +32,7 @@ flowchart TD
     CheckGoal -->|"Valid Goal Contribution"| CheckBug{"2. Bug Taxonomy (Type 0-3)"}
     
     CheckBug -->|"Type 0 (Clean Goal Code)"| KeepCode["Keep Clean Goal Code"]
-    CheckBug -->|"Type 2 / Type 3 (Existing Code Bug)"| SurgicalFix["Identify Single-Point Surgical Fix<br/>(e.g. super.onTouchEvent)"]
+    CheckBug -->|"Type 2 / Type 3 (Existing Code Bug)"| SurgicalFix["Identify Single-Point Surgical Fix<br/>(Minimal Code Edit)"]
     
     StripCode --> Verify["Verify Build & Test Execution"]
     KeepCode --> Verify
@@ -55,7 +55,7 @@ flowchart TD
    git tag -a "dirty-code-<goal>-but-<symptom/bug>" -m "dirty reference baseline"
    git tag -a "clean-code-<goal>-but-<symptom/bug>" -m "clean target baseline"
    ```
-3. Record quantitative baseline performance metrics (e.g. latency drop from ~80ms to ~30ms at 100k offset).
+3. Record quantitative baseline performance metrics (e.g. latency, test pass rate, memory usage, or feature completion criteria).
 
 ### Phase 2: Isolate Bug Scenario
 Distinguish whether reported bugs belong to dirty prototype wrappers (**Scenario A**) or core goal changes (**Scenario B**):
@@ -66,16 +66,16 @@ Distinguish whether reported bugs belong to dirty prototype wrappers (**Scenario
 Extract essential abstractions into atomic commits on the clean branch, stripping speculative bloat and separating test bypass code:
 ```bash
 git reset HEAD~1
-git add path/to/ProductionFile1.java path/to/ProductionFile2.xml
-git commit -m "feat: optimize single-edittext performance to 30ms latency"
-git add path/to/DevBypassFile.java
-git commit -m "test: dev offline mode bypass (skip login)"
+git add path/to/ProductionFile1.ext path/to/ProductionFile2.ext
+git commit -m "feat: <goal-commit-description>"
+git add path/to/DevBypassFile.ext
+git commit -m "test: <dev-bypass-or-test-description>"
 ```
 
 ### Phase 4: Per-File Diff & Multi-Subagent Audit
-1. Export individual `.diff` files against base target branch (`origin/trunk` or `origin/main`):
+1. Export individual `.diff` files against base target branch (`origin/<default-branch>`):
    ```bash
-   git diff origin/trunk clean-tag -- path/to/File1.java > "<appDataDir>\brain\<conversation-id>\File1.java.diff"
+   git diff origin/<default-branch> <clean-tag> -- path/to/<filename> > "<appDataDir>\brain\<conversation-id>\<filename>.diff"
    ```
 2. Spawn $N$ subagents concurrently using `invoke_subagent` (1 subagent per diff file).
 3. Supply each subagent with: assigned `.diff` path, full codebase access (`file://`), goal baseline metrics, and bug symptoms.
@@ -91,7 +91,7 @@ git commit -m "test: dev offline mode bypass (skip login)"
 | **Type 2** | **Existing Code Bug** | Bug occurs because of a defect in pre-existing code. |
 | **Type 3** | **Both** | Bug is caused by a combination of pre-existing code defects AND missing code. |
 
-2. Compile all assessments into `<appDataDir>\brain\<conversation-id>\subagents_diff_and_scrolling_bug_analysis.md`.
+2. Compile all assessments into `<appDataDir>\brain\<conversation-id>\subagents_diff_and_bug_analysis.md`.
 3. Filter out diffs with 0 Contribution to Goal (non-essential bloat), retain Type 0 clean goal code, and pinpoint the minimal surgical fix line edit for Type 2/3 bug findings.
 4. See [REFERENCE.md](REFERENCE.md) via `view_file` for subagent markdown/JSON schemas and consensus report templates.
 
