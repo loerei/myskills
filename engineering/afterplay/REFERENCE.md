@@ -1,12 +1,12 @@
 # Reference: Subagent Prompt Templates, Schemas & Output Formats
 
-This reference document contains heavy templates, prompt schemas, and JSON output formats used during Phase 4 (Per-File Diff & Multi-Subagent Audit) and Phase 5 (Confidence Voting & Synthesis) of the **Afterplay** workflow.
+This reference document contains heavy templates, prompt schemas, and JSON output formats used during Phase 5 (Per-File Diff & Multi-Subagent Audit) and Phase 6 (Confidence Voting & Synthesis) of the **Afterplay** workflow.
 
 ---
 
 ## 1. Subagent Prompt & Context Package Template
 
-Use this ready-to-use prompt template when spawning per-file diff review subagents via `invoke_subagent` in Phase 4:
+Use this ready-to-use prompt template when spawning per-file diff review subagents via `invoke_subagent` in Phase 5:
 
 ```markdown
 You are assigned to deeply analyze the diff file:

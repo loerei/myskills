@@ -7,7 +7,7 @@ description: Post-prototype distillation and production extraction workflow. Use
 
 Use **Afterplay** when a prototype branch achieves a critical performance win or complex goal (the **Goal**), but the codebase has become dirty, unmaintainable, or contains subtle bugs.
 
-Afterplay provides a disciplined 5-phase pipeline to isolate bugs, extract minimal clean abstractions, run multi-subagent diff audits, and cast confidence votes on every modified file.
+Afterplay provides a disciplined 6-phase pipeline to freeze reference baselines, reconstruct clean target branches, isolate bugs, extract minimal clean abstractions, run multi-subagent diff audits, and cast confidence votes on every modified file.
 
 ---
 
@@ -15,19 +15,21 @@ Afterplay provides a disciplined 5-phase pipeline to isolate bugs, extract minim
 
 ```mermaid
 flowchart TD
-    Start["Dirty Prototype with Performance/Goal Win"] --> Phase1["1. Reconstruct Goal & Tagging<br/>(!BA Baseline Audit)"]
+    Start["Dirty Prototype with Performance/Goal Win"] --> Phase1["1. Freeze Reference Baseline<br/>(!BA Baseline Audit)"]
     
-    Phase1 --> Phase2{"2. Isolate Bug Origin by Discarding Dirty Code of Prototype Branch<br/>(!SC<A|B> Override)"}
+    Phase1 --> Phase2["2. Reconstruct Clean Target Branch<br/>(origin/<target-base-branch>)"]
     
-    Phase2 -->|"Scenario A (Dirty Code Bug Disappears)"| Verify["Verify Build & Test Execution"]
+    Phase2 --> Phase3{"3. Isolate Bug Origin by Discarding Dirty Code of Prototype Branch<br/>(!SC<A|B> Override)"}
     
-    Phase2 -->|"Scenario B (Goal Code Bug Persists)"| Phase3["3. Extract Minimal Implementation<br/>(Atomic Commits: feat vs test)"]
+    Phase3 -->|"Scenario A (Dirty Code Bug Disappears)"| Verify["Verify Build & Test Execution"]
     
-    Phase3 --> Phase4["4. Per-File Diff & Multi-Subagent Audit<br/>(Export .diff files & Spawn N Subagents)"]
+    Phase3 -->|"Scenario B (Goal Code Bug Persists)"| Phase4["4. Extract Minimal Implementation<br/>(Atomic Commits: feat vs test)"]
     
-    Phase4 --> Phase5["5. Confidence Voting & Bug Taxonomy<br/>(!SV<N> Confidence Threshold)"]
+    Phase4 --> Phase5["5. Per-File Diff & Multi-Subagent Audit<br/>(Export .diff files & Spawn N Subagents)"]
     
-    Phase5 --> CheckGoal{"1. Goal Contribution Check"}
+    Phase5 --> Phase6["6. Confidence Voting & Bug Taxonomy<br/>(!SV<N> Confidence Threshold)"]
+    
+    Phase6 --> CheckGoal{"1. Goal Contribution Check"}
     CheckGoal -->|"0 Contribution to Goal"| StripCode["Filter & Discard Non-Goal Code"]
     CheckGoal -->|"Valid Goal Contribution"| CheckBug{"2. Bug Taxonomy (Type 0-3)"}
     
@@ -45,24 +47,31 @@ flowchart TD
 
 ## Execution Phases
 
-### Phase 1: Reconstruct Goal & Tag Baseline
-1. Preserve dirty prototype in an independent reference directory or worktree:
+### Phase 1: Freeze Reference Baseline
+1. Tag dirty prototype state to freeze the reference anchor:
+   ```bash
+   git tag -a "dirty-code-<goal>-but-<symptom/bug>" -m "dirty reference baseline"
+   ```
+2. Preserve dirty prototype in an independent reference directory or worktree:
    ```bash
    git worktree add ../<goal>-dirty-reference <dirty-prototype-branch>
    ```
-2. Tag dirty reference and clean baseline states:
+3. Record quantitative baseline goal metrics (e.g. latency, test pass rate, memory usage, or feature completion criteria).
+
+### Phase 2: Reconstruct Clean Target Branch
+1. Create clean untouched branch from `origin/<target-base-branch>`:
    ```bash
-   git tag -a "dirty-code-<goal>-but-<symptom/bug>" -m "dirty reference baseline"
+   git checkout -b <clean-target-branch> origin/<target-base-branch>
    git tag -a "clean-code-<goal>-but-<symptom/bug>" -m "clean target baseline"
    ```
-3. Record quantitative baseline performance metrics (e.g. latency, test pass rate, memory usage, or feature completion criteria).
+2. Cherry-pick or re-implement clean minimal abstractions from `<goal>-dirty-reference`.
 
-### Phase 2: Isolate Bug Scenario
+### Phase 3: Isolate Bug Scenario
 Distinguish whether reported bugs belong to dirty prototype wrappers (**Scenario A**) or core goal changes (**Scenario B**):
-- **Scenario A (Bug Disappears on Clean Branch)**: Bug stemmed from dirty prototype wrappers (e.g. unused adapters). Discard dirty code and create clean PR directly.
-- **Scenario B (Bug Persists on Clean Branch)**: Bug stems directly from core goal implementation changes. Proceed immediately to Phase 3 and Phase 4.
+- **Scenario A (Bug Disappears on Clean Branch)**: Bug stemmed from dirty prototype wrappers (e.g. unused adapters). Discard dirty code and proceed to build/test verification.
+- **Scenario B (Bug Persists on Clean Branch)**: Bug stems directly from core goal implementation changes. Proceed immediately to Phase 4 and Phase 5.
 
-### Phase 3: Extract Minimal Implementation
+### Phase 4: Extract Minimal Implementation
 Extract essential abstractions into atomic commits on the clean branch, stripping speculative bloat and separating test bypass code:
 ```bash
 git reset HEAD~1
@@ -72,7 +81,7 @@ git add path/to/DevBypassFile.ext
 git commit -m "test: <dev-bypass-or-test-description>"
 ```
 
-### Phase 4: Per-File Diff & Multi-Subagent Audit
+### Phase 5: Per-File Diff & Multi-Subagent Audit
 1. Export individual `.diff` files against base target branch (`origin/<target-base-branch>`):
    ```bash
    git diff origin/<target-base-branch> <clean-tag> -- path/to/<filename> > "<appDataDir>\brain\<conversation-id>\<filename>.diff"
@@ -81,7 +90,7 @@ git commit -m "test: <dev-bypass-or-test-description>"
 3. Supply each subagent with: assigned `.diff` path, full codebase access (`file://`), goal baseline metrics, and bug symptoms.
 4. See [REFERENCE.md](REFERENCE.md) via `view_file` for the exact ready-to-use subagent prompt template.
 
-### Phase 5: Confidence Voting & Consensus Matrix
+### Phase 6: Confidence Voting & Consensus Matrix
 1. Collect subagent assessments across Goal criticality (feature, perf, bugfix, refactor impact), confidence levels (0-100%), and 4-tier bug taxonomy:
 
 | Category Code | Name | Description |
