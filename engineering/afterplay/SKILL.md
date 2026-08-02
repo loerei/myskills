@@ -15,13 +15,26 @@ Afterplay provides a disciplined 5-phase pipeline to isolate bugs, extract minim
 
 ```mermaid
 flowchart TD
-    Start["Dirty Prototype with Performance/Goal Win"] --> Phase1["1. Reconstruct Goal & Tagging"]
-    Phase1 --> Phase2{"2. Isolate Bug Origin"}
-    Phase2 -->|"Scenario A (Dirty Code Bug)"| DoneA["Discard Dirty Code & Create Clean PR"]
-    Phase2 -->|"Scenario B (Goal Code Bug)"| Phase3["3. Extract Implementation"]
-    Phase3 --> Phase4["4. Per-File Diff & Multi-Subagent Audit"]
-    Phase4 --> Phase5["5. Confidence Voting & Synthesis"]
-    Phase5 --> DoneB["Clean Production-Ready PR"]
+    Start["Dirty Prototype with Performance/Goal Win"] --> Phase1["1. Reconstruct Goal & Tagging<br/>(!BA Baseline Audit)"]
+    
+    Phase1 --> Phase2{"2. Isolate Bug Origin<br/>(!SC<A|B> Override)"}
+    
+    Phase2 -->|"Scenario A (Dirty Code Bug)"| DiscardDirty["Discard Dirty Prototype Wrappers"] --> PR_Direct["Create Clean Production PR"]
+    
+    Phase2 -->|"Scenario B (Goal Code Bug)"| Phase3["3. Extract Minimal Implementation<br/>(Atomic Commits: feat vs test)"]
+    
+    Phase3 --> Phase4["4. Per-File Diff & Multi-Subagent Audit<br/>(Export .diff files & Spawn N Subagents)"]
+    
+    Phase4 --> Phase5["5. Confidence Voting & Bug Taxonomy<br/>(!SV<N> Confidence Threshold)"]
+    
+    Phase5 --> CheckType{"Subagent Assessment Synthesis"}
+    CheckType -->|"Type 0 / 0% Perf Impact"| StripCode["Filter & Discard Non-Critical Code"]
+    CheckType -->|"Type 2 / Type 3 (Existing Code Bug)"| SurgicalFix["Identify Single-Point Surgical Fix<br/>(e.g. super.onTouchEvent)"]
+    
+    StripCode --> Verify["Verify Build & Test Execution"]
+    SurgicalFix --> Verify
+    
+    Verify --> Done["Clean Production-Ready PR"]
 ```
 
 ---
