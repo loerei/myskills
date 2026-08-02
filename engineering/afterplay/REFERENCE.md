@@ -14,14 +14,14 @@ Diff file: <appDataDir>\brain\<conversation-id>\<filename>.diff
 Target file: <absolute_path_to_source_file>
 
 Context:
-1. Performance win / Goal: <quantified_goal_baseline_metrics>
+1. Prototype Goal: <quantified_goal_metrics_feature_perf_bugfix>
 2. Bug behavior / Symptoms: <observed_symptoms_and_reproduction_steps>
 
 You have permission to read all diffs and source files in the codebase using view_file / jcodemunch.
 
 Answer these 3 questions in detail:
 1. What exact changes are in <filename>.diff?
-2. How critical are these changes to the performance win? (Could this change be reverted/discarded without losing significant performance?) Include confidence level (0-100%).
+2. How critical are these changes to achieving the Goal (feature/perf/bugfix/refactor)? (Could this change be reverted/discarded without degrading the Goal?) Include confidence level (0-100%).
 3. Does this diff contain the root cause of the bug? If so, which category does it fall under:
    - Type 0: Unrelated to bug.
    - Type 1: Missing scrolling/feature code (existing code is fine).
@@ -39,7 +39,7 @@ Answer these 3 questions in detail:
 ### Subagent Review: <file-basename>
 
 1. **Changes in Diff**: <Summary of modifications>
-2. **Performance Impact**: <Critical / Non-Critical> (Confidence: X%)
+2. **Goal Contribution Impact**: <Critical / Non-Critical> (Confidence: X%)
 3. **Bug Classification**: <Type 0 / Type 1 / Type 2 / Type 3> (Confidence: Y%)
 4. **Cross-File Pointing (Optional)**: Points to `<other-file>` as potential root cause (Confidence: Z%).
 ```
@@ -49,7 +49,7 @@ Answer these 3 questions in detail:
 {
   "targetFile": "path/to/File.java",
   "diffFile": "<appDataDir>/brain/<conversation-id>/File.java.diff",
-  "performanceImpact": {
+  "goalContributionImpact": {
     "isCritical": true,
     "canDiscard": false,
     "confidenceScore": 95
@@ -90,7 +90,7 @@ Use this markdown template to aggregate all subagent findings into `<appDataDir>
 
 ## 2. Synthesis & Fix Plan
 
-1. **Non-Critical Code to Strip**: <List diffs with 0% performance impact to discard>
+1. **Non-Critical Code to Strip**: <List diffs with 0% Goal impact to discard>
 2. **Identified Surgical Fix**: <Minimal edit required based on Type 2/3 findings>
 3. **Verification Command**: <Build and test execution commands>
 ```

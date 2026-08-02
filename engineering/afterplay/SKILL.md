@@ -28,7 +28,7 @@ flowchart TD
     Phase4 --> Phase5["5. Confidence Voting & Bug Taxonomy<br/>(!SV<N> Confidence Threshold)"]
     
     Phase5 --> CheckType{"Subagent Assessment Synthesis"}
-    CheckType -->|"Type 0 / 0% Perf Impact"| StripCode["Filter & Discard Non-Critical Code"]
+    CheckType -->|"Type 0 / 0% Goal Impact"| StripCode["Filter & Discard Non-Goal Code"]
     CheckType -->|"Type 2 / Type 3 (Existing Code Bug)"| SurgicalFix["Identify Single-Point Surgical Fix<br/>(e.g. super.onTouchEvent)"]
     
     StripCode --> Verify["Verify Build & Test Execution"]
@@ -78,7 +78,7 @@ git commit -m "test: dev offline mode bypass (skip login)"
 4. See [REFERENCE.md](REFERENCE.md) via `view_file` for the exact ready-to-use subagent prompt template.
 
 ### Phase 5: Confidence Voting & Consensus Matrix
-1. Collect subagent assessments across performance criticality, confidence levels (0-100%), and 4-tier bug taxonomy:
+1. Collect subagent assessments across Goal criticality (feature, perf, bugfix, refactor impact), confidence levels (0-100%), and 4-tier bug taxonomy:
 
 | Category Code | Name | Description |
 | :---: | :--- | :--- |
@@ -88,7 +88,7 @@ git commit -m "test: dev offline mode bypass (skip login)"
 | **Type 3** | **Both** | Bug is caused by a combination of pre-existing code defects AND missing code. |
 
 2. Compile all assessments into `<appDataDir>\brain\<conversation-id>\subagents_diff_and_scrolling_bug_analysis.md`.
-3. Filter out diffs with 0% performance impact and pinpoint the minimal surgical fix line edit.
+3. Filter out diffs with 0% Goal impact (non-essential code) and pinpoint the minimal surgical fix line edit.
 4. See [REFERENCE.md](REFERENCE.md) via `view_file` for subagent markdown/JSON schemas and consensus report templates.
 
 ---
@@ -97,7 +97,7 @@ git commit -m "test: dev offline mode bypass (skip login)"
 
 The afterplay skill supports specialized modifier tags and domain terminology to control post-prototype distillation and subagent diff review:
 
-- **`Goal Metric`**: Quantifiable baseline performance or functional target achieved during initial prototyping.
+- **`Goal`**: Primary feature, bugfix, performance win, or refactor target achieved during initial prototyping.
 - **`Scenario A`**: Bug originating strictly from dirty prototype wrappers or unused boilerplate (discarded on clean branch).
 - **`Scenario B`**: Bug originating directly from core goal implementation changes.
 - **`!SC<A|B>` (Scenario Choice)**: Force bug classification to Scenario A or B mid-flight in Phase 2 to skip empirical isolation testing.
