@@ -48,7 +48,7 @@ flowchart TD
 ### Phase 1: Reconstruct Goal & Tag Baseline
 1. Preserve dirty prototype in an independent reference directory or worktree:
    ```bash
-   git worktree add ../<repo-name>-architecture <dirty-branch>
+   git worktree add ../<goal>-dirty-reference <dirty-prototype-branch>
    ```
 2. Tag dirty reference and clean baseline states:
    ```bash
