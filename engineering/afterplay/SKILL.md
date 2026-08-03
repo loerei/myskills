@@ -91,7 +91,7 @@ git commit -m "test: <dev-bypass-or-test-description>"
    ```bash
    node scripts/export-diffs.js <base-commit-or-branch> -o "<appDataDir>\brain\<conversation-id>" [--update] [--json]
    ```
-   *(Use `--update` to incrementally re-export only changed files when new PR commits are pushed).*
+   *(Use `--update` to incrementally re-export only changed files when new PR commits are pushed. For complete CLI flags, options, and JSON manifest specs, read [SCRIPTGUIDE.md](SCRIPTGUIDE.md) via `view_file`).*
 2. **Incremental Re-Audit Rule (`--update --json`)**: For cases where previous `/afterplay` audit results already exist, when running `export-diffs.js --update --json` following new commits/pushes on a PR: The main agent MUST inspect the `isUpdated` boolean field in the JSON output. Only spawn subagents for diff files where `isUpdated: true`. Diffs with `isUpdated: false` MUST reuse their previous subagent audit classifications and confidence scores.
 3. Spawn $N$ subagents concurrently using `invoke_subagent` (1 subagent per updated diff file).
    *(If `!HU` tag is supplied, run Subagents in **Bloat Hunt Mode** focusing exclusively on identifying Type U / Type 2U diffs to strip before running full bug analysis).*
