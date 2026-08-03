@@ -4,7 +4,7 @@ const os = require('os');
 const { execSync } = require('child_process');
 
 const userHome = os.homedir();
-const globalSkillsBase = path.join(__dirname, 'myskills');
+const globalSkillsBase = fs.existsSync(path.join(__dirname, 'myskills')) ? path.join(__dirname, 'myskills') : __dirname;
 const subagentRulesBase = path.join(globalSkillsBase, 'subagent_rules');
 const globalAgentsSource = path.join(globalSkillsBase, 'AGENTS.md');
 
