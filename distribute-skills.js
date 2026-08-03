@@ -52,7 +52,15 @@ let targetDir = null;
 let shouldPrune = false;
 
 for (let i = 0; i < args.length; i++) {
-  if (args[i] === '--all') {
+  if (args[i] === '--help' || args[i] === '-h') {
+    console.log("Usage: node distribute-skills.js [options]\n");
+    console.log("Options:");
+    console.log("  --all <parent-directory>          Distribute skills across all project directories in parent-directory");
+    console.log("  --target <project-directory>      Distribute skills to a specific project directory");
+    console.log("  --prune                           Prune obsolete non-catalog skills during distribution");
+    console.log("  --help, -h                        Show this help message and exit");
+    process.exit(0);
+  } else if (args[i] === '--all') {
     mode = 'all';
     targetDir = args[i + 1] || __dirname;
     i++;
