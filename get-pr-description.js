@@ -10,6 +10,8 @@ function parseArgs() {
   let jsonOutput = false;
   let outputPath = null;
   let repo = null;
+  let token = null;
+  let host = null;
 
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
@@ -30,15 +32,25 @@ function parseArgs() {
       i++;
     } else if (arg.startsWith('--repo=') || arg.startsWith('-R=')) {
       repo = arg.split('=')[1];
+    } else if (arg === '--token' || arg === '-t') {
+      token = args[i + 1];
+      i++;
+    } else if (arg.startsWith('--token=') || arg.startsWith('-t=')) {
+      token = arg.split('=')[1];
+    } else if (arg === '--host') {
+      host = args[i + 1];
+      i++;
+    } else if (arg.startsWith('--host=')) {
+      host = arg.split('=')[1];
     } else if (!arg.startsWith('-')) {
       target = arg;
     } else if (arg.startsWith('--')) {
-      // Handle cases like --42 or --https://...
+      // Handle cases like --42 or --1857 or --https://...
       target = arg.replace(/^--/, '');
     }
   }
 
-  return { target, rawOnly, jsonOutput, outputPath, repo };
+  return { target, rawOnly, jsonOutput, outputPath, repo, token, host };
 }
 
 function printHelp() {
@@ -48,27 +60,39 @@ function printHelp() {
   console.log("  --json                    Output PR details in JSON format");
   console.log("  --output, -o <file>       Export output to specified file path (.md or .json)");
   console.log("  --repo, -R <owner/repo>   Specify GitHub repository (e.g. owner/repo)");
+  console.log("  --token, -t <token>       Personal Access Token (PAT) for Private Repos / CI");
+  console.log("  --host <hostname>         Custom GitHub Enterprise host (e.g. github.mycompany.com)");
   console.log("  --help, -h                Show this help message and exit");
   console.log("\nExamples:");
-  console.log("  # Context-based (current git repo):");
-  console.log("  node get-pr-description.js 42");
-  console.log("\n  # Explicit repository via --repo / -R:");
-  console.log("  node get-pr-description.js 42 -R owner/repo -o pr-42.md");
-  console.log("\n  # Universal full URL (works from anywhere):");
-  console.log("  node get-pr-description.js https://github.com/owner/repo/pull/42 -o pr-42.md");
+  console.log("  node get-pr-description.js 42 -o PR.md");
+  console.log("  node get-pr-description.js 42 -R owner/private-repo -t ghp_xxxx -o PR.md");
+  console.log("  node get-pr-description.js https://github.com/owner/private-repo/pull/42 -o PR.md");
 }
 
-function fetchPRDetails(target, repo) {
+function fetchPRDetails(target, repo, token, host) {
   try {
     const repoFlag = repo ? `-R "${repo}"` : '';
-    const cmd = `gh pr view "${target}" ${repoFlag} --json number,title,body,author,state,url,headRefName,baseRefName`;
-    const output = execSync(cmd, { encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
+    const hostFlag = host ? `--hostname "${host}"` : '';
+    const cmd = `gh pr view "${target}" ${repoFlag} ${hostFlag} --json number,title,body,author,state,url,headRefName,baseRefName`;
+    
+    // Inject token into environment variables if explicitly passed
+    const env = { ...process.env };
+    if (token) {
+      env.GH_TOKEN = token;
+      env.GITHUB_TOKEN = token;
+    }
+
+    const output = execSync(cmd, { encoding: 'utf8', env, stdio: ['pipe', 'pipe', 'pipe'] });
     return JSON.parse(output);
   } catch (err) {
     const stderr = err.stderr ? err.stderr.toString() : err.message;
     console.error(`[-] Error fetching PR details for "${target}":`);
     console.error(`    ${stderr.trim()}`);
-    if (!target.includes('/') && !repo) {
+    if (stderr.includes('Could not resolve') || stderr.includes('404') || stderr.includes('GraphQL')) {
+      console.error("\n[💡 Private Repo Note] If this is a private repository, ensure:");
+      console.error("       1. You are authenticated via `gh auth login` with `repo` scope.");
+      console.error("       2. Or pass a PAT token via --token <GH_TOKEN> or set env GH_TOKEN.");
+    } else if (!target.includes('/') && !repo) {
       console.error("\n[💡 Tip] When passing a PR number outside a git repo, specify the full URL or use --repo:");
       console.error(`       node get-pr-description.js https://github.com/owner/repo/pull/${target}`);
       console.error(`       node get-pr-description.js ${target} -R owner/repo`);
@@ -78,7 +102,7 @@ function fetchPRDetails(target, repo) {
 }
 
 function main() {
-  const { target, rawOnly, jsonOutput, outputPath, repo } = parseArgs();
+  const { target, rawOnly, jsonOutput, outputPath, repo, token, host } = parseArgs();
 
   if (!target) {
     console.error("[-] Error: Missing PR number or URL.");
@@ -86,7 +110,7 @@ function main() {
     process.exit(1);
   }
 
-  const pr = fetchPRDetails(target, repo);
+  const pr = fetchPRDetails(target, repo, token, host);
 
   let content = "";
   let isJsonFormat = jsonOutput;
