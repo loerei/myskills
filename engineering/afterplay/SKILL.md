@@ -7,7 +7,7 @@ description: Post-prototype distillation and production extraction workflow. Use
 
 Use **Afterplay** when a prototype branch achieves a critical performance win or complex goal (the **Goal**), but the codebase has become dirty, unmaintainable, or contains subtle bugs.
 
-Afterplay provides a disciplined 6-phase pipeline to freeze reference baselines, reconstruct clean target branches, isolate bugs, extract minimal clean abstractions, run multi-subagent diff audits, and cast confidence votes on every modified file.
+Afterplay provides a disciplined 6-phase pipeline to freeze reference baselines, reconstruct clean target branches, isolate bugs, extract minimal clean abstractions, run multi-subagent diff audits, and cast confidence votes on every modified file using an extended 6-tier bug & goal-relevance taxonomy (`Type 0`, `Type 1`, `Type 2`, `Type 3`, `Type U`, `Type 2U`).
 
 ---
 
@@ -15,7 +15,12 @@ Afterplay provides a disciplined 6-phase pipeline to freeze reference baselines,
 
 ```mermaid
 flowchart TD
-    Start["Dirty Prototype with Performance/Goal Win"] --> Phase1["1. Freeze Reference Baseline<br/>(!BA Baseline Audit)"]
+    Start["Dirty Prototype with Performance/Goal Win"] --> CheckPR{"!GPR<PR_ID/URL> Tag Supplied?"}
+    
+    CheckPR -->|"Yes"| FetchPR["Run scripts/get-pr-description.js<br/>Save to <appDataDir>/brain/<id>/PR.md<br/>Set Goal = PR.md"]
+    CheckPR -->|"No"| Phase1["1. Freeze Reference Baseline"]
+    
+    FetchPR --> Phase1
     
     Phase1 --> Phase2["2. Reconstruct Clean Target Branch<br/>(origin/<target-base-branch>)"]
     
@@ -25,16 +30,15 @@ flowchart TD
     
     Phase3 -->|"Scenario B (Goal Code Bug Persists)"| Phase4["4. Extract Minimal Implementation<br/>(Atomic Commits: feat vs test)"]
     
-    Phase4 --> Phase5["5. Per-File Diff & Multi-Subagent Audit<br/>(Export .diff files & Spawn N Subagents)"]
+    Phase4 --> Phase5["5. Per-File Diff & Multi-Subagent Audit<br/>(Supply PR.md as Goal Context to Subagents)<br/>[!HU Fast Bloat Hunt Mode Option]"]
     
     Phase5 --> Phase6["6. Confidence Voting & Bug Taxonomy<br/>(!SV<N> Confidence Threshold)"]
     
-    Phase6 --> CheckGoal{"1. Goal Contribution Check"}
-    CheckGoal -->|"0 Contribution to Goal"| StripCode["Filter & Discard Non-Goal Code"]
-    CheckGoal -->|"Valid Goal Contribution"| CheckBug{"2. Bug Taxonomy (Type 0-3)"}
+    Phase6 --> CheckCategory{"Check Subagent Taxonomy Classification"}
     
-    CheckBug -->|"Type 0 (Clean Goal Code)"| KeepCode["Keep Clean Goal Code"]
-    CheckBug -->|"Type 2 / Type 3 (Existing Code Bug)"| SurgicalFix["Identify Single-Point Surgical Fix<br/>(Minimal Code Edit)"]
+    CheckCategory -->|"Type U / Type 2U (Unrelated to Goal)"| StripCode["Filter & Discard Non-Goal Code<br/>(Do NOT spend time fixing Type 2U!)"]
+    CheckCategory -->|"Type 0 (Clean Goal Code)"| KeepCode["Keep Clean Goal Code"]
+    CheckCategory -->|"Type 1 / Type 2 / Type 3 (Goal-Relevant Bug)"| SurgicalFix["Identify Single-Point Surgical Fix<br/>(Minimal Code Edit / Implementation)"]
     
     StripCode --> Verify
     KeepCode --> Verify
@@ -47,7 +51,7 @@ flowchart TD
 
 ## Execution Phases
 
-### Phase 1: Freeze Reference Baseline
+### Phase 1: Freeze Reference Baseline & Goal Specification
 1. Tag dirty prototype state to freeze the reference anchor:
    ```bash
    git tag -a "dirty-code-<goal>-but-<symptom/bug>" -m "dirty reference baseline"
@@ -56,7 +60,8 @@ flowchart TD
    ```bash
    git worktree add ../<goal>-dirty-reference <dirty-prototype-branch>
    ```
-3. Record quantitative baseline goal metrics (e.g. latency, test pass rate, memory usage, or feature completion criteria).
+3. If `!GPR<PR_ID/URL>` is supplied, execute `node scripts/get-pr-description.js <PR_ID/URL> -o "<appDataDir>\brain\<conversation-id>\PR.md"` to establish `PR.md` as the authoritative Goal specification.
+4. Record quantitative baseline goal metrics (e.g. latency, test pass rate, memory usage, or feature completion criteria).
 
 ### Phase 2: Reconstruct Clean Target Branch
 1. Create clean untouched branch from `origin/<target-base-branch>`:
@@ -87,21 +92,24 @@ git commit -m "test: <dev-bypass-or-test-description>"
    git diff origin/<target-base-branch> <clean-tag> -- path/to/<filename> > "<appDataDir>\brain\<conversation-id>\<filename>.diff"
    ```
 2. Spawn $N$ subagents concurrently using `invoke_subagent` (1 subagent per diff file).
-3. Supply each subagent with: assigned `.diff` path, full codebase access (`file://`), goal baseline metrics, and bug symptoms.
+   *(If `!HU` tag is supplied, run Subagents in **Bloat Hunt Mode** focusing exclusively on identifying Type U / Type 2U diffs to strip before running full bug analysis).*
+3. Supply each subagent with: assigned `.diff` path, full codebase access (`file://`), `PR.md` Goal specification path (if `!GPR` was invoked), goal baseline metrics, and bug symptoms.
 4. See [REFERENCE.md](REFERENCE.md) via `view_file` for the exact ready-to-use subagent prompt template.
 
-### Phase 6: Confidence Voting & Consensus Matrix
-1. Collect subagent assessments across Goal criticality (feature, perf, bugfix, refactor impact), confidence levels (0-100%), and 4-tier bug taxonomy:
+### Phase 6: Confidence Voting & Extended Taxonomy Matrix
+1. Collect subagent assessments across Goal criticality (feature, perf, bugfix, refactor impact), confidence levels (0-100%), and 6-tier bug & goal taxonomy:
 
-| Category Code | Name | Description |
-| :---: | :--- | :--- |
-| **Type 0** | **Unrelated** | Changes in diff are completely unrelated to the reported bug. |
-| **Type 1** | **Missing Code** | Bug occurs because new code for the feature is missing. Existing code is fine. |
-| **Type 2** | **Existing Code Bug** | Bug occurs because of a defect in pre-existing code. |
-| **Type 3** | **Both** | Bug is caused by a combination of pre-existing code defects AND missing code. |
+| Category Code | Name | Description | Action Strategy |
+| :---: | :--- | :--- | :--- |
+| **Type 0** | **Clean / Clear** | Changes in diff are completely unrelated to the reported bug and are contributing to Goal. | **Keep** clean Goal code |
+| **Type 1** | **Missing Code** | Bug occurs because new code for the Goal feature is missing (existing code is fine). | **Implement** missing Goal logic |
+| **Type 2** | **Existing Code Bug** | Bug occurs because of a defect in pre-existing code contributing to Goal. | **Surgical Fix** pre-existing code |
+| **Type 3** | **Both** | Bug is caused by a combination of pre-existing code defects AND missing code for Goal. | **Implement + Surgical Fix** |
+| **Type U** | **Unrelated to Goal** | Code does not contribute to Goal (accidental prototype bloat / dead code). | **Strip / Discard** immediately |
+| **Type 2U** | **Unrelated Buggy Code** | Bug is in pre-existing or prototype code that is unrelated to and does not contribute to Goal. | **Strip / Discard** (do NOT waste time fixing!) |
 
 2. Compile all assessments into `<appDataDir>\brain\<conversation-id>\subagents_diff_and_bug_analysis.md`.
-3. Filter out diffs with 0 Contribution to Goal (non-essential bloat), retain Type 0 clean goal code, and pinpoint the minimal surgical fix line edit for Type 2/3 bug findings.
+3. Discard diffs classified as **Type U** or **Type 2U** (preventing unnecessary surgical fix effort for non-goal code), retain **Type 0** clean Goal code, and pinpoint minimal surgical fix line edits for **Type 1/2/3** findings.
 4. See [REFERENCE.md](REFERENCE.md) via `view_file` for subagent markdown/JSON schemas and consensus report templates.
 
 ---
@@ -117,13 +125,15 @@ The afterplay skill supports specialized modifier tags and domain terminology to
   - **Syntax/Parameter**: `!SC<A|B>` (Default: Auto-detected via empirical branch test).
   - **Timing**: Start-time.
   - **Agent Action**: Forces bug classification to Scenario A (dirty code bug) or Scenario B (goal code bug).
-- **`!BA` (Baseline Audit)**: Require quantitative metric verification in Phase 1 before spawning diff review subagents.
-  - **Syntax/Parameter**: `!BA`.
-  - **Timing**: Start-time.
-  - **Agent Action**: Forces explicit benchmark/profiling run to record baseline metrics before diff review.
 - **`!SV<N>` (Subagent Voting Threshold)**: Set minimum confidence threshold in Phase 5 required to accept subagent bug classification.
   - **Syntax/Parameter**: `!SV<N>` (Default: `70`).
   - **Timing**: Start-time.
   - **Agent Action**: Rejects subagent votes with confidence score below $N\%$.
-
-
+- **`!HU` (Hunt Unrelated / Bloat Hunter Pass)**: Restrict subagent diff audit in Phase 5 to prioritize hunting Type U (Goal-unrelated bloat) and Type 2U (unrelated buggy code).
+  - **Syntax/Parameter**: `!HU`.
+  - **Timing**: Start-time / Mid-flight.
+  - **Agent Action**: Instructs spawned subagents to run a lightweight pass exclusively identifying non-goal code for immediate stripping, bypassing heavy surgical fix analysis on non-essential diffs.
+- **`!GPR<PR_ID/URL>` (Get PR Goal Specification)**: Fetch pull request description via `scripts/get-pr-description.js` and establish `PR.md` as the Goal context for subagents.
+  - **Syntax/Parameter**: `!GPR<PR_ID/URL>` (e.g. `!GPR12`, `!GPR1857`, `!GPRhttps://github.com/owner/repo/pull/1857`).
+  - **Timing**: Start-time.
+  - **Agent Action**: Runs `node scripts/get-pr-description.js <PR_ID/URL> -o "<appDataDir>\brain\<conversation-id>\PR.md"`, assigns `PR.md` as the Goal specification, and instructs all spawned subagents to read `PR.md` when evaluating diff contribution to Goal.
