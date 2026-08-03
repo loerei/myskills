@@ -32,7 +32,7 @@ flowchart TD
     
     Phase4 --> Phase5["5. Per-File Diff & Multi-Subagent Audit<br/>(Supply PR.md as Goal Context to Subagents)<br/>[!HU Fast Bloat Hunt Mode Option]"]
     
-    Phase5 --> Phase6["6. Confidence Voting & Bug Taxonomy<br/>(!SV<N> Confidence Threshold)"]
+    Phase5 --> Phase6["6. Confidence Voting & Bug Taxonomy"]
     
     Phase6 --> CheckCategory{"Check Subagent Taxonomy Classification"}
     
@@ -125,10 +125,6 @@ The afterplay skill supports specialized modifier tags and domain terminology to
   - **Syntax/Parameter**: `!SC<A|B>` (Default: Auto-detected via empirical branch test).
   - **Timing**: Start-time.
   - **Agent Action**: Forces bug classification to Scenario A (dirty code bug) or Scenario B (goal code bug).
-- **`!SV<N>` (Subagent Voting Threshold)**: Set minimum confidence threshold in Phase 5 required to accept subagent bug classification.
-  - **Syntax/Parameter**: `!SV<N>` (Default: `70`).
-  - **Timing**: Start-time.
-  - **Agent Action**: Rejects subagent votes with confidence score below $N\%$.
 - **`!HU` (Hunt Unrelated / Bloat Hunter Pass)**: Restrict subagent diff audit in Phase 5 to prioritize hunting Type U (Goal-unrelated bloat) and Type 2U (unrelated buggy code).
   - **Syntax/Parameter**: `!HU`.
   - **Timing**: Start-time / Mid-flight.
