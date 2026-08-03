@@ -87,14 +87,16 @@ git commit -m "test: <dev-bypass-or-test-description>"
 ```
 
 ### Phase 5: Per-File Diff & Multi-Subagent Audit
-1. Export individual `.diff` files against base target branch (`origin/<target-base-branch>`):
+1. Export individual `.diff` files against base target branch (`origin/<target-base-branch>` or base commit) using `scripts/export-diffs.js`:
    ```bash
-   git diff origin/<target-base-branch> <clean-tag> -- path/to/<filename> > "<appDataDir>\brain\<conversation-id>\<filename>.diff"
+   node scripts/export-diffs.js <base-commit-or-branch> -o "<appDataDir>\brain\<conversation-id>" [--update] [--json]
    ```
-2. Spawn $N$ subagents concurrently using `invoke_subagent` (1 subagent per diff file).
+   *(Use `--update` to incrementally re-export only changed files when new PR commits are pushed).*
+2. **Incremental Re-Audit Rule (`--update --json`)**: For cases where previous `/afterplay` audit results already exist, when running `export-diffs.js --update --json` following new commits/pushes on a PR: The main agent MUST inspect the `isUpdated` boolean field in the JSON output. Only spawn subagents for diff files where `isUpdated: true`. Diffs with `isUpdated: false` MUST reuse their previous subagent audit classifications and confidence scores.
+3. Spawn $N$ subagents concurrently using `invoke_subagent` (1 subagent per updated diff file).
    *(If `!HU` tag is supplied, run Subagents in **Bloat Hunt Mode** focusing exclusively on identifying Type U / Type 2U diffs to strip before running full bug analysis).*
-3. Supply each subagent with: assigned `.diff` path, full codebase access (`file://`), `PR.md` Goal specification path (if `!GPR` was invoked), goal baseline metrics, and bug symptoms.
-4. See [REFERENCE.md](REFERENCE.md) via `view_file` for the exact ready-to-use subagent prompt template.
+4. Supply each subagent with: assigned `.diff` path, full codebase access (`file://`), `PR.md` Goal specification path (if `!GPR` was invoked), goal baseline metrics, and bug symptoms.
+5. See [REFERENCE.md](REFERENCE.md) via `view_file` for the exact ready-to-use subagent prompt template.
 
 ### Phase 6: Confidence Voting & Extended Taxonomy Matrix
 1. Collect subagent assessments across Goal criticality (feature, perf, bugfix, refactor impact), confidence levels (0-100%), and 6-tier bug & goal taxonomy:
