@@ -89,7 +89,7 @@ Two required components:
 > rule instead.
 ```
 
-**Why procedural framing matters:** Declarative statements (*"these rules override X"*) are abstract — the model must infer *how* to apply the override at each decision point. Procedural instructions (*"FIRST check... If yes, DISCARD... FOLLOW..."*) give the model an explicit algorithm, reducing inference ambiguity.
+**Why procedural framing matters:** Declarative statements (*"these rules override X"*) are abstract — the model must infer *how* to apply the override at each decision point. Procedural instructions (*"FIRST check... If yes, DISCARD... FOLLOW..."*) give the model an explicit algorithm: a **determining step**, a **discard branch**, and a **follow-through branch**, reducing inference ambiguity.
 
 ### Layer 2: Per-Section Micro-Anchors
 
