@@ -249,7 +249,7 @@ def main() -> int:
                 transcript_segments = filter_range(all_segments, start_sec, end_sec) if focused else all_segments
                 transcript_text = format_transcript(transcript_segments)
                 transcript_source = f"whisper ({used_backend})"
-            except SystemExit as exc:
+            except (RuntimeError, Exception) as exc:
                 print(f"[watch] whisper fallback failed: {exc}", file=sys.stderr)
         else:
             hint = (
@@ -291,7 +291,11 @@ def main() -> int:
         engine = frame_meta.get("engine", "scene")
         fallback = " with uniform fallback" if frame_meta.get("fallback") else ""
         deduped = frame_meta.get("deduped_count", 0)
-        dedup_note = f", {deduped} near-duplicate{'s' if deduped != 1 else ''} dropped" if deduped else ""
+        if deduped:
+            plural = "s" if deduped != 1 else ""
+            dedup_note = f", {deduped} near-duplicate{plural} dropped"
+        else:
+            dedup_note = ""
         print(
             f"- **Frames:** {detail_count} selected from {frame_meta.get('candidate_count', detail_count)} "
             f"candidates ({engine}{fallback}{dedup_note}, {range_mode} range, budget {target}, cap {cap_label})"

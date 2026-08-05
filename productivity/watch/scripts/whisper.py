@@ -204,6 +204,7 @@ def _build_multipart(fields: dict[str, str], file_path: Path) -> tuple[bytes, st
     Whisper's multipart upload is small and predictable — doing it by hand
     keeps us on pure stdlib instead of pulling requests/groq/openai SDKs.
     """
+    file_path = file_path.resolve()
     boundary = f"----WatchBoundary{uuid.uuid4().hex}"
     eol = b"\r\n"
     buf = io.BytesIO()
@@ -284,7 +285,7 @@ def _post_whisper(endpoint: str, api_key: str, model: str, audio_path: Path) -> 
                 )
                 time.sleep(delay)
             continue
-        except (urllib.error.URLError, TimeoutError, ConnectionResetError, OSError) as exc:
+        except (urllib.error.URLError, OSError) as exc:
             last_exc, last_detail = exc, ""
             if attempt < MAX_ATTEMPTS - 1:
                 delay = RETRY_BASE_DELAY * (attempt + 1)
@@ -382,7 +383,7 @@ def transcribe_chunks(
     for index, (path, offset) in enumerate(chunks):
         try:
             chunk_segments = transcribe_one(path)
-        except SystemExit as exc:
+        except (RuntimeError, Exception) as exc:
             failures += 1
             print(
                 f"[watch] chunk {index + 1}/{len(chunks)} failed — skipping ({exc})",

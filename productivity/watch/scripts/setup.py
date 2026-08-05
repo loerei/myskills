@@ -32,9 +32,10 @@ if str(SCRIPT_DIR) not in sys.path:
 from config import get_config  # noqa: E402
 
 
+NOTHING_TO_INSTALL = "nothing to install"
 REQUIRED_BINARIES = ["ffmpeg", "ffprobe", "yt-dlp"]
-CONFIG_DIR = Path.home() / ".config" / "watch"
-CONFIG_FILE = CONFIG_DIR / ".env"
+CONFIG_DIR = (Path.home() / ".config" / "watch").resolve()
+CONFIG_FILE = (CONFIG_DIR / ".env").resolve()
 ENV_TEMPLATE = """# /watch API configuration
 #
 # Whisper transcription fallback — used only when yt-dlp cannot get captions
@@ -185,7 +186,7 @@ def _install_macos(missing: list[str]) -> tuple[bool, str]:
         )
     pkgs = _brew_pkg(missing)
     if not pkgs:
-        return True, "nothing to install"
+        return True, NOTHING_TO_INSTALL
     cmd = ["brew", "install", *pkgs]
     print(f"[setup] running: {' '.join(cmd)}", file=sys.stderr)
     result = subprocess.run(cmd)
@@ -201,7 +202,7 @@ def _install_hint_linux(missing: list[str]) -> str:
         hints.append("apt: `sudo apt install ffmpeg` or dnf: `sudo dnf install ffmpeg`")
     if "yt-dlp" in pkgs:
         hints.append("`pipx install yt-dlp` (recommended) or `pip install --user yt-dlp`")
-    return "\n  ".join(hints) if hints else "nothing to install"
+    return "\n  ".join(hints) if hints else NOTHING_TO_INSTALL
 
 
 def _install_hint_windows(missing: list[str]) -> str:
@@ -211,7 +212,7 @@ def _install_hint_windows(missing: list[str]) -> str:
         hints.append("winget: `winget install Gyan.FFmpeg`")
     if "yt-dlp" in pkgs:
         hints.append("winget: `winget install yt-dlp.yt-dlp` or pip: `pip install --user yt-dlp`")
-    return "\n  ".join(hints) if hints else "nothing to install"
+    return "\n  ".join(hints) if hints else NOTHING_TO_INSTALL
 
 
 def _status() -> dict:

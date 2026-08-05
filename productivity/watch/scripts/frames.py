@@ -16,6 +16,11 @@ import sys
 from pathlib import Path
 
 
+FFMPEG_MISSING_MSG = FFMPEG_MISSING_MSG
+FRAME_GLOB_PATTERN = FRAME_GLOB_PATTERN
+FRAME_FORMAT_PATTERN = FRAME_FORMAT_PATTERN
+FRAMES_V_FLAG = FRAMES_V_FLAG
+
 MAX_FPS = 2.0
 SCENE_THRESHOLD = 0.20
 # Keep scene-detection results once we have at least this many distinct shots.
@@ -169,13 +174,13 @@ def extract(
     end_seconds: float | None = None,
 ) -> list[dict]:
     if shutil.which("ffmpeg") is None:
-        raise SystemExit("ffmpeg is not installed. Install with: brew install ffmpeg")
+        raise SystemExit(FFMPEG_MISSING_MSG)
 
     out_dir.mkdir(parents=True, exist_ok=True)
-    for existing in out_dir.glob("frame_*.jpg"):
+    for existing in out_dir.glob(FRAME_GLOB_PATTERN):
         existing.unlink()
 
-    output_pattern = str(out_dir / "frame_%04d.jpg")
+    output_pattern = str(out_dir / FRAME_FORMAT_PATTERN)
     cmd: list[str] = [
         "ffmpeg",
         "-hide_banner",
@@ -192,7 +197,7 @@ def extract(
     cmd += [
         "-i", str(Path(video_path).resolve()),
         "-vf", f"fps={fps},{_scale_filter(resolution)}",
-        "-frames:v", str(max_frames),
+        FRAMES_V_FLAG, str(max_frames),
         "-q:v", "4",
         output_pattern,
     ]
@@ -202,7 +207,7 @@ def extract(
         raise SystemExit(f"ffmpeg frame extraction failed: {result.stderr.strip()}")
 
     offset = start_seconds or 0.0
-    frames = sorted(out_dir.glob("frame_*.jpg"))
+    frames = sorted(out_dir.glob(FRAME_GLOB_PATTERN))
     return [
         {
             "index": i,
@@ -231,13 +236,13 @@ def extract_scene_candidates(
     every detected shot, as the user explicitly opted in.
     """
     if shutil.which("ffmpeg") is None:
-        raise SystemExit("ffmpeg is not installed. Install with: brew install ffmpeg")
+        raise SystemExit(FFMPEG_MISSING_MSG)
 
     out_dir.mkdir(parents=True, exist_ok=True)
-    for existing in out_dir.glob("frame_*.jpg"):
+    for existing in out_dir.glob(FRAME_GLOB_PATTERN):
         existing.unlink()
 
-    output_pattern = str(out_dir / "frame_%04d.jpg")
+    output_pattern = str(out_dir / FRAME_FORMAT_PATTERN)
     cmd: list[str] = [
         "ffmpeg",
         "-hide_banner",
@@ -256,7 +261,7 @@ def extract_scene_candidates(
         "-vsync", "vfr",
     ]
     if max_frames is not None:
-        cmd += ["-frames:v", str(max_frames)]
+        cmd += [FRAMES_V_FLAG, str(max_frames)]
     cmd += [
         "-q:v", "4",
         output_pattern,
@@ -267,7 +272,7 @@ def extract_scene_candidates(
 
     offset = start_seconds or 0.0
     timestamps = [round(offset + float(match.group(1)), 2) for match in SHOWINFO_TS_RE.finditer(result.stderr)]
-    frames = sorted(out_dir.glob("frame_*.jpg"))
+    frames = sorted(out_dir.glob(FRAME_GLOB_PATTERN))
     out: list[dict] = []
     for i, path in enumerate(frames):
         ts = timestamps[i] if i < len(timestamps) else offset
@@ -339,7 +344,7 @@ def extract_at_timestamps(
     even-sampled (first + last kept) before extraction.
     """
     if shutil.which("ffmpeg") is None:
-        raise SystemExit("ffmpeg is not installed. Install with: brew install ffmpeg")
+        raise SystemExit(FFMPEG_MISSING_MSG)
 
     out_dir.mkdir(parents=True, exist_ok=True)
     for existing in out_dir.glob("cue_*.jpg"):
@@ -347,7 +352,7 @@ def extract_at_timestamps(
 
     lo = start_seconds or 0.0
     hi = end_seconds if end_seconds is not None else float("inf")
-    requested = sorted(set(round(float(t), 2) for t in timestamps))
+    requested = sorted({round(float(t), 2) for t in timestamps})
     in_window = [t for t in requested if lo <= t <= hi]
     dropped = len(requested) - len(in_window)
 
@@ -366,7 +371,7 @@ def extract_at_timestamps(
             "-y",
             "-ss", f"{t:.3f}",
             "-i", str(Path(video_path).resolve()),
-            "-frames:v", "1",
+            FRAMES_V_FLAG, "1",
             "-vf", _scale_filter(resolution),
             "-q:v", "4",
             str(path),
@@ -433,7 +438,7 @@ def _thumb_frames(paths: list[Path]) -> list[bytes]:
     if not paths:
         return []
     paths = [Path(p) for p in paths]
-    m = re.match(r"(.*?)(\d+)(\.[A-Za-z0-9]+)$", paths[0].name)
+    m = re.match(r"^([^\d]*)(\d+)(\.[A-Za-z0-9]+)$", paths[0].name)
     if m is None:
         return []
     prefix, digits, ext = m.group(1), m.group(2), m.group(3)
@@ -591,13 +596,13 @@ def extract_keyframes(
     even-sample first→last; too few keyframes → uniform fallback.
     """
     if shutil.which("ffmpeg") is None:
-        raise SystemExit("ffmpeg is not installed. Install with: brew install ffmpeg")
+        raise SystemExit(FFMPEG_MISSING_MSG)
 
     out_dir.mkdir(parents=True, exist_ok=True)
-    for existing in out_dir.glob("frame_*.jpg"):
+    for existing in out_dir.glob(FRAME_GLOB_PATTERN):
         existing.unlink()
 
-    output_pattern = str(out_dir / "frame_%04d.jpg")
+    output_pattern = str(out_dir / FRAME_FORMAT_PATTERN)
     cmd: list[str] = [
         "ffmpeg",
         "-hide_banner",
@@ -622,7 +627,7 @@ def extract_keyframes(
 
     offset = start_seconds or 0.0
     timestamps = [round(offset + float(m.group(1)), 2) for m in SHOWINFO_TS_RE.finditer(result.stderr)]
-    files = sorted(out_dir.glob("frame_*.jpg"))
+    files = sorted(out_dir.glob(FRAME_GLOB_PATTERN))
     candidates: list[dict] = []
     for i, path in enumerate(files):
         ts = timestamps[i] if i < len(timestamps) else offset

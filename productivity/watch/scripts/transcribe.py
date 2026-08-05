@@ -22,7 +22,7 @@ def _to_seconds(h: str, m: str, s: str, ms: str) -> float:
 
 
 def parse_vtt(path: str) -> list[dict]:
-    text = Path(path).read_text(encoding="utf-8", errors="ignore")
+    text = Path(path).resolve().read_text(encoding="utf-8", errors="ignore")
     lines = text.splitlines()
 
     segments: list[dict] = []

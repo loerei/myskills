@@ -97,9 +97,10 @@ def fetch_captions(url: str, out_dir: Path) -> dict:
 
 def _read_info(info_path: Path, url: str) -> dict:
     info: dict = {}
-    if info_path.exists():
+    resolved_info_path = info_path.resolve()
+    if resolved_info_path.exists():
         try:
-            raw = json.loads(info_path.read_text(encoding="utf-8"))
+            raw = json.loads(resolved_info_path.read_text(encoding="utf-8"))
             info = {
                 "title": raw.get("title"),
                 "uploader": raw.get("uploader") or raw.get("channel"),
@@ -120,8 +121,9 @@ def download_url(
     if shutil.which("yt-dlp") is None:
         raise SystemExit("yt-dlp is not installed. Install with: brew install yt-dlp")
 
-    out_dir.mkdir(parents=True, exist_ok=True)
-    output_template = str(out_dir / "video.%(ext)s")
+    resolved_out_dir = out_dir.resolve()
+    resolved_out_dir.mkdir(parents=True, exist_ok=True)
+    output_template = str(resolved_out_dir / "video.%(ext)s")
 
     fmt = "ba/bestaudio" if audio_only else "bv*[height<=720]+ba/b[height<=720]/bv+ba/b"
     cmd = [
