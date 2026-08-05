@@ -1,8 +1,8 @@
 #!/usr/bin/env node
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
-const { execSync } = require('child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+const crypto = require('node:crypto');
+const { execSync } = require('node:child_process');
 
 function parseArgs() {
   const args = process.argv.slice(2);
@@ -86,6 +86,9 @@ function getSingleFileDiff(targetRef, relPath, cwd) {
     const cmd = `git diff ${ref} HEAD -- "${relPath}"`;
     return execSync(cmd, { cwd, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
   } catch (err) {
+    if (process.env.DEBUG) {
+      console.error(`Failed to get diff for ${relPath}:`, err.message);
+    }
     return "";
   }
 }

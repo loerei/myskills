@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+const { execSync } = require('node:child_process');
 
 function parseArgs() {
   const args = process.argv.slice(2);
@@ -131,18 +131,20 @@ function main() {
     content = pr.body ? pr.body.trim() : "(No description provided)";
   } else {
     const lines = [];
-    lines.push("==================================================");
-    lines.push(`PR #${pr.number}: ${pr.title}`);
-    lines.push("==================================================");
-    lines.push(`Author:     ${pr.author ? pr.author.login : 'Unknown'}`);
-    lines.push(`State:      ${pr.state}`);
-    lines.push(`Branch:     ${pr.headRefName} -> ${pr.baseRefName}`);
-    lines.push(`URL:        ${pr.url}`);
-    lines.push("--------------------------------------------------");
-    lines.push("DESCRIPTION:");
-    lines.push("--------------------------------------------------");
-    lines.push(pr.body ? pr.body.trim() : "(No description provided)");
-    lines.push("==================================================");
+    lines.push(
+      "==================================================",
+      `PR #${pr.number}: ${pr.title}`,
+      "==================================================",
+      `Author:     ${pr.author ? pr.author.login : 'Unknown'}`,
+      `State:      ${pr.state}`,
+      `Branch:     ${pr.headRefName} -> ${pr.baseRefName}`,
+      `URL:        ${pr.url}`,
+      "--------------------------------------------------",
+      "DESCRIPTION:",
+      "--------------------------------------------------",
+      pr.body ? pr.body.trim() : "(No description provided)",
+      "=================================================="
+    );
     content = lines.join("\n");
   }
 

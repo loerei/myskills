@@ -1,7 +1,7 @@
-const fs = require('fs');
-const path = require('path');
-const os = require('os');
-const { execSync } = require('child_process');
+const fs = require('node:fs');
+const path = require('node:path');
+const os = require('node:os');
+const { execSync } = require('node:child_process');
 
 const userHome = os.homedir();
 const globalSkillsBase = fs.existsSync(path.join(__dirname, 'myskills')) ? path.join(__dirname, 'myskills') : __dirname;
@@ -144,7 +144,10 @@ function isLocalSkill(skillDir) {
   try {
     const content = fs.readFileSync(skillFile, 'utf-8');
     return /local:\s*true/i.test(content) || /scope:\s*(project|local)/i.test(content);
-  } catch (_e) {
+  } catch (e) {
+    if (process.env.DEBUG) {
+      console.error(`Failed to read ${skillFile}:`, e);
+    }
     return false;
   }
 }
