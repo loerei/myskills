@@ -79,34 +79,34 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    Start["Plan Requested / PL Tag"] --> CreatePlan["1. Create Plan<br/>(implementation_plan.md with [ ] checklist)"]
-    CreatePlan --> ModeAOption{"2. Pre-Approval Plan Audit Gate?<br/>(/conduct-reviewing-loop Mode A)"}
+    Start["Plan Requested / PL Tag"] --> CreatePlan["1. Create Plan<br/>(implementation_plan.md with the given layout)"]
+    CreatePlan --> ModeAOption{"2. Pre-Approval Plan Audit Gate?<br/>(Ask User: Approve or Mode A?)"}
     
-    ModeAOption -->|"Recommended for Complex Plans"| RunModeA["Run Mode A Plan Audit<br/>(Stress-test coverage & edge cases)"]
-    RunModeA --> UserGate["3. User Approval Gate<br/>(Present audited plan)"]
+    ModeAOption -->|"User Requests Mode A"| RunModeA["Run Mode A Plan Audit<br/>(Stress-test coverage & edge cases)"]
+    RunModeA -->|"Pass"| UserGate["3. User Approval Gate<br/>(Present audited plan)"]
     
-    ModeAOption -->|"Direct / Minor Plan"| UserGate
+    ModeAOption -->|"User Approves Directly"| SelectStep["4. Select First Uncompleted Step<br/>Mark [/] In-Progress (ONLY ONE active)"]
     
     UserGate -->|"Not Approved / User Feedback"| RefinePlanDoc["Update implementation_plan.md"] --> ModeAOption
     
-    UserGate -->|"Approved (EXPLICIT_APPROVAL / T3)"| SelectStep["4. Select First Uncompleted Step<br/>Mark [/] In-Progress (ONLY ONE active)"]
+    UserGate -->|"Approved (EXPLICIT_APPROVAL / T3)"| SelectStep
     
-    SelectStep --> ExecuteStep["5. Execute Surgical Edits / Tool Calls"]
+    SelectStep --> ExecuteStep["5. Execute"]
     ExecuteStep --> VerifyStep{"6. Runtime Verification Passed?"}
     
     VerifyStep -->|"Failed (1st Time)"| AnalyzeLog["Analyze Log Evidence & Retry"] --> ExecuteStep
-    VerifyStep -->|"Failed (2 Consecutive Times)"| MustStop["MUST STOP: Research Domain<br/>& Await User Alignment"] --> RefinePlanDoc
+    VerifyStep -->|"Failed (2 Consecutive Times)"| MustStop["MUST STOP: Follow 3-Phase Investigation Protocol<br/>(Section 5) & Align with User"] --> RefinePlanDoc
     
     VerifyStep -->|"Passed"| MarkComplete["7. Mark Step [x] Complete<br/>Update implementation_plan.md"]
     
     MarkComplete --> CheckRemaining{"More Uncompleted Steps?"}
     CheckRemaining -->|"Yes"| ContextCheck{"Context Truncated or New Turn?"}
-    ContextCheck -->|"Yes"| ReadPlan["Re-read implementation_plan.md<br/>to locate [/] step"] --> SelectStep
+    ContextCheck -->|"Yes"| ReadPlan["Re-read implementation_plan.md<br/>to ensure understanding of the plan"] --> SelectStep
     ContextCheck -->|"No"| SelectStep
     
-    CheckRemaining -->|"No (All [x])"| ModeBCheck{"8. Code Coverage Audit Gate?<br/>(/conduct-reviewing-loop Mode B)"}
-    ModeBCheck -->|"Optional Validation"| RunModeB["Run Mode B Diff Audit"] --> FinalWalkthrough["9. Generate walkthrough.md<br/>& Declare Completion"]
-    ModeBCheck -->|"Direct"| FinalWalkthrough
+    CheckRemaining -->|"No (All [x])"| ModeBCheck{"8. Code Coverage Audit Gate?<br/>(Ask User: Run Mode B Validation?)"}
+    ModeBCheck -->|"User Requests Mode B"| RunModeB["Run Mode B Diff Audit<br/>(Verify 100% code coverage)"] --> FinalWalkthrough["9. Generate walkthrough.md<br/>& Declare Completion"]
+    ModeBCheck -->|"User Bypasses / Direct"| FinalWalkthrough
 ```
 
 #### Implementation Plan Directives
