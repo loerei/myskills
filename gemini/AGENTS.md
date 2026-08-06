@@ -85,6 +85,58 @@ flowchart TD
 
 ---
 
+### 1.1 Living Implementation Plan & Task Protocol
+
+> *Overrides ad-hoc task tracking and unifies plan proposals with step-by-step execution tracking into a single authoritative living document.*
+
+```mermaid
+flowchart TD
+    Start["New Complex Task (3+ Steps / Architecture)"] --> CreatePlan["1. Create Living Plan<br/>(implementation_plan.md with [ ] checklist)"]
+    CreatePlan --> ModeAOption{"2. Pre-Approval Plan Audit?<br/>(/conduct-reviewing-loop Mode A)"}
+    
+    ModeAOption -->|"Recommended for Complex Plans"| RunModeA["Run Mode A Plan Audit<br/>(Stress-test coverage & edge cases)"]
+    RunModeA --> PlanPass{"Mode A PASS?"}
+    PlanPass -->|"Revisions Needed"| RefinePlanDoc["Update implementation_plan.md"] --> RunModeA
+    PlanPass -->|"PASS"| UserGate["3. User Approval Gate<br/>(Present audited plan)"]
+    
+    ModeAOption -->|"Direct / Minor Plan"| UserGate
+    
+    UserGate -->|"Not Approved / User Feedback"| RefinePlanDoc --> ModeAOption
+    
+    UserGate -->|"Approved (EXPLICIT_APPROVAL / T3)"| SelectStep["4. Select First Uncompleted Step<br/>Mark [/] In-Progress (ONLY ONE active)"]
+    
+    SelectStep --> ExecuteStep["5. Execute Surgical Edits / Tool Calls"]
+    ExecuteStep --> VerifyStep{"6. Runtime Verification Passed?"}
+    
+    VerifyStep -->|"Failed (1st Time)"| AnalyzeLog["Analyze Log Evidence & Retry"] --> ExecuteStep
+    VerifyStep -->|"Failed (2 Consecutive Times)"| MustStop["MUST STOP: Research Domain<br/>& Await User Alignment"] --> RefinePlanDoc
+    
+    VerifyStep -->|"Passed"| MarkComplete["7. Mark Step [x] Complete<br/>Update implementation_plan.md"]
+    
+    MarkComplete --> CheckRemaining{"More Uncompleted Steps?"}
+    CheckRemaining -->|"Yes"| ContextCheck{"Context Truncated or New Turn?"}
+    ContextCheck -->|"Yes"| ReadPlan["Re-read implementation_plan.md<br/>to locate [/] step"] --> SelectStep
+    ContextCheck -->|"No"| SelectStep
+    
+    CheckRemaining -->|"No (All [x])"| ModeBCheck{"8. Code Coverage Audit?<br/>(/conduct-reviewing-loop Mode B)"}
+    ModeBCheck -->|"Optional Validation"| RunModeB["Run Mode B Diff Audit<br/>(Audit .diff against plan)"] --> ModeBPass{"Mode B PASS?"}
+    ModeBPass -->|"Missing Items"| SelectStep
+    ModeBPass -->|"PASS"| FinalWalkthrough["9. Generate walkthrough.md<br/>& Declare Completion"]
+    ModeBCheck -->|"Direct"| FinalWalkthrough
+```
+
+#### Living Plan Directives
+1. **Single Living Artifact Principle:** `implementation_plan.md` inside `<appDataDir>\brain\<conversation-id>\` is the **ONLY** authoritative living artifact for both initial design proposals and execution progress tracking. Standalone `task.md` or secondary todo files are prohibited.
+2. **Pre-Approval Plan Audit (`/conduct-reviewing-loop` Mode A):** Before submitting `implementation_plan.md` to the User Approval Gate, run `/conduct-reviewing-loop` in Mode A for complex proposals to uncover missing edge cases, architectural gaps, and task checklist (`- [ ]`) coverage.
+3. **Checklist State Machine:**
+   - `- [ ] <Step>`: **Pending.** Planned work awaiting execution.
+   - `- [/] <Step>`: **In-Progress.** Actively being executed (**STRICT LIMIT:** Exactly **ONE** item active at a time).
+   - `- [x] <Step>`: **Completed.** Fully executed AND verified by empirical runtime evidence (test output, build logs).
+4. **Post-Implementation Code Validation (`/conduct-reviewing-loop` Mode B):** Upon completing all checklist items (`[x]`), run `/conduct-reviewing-loop` in Mode B to generate `.diff` patch (`scratch/patch_changes.diff`) and verify 100% code coverage against `implementation_plan.md`.
+5. **Context Recovery Protocol:** Following context window truncation or turn splits, the agent's **VERY FIRST ACTION** MUST be reading `implementation_plan.md` to identify the active `[/]` or next `[ ]` step before taking code action.
+
+---
+
 ## 2. Task-Specific Skill Gateway & Tool Selection Router
 
 ```mermaid
