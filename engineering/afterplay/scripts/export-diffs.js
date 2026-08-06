@@ -74,7 +74,7 @@ function getGitDiffFiles(targetRef, cwd) {
       const output = execSync(cmd, { cwd, encoding: 'utf8', stdio: ['pipe', 'pipe', 'pipe'] });
       return output.split('\n').map(l => l.trim()).filter(Boolean);
     } catch (fallbackErr) {
-      console.error(`[-] Error executing git diff: ${err.message}`);
+      console.error(`[-] Error executing git diff: ${err.message} (${fallbackErr.message})`);
       process.exit(1);
     }
   }
