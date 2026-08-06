@@ -106,8 +106,8 @@ flowchart TD
     SelectStep --> ExecuteStep["5. Execute Surgical Edits / Tool Calls"]
     ExecuteStep --> VerifyStep{"6. Runtime Verification Passed?"}
     
-    VerifyStep -->|"Failed (1st Time)"| AnalyzeLog["Analyze Log Evidence & Retry"] --> ExecuteStep
-    VerifyStep -->|"Failed (2 Consecutive Times)"| MustStop["MUST STOP: Research Domain<br/>& Await User Alignment"] --> RefinePlanDoc
+    VerifyStep -->|"Bugs in solution code (same root cause)"| PolishCode["Polish solution code"] --> ExecuteStep
+    VerifyStep -->|"Failures by unknown reasons"| MustStop["MUST STOP: Follow Investigation Protocol<br/>(Section 5) & Align with User"] --> RefinePlanDoc
     
     VerifyStep -->|"Passed"| MarkComplete["7. Mark Step [x] Complete<br/>Update implementation_plan.md"]
     
