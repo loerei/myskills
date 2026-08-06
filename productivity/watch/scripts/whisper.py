@@ -252,6 +252,7 @@ def _post_whisper(endpoint: str, api_key: str, model: str, audio_path: Path) -> 
     }
 
     context = ssl.create_default_context()
+    context.minimum_version = ssl.TLSVersion.TLS1_2
     rate_limit_hits = 0
     last_exc: Exception | None = None
     last_detail = ""
@@ -285,7 +286,7 @@ def _post_whisper(endpoint: str, api_key: str, model: str, audio_path: Path) -> 
                 )
                 time.sleep(delay)
             continue
-        except (urllib.error.URLError, OSError) as exc:
+        except OSError as exc:
             last_exc, last_detail = exc, ""
             if attempt < MAX_ATTEMPTS - 1:
                 delay = RETRY_BASE_DELAY * (attempt + 1)
@@ -383,7 +384,7 @@ def transcribe_chunks(
     for index, (path, offset) in enumerate(chunks):
         try:
             chunk_segments = transcribe_one(path)
-        except (RuntimeError, Exception) as exc:
+        except Exception as exc:
             failures += 1
             print(
                 f"[watch] chunk {index + 1}/{len(chunks)} failed — skipping ({exc})",
