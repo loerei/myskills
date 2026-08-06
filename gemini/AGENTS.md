@@ -253,15 +253,6 @@ flowchart TD
 
 > *Overrides `<planning_mode>` soft verification defaults ("e.g. run unit tests", "etc."). The evidence-based progress rules below are hard gates, not suggestions.*
 
-```mermaid
-flowchart TD
-    ExecAttempt["Execute Fix / Test Command"] --> CheckEvidence{"Runtime Evidence Confirms Success?"}
-    CheckEvidence -->|"Yes"| Pass["Task Complete"]
-    CheckEvidence -->|"No (Failed)"| CountCheck{"Consecutive Failed Attempts"}
-    CountCheck -->|"1st Failure"| AnalyzeLog["Analyze Log Evidence -> Try Alternative Approach"]
-    CountCheck -->|"2 Consecutive Failures"| MustStop["MUST STOP -> Research domain docs -> Present revised strategy to User"]
-```
-
 ### Core Execution Directives
 
 * **Think Before Coding:** MUST explicitly state assumptions and surface tradeoffs before implementing. If anything is unclear, MUST STOP and ask.
@@ -290,7 +281,13 @@ flowchart TD
     Phase3 --> HackCheck{"Solution is a workaround?<br/>(e.g., hack, pattern-guess,<br/>post-processing sidestep)"}
     HackCheck -->|"Yes"| BackToPhase2["STOP — go back and find<br/>the clean solution"]
     BackToPhase2 --> Phase2
-    HackCheck -->|"No — addresses root cause"| Implement["Implement"]
+    HackCheck -->|"No — addresses root cause"| ExecAttempt["Execute Fix / Test Command"]
+    ExecAttempt --> CheckEvidence{"Runtime Evidence Confirms Success?"}
+    CheckEvidence -->|"Yes"| Pass["Task Complete"]
+    CheckEvidence -->|"No (Failed)"| CountCheck{"Consecutive Failed Attempts"}
+    CountCheck -->|"1st Failure"| AnalyzeLog["Analyze Log Evidence -> Try Alternative Approach"]
+    AnalyzeLog --> ExecAttempt
+    CountCheck -->|"2 Consecutive Failures"| MustStop["MUST STOP -> Research domain docs -> Present revised strategy to User"]
 ```
 
   - **Phase 1 — Understand the actual state.** Read the relevant code and inspect runtime behavior using available tools (Chrome DevTools MCP, debuggers, logs, REPL). If the root cause is NOT CONFIRMED after reading, do not proceed — add logging or measurements, simulate and reproduce the problem, or ask the user to conduct manual tests to generate logs. Do not attempt to solve alone what is impossible to know without the user's environment or input. Confirmation means reproducing the problem or using logs to point out the exact cause — not reading code and guessing.
