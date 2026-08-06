@@ -1,6 +1,6 @@
 # MySkills
 
-My single source of truth for custom AI agent skills, global policies, and my distribution engine.
+My AI agent skills, global policies, and my distribution engine.
 
 I maintain all my custom skills and system prompt overrides here and push them out to my local project workspaces and global configurations.
 
@@ -16,6 +16,14 @@ I group my custom skills into 5 main categories:
 - **`quality/`**: SonarQube/SonarCloud remediation, benchmark testing, git guardrails (e.g., `sonar-remediation`, `sonarcloud-ci-workflow`).
 - **`productivity/`**: Workflows, PR generation, issue triage, reviewer loops, skill management (e.g., `conduct-reviewing-loop`, `write-pr`, `write-for-ai`, `manage-custom-skills`).
 - **`personal/`**: My Obsidian vault note management, drafting, narrative editing (e.g., `obsidian-vault`, `writing-beats`).
+
+### Integrated Upstream Skills
+Besides my own custom skills, I integrate and maintain upstream skills from the community:
+
+- **Matt Pocock Skills** ([`mattpocock/skills`](https://github.com/mattpocock/skills)): TypeScript & JS development workflows (`tdd`, `codebase-design`, `domain-modeling`, `migrate-to-shoehorn`, `setup-ts-deep-modules`).
+- **Ponytail Suite** ([`DietrichGebert/ponytail`](https://github.com/DietrichGebert/ponytail)): Agent task performance metrics, debt analysis, and reviewing (`ponytail`, `ponytail-audit`, `ponytail-debt`, `ponytail-gain`, `ponytail-review`).
+- **Watch / Video Analysis** ([`bradautomates/claude-video`](https://github.com/bradautomates/claude-video)): Frame extraction and transcript processing (`watch`).
+- **UI & Taste Suite** ([`leonxlnx/taste-skill`](https://github.com/leonxlnx/taste-skill)): Frontend design taste systems (`gpt-tasteskill`, `design-taste-frontend`, `stitch-design-taste`, `taste-skill`).
 
 ### Platform Overrides
 - **`gemini/`**: My platform-specific policy delta (`gemini/AGENTS.md`) and audit receipts for Google Antigravity / Gemini.

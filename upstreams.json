@@ -10,5 +10,9 @@
   "claude-video": {
     "url": "https://github.com/bradautomates/claude-video",
     "branch": "main"
+  },
+  "taste-skill": {
+    "url": "https://github.com/leonxlnx/taste-skill",
+    "branch": "main"
   }
 }
