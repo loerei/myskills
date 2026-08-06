@@ -91,7 +91,7 @@ How I link `distribute-skills` globally so I can run it from any terminal:
 
 ## Local Skill Protection
 
-When I build a custom skill exclusively for a single project (not meant for `myskills`), I protect it from getting pruned during distribution by adding `local: true` to its `SKILL.md` frontmatter:
+To protect custom skills built exclusively for a single project repository (not included in `myskills`) from being pruned during distribution, add `local: true` to the `SKILL.md` frontmatter:
 
 ```yaml
 ---
