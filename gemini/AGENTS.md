@@ -87,7 +87,7 @@ flowchart TD
 
 ## 2. Living Implementation Plan & Task Protocol
 
-> *Overrides ad-hoc task tracking and unifies plan proposals with step-by-step execution tracking into a single authoritative living document.*
+> *Overrides `<planning_mode>` ad-hoc task tracking and unifies plan proposals with step-by-step execution tracking into a single authoritative living document.*
 
 ```mermaid
 flowchart TD
