@@ -126,7 +126,7 @@ flowchart TD
 ```
 
 #### Living Plan Directives
-1. **Pre-Approval Plan Audit Gate (`/conduct-reviewing-loop` Mode A):** Before submitting `implementation_plan.md` to the User Approval Gate, run `/conduct-reviewing-loop` in Mode A (or prompt user: *"Run Pre-Approval Plan Audit?"*) for complex proposals to uncover missing edge cases, architectural gaps, and task checklist (`- [ ]`) coverage.
+1. **Pre-Approval Plan Audit Gate (`/conduct-reviewing-loop` Mode A):** Before submitting `implementation_plan.md` to the User Approval Gate, prompt the user: *"Run Pre-Approval Plan Audit?"* (or run `/conduct-reviewing-loop` in Mode A) for complex proposals to uncover missing edge cases, architectural gaps, and task checklist (`- [ ]`) coverage.
 2. **Checklist State Machine:**
    - `- [ ] <Step>`: **Pending.** Planned work awaiting execution.
    - `- [/] <Step>`: **In-Progress.** Actively being executed (**STRICT LIMIT:** Exactly **ONE** item active at a time).
