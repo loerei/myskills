@@ -80,7 +80,7 @@ flowchart TD
 ```mermaid
 flowchart TD
     Start["New Complex Task (3+ Steps / Architecture)"] --> CreatePlan["1. Create Living Plan<br/>(implementation_plan.md with [ ] checklist)"]
-    CreatePlan --> ModeAOption{"2. Pre-Approval Plan Audit?<br/>(/conduct-reviewing-loop Mode A)"}
+    CreatePlan --> ModeAOption{"2. Pre-Approval Plan Audit Gate?<br/>(/conduct-reviewing-loop Mode A)"}
     
     ModeAOption -->|"Recommended for Complex Plans"| RunModeA["Run Mode A Plan Audit<br/>(Stress-test coverage & edge cases)"]
     RunModeA --> PlanPass{"Mode A PASS?"}
@@ -106,7 +106,7 @@ flowchart TD
     ContextCheck -->|"Yes"| ReadPlan["Re-read implementation_plan.md<br/>to locate [/] step"] --> SelectStep
     ContextCheck -->|"No"| SelectStep
     
-    CheckRemaining -->|"No (All [x])"| ModeBCheck{"8. Code Coverage Audit?<br/>(/conduct-reviewing-loop Mode B)"}
+    CheckRemaining -->|"No (All [x])"| ModeBCheck{"8. Code Coverage Audit Gate?<br/>(/conduct-reviewing-loop Mode B)"}
     ModeBCheck -->|"Optional Validation"| RunModeB["Run Mode B Diff Audit<br/>(Audit .diff against plan)"] --> ModeBPass{"Mode B PASS?"}
     ModeBPass -->|"Missing Items"| SelectStep
     ModeBPass -->|"PASS"| FinalWalkthrough["9. Generate walkthrough.md<br/>& Declare Completion"]
