@@ -75,11 +75,11 @@ flowchart TD
 
 ---
 
-## 2. Living Implementation Plan & Task Protocol
+## 2. Implementation Plan & Task Protocol
 
 ```mermaid
 flowchart TD
-    Start["New Complex Task (3+ Steps / Architecture)"] --> CreatePlan["1. Create Living Plan<br/>(implementation_plan.md with [ ] checklist)"]
+    Start["New Complex Task (3+ Steps / Architecture)"] --> CreatePlan["1. Create Plan<br/>(implementation_plan.md with [ ] checklist)"]
     CreatePlan --> ModeAOption{"2. Pre-Approval Plan Audit Gate?<br/>(/conduct-reviewing-loop Mode A)"}
     
     ModeAOption -->|"Recommended for Complex Plans"| RunModeA["Run Mode A Plan Audit<br/>(Stress-test coverage & edge cases)"]
@@ -109,7 +109,7 @@ flowchart TD
     ModeBCheck -->|"Direct"| FinalWalkthrough
 ```
 
-#### Living Plan Directives
+#### Implementation Plan Directives
 1. **Pre-Approval Plan Audit Gate (`/conduct-reviewing-loop` Mode A):** When submitting `implementation_plan.md` to the User for the first time, ask the user whether they want to approve or run `/conduct-reviewing-loop` in Mode A for the plan.
 2. **Checklist State Machine:**
    - `- [ ] <Step>`: **Pending.** Planned work awaiting execution.
@@ -118,7 +118,7 @@ flowchart TD
 3. **Post-Implementation Code Validation Gate (`/conduct-reviewing-loop` Mode B):** Upon completing all checklist items (`[x]`), run `/conduct-reviewing-loop` in Mode B (or prompt user: *"Run Post-Implementation Code Validation?"*) to verify 100% code coverage against `implementation_plan.md`.
 4. **Context Recovery Protocol:** Following context window truncation or turn splits, the agent's **VERY FIRST ACTION** MUST be reading `implementation_plan.md` to identify the active `[/]` or next `[ ]` step before taking code action.
 
-#### Mandatory Living Plan Layout (`implementation_plan.md`)
+#### Mandatory Implementation Plan Layout (`implementation_plan.md`)
 
 ```markdown
 # [Goal / Feature Title]
