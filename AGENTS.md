@@ -119,7 +119,7 @@ flowchart TD
    - `- [ ] <Step>`: **Pending.** Planned work awaiting execution.
    - `- [/] <Step>`: **In-Progress.** Actively being executed (**STRICT LIMIT:** Exactly **ONE** item active at a time).
    - `- [x] <Step>`: **Completed.** Fully executed AND verified by empirical runtime evidence (test output, build logs).
-3. **Post-Implementation Code Validation Gate (`/conduct-reviewing-loop` Mode B):** Upon completing all checklist items (`[x]`), run `/conduct-reviewing-loop` in Mode B (or prompt user: *"Run Post-Implementation Code Validation?"*) to generate `.diff` patch (`scratch/patch_changes.diff`) and verify 100% code coverage against `implementation_plan.md`.
+3. **Post-Implementation Code Validation Gate (`/conduct-reviewing-loop` Mode B):** Upon completing all checklist items (`[x]`), run `/conduct-reviewing-loop` in Mode B (or prompt user: *"Run Post-Implementation Code Validation?"*) to verify 100% code coverage against `implementation_plan.md`.
 4. **Context Recovery Protocol:** Following context window truncation or turn splits, the agent's **VERY FIRST ACTION** MUST be reading `implementation_plan.md` to identify the active `[/]` or next `[ ]` step before taking code action.
 
 #### Mandatory Living Plan Layout (`implementation_plan.md`)
