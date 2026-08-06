@@ -132,40 +132,7 @@ flowchart TD
 
 #### Mandatory Implementation Plan Layout (`implementation_plan.md`)
 
-```markdown
-# [Goal / Feature Title]
-
-## Architectural Summary & Key Decisions
-- Brief description of the problem, background context, and key technical decisions.
-
-## User Review Required
-> [!IMPORTANT]
-> Document anything requiring explicit user approval or design intent decisions.
-
-## Proposed Changes & Execution Checklist
-
-### [Component / Feature Name]
-
-#### - [ ] [MODIFY] [`SettingsView.tsx`](file:///path/to/SettingsView.tsx)
-- [ ] Replace radio card group with clean `<select>` / custom dropdown control
-- [ ] Update handler when option is selected in Dropdown
-
-#### - [ ] [MODIFY] [`theme.css`](file:///path/to/theme.css)
-- [ ] Add styling for `.settings-select` (background `#121215`, border `#27272a`, focus highlight)
-
-#### - [ ] [NEW] [`SelectDropdown.tsx`](file:///path/to/SelectDropdown.tsx)
-- [ ] Create custom dropdown component supporting keyboard navigation
-
----
-
-## Verification Plan
-
-### Automated Tests
-- Command: `npm test` or `pytest`
-
-### Manual Verification
-- Instructions for user to visually verify UI controls or API endpoints
-```
+When creating or updating an `implementation_plan.md`, follow the exact layout scaffold defined in [plan_template.md](subdocs/plan_template.md).
 
 ---
 
@@ -189,7 +156,7 @@ flowchart TD
 
 ### Table 1: Task Category to Required Skills Catalog
 
-When starting any task, MUST check available skills and descriptions. If a skill's purpose matches task requirements, MUST read its `SKILL.md` using `view_file` before writing code or planning. If a `SKILL.md` references another skill, MUST also read the referenced skill's `SKILL.md`. Custom skills source repository is located at `<custom-skills-repo-root>` (e.g., `myskills/`), and distribution script is at `<projects_root>/distribute-skills.js` (e.g., `projects/distribute-skills.js`).
+When starting any task, MUST check available skills and descriptions. If a skill's purpose matches task requirements, MUST read its `SKILL.md` using `view_file` before writing code or planning. If a `SKILL.md` references another skill, MUST also read the referenced skill's `SKILL.md`. Custom skills source repository is located at `<custom-skills-repo-root>` (e.g., `myskills/`), and distribution script is at `<projects_root>/agents.js` (e.g., `projects/agents.js`).
 
 | Task Category | Trigger Conditions & Indicators | Required Skills to Read |
 | :--- | :--- | :--- |
@@ -327,21 +294,9 @@ flowchart TD
     Verify --> Push["git push"]
 ```
 
-### Pre-Task: Fresh State
+### Detailed Protocols
 
-Before starting state-modifying work or creating new commits, MUST run `git fetch origin` and `git rebase origin/<default-branch>` (or target branch). MUST NOT create merge commits (`Merge branch 'main' into ...`). If the rebase produces conflicts, resolve them before proceeding — or abort the rebase and consult the user if the conflicts are non-trivial.
-
-### Branch Operations: Stash Gate
-
-Before `git checkout`, `git switch`, or `git rebase`, MUST check `git status`. If uncommitted changes exist, MUST `git stash` or commit them first. NEVER run checkout/rebase over a dirty working tree.
-
-### Committing: Atomic & Conventional
-
-Each commit MUST solve exactly one logical change. Commit messages MUST follow **Conventional Commits** format in English (`feat:`, `fix:`, `refactor:`, `test:`, `docs:`, `style:`).
-
-### Pre-Push: Re-fetch & Verification
-
-Before pushing, MUST `git fetch origin` and `git rebase origin/<default-branch>` again to pick up any upstream changes since work began. MUST resolve all merge/rebase conflicts locally and verify that tests/build pass before pushing or creating/updating pull requests.
+For step-by-step operational safeguards regarding Pre-Task rebase, Branch Stash Gate, Conventional Commits, and Pre-Push verification, see [git_workflow.md](subdocs/git_workflow.md).
 
 ### Hard Bans
 
