@@ -135,6 +135,43 @@ flowchart TD
 4. **Post-Implementation Code Validation Gate (`/conduct-reviewing-loop` Mode B):** Upon completing all checklist items (`[x]`), run `/conduct-reviewing-loop` in Mode B (or prompt user: *"Run Post-Implementation Code Validation?"*) to generate `.diff` patch (`scratch/patch_changes.diff`) and verify 100% code coverage against `implementation_plan.md`.
 5. **Context Recovery Protocol:** Following context window truncation or turn splits, the agent's **VERY FIRST ACTION** MUST be reading `implementation_plan.md` to identify the active `[/]` or next `[ ]` step before taking code action.
 
+#### Mandatory Living Plan Layout (`implementation_plan.md`)
+
+```markdown
+# [Goal / Feature Title]
+
+## Architectural Summary & Key Decisions
+- Brief description of the problem, background context, and key technical decisions.
+
+## User Review Required
+> [!IMPORTANT]
+> Document anything requiring explicit user approval or design intent decisions.
+
+## Proposed Changes & Execution Checklist
+
+### [Component / Feature Name]
+
+#### - [ ] [MODIFY] [`SettingsView.tsx`](file:///path/to/SettingsView.tsx)
+- [ ] Replace radio card group with clean `<select>` / custom dropdown control
+- [ ] Update handler when option is selected in Dropdown
+
+#### - [ ] [MODIFY] [`theme.css`](file:///path/to/theme.css)
+- [ ] Add styling for `.settings-select` (background `#121215`, border `#27272a`, focus highlight)
+
+#### - [ ] [NEW] [`SelectDropdown.tsx`](file:///path/to/SelectDropdown.tsx)
+- [ ] Create custom dropdown component supporting keyboard navigation
+
+---
+
+## Verification Plan
+
+### Automated Tests
+- Command: `npm test` or `pytest`
+
+### Manual Verification
+- Instructions for user to visually verify UI controls or API endpoints
+```
+
 ---
 
 ## 3. Task-Specific Skill Gateway & Tool Selection Router
