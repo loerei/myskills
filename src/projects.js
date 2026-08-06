@@ -63,10 +63,11 @@ export function processProject(projectPath, skillCatalog, { dryRun = false, allo
   
   if (needsInit && !dryRun) {
     try {
-      execSync('npx skills add mattpocock/skills --all', {
+      const npxCmd = process.platform === 'win32' ? 'npx.cmd' : 'npx';
+      execSync(`${npxCmd} skills add mattpocock/skills --all`, {
         cwd: projectPath,
         stdio: 'ignore',
-        shell: true
+        env: { ...process.env }
       });
       result.status = 'installed';
     } catch (e) {

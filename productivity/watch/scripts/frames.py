@@ -366,13 +366,16 @@ def extract_at_timestamps(
     out: list[dict] = []
     for t in points:
         path = out_dir / f"cue_{len(out):04d}.jpg"
+        resolved_video = Path(video_path).resolve()
+        if not resolved_video.is_file():
+            raise FileNotFoundError(f"Video file not found: {video_path}")
         cmd = [
             "ffmpeg",
             "-hide_banner",
             "-loglevel", "error",
             "-y",
             "-ss", f"{t:.3f}",
-            "-i", str(Path(video_path).resolve()),
+            "-i", str(resolved_video),
             FRAMES_V_FLAG, "1",
             "-vf", _scale_filter(resolution),
             "-q:v", "4",

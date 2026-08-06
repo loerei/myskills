@@ -84,6 +84,8 @@ def fetch_captions(url: str, out_dir: Path) -> dict:
         "--",
         url,
     ]
+    if not isinstance(url, str) or not (url.startswith("http://") or url.startswith("https://") or Path(url).exists()):
+        raise ValueError(f"Invalid URL or path: {url}")
     subprocess.run(cmd, stdout=sys.stderr, stderr=sys.stderr, shell=False)
     subtitle = _pick_subtitle(out_dir)
     info = _read_info(out_dir / "video.info.json", url)
