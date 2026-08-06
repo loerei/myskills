@@ -23,12 +23,62 @@ for (let i = 0; i < args.length; i++) {
     process.exit(0);
   } else if (args[i] === '--info') {
     const configPath = path.join(projectRoot, 'distribute-skills.config.json');
-    console.log(JSON.stringify({
-      repoRoot: projectRoot,
-      configPath: configPath,
-      binPath: __filename
-    }, null, 2));
-    process.exit(0);
+    const query = (args[i + 1] && !args[i + 1].startsWith('-')) ? args[++i] : null;
+
+    if (!query) {
+      console.log(JSON.stringify({
+        repoRoot: projectRoot,
+        configPath: configPath,
+        binPath: __filename
+      }, null, 2));
+      process.exit(0);
+    }
+
+    if (query.endsWith('.policy') || query === 'policy') {
+      const platformName = query === 'policy' ? 'gemini' : query.replace(/\.policy$/, '');
+      let config;
+      try {
+        config = loadConfig(configPath);
+      } catch (e) {
+        config = { platforms: [] };
+      }
+      
+      const platform = (config.platforms || []).find(p => p.name.toLowerCase() === platformName.toLowerCase());
+      const sourceDir = platform ? platform.sourceDir : platformName;
+      const specificPath = path.join(projectRoot, sourceDir, 'AGENTS.md');
+      const fallbackPath = path.join(projectRoot, 'AGENTS.md');
+
+      const isPlatformOverride = fs.existsSync(specificPath);
+      const sourceFile = isPlatformOverride ? specificPath : fallbackPath;
+      const destinationFile = platform ? platform.agentsDest : null;
+
+      console.log(JSON.stringify({
+        type: 'policy',
+        platform: platformName,
+        sourceFile: sourceFile,
+        destinationFile: destinationFile,
+        isPlatformOverride: isPlatformOverride
+      }, null, 2));
+      process.exit(0);
+    } else {
+      const skillCatalog = loadSkillCatalog(projectRoot);
+      const skill = skillCatalog.get(query);
+
+      if (!skill) {
+        console.error(`[-] Error: Skill "${query}" not found in myskills catalog.`);
+        process.exit(1);
+      }
+
+      const category = path.basename(path.dirname(skill.srcPath));
+      console.log(JSON.stringify({
+        type: 'skill',
+        name: skill.name,
+        srcPath: skill.srcPath,
+        skillFile: path.join(skill.srcPath, 'SKILL.md'),
+        category: category
+      }, null, 2));
+      process.exit(0);
+    }
   } else if (args[i] === '--help' || args[i] === '-h') {
     console.log("Usage: distribute-skills [options]\n");
     console.log("Options:");
@@ -38,7 +88,7 @@ for (let i = 0; i < args.length; i++) {
     console.log("  --dry-run                         Show changes without applying them");
     console.log("  --init                            Run 'npx skills add mattpocock/skills --all' in projects");
     console.log("  --where                           Print absolute path of myskills repo root");
-    console.log("  --info                            Print JSON metadata about repo root and config");
+    console.log("  --info [target]                   Print JSON info for repo, <skillname>, or <platform>.policy");
     console.log("  --help, -h                        Show help");
     process.exit(0);
   } else if (args[i] === '--all') {

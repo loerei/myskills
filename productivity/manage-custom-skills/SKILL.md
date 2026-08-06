@@ -46,6 +46,9 @@ Before scaffolding or editing a skill, confirm:
 Always modify or create skills directly in the central source repository:
 `Path: <projects-dir>/myskills/<category>/<skill-name>/SKILL.md`
 
+> [!TIP]
+> **Source Location Lookup**: When working in any project workspace, run `distribute-skills --info <skill-name>` to get the exact `skillFile` path in `myskills` without searching manually.
+
 ### Standard Categories:
 - `design/`: Layout, visual aesthetics, UI taste, styling, mobile/web comps.
 - `engineering/`: Architecture, TDD, debugging, domain modeling, refactoring.
