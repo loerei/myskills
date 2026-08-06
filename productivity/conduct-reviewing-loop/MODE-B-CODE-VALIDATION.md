@@ -23,10 +23,11 @@ Verify that 100% of the features, safety guarantees, edge-case fixes, and schema
 
 ### Implementation Coverage Verification Checklist:
 1. **Plan Feature Coverage**: Does the `.diff` and codebase implement 100% of the specified features in the plan?
-2. **Safety & Transactional Guarantees**: Are rollback, directory creation, cleanup, and crash recovery mechanisms fully present?
-3. **Edge-Case & Line Handling**: Are empty/new file creation, boundary checks, and line end encodings handled correctly?
-4. **Validation & State Consistency**: Are duplicate path checks, cache flags, and state initializations accurate?
-5. **Backward Compatibility**: Are legacy wrappers and public API schemas fully preserved?
+2. **Task Checklist Verification**: Is every checkbox item (`- [x]`) in `implementation_plan.md` backed by actual, verified implementation code in the `.diff` patch?
+3. **Safety & Transactional Guarantees**: Are rollback, directory creation, cleanup, and crash recovery mechanisms fully present?
+4. **Edge-Case & Line Handling**: Are empty/new file creation, boundary checks, and line end encodings handled correctly?
+5. **Validation & State Consistency**: Are duplicate path checks, cache flags, and state initializations accurate?
+6. **Backward Compatibility**: Are legacy wrappers and public API schemas fully preserved?
 
 ### Output Directive:
 Return your evaluation to the parent agent using `send_message` containing:
@@ -43,7 +44,7 @@ Conclude explicitly with either:
 
 ## 2. Post-Implementation Coverage Validation Checklist
 
-- [ ] 100% of plan components verified in `.diff` and target files
+- [ ] 100% of plan components and Execution Checklist items (`- [x]`) verified in `.diff` and target files
 - [ ] Adherence to task-specific domain skills (<task_domain_skill_paths>) verified
 - [ ] Unit tests added covering new edge cases specified in plan
 - [ ] Tool schemas (`server.py` / parameter schemas) match plan definitions

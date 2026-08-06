@@ -21,6 +21,7 @@ You are <Domain> Reviewer #<N>. Audit the proposed <Artifact Type> draft.
 2. **System Guidelines**: <Rules from AGENTS.md, /codebase-design, etc.>
 3. **Task-Specific Domain Skill Adherence**: <Adherence to /write-a-skill, /write-for-ai, /tdd, etc.>
 4. **Domain & Edge-Case Completeness**: <High-level correctness, safety, or performance checks>
+5. **Execution Checklist Completeness**: Verify that the Execution Checklist (`- [ ]`) covers 100% of the proposed file modifications, schema changes, and edge-case handling steps outlined in the plan's architectural summary.
 
 ### Output Directive:
 Return your evaluation to the parent agent using `send_message` containing:
@@ -38,6 +39,7 @@ Conclude explicitly with either:
 ## 2. Pre-Implementation Plan Audit Checklist
 
 - [ ] User goals & constraints explicitly addressed
+- [ ] Execution Checklist (`- [ ]`) verified covering 100% of proposed file edits, schema changes, and edge cases
 - [ ] Adherence to task-specific domain skills (<task_domain_skill_paths>) verified
 - [ ] Neutral document check: No past reviewer references, meta-changelogs, or anchoring tags inside draft content
 - [ ] No hardcoded env values, magic numbers, or fixed pixel layouts
