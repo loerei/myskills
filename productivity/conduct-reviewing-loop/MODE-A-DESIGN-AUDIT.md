@@ -6,7 +6,12 @@ Templates, checklist builders, and anti-anchoring protocols for stress-testing a
 
 ## 1. Mode A: Pre-Implementation Design Audit Prompt Template
 
-Use when auditing an unapproved plan, RFC, PRD, or skill draft BEFORE writing code:
+Use when auditing an unapproved plan, RFC, PRD, or skill draft BEFORE writing code.
+
+> [!NOTE]
+> **Checklist Synthesis Guidance (Main Agent)**:
+> - **For All Draft Artifacts (PRDs, RFCs, Skills, Plans):** Include items #1–#4 in the subagent prompt.
+> - **For Implementation Plans (`implementation_plan.md`):** MUST also include item #5.
 
 ```markdown
 You are <Domain> Reviewer #<N>. Audit the proposed <Artifact Type> draft.
@@ -21,7 +26,7 @@ You are <Domain> Reviewer #<N>. Audit the proposed <Artifact Type> draft.
 2. **System Guidelines**: <Rules from AGENTS.md, /codebase-design, etc.>
 3. **Task-Specific Domain Skill Adherence**: <Adherence to /write-a-skill, /write-for-ai, /tdd, etc.>
 4. **Domain & Edge-Case Completeness**: <High-level correctness, safety, or performance checks>
-5. **Execution Checklist Completeness**: Verify that the Execution Checklist (`- [ ]`) covers 100% of the proposed file modifications, schema changes, and edge-case handling steps outlined in the plan's architectural summary.
+5. **Execution Checklist Completeness** *(Include when auditing Implementation Plans)*: Verify that the Execution Checklist (`- [ ]`) covers 100% of proposed file modifications, schema changes, and edge-case handling steps outlined in the plan's architectural summary.
 
 ### Output Directive:
 Return your evaluation to the parent agent using `send_message` containing:
@@ -36,10 +41,10 @@ Conclude explicitly with either:
 
 ---
 
-## 2. Pre-Implementation Plan Audit Checklist
+## 2. Pre-Implementation Audit Checklist
 
+### General Checks (All Draft Artifacts):
 - [ ] User goals & constraints explicitly addressed
-- [ ] Execution Checklist (`- [ ]`) verified covering 100% of proposed file edits, schema changes, and edge cases
 - [ ] Adherence to task-specific domain skills (<task_domain_skill_paths>) verified
 - [ ] Neutral document check: No past reviewer references, meta-changelogs, or anchoring tags inside draft content
 - [ ] No hardcoded env values, magic numbers, or fixed pixel layouts
@@ -48,6 +53,9 @@ Conclude explicitly with either:
 - [ ] Rollback or failure recovery strategy present
 - [ ] Boundary validation, path normalization, and payload ambiguity prevented
 - [ ] Out-of-Scope / Non-Goals exclusions explicitly recorded
+
+### Plan-Specific Checks (Implementation Plans Only):
+- [ ] Execution Checklist (`- [ ]`) verified covering 100% of proposed file edits, schema changes, and edge cases
 
 ---
 
