@@ -20,7 +20,7 @@ flowchart TD
     PickCat --> WriteSource["3. Write Source SKILL.md<br/>myskills/<category>/<skill-name>/SKILL.md"]
     WriteSource --> CheckLocal{"Local Project Edit Attempt?"}
     CheckLocal -->|"Direct Project Edit (Banned)"| BlockLocal["STOP: Must edit base myskills source path first<br/>(Unless frontmatter contains 'local: true')"]
-    CheckLocal -->|"Source Updated"| Distribute["4. Run Distribution Engine<br/>node distribute-skills.js --all <projects-dir>"]
+    CheckLocal -->|"Source Updated"| Distribute["4. Run Distribution Engine<br/>distribute-skills --all <projects-dir>"]
     
     CheckAction -->|"Redistribute Only"| Distribute
     
@@ -71,12 +71,12 @@ description: <Capability description>. Use when [specific triggers].
 Run the distribution engine to sync the central source across all local workspace repositories and global IDE targets (`~/.gemini`, `~/.claude`, `~/.cursor`):
 
 ```powershell
-node <projects-dir>/distribute-skills.js --all <projects-dir>
+distribute-skills --all <projects-dir>
 ```
 
 Or target a specific project workspace:
 ```powershell
-node <projects-dir>/distribute-skills.js --target <projects-dir>/<project-folder>
+distribute-skills --target <projects-dir>/<project-folder>
 ```
 
 ---

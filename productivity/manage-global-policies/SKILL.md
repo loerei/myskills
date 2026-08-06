@@ -11,16 +11,16 @@ This skill guides the agent through modifying the global policy files, ensuring 
 ## Workflows
 
 ### 1. Locate Target Files Dynamically
-Before making edits, locate the two configuration paths on the current system:
-1. **Repository Source File (`AGENTS.md`):** Locate the root of the custom skills repository (look for the workspace directory containing `distribute-skills.js` or `AGENTS.md`). We refer to this path as `<custom-skills-repo-root>/AGENTS.md`.
-2. **Active IDE Global Config File:** Detect the active IDE and locate its global policy file in the user's home directory (e.g., `~/.gemini/GEMINI.md` for Google Antigravity, or the corresponding global rule file for Cursor/Windsurf/etc.). We refer to this path as `<active-global-config-file>`.
+Before making edits, locate the configuration paths on the current system:
+1. **Repository Source Files (`AGENTS.md` and Platform Deltas):** Locate the root of the custom skills repository (`myskills`). We refer to this path as `<custom-skills-repo-root>`.
+   - Universal policy: `<custom-skills-repo-root>/AGENTS.md`
+   - Platform-specific overrides (e.g. Gemini): `<custom-skills-repo-root>/gemini/AGENTS.md`
+2. **Active IDE Global Config File:** Detect the active IDE and locate its global policy file in the user's home directory (e.g., `~/.gemini/AGENTS.md` for Google Antigravity/Gemini, or the corresponding global rule file for Cursor/Claude/etc.).
 
-### 2. Apply Changes Globally
-Whenever a change is approved by the user, apply it identically to both detected policy files:
-1. Modify `<active-global-config-file>`
-2. Modify `<custom-skills-repo-root>/AGENTS.md`
-
-Ensure the contents of both files remain completely synchronized.
+### 2. Apply Changes & Distribute
+Whenever a policy change is made:
+1. Update `<custom-skills-repo-root>/AGENTS.md` (and platform delta file such as `gemini/AGENTS.md` if platform-specific micro-anchors/rules apply).
+2. Run `distribute-skills --all <projects-dir>` to automatically deploy policy files (with per-platform override logic) and custom skills to all active IDE config targets (`~/.gemini`, `~/.claude`, `~/.cursor`) and workspace repositories.
 
 ### 3. Verify Policy Skill Coverage
 Run the automated coverage audit script to ensure 100% of skills are documented:
@@ -29,9 +29,9 @@ node audit-policy-coverage.js
 ```
 
 ### 4. Commit & Push to GitHub
-Navigate to the `<custom-skills-repo-root>/` directory, commit the policy updates, and push to the remote repository:
+Navigate to `<custom-skills-repo-root>/`, commit the policy updates, and push to the remote repository:
 ```powershell
-git add AGENTS.md
+git add AGENTS.md gemini/AGENTS.md
 git commit -m "Update global policies: <brief description of changes>"
 git push
 ```
