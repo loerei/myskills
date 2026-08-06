@@ -278,10 +278,7 @@ flowchart TD
     Block --> Instrument
     Confirmed -->|"Yes (reproduced / log evidence)"| Phase2["Phase 2: Trace data flow,<br/>understand WHY not just WHERE"]
     Phase2 --> Phase3["Phase 3: Propose solution<br/>addressing root cause directly"]
-    Phase3 --> HackCheck{"Solution is a workaround?<br/>(e.g., hack, pattern-guess,<br/>post-processing sidestep)"}
-    HackCheck -->|"Yes"| BackToPhase2["STOP — go back and find<br/>the clean solution"]
-    BackToPhase2 --> Phase2
-    HackCheck -->|"No — addresses root cause"| ExecAttempt["Execute Fix / Test Command"]
+    Phase3 --> ExecAttempt["Execute Fix / Test Command"]
     ExecAttempt --> CheckEvidence{"Runtime Evidence Confirms Success?"}
     CheckEvidence -->|"Yes"| Pass["Task Complete"]
     CheckEvidence -->|"No (Failed)"| CountCheck{"Consecutive Failed Attempts"}
