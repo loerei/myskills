@@ -17,6 +17,14 @@ Before making edits, locate the configuration paths on the current system:
    - Platform-specific overrides (e.g. Gemini): `<custom-skills-repo-root>/gemini/AGENTS.md`
 2. **Active IDE Global Config File:** Automatically resolved via `destinationFile` from `distribute-skills --info <platform>.policy`.
 
+### Cross-Repository Policy Protocol
+
+When requested to update global policy rules while working inside an external project repository:
+1. **Query Policy Source:** Run `distribute-skills --info <platform>.policy` to locate the target `sourceFile` inside `myskills`.
+2. **Edit Source File:** Edit `sourceFile` inside `myskills` directly.
+3. **Distribute Back:** Run `distribute-skills` to update all active IDE global configs (`~/.gemini`, `~/.claude`, `~/.cursor`) and project workspaces.
+4. **Commit & Push `myskills`:** Commit and push the updated policy file in `myskills`.
+
 ### 2. Apply Changes & Distribute
 Whenever a policy change is made:
 1. Update `<custom-skills-repo-root>/AGENTS.md` (and platform delta file such as `gemini/AGENTS.md` if platform-specific micro-anchors/rules apply).

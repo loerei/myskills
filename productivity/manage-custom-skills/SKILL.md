@@ -67,6 +67,14 @@ description: <Capability description>. Use when [specific triggers].
 > [!CAUTION]
 > **Source-First Guardrail**: Never create or edit a global custom skill directly inside a local project workspace (`.agents/skills/<skill-name>/`). Local project edits will be overwritten during distribution unless the skill explicitly contains `local: true` in its frontmatter.
 
+### Cross-Repository Editing Protocol
+
+When requested to create or update a custom skill while working inside an external project repository:
+1. **Query Source Location:** Run `distribute-skills --info <skill-name>` to get the exact `skillFile` path in `myskills`. (For new skills, run `distribute-skills --where` to get `<myskills-root>`).
+2. **Edit Source File:** Edit the source `SKILL.md` inside `myskills` directly. **DO NOT edit the local `.agents/skills/<skill-name>/` copy.**
+3. **Distribute Back:** Run `distribute-skills` (or `distribute-skills --target .` for current workspace) to deploy the updated skill back to your current repository and IDE configs.
+4. **Commit & Push `myskills`:** Commit and push the changes in `myskills`.
+
 ---
 
 ## 3. Distribution & Multi-IDE Sync
