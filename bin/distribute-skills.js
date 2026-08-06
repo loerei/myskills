@@ -18,14 +18,27 @@ let dryRun = false;
 let init = false;
 
 for (let i = 0; i < args.length; i++) {
-  if (args[i] === '--help' || args[i] === '-h') {
-    console.log("Usage: node distribute-skills.js [options]\n");
+  if (args[i] === '--where') {
+    console.log(projectRoot);
+    process.exit(0);
+  } else if (args[i] === '--info') {
+    const configPath = path.join(projectRoot, 'distribute-skills.config.json');
+    console.log(JSON.stringify({
+      repoRoot: projectRoot,
+      configPath: configPath,
+      binPath: __filename
+    }, null, 2));
+    process.exit(0);
+  } else if (args[i] === '--help' || args[i] === '-h') {
+    console.log("Usage: distribute-skills [options]\n");
     console.log("Options:");
     console.log("  --all [dir]                       Distribute skills across all projects in directory");
     console.log("  --target <dir>                    Distribute skills to specific project");
     console.log("  --prune                           Prune obsolete non-catalog skills");
     console.log("  --dry-run                         Show changes without applying them");
     console.log("  --init                            Run 'npx skills add mattpocock/skills --all' in projects");
+    console.log("  --where                           Print absolute path of myskills repo root");
+    console.log("  --info                            Print JSON metadata about repo root and config");
     console.log("  --help, -h                        Show help");
     process.exit(0);
   } else if (args[i] === '--all') {

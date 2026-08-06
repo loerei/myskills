@@ -12,7 +12,7 @@ This skill guides the agent through modifying the global policy files, ensuring 
 
 ### 1. Locate Target Files Dynamically
 Before making edits, locate the configuration paths on the current system:
-1. **Repository Source Files (`AGENTS.md` and Platform Deltas):** Locate the root of the custom skills repository (`myskills`). We refer to this path as `<custom-skills-repo-root>`.
+1. **Repository Source Files (`AGENTS.md` and Platform Deltas):** Run `distribute-skills --where` to retrieve the absolute path of `<custom-skills-repo-root>`.
    - Universal policy: `<custom-skills-repo-root>/AGENTS.md`
    - Platform-specific overrides (e.g. Gemini): `<custom-skills-repo-root>/gemini/AGENTS.md`
 2. **Active IDE Global Config File:** Detect the active IDE and locate its global policy file in the user's home directory (e.g., `~/.gemini/AGENTS.md` for Google Antigravity/Gemini, or the corresponding global rule file for Cursor/Claude/etc.).
