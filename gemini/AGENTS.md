@@ -85,7 +85,7 @@ flowchart TD
 
 ---
 
-### 1.1 Living Implementation Plan & Task Protocol
+## 2. Living Implementation Plan & Task Protocol
 
 > *Overrides ad-hoc task tracking and unifies plan proposals with step-by-step execution tracking into a single authoritative living document.*
 
@@ -137,7 +137,7 @@ flowchart TD
 
 ---
 
-## 2. Task-Specific Skill Gateway & Tool Selection Router
+## 3. Task-Specific Skill Gateway & Tool Selection Router
 
 ```mermaid
 flowchart TD
@@ -191,7 +191,7 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
 
 ---
 
-## 3. Ambiguity & Architecture Triage
+## 4. Ambiguity & Architecture Triage
 
 ```mermaid
 flowchart TD
@@ -217,7 +217,7 @@ flowchart TD
 
 ---
 
-## 4. Core Execution Mindset & Evidence-Based Progress
+## 5. Core Execution Mindset & Evidence-Based Progress
 
 > *Overrides `<planning_mode>` soft verification defaults ("e.g. run unit tests", "etc."). The evidence-based progress rules below are hard gates, not suggestions.*
 
@@ -268,7 +268,7 @@ flowchart TD
 
 ---
 
-## 5. Git Workflow & Operational Safeguards
+## 6. Git Workflow & Operational Safeguards
 
 ```mermaid
 flowchart TD
@@ -321,7 +321,7 @@ Before pushing, MUST `git fetch origin` and `git rebase origin/<default-branch>`
 
 ---
 
-## 6. Writing & Communicating Tone
+## 7. Writing & Communicating Tone
 
 > *Overrides `<communication_style>` default formatting and tone, `<web_application_development>` marketing language ("stunning", "premium", "WOW", "UNACCEPTABLE", "FAILED"), and `<identity>` autonomous-solver framing. The tone rules below are authoritative.*
 

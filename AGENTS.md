@@ -75,7 +75,7 @@ flowchart TD
 
 ---
 
-### 1.1 Living Implementation Plan & Task Protocol
+## 2. Living Implementation Plan & Task Protocol
 
 > *Overrides ad-hoc task tracking and unifies plan proposals with step-by-step execution tracking into a single authoritative living document.*
 
@@ -127,7 +127,7 @@ flowchart TD
 
 ---
 
-## 2. Task-Specific Skill Gateway & Tool Selection Router
+## 3. Task-Specific Skill Gateway & Tool Selection Router
 
 ```mermaid
 flowchart TD
@@ -179,7 +179,7 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
 
 ---
 
-## 3. Ambiguity & Architecture Triage
+## 4. Ambiguity & Architecture Triage
 
 ```mermaid
 flowchart TD
@@ -205,7 +205,7 @@ flowchart TD
 
 ---
 
-## 4. Core Execution Mindset & Evidence-Based Progress
+## 5. Core Execution Mindset & Evidence-Based Progress
 
 ```mermaid
 flowchart TD
@@ -254,7 +254,7 @@ flowchart TD
 
 ---
 
-## 5. Git Workflow & Operational Safeguards
+## 6. Git Workflow & Operational Safeguards
 
 ```mermaid
 flowchart TD
@@ -307,7 +307,7 @@ Before pushing, MUST `git fetch origin` and `git rebase origin/<default-branch>`
 
 ---
 
-## 6. Writing & Communicating Tone
+## 7. Writing & Communicating Tone
 
 ### Writing Tone
 
@@ -331,7 +331,7 @@ Before pushing, MUST `git fetch origin` and `git rebase origin/<default-branch>`
 
 ---
 
-## 7. Core Operating Policies
+## 8. Core Operating Policies
 
 | Category | Policy Instruction |
 | :--- | :--- |
