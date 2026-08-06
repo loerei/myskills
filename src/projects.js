@@ -65,7 +65,8 @@ export function processProject(projectPath, skillCatalog, { dryRun = false, allo
     try {
       execSync('npx skills add mattpocock/skills --all', {
         cwd: projectPath,
-        stdio: 'ignore'
+        stdio: 'ignore',
+        shell: true
       });
       result.status = 'installed';
     } catch (e) {

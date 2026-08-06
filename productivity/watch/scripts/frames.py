@@ -378,7 +378,7 @@ def extract_at_timestamps(
             "-q:v", "4",
             str(path),
         ]
-        result = subprocess.run(cmd, capture_output=True, text=True)
+        result = subprocess.run(cmd, capture_output=True, text=True, shell=False)
         if result.returncode == 0 and path.exists():
             out.append({
                 "index": len(out),

@@ -75,7 +75,7 @@ export function copyRecursiveIfDifferent(src, dest, { dryRun = false } = {}) {
  * @returns {{pruned: string[], preserved: string[], candidates: string[]}}
  */
 export function pruneObsoleteSkills(targetDir, activeSkillNames, { dryRun = false, allowPrune = false } = {}) {
-  const activeSet = new Set(Array.isArray(activeSkillNames) ? activeSkillNames : activeSkillNames);
+  const activeSet = new Set(activeSkillNames);
   const dirsToCheck = [
     path.join(targetDir, '.agents', 'skills'),
     path.join(targetDir, '.claude', 'skills'),

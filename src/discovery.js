@@ -62,6 +62,9 @@ export function isLocalSkill(skillDir) {
     const content = fs.readFileSync(skillFile, 'utf-8');
     return /local:\s*true/i.test(content) || /scope:\s*(project|local)/i.test(content);
   } catch (e) {
+    if (process.env.DEBUG) {
+      console.error(`Failed to read ${skillFile}:`, e);
+    }
     return false;
   }
 }
