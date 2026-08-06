@@ -91,7 +91,7 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    Start["New Complex Task (3+ Steps / Architecture)"] --> CreatePlan["1. Create Plan<br/>(implementation_plan.md with [ ] checklist)"]
+    Start["Plan Requested / PL Tag / Complex Task"] --> CreatePlan["1. Create Plan<br/>(implementation_plan.md with [ ] checklist)"]
     CreatePlan --> ModeAOption{"2. Pre-Approval Plan Audit Gate?<br/>(/conduct-reviewing-loop Mode A)"}
     
     ModeAOption -->|"Recommended for Complex Plans"| RunModeA["Run Mode A Plan Audit<br/>(Stress-test coverage & edge cases)"]
