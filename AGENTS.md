@@ -77,8 +77,6 @@ flowchart TD
 
 ## 2. Living Implementation Plan & Task Protocol
 
-> *Overrides ad-hoc task tracking and unifies plan proposals with step-by-step execution tracking into a single authoritative living document.*
-
 ```mermaid
 flowchart TD
     Start["New Complex Task (3+ Steps / Architecture)"] --> CreatePlan["1. Create Living Plan<br/>(implementation_plan.md with [ ] checklist)"]
