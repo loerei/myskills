@@ -16,10 +16,10 @@ import sys
 from pathlib import Path
 
 
-FFMPEG_MISSING_MSG = FFMPEG_MISSING_MSG
-FRAME_GLOB_PATTERN = FRAME_GLOB_PATTERN
-FRAME_FORMAT_PATTERN = FRAME_FORMAT_PATTERN
-FRAMES_V_FLAG = FRAMES_V_FLAG
+FFMPEG_MISSING_MSG = "ffmpeg is not installed. Install with: brew install ffmpeg"
+FRAME_GLOB_PATTERN = "frame_*.jpg"
+FRAME_FORMAT_PATTERN = "frame_%04d.jpg"
+FRAMES_V_FLAG = "-frames:v"
 
 MAX_FPS = 2.0
 SCENE_THRESHOLD = 0.20
@@ -176,11 +176,12 @@ def extract(
     if shutil.which("ffmpeg") is None:
         raise SystemExit(FFMPEG_MISSING_MSG)
 
-    out_dir.mkdir(parents=True, exist_ok=True)
-    for existing in out_dir.glob(FRAME_GLOB_PATTERN):
+    resolved_out_dir = out_dir.resolve()
+    resolved_out_dir.mkdir(parents=True, exist_ok=True)
+    for existing in resolved_out_dir.glob(FRAME_GLOB_PATTERN):
         existing.unlink()
 
-    output_pattern = str(out_dir / FRAME_FORMAT_PATTERN)
+    output_pattern = str(resolved_out_dir / FRAME_FORMAT_PATTERN)
     cmd: list[str] = [
         "ffmpeg",
         "-hide_banner",
@@ -238,11 +239,12 @@ def extract_scene_candidates(
     if shutil.which("ffmpeg") is None:
         raise SystemExit(FFMPEG_MISSING_MSG)
 
-    out_dir.mkdir(parents=True, exist_ok=True)
-    for existing in out_dir.glob(FRAME_GLOB_PATTERN):
+    resolved_out_dir = out_dir.resolve()
+    resolved_out_dir.mkdir(parents=True, exist_ok=True)
+    for existing in resolved_out_dir.glob(FRAME_GLOB_PATTERN):
         existing.unlink()
 
-    output_pattern = str(out_dir / FRAME_FORMAT_PATTERN)
+    output_pattern = str(resolved_out_dir / FRAME_FORMAT_PATTERN)
     cmd: list[str] = [
         "ffmpeg",
         "-hide_banner",
@@ -598,11 +600,12 @@ def extract_keyframes(
     if shutil.which("ffmpeg") is None:
         raise SystemExit(FFMPEG_MISSING_MSG)
 
-    out_dir.mkdir(parents=True, exist_ok=True)
-    for existing in out_dir.glob(FRAME_GLOB_PATTERN):
+    resolved_out_dir = out_dir.resolve()
+    resolved_out_dir.mkdir(parents=True, exist_ok=True)
+    for existing in resolved_out_dir.glob(FRAME_GLOB_PATTERN):
         existing.unlink()
 
-    output_pattern = str(out_dir / FRAME_FORMAT_PATTERN)
+    output_pattern = str(resolved_out_dir / FRAME_FORMAT_PATTERN)
     cmd: list[str] = [
         "ffmpeg",
         "-hide_banner",

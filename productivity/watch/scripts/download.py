@@ -144,6 +144,9 @@ def download_url(
         url,
     ]
 
+    if not (url.startswith("http://") or url.startswith("https://")):
+        raise ValueError(f"Invalid URL scheme for download: {url}")
+
     # yt-dlp may exit non-zero if a subtitle variant fails (e.g. 429) even when
     # the video itself downloaded fine. Treat "video file present" as success.
     result = subprocess.run(cmd, stdout=sys.stderr, stderr=sys.stderr)

@@ -155,7 +155,8 @@ def _write_setup_complete() -> None:
                 return
         if existing and not existing.endswith("\n"):
             existing += "\n"
-        CONFIG_FILE.write_text(existing + "SETUP_COMPLETE=true\n", encoding="utf-8")
+        resolved_file = CONFIG_FILE.resolve()
+        resolved_file.write_text(existing + "SETUP_COMPLETE=true\n", encoding="utf-8")
     else:
         CONFIG_FILE.write_text(ENV_TEMPLATE + "\nSETUP_COMPLETE=true\n", encoding="utf-8")
     try:
