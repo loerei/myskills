@@ -83,13 +83,11 @@ flowchart TD
     CreatePlan --> ModeAOption{"2. Pre-Approval Plan Audit Gate?<br/>(/conduct-reviewing-loop Mode A)"}
     
     ModeAOption -->|"Recommended for Complex Plans"| RunModeA["Run Mode A Plan Audit<br/>(Stress-test coverage & edge cases)"]
-    RunModeA --> PlanPass{"Mode A PASS?"}
-    PlanPass -->|"Revisions Needed"| RefinePlanDoc["Update implementation_plan.md"] --> RunModeA
-    PlanPass -->|"PASS"| UserGate["3. User Approval Gate<br/>(Present audited plan)"]
+    RunModeA --> UserGate["3. User Approval Gate<br/>(Present audited plan)"]
     
     ModeAOption -->|"Direct / Minor Plan"| UserGate
     
-    UserGate -->|"Not Approved / User Feedback"| RefinePlanDoc --> ModeAOption
+    UserGate -->|"Not Approved / User Feedback"| RefinePlanDoc["Update implementation_plan.md"] --> ModeAOption
     
     UserGate -->|"Approved (EXPLICIT_APPROVAL / T3)"| SelectStep["4. Select First Uncompleted Step<br/>Mark [/] In-Progress (ONLY ONE active)"]
     
@@ -107,9 +105,7 @@ flowchart TD
     ContextCheck -->|"No"| SelectStep
     
     CheckRemaining -->|"No (All [x])"| ModeBCheck{"8. Code Coverage Audit Gate?<br/>(/conduct-reviewing-loop Mode B)"}
-    ModeBCheck -->|"Optional Validation"| RunModeB["Run Mode B Diff Audit<br/>(Audit .diff against plan)"] --> ModeBPass{"Mode B PASS?"}
-    ModeBPass -->|"Missing Items"| SelectStep
-    ModeBPass -->|"PASS"| FinalWalkthrough["9. Generate walkthrough.md<br/>& Declare Completion"]
+    ModeBCheck -->|"Optional Validation"| RunModeB["Run Mode B Diff Audit"] --> FinalWalkthrough["9. Generate walkthrough.md<br/>& Declare Completion"]
     ModeBCheck -->|"Direct"| FinalWalkthrough
 ```
 
