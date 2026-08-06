@@ -114,14 +114,13 @@ flowchart TD
 ```
 
 #### Living Plan Directives
-1. **Single Living Artifact Principle:** `implementation_plan.md` inside `<appDataDir>\brain\<conversation-id>\` is the **ONLY** authoritative living artifact for both initial design proposals and execution progress tracking. Standalone `task.md` or secondary todo files are prohibited.
-2. **Pre-Approval Plan Audit Gate (`/conduct-reviewing-loop` Mode A):** Before submitting `implementation_plan.md` to the User Approval Gate, run `/conduct-reviewing-loop` in Mode A (or prompt user: *"Run Pre-Approval Plan Audit?"*) for complex proposals to uncover missing edge cases, architectural gaps, and task checklist (`- [ ]`) coverage.
-3. **Checklist State Machine:**
+1. **Pre-Approval Plan Audit Gate (`/conduct-reviewing-loop` Mode A):** Before submitting `implementation_plan.md` to the User Approval Gate, run `/conduct-reviewing-loop` in Mode A (or prompt user: *"Run Pre-Approval Plan Audit?"*) for complex proposals to uncover missing edge cases, architectural gaps, and task checklist (`- [ ]`) coverage.
+2. **Checklist State Machine:**
    - `- [ ] <Step>`: **Pending.** Planned work awaiting execution.
    - `- [/] <Step>`: **In-Progress.** Actively being executed (**STRICT LIMIT:** Exactly **ONE** item active at a time).
    - `- [x] <Step>`: **Completed.** Fully executed AND verified by empirical runtime evidence (test output, build logs).
-4. **Post-Implementation Code Validation Gate (`/conduct-reviewing-loop` Mode B):** Upon completing all checklist items (`[x]`), run `/conduct-reviewing-loop` in Mode B (or prompt user: *"Run Post-Implementation Code Validation?"*) to generate `.diff` patch (`scratch/patch_changes.diff`) and verify 100% code coverage against `implementation_plan.md`.
-5. **Context Recovery Protocol:** Following context window truncation or turn splits, the agent's **VERY FIRST ACTION** MUST be reading `implementation_plan.md` to identify the active `[/]` or next `[ ]` step before taking code action.
+3. **Post-Implementation Code Validation Gate (`/conduct-reviewing-loop` Mode B):** Upon completing all checklist items (`[x]`), run `/conduct-reviewing-loop` in Mode B (or prompt user: *"Run Post-Implementation Code Validation?"*) to generate `.diff` patch (`scratch/patch_changes.diff`) and verify 100% code coverage against `implementation_plan.md`.
+4. **Context Recovery Protocol:** Following context window truncation or turn splits, the agent's **VERY FIRST ACTION** MUST be reading `implementation_plan.md` to identify the active `[/]` or next `[ ]` step before taking code action.
 
 #### Mandatory Living Plan Layout (`implementation_plan.md`)
 
