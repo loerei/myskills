@@ -23,6 +23,9 @@ Root policy handles universal agent rules. This delta tackles Gemini's specific 
 ### 2. [`override_coverage_report.md`](override_coverage_report.md) — The Receipts
 Full audit breakdown of all 11 prompt conflicts (#1–#11) and 7 bad default behaviors (A–G) we found in Antigravity's system prompt, documenting why each override rule exists.
 
+### 3. [`raw_system_instructions.md`](raw_system_instructions.md) — Primary Source
+Exact, un-edited text of Antigravity system-level instruction tags (`<identity>`, `<web_application_development>`, `<planning_mode>`, `<guidelines>`, `<communication_style>`).
+
 ---
 
 ## Quick Check
