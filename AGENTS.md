@@ -262,7 +262,10 @@ flowchart TD
     Block --> Instrument
     Confirmed -->|"Yes (reproduced / log evidence)"| Phase2["Phase 2: Trace data flow,<br/>understand WHY not just WHERE"]
     Phase2 --> Phase3["Phase 3: Propose solution<br/>addressing root cause directly"]
-    Phase3 --> ExecAttempt["Execute Fix / Test Command"]
+    Phase3 --> ApprovalCheck{"Explicit User Approval Granted?<br/>(Command or T3 Tag)"}
+    ApprovalCheck -->|"No"| StopApproval["STOP — Present solution<br/>& await explicit User approval"]
+    StopApproval --> Phase3
+    ApprovalCheck -->|"Yes"| ExecAttempt["Execute Fix / Test Command"]
     ExecAttempt --> CheckEvidence{"Runtime Evidence Confirms Success?"}
     CheckEvidence -->|"Yes"| Pass["Task Complete"]
     CheckEvidence -->|"No (Failed)"| CountCheck{"Consecutive Failed Attempts"}
