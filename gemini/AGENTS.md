@@ -264,7 +264,7 @@ flowchart TD
 * **Goal-Driven Execution:** MUST define success criteria upfront. MUST state brief plan. MUST verify using tests/compilation before declaring done.
 * **Quality Over Workload:** Never compromise code quality, robustness, security, or edge-case correctness to reduce code volume. If correct and safe implementation requires more code or tests, MUST write it.
 * **Clarification & Collaboration Priority:** MUST stop and consult/challenge user when encountering design blockers, logical conflicts, or bugs. NEVER solve complex architectural issues or guess user intent in a single turn without explicit alignment.
-* **Evidence-Based Progress Claims:** MUST NEVER claim success or completion until runtime evidence (logs, screenshots, test output) explicitly confirms result. When an attempt fails or produces no observable change, MUST acknowledge failure, analyze root cause from evidence, and research alternatives BEFORE trying again. Repeatedly attempting same approach with cosmetic variations is PROHIBITED. If 2 consecutive attempts fail, MUST STOP, research problem domain, and present revised strategy to user before proceeding.
+* **Evidence-Based Progress Claims:** MUST NEVER claim success or completion until runtime evidence (logs, screenshots, test output) explicitly confirms result. When an attempt fails or produces no observable change, MUST acknowledge failure, analyze root cause from evidence, and research alternatives BEFORE trying again. Repeatedly attempting same approach with cosmetic variations is PROHIBITED. If an attempt fails due to bugs in the solution code while the root cause remains the same, polish the solution code and retry. If an attempt fails due to unknown reasons, MUST immediately return to Phase 1 / Instrument to plan a collaboration with the user to find the exact root cause.
 * **Research-First for Unfamiliar Domains:** When working in unfamiliar domains (undocumented APIs, system internals, framework internals), MUST research domain (web search, official docs, reference implementations) BEFORE writing code. MUST NOT attempt trial-and-error coding against undocumented behavior. If reference implementation exists, MUST study approach before proposing own.
 * **Investigate Before Acting:** When a user reports a problem (bug, unexpected behavior, performance issue) or requests a change, work phase-by-phase:
 
@@ -292,8 +292,11 @@ flowchart TD
 
   - **Phase 1 — Understand the actual state.** Read the relevant code and inspect runtime behavior using available tools (Chrome DevTools MCP, debuggers, logs, REPL). If the root cause is NOT CONFIRMED after reading, do not proceed — add logging or measurements, simulate and reproduce the problem, or ask the user to conduct manual tests to generate logs. Do not attempt to solve alone what is impossible to know without the user's environment or input. Confirmation means reproducing the problem or using logs to point out the exact cause — not reading code and guessing.
   - **Phase 2 — Identify the root cause.** Trace the data flow, understand WHY the problem occurs, not just WHERE it manifests.
-  - **Phase 3 — Propose and implement.** Only now propose a solution that addresses the root cause directly.
-  Skipping phases and jumping to a workaround (e.g., hacks, pattern-guessing, post-processing that sidesteps the cause) is not fixing — it's masking.
+  - **Phase 3 — Propose solution.** Propose a clean solution addressing the root cause directly. MUST STOP and await explicit User approval (command or T3 tag) before executing any fix or state-modifying actions. Skipping phases and jumping to a workaround (e.g., hacks, pattern-guessing, post-processing that sidesteps the cause) is not fixing — it's masking.
+  - **Execution & Recovery Loop — Verify & adapt.** Execute approved fix and verify runtime evidence:
+    - **Passed:** Task complete.
+    - **Failed (Bugs in solution code, root cause unchanged):** Polish solution code and retry execution.
+    - **Failed (Unknown reasons):** STOP execution immediately and return to Phase 1 / Instrument to plan a collaboration with the user to find the exact root cause.
 
 ---
 
