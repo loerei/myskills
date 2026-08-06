@@ -35,8 +35,10 @@ export function loadConfig(configPath) {
  * @returns {string|null}
  */
 export function resolvePlatformSource(platform, file, sourceRoot) {
-  const specificPath = path.join(sourceRoot, platform.sourceDir, file);
-  if (fs.existsSync(specificPath)) return specificPath;
+  if (platform && platform.sourceDir) {
+    const specificPath = path.join(sourceRoot, platform.sourceDir, file);
+    if (fs.existsSync(specificPath)) return specificPath;
+  }
   
   const fallbackPath = path.join(sourceRoot, file);
   if (fs.existsSync(fallbackPath)) return fallbackPath;

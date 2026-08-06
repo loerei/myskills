@@ -20,6 +20,13 @@ export function copyRecursiveIfDifferent(src, dest, { dryRun = false } = {}) {
       if (!dryRun) fs.mkdirSync(dest, { recursive: true });
       result.changed = true;
       result.files.push(dest);
+    } else if (!fs.statSync(dest).isDirectory()) {
+      if (!dryRun) {
+        fs.rmSync(dest, { recursive: true, force: true });
+        fs.mkdirSync(dest, { recursive: true });
+      }
+      result.changed = true;
+      result.files.push(dest);
     }
     const children = exists ? fs.readdirSync(src) : [];
     for (const childItemName of children) {
@@ -32,7 +39,7 @@ export function copyRecursiveIfDifferent(src, dest, { dryRun = false } = {}) {
       }
     }
     
-    if (fs.existsSync(dest)) {
+    if (fs.existsSync(dest) && fs.statSync(dest).isDirectory()) {
       fs.readdirSync(dest).forEach((childItemName) => {
         const childSrc = path.join(src, childItemName);
         const childDest = path.join(dest, childItemName);

@@ -77,7 +77,7 @@ export function processProject(projectPath, skillCatalog, { dryRun = false, allo
     }
   } else if (needsInit && dryRun) {
     result.status = 'installed';
-    result.changes.push('Would run npx skills init');
+    result.changes.push('Would run npx skills add mattpocock/skills --all');
   }
 
   const activeNames = Array.from(skillCatalog.keys());

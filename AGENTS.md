@@ -207,7 +207,7 @@ flowchart TD
 ```mermaid
 flowchart TD
     Start["Starting state-modifying work"] --> Fetch["git fetch origin"]
-    Fetch --> Rebase["git rebase origin/default-branch"]
+    Fetch --> Rebase["git rebase origin/<default-branch>"]
     Rebase --> RebaseConflict{"Rebase conflicts?"}
     RebaseConflict -->|"Yes"| ResolveEarly["Resolve conflicts OR<br/>abort rebase + ask user"]
     ResolveEarly --> Rebase
@@ -221,7 +221,7 @@ flowchart TD
     Work --> Commit["git commit<br/>(atomic, conventional)"]
     Commit --> More{"More changes?"}
     More -->|"Yes"| Work
-    More -->|"No"| PrePush["git fetch origin +<br/>git rebase origin/default-branch"]
+    More -->|"No"| PrePush["git fetch origin +<br/>git rebase origin/<default-branch>"]
     PrePush --> PushConflict{"Conflicts?"}
     PushConflict -->|"Yes"| ResolvePush["Resolve locally +<br/>verify tests/build"]
     ResolvePush --> PrePush
