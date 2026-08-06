@@ -284,10 +284,10 @@ flowchart TD
     ApprovalCheck -->|"Yes"| ExecAttempt["Execute Fix / Test Command"]
     ExecAttempt --> CheckEvidence{"Runtime Evidence Confirms Success?"}
     CheckEvidence -->|"Yes"| Pass["Task Complete"]
-    CheckEvidence -->|"No (Failed)"| CountCheck{"Consecutive Failed Attempts"}
-    CountCheck -->|"1st Failure"| AnalyzeLog["Analyze Log Evidence -> Try Alternative Approach"]
+    CheckEvidence -->|"No (Failed)"| CountCheck{"Failure Reason"}
+    CountCheck -->|"Root cause is still the same, failures by bugs in solution code"| AnalyzeLog["Polish solution code"]
     AnalyzeLog --> ExecAttempt
-    CountCheck -->|"2 Consecutive Failures"| MustStop["MUST STOP -> Research domain docs -> Present revised strategy to User"]
+    CountCheck -->|"Failures by unknown reasons"| Instrument
 ```
 
   - **Phase 1 — Understand the actual state.** Read the relevant code and inspect runtime behavior using available tools (Chrome DevTools MCP, debuggers, logs, REPL). If the root cause is NOT CONFIRMED after reading, do not proceed — add logging or measurements, simulate and reproduce the problem, or ask the user to conduct manual tests to generate logs. Do not attempt to solve alone what is impossible to know without the user's environment or input. Confirmation means reproducing the problem or using logs to point out the exact cause — not reading code and guessing.
