@@ -1,7 +1,7 @@
 # Google Antigravity / Gemini Policy Delta
 
 > [!NOTE]
-> *I extracted Antigravity's full raw system instructions, and honestly, Google is trolling its users — prompting the agent as if everyone's just asking for slop Rock-Paper-Scissors or a Tetris clone. So this folder holds the wrapped policy layer engineered to clip those bad habits.*
+> *I extracted Antigravity's full raw system instructions, and honestly, Google is trolling its users, prompting the agent as if everyone's just asking for slop Rock-Paper-Scissors or a Tetris clone. So this folder holds the wrapped policy layer engineered to clip those bad habits.*
 
 This directory (`gemini/`) contains the custom override rules for **Google Antigravity / Gemini**.
 
