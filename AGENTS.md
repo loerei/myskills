@@ -256,7 +256,7 @@ flowchart TD
 flowchart TD
     Trigger["User reports problem or requests change"] --> Phase1["Phase 1: Read relevant code + inspect runtime behavior"]
     Phase1 --> Confirmed{"Root cause CONFIRMED?<br/>(reproduced or log evidence)"}
-    Confirmed -->|"No"| Instrument["Add logging/measurements,<br/>reproduce the problem,<br/>or ask user for manual tests"]
+    Confirmed -->|"No"| Instrument["Collab with the user to find the exact root causes:<br/>Add logging/measurements,<br/>reproduce the problem,<br/>and ask user for manual tests if needed"]
     Instrument --> Phase1
     Confirmed -->|"Yes (code-reading guess only)"| Block["STOP — reading code and guessing<br/>is not confirmation"]
     Block --> Instrument
