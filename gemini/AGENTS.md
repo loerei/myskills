@@ -91,33 +91,34 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    Start["Plan Requested / PL Tag"] --> CreatePlan["1. Create Plan<br/>(implementation_plan.md with [ ] checklist)"]
-    CreatePlan --> ModeAOption{"2. Pre-Approval Plan Audit Gate?<br/>(/conduct-reviewing-loop Mode A)"}
+    Start["Plan Requested / PL Tag"] --> ReadTemplate["1. Run agents read policy.plan_template<br/>(to get exact plan layout)"]
+    ReadTemplate --> CreatePlan["2. Create Plan<br/>(implementation_plan.md with [ ] checklist)"]
+    CreatePlan --> ModeAOption{"3. Pre-Approval Plan Audit Gate?<br/>(/conduct-reviewing-loop Mode A)"}
     
     ModeAOption -->|"Recommended for Complex Plans"| RunModeA["Run Mode A Plan Audit<br/>(Stress-test coverage & edge cases)"]
-    RunModeA --> UserGate["3. User Approval Gate<br/>(Present audited plan)"]
+    RunModeA --> UserGate["4. User Approval Gate<br/>(Present audited plan)"]
     
     ModeAOption -->|"Direct / Minor Plan"| UserGate
     
     UserGate -->|"Not Approved / User Feedback"| RefinePlanDoc["Update implementation_plan.md"] --> ModeAOption
     
-    UserGate -->|"Approved (EXPLICIT_APPROVAL / T3)"| SelectStep["4. Select First Uncompleted Step<br/>Mark [/] In-Progress (ONLY ONE active)"]
+    UserGate -->|"Approved (EXPLICIT_APPROVAL / T3)"| SelectStep["5. Select First Uncompleted Step<br/>Mark [/] In-Progress (ONLY ONE active)"]
     
-    SelectStep --> ExecuteStep["5. Execute Surgical Edits / Tool Calls"]
-    ExecuteStep --> VerifyStep{"6. Runtime Verification Passed?"}
+    SelectStep --> ExecuteStep["6. Execute Surgical Edits / Tool Calls"]
+    ExecuteStep --> VerifyStep{"7. Runtime Verification Passed?"}
     
     VerifyStep -->|"Bugs in solution code (same root cause)"| PolishCode["Polish solution code"] --> ExecuteStep
     VerifyStep -->|"Failures by unknown reasons"| MustStop["MUST STOP: Follow Investigation Protocol<br/>(Section 5) & Align with User"] --> RefinePlanDoc
     
-    VerifyStep -->|"Passed"| MarkComplete["7. Mark Step [x] Complete<br/>Update implementation_plan.md"]
+    VerifyStep -->|"Passed"| MarkComplete["8. Mark Step [x] Complete<br/>Update implementation_plan.md"]
     
     MarkComplete --> CheckRemaining{"More Uncompleted Steps?"}
     CheckRemaining -->|"Yes"| ContextCheck{"Context Truncated or New Turn?"}
     ContextCheck -->|"Yes"| ReadPlan["Re-read implementation_plan.md<br/>to locate [/] step"] --> SelectStep
     ContextCheck -->|"No"| SelectStep
     
-    CheckRemaining -->|"No (All [x])"| ModeBCheck{"8. Code Coverage Audit Gate?<br/>(/conduct-reviewing-loop Mode B)"}
-    ModeBCheck -->|"Optional Validation"| RunModeB["Run Mode B Diff Audit"] --> FinalWalkthrough["9. Generate walkthrough.md<br/>& Declare Completion"]
+    CheckRemaining -->|"No (All [x])"| ModeBCheck{"9. Code Coverage Audit Gate?<br/>(/conduct-reviewing-loop Mode B)"}
+    ModeBCheck -->|"Optional Validation"| RunModeB["Run Mode B Diff Audit"] --> FinalWalkthrough["10. Generate walkthrough.md<br/>& Declare Completion"]
     ModeBCheck -->|"Direct"| FinalWalkthrough
 ```
 
@@ -132,7 +133,7 @@ flowchart TD
 
 #### Mandatory Implementation Plan Layout (`implementation_plan.md`)
 
-When creating or updating an `implementation_plan.md`, follow the exact layout scaffold defined in [plan_template.md](subdocs/plan_template.md).
+When creating or updating an `implementation_plan.md`, follow the exact layout scaffold defined in [plan_template.md](subdocs/plan_template.md) (or run `agents read policy.plan_template`).
 
 ---
 
@@ -156,14 +157,14 @@ flowchart TD
 
 ### Table 1: Task Category to Required Skills Catalog
 
-When starting any task, MUST check available skills and descriptions. If a skill's purpose matches task requirements, MUST read its `SKILL.md` using `view_file` before writing code or planning. If a `SKILL.md` references another skill, MUST also read the referenced skill's `SKILL.md`. Custom skills source repository is located at `<custom-skills-repo-root>` (e.g., `myskills/`), and distribution script is at `<projects_root>/agents.js` (e.g., `projects/agents.js`).
+When starting any task, MUST check available skills and descriptions. If a skill's purpose matches task requirements, MUST read its `SKILL.md` using `view_file` before writing code or planning. If a `SKILL.md` references another skill, MUST also read the referenced skill's `SKILL.md`. Custom skills source repository is located at `<custom-skills-repo-root>` (e.g., `myskills/`), and distribution CLI is globally linked in PATH as `agents`. ALWAYS invoke `agents` directly (e.g., `agents --help`, `agents read`, `agents distribute`) without prefixing `node`.
 
 | Task Category | Trigger Conditions & Indicators | Required Skills to Read |
 | :--- | :--- | :--- |
 | **Design & Frontend UI** | Working on landing pages, portfolios, UI mockups, layout changes, styling, CSS, frontend animations, or redesigns. | `design-taste-frontend`, `design-taste-frontend-v1`, `gpt-tasteskill`, `minimalist-skill`, `high-end-visual-design`, `industrial-brutalist-ui`, `stitch-design-taste`, `brandkit`, `imagegen-frontend-mobile`, `imagegen-frontend-web`, `image-to-code`, `redesign-existing-projects`, `ux-friction-killer`, `taste-skill` |
 | **Engineering & Development** | Implementing new features, testing, debugging, prototyping, refactoring architecture, post-prototype distillation and production extraction, or modifying database/knowledge structures. | `afterplay`, `tdd`, `diagnose`, `diagnosing-bugs`, `prototype`, `improve-codebase-architecture`, `initialize-knowledge-graph`, `migrate-to-shoehorn`, `setup-pre-commit`, `ask-matt`, `codebase-design`, `design-an-interface`, `domain-modeling`, `implement`, `resolving-merge-conflicts`, `scaffold-exercises`, `setup-matt-pocock-skills`, `setup-ts-deep-modules`, `to-spec`, `to-tickets`, `ubiquitous-language`, `wayfinder`, `wizard`, `zoom-out` |
 | **Code Quality & CI/CD** | Analyzing pull requests, resolving sonar code smells, remediating bugs, or fixing CI/CD pipeline issues. | `sonar-remediation`, `sonarcloud-ci-workflow`, `code-review`, `git-guardrails-claude-code`, `run-benchmark` |
-| **Productivity & Management** | Writing PR descriptions, managing custom skills, triaging issues, browser automation with Brave, handoff to other agents, requirements gathering, executing reviewer loops, creating tickets, or watching/analyzing video content. | `write-pr`, `create-and-update-pr`, `write-for-ai`, `manage-custom-skills`, `manage-global-policies`, `to-prd`, `to-issues`, `triage`, `review`, `handoff`, `grill-me`, `grill-with-docs`, `grilling`, `conduct-reviewing-loop`, `caveman`, `ponytail`, `ponytail-audit`, `ponytail-debt`, `ponytail-gain`, `ponytail-help`, `ponytail-review`, `update-mcp`, `review-upstream`, `git-lifecycle-management`, `qa`, `request-refactor-plan`, `research`, `write-a-skill`, `writing-great-skills`, `write-skill-subdocs`, `write-skill-dttc`, `prune-branches`, `batch-grill-me`, `claude-handoff`, `loop-me`, `to-questionnaire`, `brave-browsing`, `watch`, `prompt-override-architecture` |
+| **Productivity & Management** | Writing PR descriptions, managing custom skills, triaging issues, browser automation with Brave, handoff to other agents, requirements gathering, executing reviewer loops, creating tickets, or watching/analyzing video content. | `write-pr`, `create-and-update-pr`, `write-for-ai`, `manage-custom-skills`, `manage-global-policies`, `to-prd`, `to-issues`, `triage`, `review`, `handoff`, `grill-me`, `grill-with-docs`, `grilling`, `conduct-reviewing-loop`, `caveman`, `ponytail`, `ponytail-audit`, `ponytail-debt`, `ponytail-gain`, `ponytail-help`, `ponytail-review`, `update-mcp`, `review-upstream`, `git-lifecycle-management`, `qa`, `request-refactor-plan`, `research`, `write-a-skill`, `writing-great-skills`, `write-skill-subdocs`, `write-skill-dttc`, `prune-branches`, `batch-grill-me`, `claude-handoff`, `loop-me`, `to-questionnaire`, `brave-browsing`, `watch`, `prompt-override-architecture`, `write-an-rfc` |
 | **Content & Notes** | Modifying Obsidian vault, creative writing, draft shaping, or narrative structuring. | `obsidian-vault`, `writing-beats`, `writing-fragments`, `writing-shape`, `edit-article`, `full-output-enforcement`, `teach` |
 
 ### Tool Selection Matrix Router
@@ -267,7 +268,37 @@ flowchart TD
 
 ---
 
-## 6. Git Workflow & Operational Safeguards
+## 6. Failure Disclosure & Anti-Spin Directives
+
+> *Overrides `<communication_style>` tone defaults and prevents retroactive triumph reporting. The failure disclosure rules below are hard gates.*
+
+```mermaid
+flowchart TD
+    DiagTest["Run Diagnostic / Verification Test"] --> CheckResult{"Test / Logic Passed?"}
+    CheckResult -->|"Yes"| ReportPass["Report Verification Success with Evidence"]
+    CheckResult -->|"No (Bug / Leak Discovered)"| MandatoryDisclose["MUST Disclose Failure UPFRONT to User:<br/>• Exact error / leaked output<br/>• Root cause code location<br/>• Proposed fix plan"]
+    MandatoryDisclose --> UserApproved{"User Approved Fix Plan?"}
+    UserApproved -->|"Yes"| FixCode["Apply Fix & Re-verify"]
+    UserApproved -->|"No / Revisions"| MandatoryDisclose
+    FixCode --> HonestReport["Report Outcome:<br/>'Failed initially due to X, fixed via Y, verified passed'"]
+```
+
+### Directives
+
+* **Immediate Upfront Failure Disclosure**: When any diagnostic check, test run, or tool call reveals a bug, logic gap, or unexpected leakage in existing code, the agent **MUST NOT** silently fix the code and report the end result as an unblemished "total success". The agent MUST:
+  1. Disclose the failure, exact error snippet, and root cause upfront to the user.
+  2. Propose the exact fix plan and await explicit user approval (or `T3` tag) before modifying source code.
+  3. Execute the fix only upon receiving user approval, then report honest before/after evidence.
+* **Blunt & Unvarnished Progress Claims**: Eliminate sugarcoated tone, decorative praise, and false triumphs. Reports MUST state plain technical facts:
+  1. What was tested
+  2. What failed initially (with exact error snippet)
+  3. What exact lines/files were modified to resolve the failure
+  4. Final empirical verification output
+* **Audit Trail Preservation**: Any bug discovered and resolved during a turn MUST be recorded in the final turn summary and [`walkthrough.md`](file:///C:/Users/sayus/.gemini/antigravity/brain/dbf16318-38fc-48f1-8af9-ee132a76ac91/walkthrough.md) under a dedicated **"Incidents & Mid-Turn Fixes"** section.
+
+---
+
+## 7. Git Workflow & Operational Safeguards
 
 ```mermaid
 flowchart TD
@@ -296,7 +327,7 @@ flowchart TD
 
 ### Detailed Protocols
 
-For step-by-step operational safeguards regarding Pre-Task rebase, Branch Stash Gate, Conventional Commits, and Pre-Push verification, see [git_workflow.md](subdocs/git_workflow.md).
+For step-by-step operational safeguards regarding Pre-Task rebase, Branch Stash Gate, Conventional Commits, and Pre-Push verification, see [git_workflow.md](subdocs/git_workflow.md) (or run `agents read policy.git_workflow`).
 
 ### Hard Bans
 
@@ -308,7 +339,7 @@ For step-by-step operational safeguards regarding Pre-Task rebase, Branch Stash 
 
 ---
 
-## 7. Writing & Communicating Tone
+## 8. Writing & Communicating Tone
 
 > *Overrides `<communication_style>` default formatting and tone, `<web_application_development>` marketing language ("stunning", "premium", "WOW", "UNACCEPTABLE", "FAILED"), and `<identity>` autonomous-solver framing. The tone rules below are authoritative.*
 
@@ -338,7 +369,7 @@ For step-by-step operational safeguards regarding Pre-Task rebase, Branch Stash 
 
 ---
 
-## 7. Core Operating Policies
+## 9. Core Operating Policies
 
 > *Overrides `<communication_style>` default formatting. The link formatting and documentation language rules below are authoritative.*
 
