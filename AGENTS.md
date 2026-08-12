@@ -69,19 +69,10 @@ flowchart TD
         end
 
         subgraph TOOL_ROUTER["1C: Tool Selection Matrix"]
-            ToolRouter{"Need File / Code Operation<br/>inside Repository?"} --> ActionType{"Action Type"}
-            ActionType -->|"Read / Search Code"| CallJcodemunch["MUST call jcodemunch_guide<br/>→ Use jcodemunch tools"]
-            ActionType -->|"Edit Source Code"| CallPatchitright["MUST call patchitright_guide<br/>→ Use patchitright tools"]
-            ActionType -->|"Export Session Logs"| CallChronicle["MUST call chronicle_guide<br/>→ Use chronicle-mcp tools"]
-            ActionType -->|"Read Non-Code (.md, .json)"| UseViewFile["May use native view_file"]
-            ActionType -->|"No File Op Needed"| SkipToolRouter["Proceed directly"]
+            ToolRouter["Select required MCP tools<br/>per Tool Selection Matrix below.<br/>Call each tool's guide before use."]
         end
 
-        CallJcodemunch --> AmbiguityGate
-        CallPatchitright --> AmbiguityGate
-        CallChronicle --> AmbiguityGate
-        UseViewFile --> AmbiguityGate
-        SkipToolRouter --> AmbiguityGate
+        ToolRouter --> AmbiguityGate
 
         subgraph TRIAGE["1D: Ambiguity & Architecture Triage"]
             AmbiguityGate{"Ambiguity Level"} -->|"Critical<br/>(Architecture / Security)"| GrillSession["MUST run /grill-me<br/>or /grill-with-docs"]
