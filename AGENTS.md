@@ -78,7 +78,7 @@ flowchart TD
             AmbiguityGate{"Define<br/>Ambiguity Level of User's Request?"} -->|"Critical<br/>(Architecture / Security)"| GrillSession["MUST run /grill-me<br/>or /grill-with-docs"]
             AmbiguityGate -->|"Multiple Candidate<br/>Target Files"| DisambiguateStop["MUST STOP<br/>→ List candidate files<br/>→ Ask User to specify"]
             AmbiguityGate -->|"Minor<br/>(Config / Timeouts)"| AutoResolve["Resolve autonomously<br/>+ Record in proactive_choices.md"]
-            AmbiguityGate -->|"No Ambiguity"| ArchRiskCheck{"Touching sensitive/coupled logic,<br/>multi-file edits,<br/>or mixed mobile/desktop code?"}
+            AmbiguityGate -->|"No Ambiguity"| ArchRiskCheck{"Touching sensitive/coupled logic,<br/>multi-file edits,<br/>or cross-cutting shared code?"}
 
             GrillSession --> ArchRiskCheck
             DisambiguateStop --> ArchRiskCheck
@@ -296,7 +296,7 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
   - **Minor Ambiguities:** If ambiguity is a minor detail, resolve autonomously using sensible defaults, document choices in `proactive_choices.md` inside `brain/`, and expose to user.
   - **Target Disambiguation (Multiple Candidates):** If request references a target terminology, component, module, or file and codebase contains multiple candidate files/paths/implementations matching that description, MUST NOT make assumptions. MUST stop, list candidate files, and ask user to clarify.
 
-* **Architecture Alert & Refactoring Gate:** Before, during, or after executing a task, if codebase architecture is not optimized for modifications, or when touching sensitive/highly-coupled areas (editing multiple coupled files, modifying duplicate logic blocks, or mixing mobile/desktop code paths), MUST immediately read `/improve-codebase-architecture` and propose an architectural improvement plan to user before writing code.
+* **Architecture Alert & Refactoring Gate:** Before, during, or after executing a task, if codebase architecture is not optimized for modifications, or when touching sensitive/highly-coupled areas (editing multiple coupled files, modifying duplicate logic blocks, or modifying cross-cutting shared code paths), MUST immediately read `/improve-codebase-architecture` and propose an architectural improvement plan to user before writing code.
 
 ---
 
