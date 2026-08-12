@@ -75,7 +75,7 @@ flowchart TD
         ToolRouter --> AmbiguityGate
 
         subgraph TRIAGE["1D: Ambiguity & Architecture Triage"]
-            AmbiguityGate{"Ambiguity Level"} -->|"Critical<br/>(Architecture / Security)"| GrillSession["MUST run /grill-me<br/>or /grill-with-docs"]
+            AmbiguityGate{"Define<br/>Ambiguity Level of User's Request?"} -->|"Critical<br/>(Architecture / Security)"| GrillSession["MUST run /grill-me<br/>or /grill-with-docs"]
             AmbiguityGate -->|"Multiple Candidate<br/>Target Files"| DisambiguateStop["MUST STOP<br/>→ List candidate files<br/>→ Ask User to specify"]
             AmbiguityGate -->|"Minor<br/>(Config / Timeouts)"| AutoResolve["Resolve autonomously<br/>+ Record in proactive_choices.md"]
             AmbiguityGate -->|"No Ambiguity"| ArchRiskCheck{"Touching sensitive/coupled logic,<br/>multi-file edits,<br/>or mixed mobile/desktop code?"}
