@@ -103,13 +103,9 @@ flowchart TD
             CurrentTier -->|"Tier 3 (New Plan)"| CreatePlan["Create implementation_plan.md<br/>with [ ] checklist"]
             CurrentTier -->|"Tier 3 (Existing Plan)"| SelectStep
 
-            CreatePlan --> ModeAOption{"Pre-Approval Plan Audit Gate?<br/>Ask User: Approve or Mode A?"}
-            ModeAOption -->|"User Requests Mode A"| RunModeA["Run /conduct-reviewing-loop Mode A<br/>(Stress-test coverage & edge cases)"]
-            RunModeA --> UserGate["User Approval Gate<br/>(Present audited plan)"]
-            ModeAOption -->|"User Approves Directly"| SelectStep
-
-            UserGate -->|"Not Approved / Feedback"| RefinePlan["Update implementation_plan.md"] --> ModeAOption
-            UserGate -->|"Approved (EXPLICIT_APPROVAL / T3)"| SelectStep
+            CreatePlan --> PlanReview{"Ask User to Review the Plan"}
+            PlanReview -->|"Approved"| SelectStep
+            PlanReview -->|"Not Approved / Feedback"| RefinePlan["Update implementation_plan.md"] --> PlanReview
 
             SelectStep["Select First Uncompleted Step<br/>Mark [/] In-Progress<br/>(STRICT LIMIT: ONE active)"] --> ExecuteStep["Execute Step"]
         end
@@ -164,10 +160,7 @@ flowchart TD
             ContextCheckMid -->|"Yes"| ReReadPlan["Re-read implementation_plan.md"] --> SelectStep
             ContextCheckMid -->|"No"| SelectStep
 
-            CheckRemaining -->|"No (All [x])"| ModeBCheck{"Post-Implementation<br/>Code Validation Gate?"}
-            ModeBCheck -->|"User Requests Mode B"| RunModeB["Run /conduct-reviewing-loop Mode B<br/>(Verify 100% code coverage)"]
-            ModeBCheck -->|"User Bypasses"| FinalWalkthrough["Generate walkthrough.md<br/>& Declare Completion"]
-            RunModeB --> FinalWalkthrough
+            CheckRemaining -->|"No (All [x])"| FinalWalkthrough["Generate walkthrough.md<br/>& Declare Completion"]
         end
 
         subgraph GIT_SAFEGUARDS["3B: Git Workflow & Operational Safeguards"]
@@ -303,12 +296,12 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
 ### Phase 2A Reference: Implementation Plan Protocol
 
 #### Implementation Plan Directives
-1. **Pre-Approval Plan Audit Gate (`/conduct-reviewing-loop` Mode A):** When submitting `implementation_plan.md` to the User for the first time, ask the user whether they want to approve or run `/conduct-reviewing-loop` in Mode A for the plan.
+1. **Plan Review Gate:** When submitting `implementation_plan.md` to the User for the first time, ask the user to review the plan and provide explicit approval before proceeding to execution.
 2. **Checklist State Machine:**
    - `- [ ] <Step>`: **Pending.** Planned work awaiting execution.
    - `- [/] <Step>`: **In-Progress.** Actively being executed (**STRICT LIMIT:** Exactly **ONE** item active at a time).
    - `- [x] <Step>`: **Completed.** Fully executed AND verified by empirical runtime evidence (test output, build logs).
-3. **Post-Implementation Code Validation Gate (`/conduct-reviewing-loop` Mode B):** Upon completing all checklist items (`[x]`), run `/conduct-reviewing-loop` in Mode B (or prompt user: *"Run Post-Implementation Code Validation?"*) to verify 100% code coverage against `implementation_plan.md`.
+3. **Post-Implementation Verification:** Upon completing all checklist items (`[x]`), generate `walkthrough.md` summarizing changes and verification results.
 
 #### Mandatory Implementation Plan Layout (`implementation_plan.md`)
 
