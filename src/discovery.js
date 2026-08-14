@@ -76,9 +76,15 @@ export function listSkillsDetailed(baseDir, validCategories = []) {
         const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
         if (match) {
           const fm = match[1];
-          const descMatch = fm.match(/^description:\s*(.+)$/m);
-          if (descMatch) {
-            description = descMatch[1].trim().replace(/^['"]|['"]$/g, '');
+          const descBlockMatch = fm.match(/^description:\s*([>|]?)\r?\n([\s\S]*?)(?=\r?\n[a-zA-Z0-9_-]+:|$)/m);
+          if (descBlockMatch && descBlockMatch[2].trim()) {
+            const rawBody = descBlockMatch[2].trim();
+            description = rawBody.split(/\r?\n/).map(line => line.trim()).filter(Boolean).join(' ');
+          } else {
+            const descMatch = fm.match(/^description:\s*(.+)$/m);
+            if (descMatch) {
+              description = descMatch[1].trim().replace(/^['"]|['"]$/g, '');
+            }
           }
         }
       } catch (e) {}
