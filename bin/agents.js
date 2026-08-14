@@ -320,8 +320,8 @@ if (firstArg === 'info' || firstArg === '--info') {
       platformName = 'general';
     }
 
-    const policyFileName = config.policy.rootFile;
-    const subdocsDirName = config.policy.subdocsDir;
+    const policyFileName = config.policy?.rootFile || 'AGENTS.md';
+    const subdocsDirName = config.policy?.subdocsDir || 'subdocs';
     const rootSubdocs = findSubdocs(path.join(projectRoot, subdocsDirName));
 
     if (platformName.toLowerCase() === 'general' || platformName.toLowerCase() === 'root') {

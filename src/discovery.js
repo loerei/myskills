@@ -66,6 +66,9 @@ export function listSkillsDetailed(baseDir, validCategories = []) {
     let category = 'other';
     if (parts.length > 1) {
       category = parts[0];
+      if (validCategories.length > 0 && !validCategories.includes(category)) {
+        category = 'other';
+      }
     }
 
     let description = '';
