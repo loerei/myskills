@@ -88,17 +88,18 @@ flowchart TD
         subgraph TRIAGE["1D: Ambiguity & Architecture Triage"]
             AmbiguityGate{"Define<br/>Ambiguity Level of User's Request?"}
 
-            AmbiguityGate -->|"No Ambiguity / Clear"| ArchRiskCheck{"Touching sensitive/coupled logic,<br/>multi-file edits,<br/>or cross-cutting shared code?"}
-            AmbiguityGate -->|"Minor (Config / Defaults)"| AutoResolve["Resolve autonomously<br/>using sensible defaults"] --> ArchRiskCheck
+            AmbiguityGate -->|"No Ambiguity / Clear"| FoundationCheck{"User Request heavily depends on<br/>foundational codebase?"}
+            AmbiguityGate -->|"Minor (Config / Defaults)"| AutoResolve["Resolve autonomously<br/>using sensible defaults"] --> FoundationCheck
             AmbiguityGate -->|"Critical / Blocker<br/>(Multiple Candidates / Arch / Scope)"| ClarifyType{"Clarification Type?"}
 
-            ClarifyType -->|"Discrete Choices / Candidates"| CallAskQuestion["Call 'ask_question' tool<br/>(Interactive UI Selection)"] --> ArchRiskCheck
+            ClarifyType -->|"Discrete Choices / Candidates"| CallAskQuestion["Call 'ask_question' tool<br/>(Interactive UI Selection)"] --> FoundationCheck
             ClarifyType -->|"Open-Ended / Architectural Debate"| AskInText["Ask via Direct Response Text<br/>(Await User Clarification)"] --> ToneFilter
 
-            ArchRiskCheck -->|"Yes"| ArchAlert["MUST read /improve-codebase-architecture<br/>& propose plan FIRST<br/>before writing code"]
-            ArchRiskCheck -->|"No"| ProceedToExec["Proceed to Phase 2"]
+            FoundationCheck -->|"No (Isolated / Low Dependency)"| ProceedToExec["Proceed to Phase 2"]
+            FoundationCheck -->|"Yes"| FoundationState{"Is foundational code in bad state<br/>(hard to maintain/debug/extend)?"}
 
-            ArchAlert --> ProceedToExec
+            FoundationState -->|"No (Good State)"| ProceedToExec
+            FoundationState -->|"Yes (Bad State)"| ProposeRefactorFirst["MUST Propose Prerequisite Refactoring Plan<br/>to stabilize foundation FIRST"] --> AskInText
         end
     end
 
@@ -291,7 +292,15 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
     - **Discrete Choices / Candidates:** When choosing among a discrete set of known alternatives (e.g., candidate files/paths, candidate modules/components, design options A/B/C, library choices, or architectural approaches), MUST call the `ask_question` tool to present interactive selection options directly in the UI, resuming execution immediately upon user selection.
     - **Open-Ended / Architectural Debate:** When the design direction requires exploratory brainstorming, broad requirements gathering, or multi-faceted debate, MUST ask clarifying questions via direct Markdown text response and end turn to await user alignment.
 
-* **Architecture Alert & Refactoring Gate:** Before, during, or after executing a task, if codebase architecture is not optimized for modifications, or when touching sensitive/highly-coupled areas (editing multiple coupled files, modifying duplicate logic blocks, or modifying cross-cutting shared code paths), MUST immediately read `/improve-codebase-architecture` and propose an architectural improvement plan to user before writing code.
+* **Maintainability-First Foundation Gate ("Make the change easy first"):**
+  Before implementing any User Request (UR), evaluate whether UR relies on foundational code and assess the foundation across **4 core maintainability axes**:
+  1. **Maintainability & Modifiability:** High cohesion, low coupling. Can changes be made cleanly without shotgun surgery across multiple files?
+  2. **Extensibility:** Is the structure open for extension without modifying fragile existing logic?
+  3. **Debuggability & Traceability:** Are data flow, state transitions, and error paths explicit and observable?
+  4. **Updatability:** Can contracts or dependencies be updated without breaking unrelated modules?
+
+  **Execution Rule:**
+  - If foundational code is in a **Bad State**, NEVER build the User Request on top of unstable architecture. Agent MUST STOP, formulate a **Prerequisite Refactoring Plan** to clean the foundation first, debate the refactoring approach with the user via direct text response, and end turn to await alignment before proceeding with the UR.
 
 ---
 
