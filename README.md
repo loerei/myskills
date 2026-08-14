@@ -1,8 +1,10 @@
 # MySkills
 
-My AI agent skills, global policies, and my distribution engine.
+My AI agent skills and global policies.
 
-I maintain all my custom skills and system prompt overrides here and push them out to my local project workspaces and global configurations.
+(Just personal take,) at least when comparing to Claude or GPT, Gemini models are badly RLHFed toward sycophancy and unnecessary fluff, plus [Antigravity system instructions](gemini/raw_system_instructions.v2.8.0.md) is mostly a mess. In short, the models are directed toward "doing whatever it takes to make the user wow and happy" (about how good the model is, not about how good the actual result is, sadly). Which is why I have a [delta version of `AGENTS.md`](gemini/AGENTS.md).
+
+This repo is ~~fully~~ mostly written by Antigravity (including this README). So pardon the fluff if there is any, I'm ~~actively and pathetically~~ trying to reduce that on the user's end.
 
 ---
 
@@ -39,7 +41,7 @@ Besides my own custom skills, I integrate and maintain upstream skills from the 
 
 ## Setup & Linking
 
-How I link `distribute-skills` globally so I can run it from any terminal:
+How I link `agents` CLI globally so I can run it from any terminal:
 
 1. **Clone & install**:
    ```bash
@@ -55,44 +57,54 @@ How I link `distribute-skills` globally so I can run it from any terminal:
 
 3. **Sanity check**:
    ```bash
-   distribute-skills --where
+   agents --where
    # Output: <path-to-cloned-repo>/myskills
    ```
 
 ---
 
-## How I Use `distribute-skills`
+## How I Use `agents`
 
-`distribute-skills` is a zero-dependency ESM CLI tool I bundle right in this repo.
+`agents` is a zero-dependency ESM CLI tool supporting both positional subcommands (`agents distribute`) and flag aliases (`agents --distribute`).
 
-### My Common Commands:
+### Common Commands:
 
-- **Sync all my projects & global configs**:
+- **Sync all projects & global configs**:
   ```bash
-  distribute-skills --all
+  agents distribute
+  # or: agents --distribute
   ```
 
 - **Sync a specific project workspace**:
   ```bash
-  distribute-skills --target <project-dir>
+  agents distribute -t <project-dir>
+  # or: agents distribute --target <project-dir>
   ```
 
-- **Dry-run (preview changes without writing)**:
+- **Dry-run preview**:
   ```bash
-  distribute-skills --dry-run
+  agents distribute -d
+  # or: agents distribute --dry-run
   ```
 
-- **Sync & Prune obsolete skills**:
+- **Sync & Prune obsolete non-catalog skills**:
   ```bash
-  distribute-skills --all --prune
+  agents distribute -p
+  # or: agents distribute --prune
   ```
 
-- **CLI Info Queries**:
+- **CLI Info & Policy/Skill Content Reading**:
   ```bash
-  distribute-skills --where                   # Print myskills repo root path
-  distribute-skills --info                    # Print JSON repo metadata
-  distribute-skills --info <skillname>        # Get source path of a skill
-  distribute-skills --info <platform>.policy # Get policy source and destination paths
+  agents where                     # Print myskills repo root path
+  agents info                      # Print JSON repo metadata
+  agents info policy.general       # Get Universal Root AGENTS.md policy & subdocs
+  agents info policy.gemini        # Get Gemini policy override, basePolicy, & subdocs
+  agents info skill.write-a-skill  # Get source location and subdocs of a skill
+  agents read policy.git_workflow  # Print raw content of policy subdoc to stdout
+  agents read skill.tdd            # Print raw content of tdd/SKILL.md to stdout
+  agents read skill.writing-great-skills/GLOSSARY # Print raw content of auxiliary skill subdoc
+  agents audit                     # Check if 100% of skills are documented in AGENTS.md
+  agents audit --add               # Auto-insert missing skills into AGENTS.md & deltas
   ```
 
 ---
