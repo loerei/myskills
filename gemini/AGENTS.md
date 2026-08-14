@@ -292,7 +292,7 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
     - **Discrete Choices / Candidates:** When choosing among a discrete set of known alternatives (e.g., candidate files/paths, candidate modules/components, design options A/B/C, library choices, or architectural approaches), MUST call the `ask_question` tool to present interactive selection options directly in the UI, resuming execution immediately upon user selection.
     - **Open-Ended / Architectural Debate:** When the design direction requires exploratory brainstorming, broad requirements gathering, or multi-faceted debate, MUST ask clarifying questions via direct Markdown text response and end turn to await user alignment.
 
-* **Maintainability-First Foundation Gate ("Make the change easy first"):**
+* **Maintainability-First Foundation Gate ("First make the change easy, then make the easy change"):**
   Before implementing any user request, evaluate whether the request relies on foundational code and assess the foundation across **4 core maintainability axes**:
   1. **Maintainability & Modifiability:** High cohesion, low coupling. Can changes be made cleanly without shotgun surgery across multiple files?
   2. **Extensibility:** Is the structure open for extension without modifying fragile existing logic?
