@@ -2,9 +2,11 @@
 
 My AI agent skills and global policies.
 
-(Just personal take,) at least when comparing to Claude or GPT, Gemini models are badly RLHFed toward sycophancy and unnecessary fluff, plus [Antigravity system instructions](gemini/raw_system_instructions.v2.8.0.md) is mostly a mess. In short, the models are directed toward "doing whatever it takes to make the user wow and happy" (about how good the model is, not about how good the actual result is, sadly). Which is why I have a [delta version of `AGENTS.md`](gemini/AGENTS.md).
+(Just personal take,) at least when comparing to Claude or GPT, Gemini models are badly RLHFed toward sycophancy and unnecessary fluff, plus [Antigravity system instructions](gemini/raw_system_instructions.v2.8.0.md) is mostly a mess (might even be the main problem here since I don't think the ones on [gemini.google.com](https://gemini.google.com) are as bad.). In short, the models are directed toward "doing whatever it takes to make the user wow and happy" (about how good the model is, not about how good the actual result is, sadly). Which is why I have a [delta version of `AGENTS.md`](gemini/AGENTS.md).
 
 This repo is ~~fully~~ mostly written by Antigravity (including this README). So pardon the fluff if there is any, I'm ~~actively and pathetically~~ trying to reduce that on the user's end.
+
+Uhhh, don't read the "I" below this line as me, thats just embarrassing.
 
 ---
 
