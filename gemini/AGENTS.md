@@ -119,13 +119,12 @@ flowchart TD
             PlanStateCheck -->|"No Plan"| CreatePlan["Create implementation_plan.md<br/>with [ ] checklist"]
             PlanStateCheck -->|"Previous Plan Done (All [x])"| GoalScopeCheck{"Is request an expansion/fix<br/>of the SAME goal?"}
 
-            GoalScopeCheck -->|"Yes (Same Goal)"| AppendPlan["Append new [ ] steps in-place<br/>to existing implementation_plan.md"] --> PlanReview{"Ask User to Review the Plan"}
-            GoalScopeCheck -->|"No (Distinct New Goal)"| ArchiveAndNew["Archive finished plan<br/>→ Create NEW implementation_plan.md"] --> PlanReview
+            GoalScopeCheck -->|"Yes (Same Goal)"| AppendPlan["Append new [ ] steps in-place<br/>to existing implementation_plan.md"] --> PlanApproval{"User Approved Plan?"}
+            GoalScopeCheck -->|"No (Distinct New Goal)"| ArchiveAndNew["Archive finished plan<br/>→ Create NEW implementation_plan.md"] --> PlanApproval
 
-            CreatePlan --> PlanReview
-            PlanReview -->|"Approved (User Approved / T3)"| SelectStep
-            PlanReview -->|"Not Approved / Feedback"| RefinePlan["Update implementation_plan.md"] --> ToneFilter
-            PlanReview -->|"Newly Created (Await Review)"| ToneFilter
+            CreatePlan --> PlanApproval
+            PlanApproval -->|"Yes (Approved / T3)"| SelectStep
+            PlanApproval -->|"No / Feedback / Awaiting"| AwaitPlanReview["Present/Update plan<br/>& Await explicit approval"] --> ToneFilter
 
             SelectStep["Select First Uncompleted Step<br/>Mark [/] In-Progress<br/>(STRICT LIMIT: ONE active)"] --> ExecuteStep["Execute Step"]
         end
