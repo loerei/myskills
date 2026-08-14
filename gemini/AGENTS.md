@@ -125,7 +125,7 @@ flowchart TD
         subgraph INVESTIGATE["2B: 3-Phase Investigation Protocol"]
             ExecuteStep --> IsDebugTask{"User reports problem<br/>(bug / perf / unexpected behavior)?"}
 
-            IsDebugTask -->|"No (Normal execution)"| DirectExec["Execute Surgical Change<br/>via approved tools"]
+            IsDebugTask -->|"No (Normal execution)"| DirectExec["Execute Minimal Diffs<br/>via approved tools"]
             IsDebugTask -->|"Yes"| Phase1Read["Phase 1: Read relevant code<br/>+ inspect runtime behavior"]
 
             Phase1Read --> RootCauseConfirmed{"Root cause CONFIRMED?<br/>(reproduced or log evidence)"}
@@ -156,11 +156,11 @@ flowchart TD
 
             VerifyGate -->|"Passed"| MarkComplete["Mark Step [x] Complete<br/>Update implementation_plan.md"]
 
-            VerifyGate -->|"Failed (Convergent: local bug &<br/>errors strictly shrinking)"| PolishFix["Record Mid-Turn Incident<br/>+ Polish solution code"] --> ExecuteStep
+            VerifyGate -->|"Failed (Local bug &<br/>errors shrinking)"| PolishFix["Record Mid-Turn Incident<br/>+ Polish solution code"] --> ExecuteStep
 
             VerifyGate -->|"Failed (Divergent / zero progress /<br/>unknown reasons)"| UnknownFailStop["MUST STOP: Disclose failure<br/>& collaborate with user"] --> ReportBlocker
 
-            VerifyGate -->|"Failed (Scope explosion /<br/>existing bug discovered)"| MandatoryDisclose["MUST Disclose Failure UPFRONT:<br/>• Exact error / leaked output<br/>• Root cause code location<br/>• Proposed fix plan"]
+            VerifyGate -->|"Failed (Scope divergence /<br/>existing bug discovered)"| MandatoryDisclose["MUST Disclose Failure UPFRONT:<br/>• Exact error / leaked output<br/>• Root cause code location<br/>• Proposed fix plan"]
             MandatoryDisclose --> UserFixApproval{"User Approved Fix Plan?"}
             UserFixApproval -->|"Yes"| ApplyFix["Apply Fix & Re-verify"] --> VerifyGate
             UserFixApproval -->|"No / Await Approval"| ReportBlocker
