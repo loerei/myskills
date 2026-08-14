@@ -67,11 +67,12 @@ flowchart TD
             SQCheck -->|"Yes"| FullSkillAudit["Force Full Skill Audit<br/>(Scan ALL skill metadata<br/>& read matching SKILL.md)"]
             SQCheck -->|"No"| CategoryCheck{"Match Task to Categories<br/>in Table 1?"}
             CategoryCheck -->|"Match Found"| LookupTable["Look up required Skill list<br/>in Table 1"]
-            CategoryCheck -->|"No Match"| DynamicMatch["Dynamically match Skill<br/>by Description Metadata"]
+            CategoryCheck -->|"No Match"| DynamicMatch{"Skill Matched<br/>by Description Metadata?"}
 
             FullSkillAudit --> MustReadSkill["MUST call view_file on SKILL.md<br/>BEFORE planning or coding"]
             LookupTable --> MustReadSkill
-            DynamicMatch --> MustReadSkill
+            DynamicMatch -->|"Yes"| MustReadSkill
+            DynamicMatch -->|"No"| ToolRouter
 
             MustReadSkill --> CheckSkillRef{"Does SKILL.md reference<br/>another Skill?"}
             CheckSkillRef -->|"Yes"| ReadRefSkill["MUST call view_file<br/>on referenced SKILL.md"] --> ToolRouter
@@ -91,7 +92,7 @@ flowchart TD
             AmbiguityGate -->|"No Ambiguity"| ArchRiskCheck{"Touching sensitive/coupled logic,<br/>multi-file edits,<br/>or cross-cutting shared code?"}
 
             GrillSession --> ArchRiskCheck
-            DisambiguateStop --> ArchRiskCheck
+            DisambiguateStop --> ToneFilter
             AutoResolve --> ArchRiskCheck
 
             ArchRiskCheck -->|"Yes"| ArchAlert["MUST read /improve-codebase-architecture<br/>& propose plan FIRST<br/>before writing code"]
@@ -114,8 +115,9 @@ flowchart TD
             CurrentTier -->|"Tier 3 (Existing Plan)"| SelectStep
 
             CreatePlan --> PlanReview{"Ask User to Review the Plan"}
-            PlanReview -->|"Approved"| SelectStep
-            PlanReview -->|"Not Approved / Feedback"| RefinePlan["Update implementation_plan.md"] --> PlanReview
+            PlanReview -->|"Approved (User Approved / T3)"| SelectStep
+            PlanReview -->|"Not Approved / Feedback"| RefinePlan["Update implementation_plan.md"] --> ToneFilter
+            PlanReview -->|"Newly Created (Await Review)"| ToneFilter
 
             SelectStep["Select First Uncompleted Step<br/>Mark [/] In-Progress<br/>(STRICT LIMIT: ONE active)"] --> ExecuteStep["Execute Step"]
         end
@@ -137,8 +139,7 @@ flowchart TD
             Phase2Trace --> Phase3Propose["Phase 3: Propose solution<br/>addressing root cause directly"]
 
             Phase3Propose --> InvestApproval{"Explicit User Approval?<br/>(Command or T3 Tag)"}
-            InvestApproval -->|"No"| StopAwaitApproval["STOP — Present solution<br/>& await explicit approval"]
-            StopAwaitApproval --> InvestApproval
+            InvestApproval -->|"No (Await Approval)"| ToneFilter
             InvestApproval -->|"Yes"| DirectExec
         end
 
@@ -163,7 +164,7 @@ flowchart TD
             VerifyGate -->|"Failed (Bug / Leak<br/>Discovered in existing code)"| MandatoryDisclose["MUST Disclose Failure UPFRONT:<br/>• Exact error / leaked output<br/>• Root cause code location<br/>• Proposed fix plan"]
             MandatoryDisclose --> UserFixApproval{"User Approved Fix Plan?"}
             UserFixApproval -->|"Yes"| ApplyFix["Apply Fix & Re-verify"] --> VerifyGate
-            UserFixApproval -->|"No / Revisions"| MandatoryDisclose
+            UserFixApproval -->|"No / Await Approval"| ToneFilter
 
             MarkComplete --> CheckRemaining{"More Uncompleted Steps?"}
             CheckRemaining -->|"Yes"| ContextCheckMid{"Context Truncated?"}
@@ -177,24 +178,8 @@ flowchart TD
             FinalWalkthrough --> GitNeeded{"State-Modifying /<br/>Git Action Needed?"}
             GitNeeded -->|"No"| ToneFilter
 
-            GitNeeded -->|"Yes"| GitFetch["git fetch origin"]
-            GitFetch --> GitRebase["git rebase origin/<default-branch>"]
-            GitRebase --> RebaseConflict{"Rebase conflicts?"}
-            RebaseConflict -->|"Yes"| ResolveEarly["Resolve conflicts locally<br/>OR abort rebase + ask user"]
-            ResolveEarly --> GitRebase
-            RebaseConflict -->|"No"| BranchSwitch{"Need branch switch?"}
-
-            BranchSwitch -->|"Yes"| DirtyCheck{"git status:<br/>uncommitted changes?"}
-            DirtyCheck -->|"Yes"| StashFirst["git stash or commit FIRST"]
-            StashFirst --> DoSwitch["git checkout / switch"]
-            DirtyCheck -->|"No"| DoSwitch
-            BranchSwitch -->|"No"| MakeChanges
-
-            DoSwitch --> MakeChanges["Make changes"]
-            MakeChanges --> GitCommit["git commit<br/>(atomic, conventional)"]
-            GitCommit --> MoreChanges{"More changes?"}
-            MoreChanges -->|"Yes"| MakeChanges
-            MoreChanges -->|"No"| PrePushFetch["git fetch origin +<br/>git rebase origin/<default-branch>"]
+            GitNeeded -->|"Yes"| GitCommit["git commit<br/>(atomic, conventional)"]
+            GitCommit --> PrePushFetch["git fetch origin +<br/>git rebase origin/<default-branch>"]
 
             PrePushFetch --> PushConflict{"Conflicts?"}
             PushConflict -->|"Yes"| ResolvePush["Resolve locally +<br/>verify tests/build"]
