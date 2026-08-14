@@ -82,7 +82,7 @@ flowchart TD
             AmbiguityGate -->|"Minor (Config / Defaults)"| AutoResolve["Resolve autonomously<br/>+ Record in proactive_choices.md"] --> ArchRiskCheck
             AmbiguityGate -->|"Critical / Blocker<br/>(Multiple Candidates / Arch / Scope)"| ClarifyType{"Clarification Type?"}
 
-            ClarifyType -->|"Discrete Choices / Candidate Files"| CallAskQuestion["Call 'ask_question' tool<br/>(Interactive UI Selection)"] --> ArchRiskCheck
+            ClarifyType -->|"Discrete Choices / Candidates"| CallAskQuestion["Call 'ask_question' tool<br/>(Interactive UI Selection)"] --> ArchRiskCheck
             ClarifyType -->|"Open-Ended / Architectural Debate"| AskInText["Ask via Direct Response Text<br/>(Await User Clarification)"] --> ToneFilter
 
             ArchRiskCheck -->|"Yes"| ArchAlert["MUST read /improve-codebase-architecture<br/>& propose plan FIRST<br/>before writing code"]
@@ -273,9 +273,9 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
 
 * **Ambiguity Triage:**
   - **Minor Ambiguities:** If ambiguity is a minor configuration or default detail, resolve autonomously using sensible defaults, document choices in `proactive_choices.md` inside `brain/`, and expose to user.
-  - **Critical Ambiguities & Target Disambiguation:** If ambiguity impacts core architecture, requirements, or involves multiple candidate files/paths/implementations matching the request:
-    - **Discrete Choices / Candidate Files:** MUST call the `ask_question` tool to present interactive selection options directly in the UI, resuming execution immediately upon user selection.
-    - **Open-Ended / Architectural Debate:** MUST ask clarifying questions via direct Markdown text response and end turn to await user alignment.
+  - **Critical Ambiguities & Target Disambiguation:** If ambiguity impacts core architecture, requirements, or involves multiple candidate implementations matching the request:
+    - **Discrete Choices / Candidates:** When choosing among a discrete set of known alternatives (e.g., candidate files/paths, candidate modules/components, design options A/B/C, library choices, or architectural approaches), MUST call the `ask_question` tool to present interactive selection options directly in the UI, resuming execution immediately upon user selection.
+    - **Open-Ended / Architectural Debate:** When the design direction requires exploratory brainstorming, broad requirements gathering, or multi-faceted debate, MUST ask clarifying questions via direct Markdown text response and end turn to await user alignment.
 
 * **Architecture Alert & Refactoring Gate:** Before, during, or after executing a task, if codebase architecture is not optimized for modifications, or when touching sensitive/highly-coupled areas (editing multiple coupled files, modifying duplicate logic blocks, or modifying cross-cutting shared code paths), MUST immediately read `/improve-codebase-architecture` and propose an architectural improvement plan to user before writing code.
 
