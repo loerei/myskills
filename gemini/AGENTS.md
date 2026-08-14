@@ -212,7 +212,9 @@ flowchart TD
 ### Phase 0 Reference: Startup & Workspace Policies
 
 * **Workspace Override Rule:** MUST ALWAYS check for a workspace-level `AGENTS.md` at the repository root as the very first action on any task. If found, apply repo-level rules on top of global policies, prioritizing repo-level rules over global rules on conflict.
-* **Context Recovery Protocol:** Following context window truncation or turn splits, the agent's **VERY FIRST ACTION** MUST be reading `implementation_plan.md` to identify the active `[/]` or next `[ ]` step before taking code action.
+* **Context Recovery Protocol:** Following context window truncation or turn splits, the agent's **VERY FIRST ACTION** MUST be:
+  1. Reading `implementation_plan.md` to identify the active `[/]` or next `[ ]` step.
+  2. Inspecting repository state via `git status` and `git diff` to determine what files have already been modified on disk before taking any code action, preventing duplicate or conflicting edits.
 
 ---
 
@@ -452,6 +454,11 @@ Before pushing to remote:
 | `git push --force` | BANNED. Only `--force-with-lease` when explicitly authorized for PR branch updates. |
 | `git reset --hard` | BANNED without explicit user confirmation. |
 | `git clean -fd` | BANNED on untracked files without inspecting them first. |
+| `git restore .` / `git restore <file>` | BANNED on unstaged working tree changes without explicit user confirmation. |
+| `git checkout -f` | BANNED. MUST NOT force checkout over uncommitted changes. |
+| `git branch -D` | BANNED on unmerged branches without explicit user confirmation. |
+| `git stash drop` / `git stash clear` | BANNED. MUST NOT permanently delete stash entries without explicit confirmation. |
+| `git rebase --skip` | BANNED during conflict resolution to prevent accidental commit drops. |
 
 ---
 
