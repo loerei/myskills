@@ -59,12 +59,12 @@ flowchart TD
             SetTier2 --> SQCheck
             SetTier3 --> SQCheck
 
-            SQCheck -->|"Yes"| TargetedSkillAudit["Targeted Skill Audit<br/>(Run 'agents list -c <category>'<br/>& read matching SKILL.md)"]
+            SQCheck -->|"Yes"| CategorySkillSearch["Category Skill Discovery<br/>(Run 'agents list -c <category>'<br/>& read matching SKILL.md)"]
             SQCheck -->|"No"| CategoryCheck{"Match Task to Categories<br/>in Table 1?"}
             CategoryCheck -->|"Match Found"| LookupTable["Look up required Skill list<br/>in Table 1"]
-            CategoryCheck -->|"No Match"| DynamicMatch{"Skill Matched<br/>by Description Metadata?"}
+            CategoryCheck -->|"No Match"| DynamicMatch{"Skill Matched<br/>by Description?"}
 
-            TargetedSkillAudit --> MustReadSkill["MUST call view_file on SKILL.md<br/>BEFORE planning or coding"]
+            CategorySkillSearch --> MustReadSkill["MUST call view_file on SKILL.md<br/>BEFORE planning or coding"]
             LookupTable --> MustReadSkill
             DynamicMatch -->|"Yes"| MustReadSkill
             DynamicMatch -->|"No"| SelectMCPTools
@@ -78,7 +78,7 @@ flowchart TD
 
         SelectMCPTools --> AmbiguityGate
 
-        subgraph TRIAGE["1C: Ambiguity & Architecture Triage"]
+        subgraph TRIAGE["1C: Ambiguity & Question Routing"]
             AmbiguityGate{"Define<br/>Ambiguity Level of User's Request?"}
 
             AmbiguityGate -->|"No Ambiguity / Clear"| FoundationCheck{"User Request heavily depends on<br/>foundational codebase?"}
@@ -224,7 +224,7 @@ flowchart TD
   * **`T1` / `[T1]` (Force Tier 1 - Read & Debate Only):** Strictly forces Tier 1 execution regardless of prompt phrasing or directives. BANS ALL file writes (including `brain/scratch/`).
   * **`T2` / `[T2]` (Allow Tier 2 - Controlled Diagnostic):** Explicitly grants Tier 2 permissions for scratch scripts, repro harnesses, and builds in `<repo-root>/.scratch/` or `brain/<conversation-id>/scratch/`. BANS source edits outside `.scratch/` and `brain/scratch/`.
   * **`T3` / `[T3]` (Explicit Tier 3 Authorization):** Acts as immediate explicit approval (`EXPLICIT_APPROVAL = TRUE`), authorizing Tier 3 state-modifying actions (source edits, commit, push, PR) directly for the accompanying request.
-  * **`SQ` / `[SQ]` (Self-Skill Querying Modifier):** Forces targeted skill discovery by querying metadata via `agents list -c <category>` (or `agents list`) and reading matching `SKILL.md` instruction files before formulating a response or executing tools.
+  * **`SQ` / `[SQ]` (Category Skill Discovery Modifier):** Triggers category skill lookup via `agents list -c <category>` (or `agents list`) and reading matching `SKILL.md` instruction files before formulating a response or executing tools.
 
 #### Tier 1: Read & Debate Only (DEFAULT STATE)
 * **Trigger:** Questions, discussions, analysis requests, any user prompt ending with `?` (e.g., *"Should we...?"*, *"Is A better?"*, *"Push to GitHub?"*), or prompt containing `T1`/`[T1]`.
@@ -273,13 +273,13 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
 | Task | Required Tool Server | Constraints & Rules |
 | :--- | :--- | :--- |
 | **Code Reading & Symbol search** | `jcodemunch` | MUST call `jcodemunch_guide` first. MUST use `search_symbols`, `get_symbol_source`, etc. inside repos. MUST NOT use `list_dir`, `view_file`, `grep_search` on indexed code. MUST index via `index_folder` if not indexed. *Exception: May use `view_file` directly for non-code files (.md, docs, configs) or untracked/ignored files to avoid latency.* |
-| **Code Editing (Surgical)** | `patchitright` | **MUST call `patchitright_guide` first with target `file_type` list (e.g., `["js_ts"]`, `["python"]`, `["html_css"]`) and follow its instructions.** MUST ALWAYS use `patchitright` tools instead of native edit tools for all repo edits. |
+| **Code Editing (Minimal Diffs)** | `patchitright` | **MUST call `patchitright_guide` first with target `file_type` list (e.g., `["js_ts"]`, `["python"]`, `["html_css"]`) and follow its instructions.** MUST ALWAYS use `patchitright` tools instead of native edit tools for all repo edits. |
 | **Exporting Session History/Logs**| `chronicle-mcp` | SHOULD call `chronicle_guide` for routing & token-saving rules. MUST use `chronicle-mcp` tools (`list_sessions`, `get_session_details`, etc.). MUST use `reverseSteps=true` when reading recent context first. When exporting steps, MUST delegate file exports via `output` parameter (e.g., `get_session_details` with `output` path and `conversationStepsOnly: true`). MUST NEVER write manually or read SQLite/jsonl transcripts. |
 | **Visual Metadata Inspection** | N/A | MUST trust `HoverSource Component Metadata` block 100% without validation. MUST go straight to target lines. |
 
 ---
 
-### Phase 1C Reference: Ambiguity & Architecture Triage
+### Phase 1C Reference: Ambiguity & Question Routing
 
 * **Ambiguity Triage:**
   - **Minor Ambiguities:** If ambiguity is a minor configuration or default detail, resolve autonomously using sensible defaults, note choices in `implementation_plan.md` (under Key Decisions) or response, and disclose to user.
