@@ -19,10 +19,11 @@
 ```mermaid
 flowchart TD
     %% ============================================================
-    %% PHASE 0: TURN INTAKE & WORKSPACE GATE
+    %% PHASE 0: TURN INTAKE, TONE MINDSET & WORKSPACE GATE
     %% ============================================================
-    subgraph PHASE0["Phase 0: Turn Intake & Workspace Gate"]
-        TurnStart["Turn Start"] --> CheckRepoAgents{"Is there an AGENTS.md at Repo Root?"}
+    subgraph PHASE0["Phase 0: Turn Intake, Tone Mindset & Workspace Gate"]
+        TurnStart["Turn Start"] --> SetToneMindset["Initialize Tone & Anti-Spin Mindset<br/>• Blunt, factual, zero sycophancy<br/>• Claims require empirical evidence"]
+        SetToneMindset --> CheckRepoAgents{"Is there an AGENTS.md at Repo Root?"}
         CheckRepoAgents -->|"Found"| LoadRepoRules["Apply Repo Rules ON TOP of Global<br/>(Repo overrides Global on conflict)"]
         CheckRepoAgents -->|"Not Found"| LoadGlobalRules["Apply Global Policies Only"]
         LoadRepoRules --> CheckContextLoss{"Context Truncated or New Turn?"}
@@ -54,10 +55,8 @@ flowchart TD
 
             InputAnalysis -->|"Source Edit / Commit / Push / PR<br/>/ State Change"| Tier3Gate
 
-            Tier3Gate -->|"No / Ambiguous / Praise<br/>/ Follow-up Question"| Tier3Block["> [!CAUTION] EXECUTION BLOCK:<br/>STOP immediately.<br/>Present Plan / Walkthrough.<br/>Await explicit approval."]
+            Tier3Gate -->|"No / Ambiguous / Praise<br/>/ Follow-up Question"| Tier3Block["> [!CAUTION] EXECUTION BLOCK:<br/>STOP immediately.<br/>Present Plan / Walkthrough.<br/>Await explicit approval."] --> ReportResult
             Tier3Gate -->|"Explicit Command<br/>('Approve' / 'Proceed' / Directive)"| SetTier3
-
-            Tier3Block --> TurnEnd
         end
 
         subgraph SKILL_ROUTER["1B: Skill Gateway"]
@@ -94,7 +93,7 @@ flowchart TD
             AmbiguityGate -->|"Critical / Blocker<br/>(Multiple Candidates / Arch / Scope)"| ClarifyType{"Clarification Type?"}
 
             ClarifyType -->|"Discrete Choices / Candidates"| CallAskQuestion["Call 'ask_question' tool<br/>(Interactive UI Selection)"] --> FoundationCheck
-            ClarifyType -->|"Open-Ended / Architectural Debate"| AskInText["Ask via Direct Response Text<br/>(Await User Clarification)"] --> ToneFilter
+            ClarifyType -->|"Open-Ended / Architectural Debate"| AskInText["Ask via Direct Response Text<br/>(Await User Clarification)"] --> ReportResult
 
             FoundationCheck -->|"No (Isolated / Low Dependency)"| ProceedToExec["Proceed to Phase 2"]
             FoundationCheck -->|"Yes"| FoundationState{"Is foundational code in bad state<br/>(hard to maintain/debug/extend)?"}
@@ -111,20 +110,21 @@ flowchart TD
         subgraph PLAN_LOOP["2A: Implementation Plan Step Loop"]
             ProceedToExec --> CurrentTier{"Current Tier State?"}
 
-            CurrentTier -->|"Tier 1"| ReadDebate["Execute Read & Debate<br/>Propose implementation_plan.md"]
-            CurrentTier -->|"Tier 2"| RunScratch["Execute Diagnostic<br/>in .scratch/ or brain/scratch/<br/>Gather Empirical Evidence"]
+            CurrentTier -->|"Tier 1"| ReadDebate["Execute Read & Debate<br/>Propose implementation_plan.md"] --> ReportResult
+            CurrentTier -->|"Tier 2"| RunScratch["Execute Diagnostic<br/>in .scratch/ or brain/scratch/<br/>Gather Empirical Evidence"] --> ReportResult
             CurrentTier -->|"Tier 3"| PlanStateCheck{"Active Plan State?"}
 
             PlanStateCheck -->|"Active In-Progress<br/>(has [ ] or [/])"| SelectStep
-            PlanStateCheck -->|"No Plan"| CreatePlan["Create implementation_plan.md<br/>with [ ] checklist"]
+            PlanStateCheck -->|"No Plan"| CreatePlan["Create implementation_plan.md<br/>with [ ] checklist"] --> PlanApproval
             PlanStateCheck -->|"Previous Plan Done (All [x])"| GoalScopeCheck{"Is request an expansion/fix<br/>of the SAME goal?"}
 
-            GoalScopeCheck -->|"Yes (Same Goal)"| AppendPlan["Append new [ ] steps in-place<br/>to existing implementation_plan.md"] --> PlanApproval{"User Approved Plan?"}
+            GoalScopeCheck -->|"Yes (Same Goal)"| AppendPlan["Append new [ ] steps in-place<br/>to existing implementation_plan.md"] --> PlanApproval
             GoalScopeCheck -->|"No (Distinct New Goal)"| ArchiveAndNew["Archive finished plan<br/>→ Create NEW implementation_plan.md"] --> PlanApproval
 
             CreatePlan --> PlanApproval
+            PlanApproval{"User Approved Plan?"}
             PlanApproval -->|"Yes (Approved / T3)"| SelectStep
-            PlanApproval -->|"No / Feedback / Awaiting"| AwaitPlanReview["Present/Update plan<br/>& Await explicit approval"] --> ToneFilter
+            PlanApproval -->|"No / Feedback / Awaiting"| AwaitPlanReview["Present/Update plan<br/>& Await explicit approval"] --> ReportResult
 
             SelectStep["Select First Uncompleted Step<br/>Mark [/] In-Progress<br/>(STRICT LIMIT: ONE active)"] --> ExecuteStep["Execute Step"]
         end
@@ -139,28 +139,25 @@ flowchart TD
             RootCauseConfirmed -->|"No"| InstrumentCode["Add .scratch/ repro harness or<br/>temporary logging to reproduce"]
             InstrumentCode --> ReCheckRepro{"Can reproduce locally?"}
             ReCheckRepro -->|"Yes"| Phase1Read
-            ReCheckRepro -->|"No (Need User logs/env)"| CollabStop["STOP — Request user manual test / logs"] --> ToneFilter
+            ReCheckRepro -->|"No (Need User logs/env)"| CollabStop["STOP — Request user manual test / logs"] --> ReportResult
 
-            RootCauseConfirmed -->|"Yes (code-reading<br/>guess ONLY)"| BlockGuess["STOP — reading code and<br/>guessing is NOT confirmation"]
-            BlockGuess --> InstrumentCode
+            RootCauseConfirmed -->|"Yes (code-reading<br/>guess ONLY)"| BlockGuess["STOP — reading code and<br/>guessing is NOT confirmation"] --> InstrumentCode
 
             RootCauseConfirmed -->|"Yes (reproduced /<br/>log evidence)"| Phase2Trace["Phase 2: Trace data flow<br/>Understand WHY not just WHERE"]
             Phase2Trace --> Phase3Propose["Phase 3: Propose solution<br/>addressing root cause directly"]
 
             Phase3Propose --> InvestApproval{"Explicit User Approval?<br/>(Command or T3 Tag)"}
-            InvestApproval -->|"No (Await Approval)"| ToneFilter
+            InvestApproval -->|"No (Await Approval)"| ReportResult
             InvestApproval -->|"Yes"| DirectExec
         end
 
         DirectExec --> VerifyGate
-        RunScratch --> VerifyGate
-        ReadDebate --> ToneFilter
     end
 
     %% ============================================================
-    %% PHASE 3: VERIFICATION, FAILURE DISCLOSURE, GIT & TONE
+    %% PHASE 3: VERIFICATION, GIT & REPORTING
     %% ============================================================
-    subgraph PHASE3["Phase 3: Verification, Disclosure, Git & Output"]
+    subgraph PHASE3["Phase 3: Verification, Git & Output"]
         subgraph VERIFY_LOOP["3A: Runtime Verification & Failure Disclosure"]
             VerifyGate{"Runtime Verification Passed?"}
 
@@ -168,40 +165,36 @@ flowchart TD
 
             VerifyGate -->|"Failed (Bugs in solution code,<br/>same root cause)"| PolishFix["Record Mid-Turn Incident<br/>+ Polish solution code"] --> ExecuteStep
 
-            VerifyGate -->|"Failed (Unknown reasons)"| UnknownFailStop["MUST STOP: Disclose failure<br/>& collaborate with user"] --> ToneFilter
+            VerifyGate -->|"Failed (Unknown reasons)"| UnknownFailStop["MUST STOP: Disclose failure<br/>& collaborate with user"] --> ReportResult
 
             VerifyGate -->|"Failed (Bug / Leak<br/>Discovered in existing code)"| MandatoryDisclose["MUST Disclose Failure UPFRONT:<br/>• Exact error / leaked output<br/>• Root cause code location<br/>• Proposed fix plan"]
             MandatoryDisclose --> UserFixApproval{"User Approved Fix Plan?"}
             UserFixApproval -->|"Yes"| ApplyFix["Apply Fix & Re-verify"] --> VerifyGate
-            UserFixApproval -->|"No / Await Approval"| ToneFilter
+            UserFixApproval -->|"No / Await Approval"| ReportResult
 
             MarkComplete --> CheckRemaining{"More Uncompleted Steps?"}
             CheckRemaining -->|"Yes"| ContextCheckMid{"Context Truncated?"}
             ContextCheckMid -->|"Yes"| ReReadPlan["Re-read implementation_plan.md"] --> SelectStep
             ContextCheckMid -->|"No"| SelectStep
 
-            CheckRemaining -->|"No (All [x])"| FinalWalkthrough["Generate/Update walkthrough.md<br/>& Declare Completion"]
+            CheckRemaining -->|"No (All [x])"| GitNeeded{"State-Modifying /<br/>Git Action Needed?"}
         end
 
         subgraph GIT_SAFEGUARDS["3B: Git Workflow & Operational Safeguards"]
-            FinalWalkthrough --> GitNeeded{"State-Modifying /<br/>Git Action Needed?"}
-            GitNeeded -->|"No"| ToneFilter
-
             GitNeeded -->|"Yes"| GitCommit["git commit<br/>(atomic, conventional)"]
             GitCommit --> PrePushFetch["git fetch origin +<br/>git rebase origin/<default-branch>"]
 
             PrePushFetch --> PushConflict{"Conflicts?"}
             PushConflict -->|"Trivial / Resolved locally"| ResolvePush["Resolve locally +<br/>verify tests/build"] --> PrePushFetch
-            PushConflict -->|"Non-trivial Conflicts"| AbortPushStop["git rebase --abort<br/>→ Consult user"] --> ToneFilter
+            PushConflict -->|"Non-trivial Conflicts"| AbortPushStop["git rebase --abort<br/>→ Consult user"] --> ReportResult
             PushConflict -->|"No Conflicts"| VerifyBuild["Verify tests/build pass"]
-            VerifyBuild --> GitPush["git push"]
+            VerifyBuild --> GitPush["git push"] --> FinalizeWalkthrough["Generate/Update walkthrough.md<br/>& Finalize Artifacts"]
 
-            GitPush --> ToneFilter
+            GitNeeded -->|"No"| FinalizeWalkthrough
         end
 
-        subgraph TONE_OUTPUT["3C: Tone & Anti-Spin Output Filter"]
-            ToneFilter["Apply Tone & Anti-Spin Filter"] --> CheckKillList["Filter against Kill List:<br/>No sycophancy / no praise / no filler<br/>No premature victory declarations<br/>No sugarcoating"]
-            CheckKillList --> ReportResult["Report Honest Outcome:<br/>• Disclose Incidents & Mid-Turn Fixes (if any)<br/>• Clickable Markdown Links for all refs<br/>• State what is tested vs untested"]
+        subgraph REPORTING_STAGE["3C: Output Reporting & Turn Finalization"]
+            FinalizeWalkthrough --> ReportResult["Report Honest Outcome:<br/>• Disclose Incidents & Mid-Turn Fixes (if any)<br/>• Clickable Markdown Links for all refs<br/>• State what is tested vs untested"]
             ReportResult --> TurnEnd["Turn End"]
         end
     end
