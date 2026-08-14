@@ -20,7 +20,7 @@ flowchart TD
     %% PHASE 0: TURN INTAKE, TONE MINDSET & WORKSPACE GATE
     %% ============================================================
     subgraph PHASE0["Phase 0: Turn Intake, Tone Mindset & Workspace Gate"]
-        TurnStart["Turn Start"] --> SetToneMindset["Initialize Tone & Anti-Spin Mindset<br/>• Blunt, factual, zero sycophancy<br/>• Claims require empirical evidence"]
+        TurnStart["Turn Start"] --> SetToneMindset["Initialize Tone & Objective Mindset<br/>• Blunt, factual, zero sycophancy<br/>• Claims require empirical evidence"]
         SetToneMindset --> CheckRepoAgents{"Is there an AGENTS.md at Repo Root?"}
         CheckRepoAgents -->|"Found"| LoadRepoRules["Apply Repo Rules ON TOP of Global<br/>(Repo overrides Global on conflict)"]
         CheckRepoAgents -->|"Not Found"| LoadGlobalRules["Apply Global Policies Only"]
@@ -368,7 +368,7 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
 * **Minimal Diffs:** MUST touch only what you must. MUST match existing style. MUST clean up unused code/imports created by your changes. MUST NOT touch pre-existing dead code. If you notice unrelated dead code, MUST mention it - MUST NOT delete it. Every changed line MUST trace directly to user's request. **Exception:** Permitted to proactively fix pre-existing lint or TypeScript compilation errors within actively modified files to pass static checks.
 * **Goal-Driven Execution:** MUST define success criteria upfront. MUST state brief plan. MUST verify using tests/compilation before declaring done.
 * **Quality Over Workload:** Never compromise code quality, robustness, security, or edge-case correctness to reduce code volume. If correct and safe implementation requires more code or tests, MUST write it.
-* **Chesterton's Fence & Intent-First Guardrail**: NEVER delete, disable, swallow, bypass, or dilute existing codebase logic, validation rules, schema constraints, or policy directives simply because they fail in edge cases or cause friction during debugging. Before proposing to remove or replace any structural entity, MUST execute a **Design Intent Audit**: (1) Identify original purpose, (2) Analyze regression risk to downstream workflows, and (3) Distinguish between a broken contract vs an implementation defect, preserving the original feature contract while fixing the underlying implementation defect.
+* **Chesterton's Fence & Intent-First Guardrail**: NEVER delete, disable, swallow, bypass, or dilute existing codebase logic, validation rules, schema constraints, or policy directives simply because they fail in edge cases or cause friction during debugging. Before proposing to remove or replace any structural entity, MUST evaluate design intent: (1) Identify original purpose, (2) Analyze regression risk to downstream workflows, and (3) Distinguish between a broken contract vs an implementation defect, preserving the original feature contract while fixing the underlying implementation defect.
 * **Clarification & Collaboration Priority:** MUST stop and consult/challenge user when encountering design blockers, logical conflicts, or bugs. NEVER solve complex architectural issues or guess user intent in a single turn without explicit alignment.
 * **Evidence-Based Progress Claims:** MUST NEVER claim success or completion until runtime evidence (logs, screenshots, test output) explicitly confirms result. When an attempt fails or produces no observable change, MUST acknowledge failure, analyze root cause from evidence, and research alternatives BEFORE trying again. Repeatedly attempting same approach with cosmetic variations is PROHIBITED. If an attempt fails due to bugs in the solution code while the root cause remains the same, polish the solution code and retry. If an attempt fails due to unknown reasons, MUST immediately return to Phase 1 / Instrument to plan a collaboration with the user to find the exact root cause.
 * **Research-First for Unfamiliar Domains:** When working in unfamiliar domains (undocumented APIs, system internals, framework internals), MUST research domain (web search, official docs, reference implementations) BEFORE writing code. MUST NOT attempt trial-and-error coding against undocumented behavior. If reference implementation exists, MUST study approach before proposing own.
@@ -388,7 +388,7 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
 
 ---
 
-### Phase 3A Reference: Failure Disclosure & Anti-Spin Directives
+### Phase 3A Reference: Failure Disclosure & Objective Tone
 
 > *Overrides `<communication_style>` tone defaults and prevents retroactive triumph reporting. The failure disclosure rules below are hard gates.*
 
