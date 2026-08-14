@@ -76,14 +76,14 @@ flowchart TD
         ToolRouter --> AmbiguityGate
 
         subgraph TRIAGE["1D: Ambiguity & Architecture Triage"]
-            AmbiguityGate{"Define<br/>Ambiguity Level of User's Request?"} -->|"Critical<br/>(Architecture / Security)"| GrillSession["MUST run /grill-me<br/>or /grill-with-docs"]
-            AmbiguityGate -->|"Multiple Candidate<br/>Target Files"| DisambiguateStop["MUST STOP<br/>→ List candidate files<br/>→ Ask User to specify"]
-            AmbiguityGate -->|"Minor<br/>(Config / Timeouts)"| AutoResolve["Resolve autonomously<br/>+ Record in proactive_choices.md"]
-            AmbiguityGate -->|"No Ambiguity"| ArchRiskCheck{"Touching sensitive/coupled logic,<br/>multi-file edits,<br/>or cross-cutting shared code?"}
+            AmbiguityGate{"Define<br/>Ambiguity Level of User's Request?"}
 
-            GrillSession --> ArchRiskCheck
-            DisambiguateStop --> ToneFilter
-            AutoResolve --> ArchRiskCheck
+            AmbiguityGate -->|"No Ambiguity / Clear"| ArchRiskCheck{"Touching sensitive/coupled logic,<br/>multi-file edits,<br/>or cross-cutting shared code?"}
+            AmbiguityGate -->|"Minor (Config / Defaults)"| AutoResolve["Resolve autonomously<br/>+ Record in proactive_choices.md"] --> ArchRiskCheck
+            AmbiguityGate -->|"Critical / Blocker<br/>(Multiple Candidates / Arch / Scope)"| ClarifyType{"Clarification Type?"}
+
+            ClarifyType -->|"Discrete Choices / Candidate Files"| CallAskQuestion["Call 'ask_question' tool<br/>(Interactive UI Selection)"] --> ArchRiskCheck
+            ClarifyType -->|"Open-Ended / Architectural Debate"| AskInText["Ask via Direct Response Text<br/>(Await User Clarification)"] --> ToneFilter
 
             ArchRiskCheck -->|"Yes"| ArchAlert["MUST read /improve-codebase-architecture<br/>& propose plan FIRST<br/>before writing code"]
             ArchRiskCheck -->|"No"| ProceedToExec["Proceed to Phase 2"]
@@ -272,9 +272,10 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
 ### Phase 1D Reference: Ambiguity & Architecture Triage
 
 * **Ambiguity Triage:**
-  - **Critical Ambiguities:** If ambiguity impacts core architecture, security, or primary goal, MUST read `/grill-me` or `/grill-with-docs` and start a grill session.
-  - **Minor Ambiguities:** If ambiguity is a minor detail, resolve autonomously using sensible defaults, document choices in `proactive_choices.md` inside `brain/`, and expose to user.
-  - **Target Disambiguation (Multiple Candidates):** If request references a target terminology, component, module, or file and codebase contains multiple candidate files/paths/implementations matching that description, MUST NOT make assumptions. MUST stop, list candidate files, and ask user to clarify.
+  - **Minor Ambiguities:** If ambiguity is a minor configuration or default detail, resolve autonomously using sensible defaults, document choices in `proactive_choices.md` inside `brain/`, and expose to user.
+  - **Critical Ambiguities & Target Disambiguation:** If ambiguity impacts core architecture, requirements, or involves multiple candidate files/paths/implementations matching the request:
+    - **Discrete Choices / Candidate Files:** MUST call the `ask_question` tool to present interactive selection options directly in the UI, resuming execution immediately upon user selection.
+    - **Open-Ended / Architectural Debate:** MUST ask clarifying questions via direct Markdown text response and end turn to await user alignment.
 
 * **Architecture Alert & Refactoring Gate:** Before, during, or after executing a task, if codebase architecture is not optimized for modifications, or when touching sensitive/highly-coupled areas (editing multiple coupled files, modifying duplicate logic blocks, or modifying cross-cutting shared code paths), MUST immediately read `/improve-codebase-architecture` and propose an architectural improvement plan to user before writing code.
 
