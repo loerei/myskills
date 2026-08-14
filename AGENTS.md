@@ -111,10 +111,16 @@ flowchart TD
 
             CurrentTier -->|"Tier 1"| ReadDebate["Execute Read & Debate<br/>Propose implementation_plan.md"]
             CurrentTier -->|"Tier 2"| RunScratch["Execute Diagnostic<br/>in .scratch/ or brain/scratch/<br/>Gather Empirical Evidence"]
-            CurrentTier -->|"Tier 3 (New Plan)"| CreatePlan["Create implementation_plan.md<br/>with [ ] checklist"]
-            CurrentTier -->|"Tier 3 (Existing Plan)"| SelectStep
+            CurrentTier -->|"Tier 3"| PlanStateCheck{"Active Plan State?"}
 
-            CreatePlan --> PlanReview{"Ask User to Review the Plan"}
+            PlanStateCheck -->|"Active In-Progress<br/>(has [ ] or [/])"| SelectStep
+            PlanStateCheck -->|"No Plan"| CreatePlan["Create implementation_plan.md<br/>with [ ] checklist"]
+            PlanStateCheck -->|"Previous Plan Done (All [x])"| GoalScopeCheck{"Is request an expansion/fix<br/>of the SAME goal?"}
+
+            GoalScopeCheck -->|"Yes (Same Goal)"| AppendPlan["Append new [ ] steps in-place<br/>to existing implementation_plan.md"] --> PlanReview{"Ask User to Review the Plan"}
+            GoalScopeCheck -->|"No (Distinct New Goal)"| ArchiveAndNew["Archive finished plan<br/>→ Create NEW implementation_plan.md"] --> PlanReview
+
+            CreatePlan --> PlanReview
             PlanReview -->|"Approved (User Approved / T3)"| SelectStep
             PlanReview -->|"Not Approved / Feedback"| RefinePlan["Update implementation_plan.md"] --> ToneFilter
             PlanReview -->|"Newly Created (Await Review)"| ToneFilter
@@ -312,10 +318,12 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
    - `- [/] <Step>`: **In-Progress.** Actively being executed (**STRICT LIMIT:** Exactly **ONE** item active at a time).
    - `- [x] <Step>`: **Completed.** Fully executed AND verified by empirical runtime evidence (test output, build logs).
 3. **Post-Implementation Verification & Cumulative Walkthrough:** Upon completing all checklist items (`[x]`), generate or incrementally update `walkthrough.md` summarizing changes and verification results.
-4. **Living Cumulative Artifacts (Incremental Lifecycle):**  
+4. **Living Cumulative Artifacts & Plan Lifecycle:**  
    Artifacts (`implementation_plan.md`, `walkthrough.md`) are living, cumulative session documents.
-   - For follow-up tasks, additional rounds, or iterative refinements within a session, MUST update or append to the existing `walkthrough.md` in-place. NEVER wipe out or overwrite previously verified achievements, test logs, or historical "Incidents & Mid-Turn Fixes" from earlier turns.
-   - Maintain a single, comprehensive `walkthrough.md` tracking the entire cumulative progression of the session instead of creating fragmented multi-part files.
+   - **Single Active Plan:** At any given time, exactly ONE active plan MUST exist at `implementation_plan.md`.
+   - **Expansion / Fix on Same Goal (In-Place Append):** When the current plan is completed (`All [x]`), if a subsequent request is a follow-up fix, edge-case remediation, phase extension, or polish related to the **same feature/goal**, the agent MUST **append new checklist items (`- [ ]`) in-place** under a new section (e.g., `### Phase 2: ...` or `### Follow-up Improvements`) within `implementation_plan.md`.
+   - **Distinct New Goal (Archive & Replace):** If the new request represents a **distinct, unrelated feature or new milestone**, the agent **MUST archive the finished plan** first (e.g. rename to `plan_archived_<topic>.md` in `brain/`) before generating a fresh `implementation_plan.md` for the new objective.
+   - **Cumulative Walkthrough:** For follow-up tasks or additional rounds within a session, MUST update or append to the existing `walkthrough.md` in-place. NEVER wipe out or overwrite previously verified achievements, test logs, or historical "Incidents & Mid-Turn Fixes" from earlier turns.
 
 #### Mandatory Implementation Plan Layout (`implementation_plan.md`)
 
