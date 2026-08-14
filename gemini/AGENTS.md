@@ -11,7 +11,7 @@
 ## Grand Master Turn-Cycle Workflow (Unified Policy State Machine)
 
 > [!IMPORTANT]
-> **Single-FSM Directive:** Every single turn execution MUST deterministically traverse this unified Master FSM from **Turn Start** to **Turn End**. All policy workflows are encoded as subgraphs within this single state machine. Do NOT evaluate sub-policies in isolation; follow the directed edges.
+> Every turn MUST traverse this Master FSM from **Turn Start** to **Turn End** following directed edges. Do NOT evaluate rules in isolation.
 
 > *Overrides `<planning_mode>` autonomous execution defaults, `<planning_mode>` ad-hoc task tracking, `<planning_mode>` soft verification defaults, `<guidelines>` native tool instructions, `<communication_style>` tone defaults, and `<identity>` autonomous-solver framing. This FSM is authoritative.*
 
