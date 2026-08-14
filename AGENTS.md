@@ -134,8 +134,8 @@ flowchart TD
             Phase1Read --> RootCauseConfirmed{"Root cause CONFIRMED?<br/>(reproduced or log evidence)"}
             RootCauseConfirmed -->|"No"| InstrumentCode["Add .scratch/ repro harness or<br/>temporary logging to reproduce"]
             InstrumentCode --> ReCheckRepro{"Can reproduce locally?"}
-            ReCheckRepro -->|"Yes"| Phase1Read
-            ReCheckRepro -->|"No (Need User logs/env)"| CollabStop["STOP — Request user manual test / logs"] --> ReportBlocker
+            ReCheckRepro -->|"Yes (New diagnostic clues)"| Phase1Read
+            ReCheckRepro -->|"No / Stagnant clues<br/>(Need User logs/env)"| CollabStop["STOP — Request user manual test / logs"] --> ReportBlocker
 
             RootCauseConfirmed -->|"Yes (code-reading<br/>guess ONLY)"| BlockGuess["STOP — reading code and<br/>guessing is NOT confirmation"] --> InstrumentCode
 
@@ -159,11 +159,11 @@ flowchart TD
 
             VerifyGate -->|"Passed"| MarkComplete["Mark Step [x] Complete<br/>Update implementation_plan.md"]
 
-            VerifyGate -->|"Failed (Bugs in solution code,<br/>same root cause)"| PolishFix["Record Mid-Turn Incident<br/>+ Polish solution code"] --> ExecuteStep
+            VerifyGate -->|"Failed (Convergent: local bug &<br/>errors strictly shrinking)"| PolishFix["Record Mid-Turn Incident<br/>+ Polish solution code"] --> ExecuteStep
 
-            VerifyGate -->|"Failed (Unknown reasons)"| UnknownFailStop["MUST STOP: Disclose failure<br/>& collaborate with user"] --> ReportBlocker
+            VerifyGate -->|"Failed (Divergent / zero progress /<br/>unknown reasons)"| UnknownFailStop["MUST STOP: Disclose failure<br/>& collaborate with user"] --> ReportBlocker
 
-            VerifyGate -->|"Failed (Bug / Leak<br/>Discovered in existing code)"| MandatoryDisclose["MUST Disclose Failure UPFRONT:<br/>• Exact error / leaked output<br/>• Root cause code location<br/>• Proposed fix plan"]
+            VerifyGate -->|"Failed (Scope explosion /<br/>existing bug discovered)"| MandatoryDisclose["MUST Disclose Failure UPFRONT:<br/>• Exact error / leaked output<br/>• Root cause code location<br/>• Proposed fix plan"]
             MandatoryDisclose --> UserFixApproval{"User Approved Fix Plan?"}
             UserFixApproval -->|"Yes"| ApplyFix["Apply Fix & Re-verify"] --> VerifyGate
             UserFixApproval -->|"No / Await Approval"| ReportBlocker
