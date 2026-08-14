@@ -129,8 +129,10 @@ flowchart TD
             IsDebugTask -->|"Yes"| Phase1Read["Phase 1: Read relevant code<br/>+ inspect runtime behavior"]
 
             Phase1Read --> RootCauseConfirmed{"Root cause CONFIRMED?<br/>(reproduced or log evidence)"}
-            RootCauseConfirmed -->|"No"| InstrumentCode["Add logging/measurements,<br/>reproduce the problem,<br/>ask user for manual tests<br/>if needed"]
-            InstrumentCode --> Phase1Read
+            RootCauseConfirmed -->|"No"| InstrumentCode["Add logging/measurements,<br/>reproduce the problem"]
+            InstrumentCode --> ReCheckRepro{"Can reproduce locally?"}
+            ReCheckRepro -->|"Yes"| Phase1Read
+            ReCheckRepro -->|"No (Need User logs/env)"| CollabStop["STOP — Request user manual test / logs"] --> ToneFilter
 
             RootCauseConfirmed -->|"Yes (code-reading<br/>guess ONLY)"| BlockGuess["STOP — reading code and<br/>guessing is NOT confirmation"]
             BlockGuess --> InstrumentCode
@@ -157,9 +159,9 @@ flowchart TD
 
             VerifyGate -->|"Passed"| MarkComplete["Mark Step [x] Complete<br/>Update implementation_plan.md"]
 
-            VerifyGate -->|"Failed (Bugs in solution code,<br/>same root cause)"| PolishFix["Polish solution code"] --> ExecuteStep
+            VerifyGate -->|"Failed (Bugs in solution code,<br/>same root cause)"| PolishFix["Record Mid-Turn Incident<br/>+ Polish solution code"] --> ExecuteStep
 
-            VerifyGate -->|"Failed (Unknown reasons)"| ReturnInstrument["MUST STOP:<br/>Return to Phase 1 / Instrument<br/>Collaborate with user"] --> InstrumentCode
+            VerifyGate -->|"Failed (Unknown reasons)"| UnknownFailStop["MUST STOP: Disclose failure<br/>& collaborate with user"] --> ToneFilter
 
             VerifyGate -->|"Failed (Bug / Leak<br/>Discovered in existing code)"| MandatoryDisclose["MUST Disclose Failure UPFRONT:<br/>• Exact error / leaked output<br/>• Root cause code location<br/>• Proposed fix plan"]
             MandatoryDisclose --> UserFixApproval{"User Approved Fix Plan?"}
@@ -182,9 +184,9 @@ flowchart TD
             GitCommit --> PrePushFetch["git fetch origin +<br/>git rebase origin/<default-branch>"]
 
             PrePushFetch --> PushConflict{"Conflicts?"}
-            PushConflict -->|"Yes"| ResolvePush["Resolve locally +<br/>verify tests/build"]
-            ResolvePush --> PrePushFetch
-            PushConflict -->|"No"| VerifyBuild["Verify tests/build pass"]
+            PushConflict -->|"Trivial / Resolved locally"| ResolvePush["Resolve locally +<br/>verify tests/build"] --> PrePushFetch
+            PushConflict -->|"Non-trivial Conflicts"| AbortPushStop["git rebase --abort<br/>→ Consult user"] --> ToneFilter
+            PushConflict -->|"No Conflicts"| VerifyBuild["Verify tests/build pass"]
             VerifyBuild --> GitPush["git push"]
 
             GitPush --> ToneFilter
@@ -192,7 +194,7 @@ flowchart TD
 
         subgraph TONE_OUTPUT["3C: Tone & Anti-Spin Output Filter"]
             ToneFilter["Apply Tone & Anti-Spin Filter"] --> CheckKillList["Filter against Kill List:<br/>No sycophancy / no praise / no filler<br/>No premature victory declarations<br/>No sugarcoating"]
-            CheckKillList --> ReportResult["Report Honest Outcome:<br/>• Clickable Markdown Links for all refs<br/>• Include Incidents & Mid-Turn Fixes<br/>• State what is tested vs untested"]
+            CheckKillList --> ReportResult["Report Honest Outcome:<br/>• Disclose Incidents & Mid-Turn Fixes (if any)<br/>• Clickable Markdown Links for all refs<br/>• State what is tested vs untested"]
             ReportResult --> TurnEnd["Turn End"]
         end
     end
