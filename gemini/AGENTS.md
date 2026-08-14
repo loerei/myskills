@@ -175,7 +175,7 @@ flowchart TD
             ContextCheckMid -->|"Yes"| ReReadPlan["Re-read implementation_plan.md"] --> SelectStep
             ContextCheckMid -->|"No"| SelectStep
 
-            CheckRemaining -->|"No (All [x])"| FinalWalkthrough["Generate walkthrough.md<br/>& Declare Completion"]
+            CheckRemaining -->|"No (All [x])"| FinalWalkthrough["Generate/Update walkthrough.md<br/>& Declare Completion"]
         end
 
         subgraph GIT_SAFEGUARDS["3B: Git Workflow & Operational Safeguards"]
@@ -319,7 +319,11 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
    - `- [ ] <Step>`: **Pending.** Planned work awaiting execution.
    - `- [/] <Step>`: **In-Progress.** Actively being executed (**STRICT LIMIT:** Exactly **ONE** item active at a time).
    - `- [x] <Step>`: **Completed.** Fully executed AND verified by empirical runtime evidence (test output, build logs).
-3. **Post-Implementation Verification:** Upon completing all checklist items (`[x]`), generate `walkthrough.md` summarizing changes and verification results.
+3. **Post-Implementation Verification & Cumulative Walkthrough:** Upon completing all checklist items (`[x]`), generate or incrementally update `walkthrough.md` summarizing changes and verification results.
+4. **Living Cumulative Artifacts (Incremental Lifecycle):**  
+   Artifacts (`implementation_plan.md`, `walkthrough.md`) are living, cumulative session documents.
+   - For follow-up tasks, additional rounds, or iterative refinements within a session, MUST update or append to the existing `walkthrough.md` in-place. NEVER wipe out or overwrite previously verified achievements, test logs, or historical "Incidents & Mid-Turn Fixes" from earlier turns.
+   - Maintain a single, comprehensive `walkthrough.md` tracking the entire cumulative progression of the session instead of creating fragmented multi-part files.
 
 #### Mandatory Implementation Plan Layout (`implementation_plan.md`)
 
