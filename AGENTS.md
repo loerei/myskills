@@ -53,7 +53,7 @@ flowchart TD
 
             InputAnalysis -->|"Source Edit / Commit / Push / PR<br/>/ State Change"| Tier3Gate
 
-            Tier3Gate -->|"No / Ambiguous / Praise<br/>/ Follow-up Question"| Tier3Block["> [!CAUTION] EXECUTION BLOCK:<br/>STOP immediately.<br/>Present Plan / Walkthrough.<br/>Await explicit approval."] --> ReportResult
+            Tier3Gate -->|"No / Ambiguous / Praise<br/>/ Follow-up Question"| Tier3Block["> [!CAUTION] EXECUTION BLOCK:<br/>STOP immediately.<br/>Present Plan / Walkthrough.<br/>Await explicit approval."] --> ReportProposal
             Tier3Gate -->|"Explicit Command<br/>('Approve' / 'Proceed' / Directive)"| SetTier3
         end
 
@@ -91,7 +91,7 @@ flowchart TD
             AmbiguityGate -->|"Critical / Blocker<br/>(Multiple Candidates / Arch / Scope)"| ClarifyType{"Clarification Type?"}
 
             ClarifyType -->|"Discrete Choices / Candidates"| CallAskQuestion["Call 'ask_question' tool<br/>(Interactive UI Selection)"] --> FoundationCheck
-            ClarifyType -->|"Open-Ended / Architectural Debate"| AskInText["Ask via Direct Response Text<br/>(Await User Clarification)"] --> ReportResult
+            ClarifyType -->|"Open-Ended / Architectural Debate"| AskInText["Ask via Direct Response Text<br/>(Await User Clarification)"] --> ReportProposal
 
             FoundationCheck -->|"No (Isolated / Low Dependency)"| ProceedToExec["Proceed to Phase 2"]
             FoundationCheck -->|"Yes"| FoundationState{"Is foundational code in bad state<br/>(hard to maintain/debug/extend)?"}
@@ -108,8 +108,8 @@ flowchart TD
         subgraph PLAN_LOOP["2A: Implementation Plan Step Loop"]
             ProceedToExec --> CurrentTier{"Current Tier State?"}
 
-            CurrentTier -->|"Tier 1"| ReadDebate["Execute Read & Debate<br/>Propose implementation_plan.md"] --> ReportResult
-            CurrentTier -->|"Tier 2"| RunScratch["Execute Diagnostic<br/>in .scratch/ or brain/scratch/<br/>Gather Empirical Evidence"] --> ReportResult
+            CurrentTier -->|"Tier 1"| ReadDebate["Execute Read & Debate<br/>Propose implementation_plan.md"] --> ReportProposal
+            CurrentTier -->|"Tier 2"| RunScratch["Execute Diagnostic<br/>in .scratch/ or brain/scratch/<br/>Gather Empirical Evidence"] --> ReportOutcome
             CurrentTier -->|"Tier 3"| PlanStateCheck{"Active Plan State?"}
 
             PlanStateCheck -->|"Active In-Progress<br/>(has [ ] or [/])"| SelectStep
@@ -122,7 +122,7 @@ flowchart TD
             CreatePlan --> PlanApproval
             PlanApproval{"User Approved Plan?"}
             PlanApproval -->|"Yes (Approved / T3)"| SelectStep
-            PlanApproval -->|"No / Feedback / Awaiting"| AwaitPlanReview["Present/Update plan<br/>& Await explicit approval"] --> ReportResult
+            PlanApproval -->|"No / Feedback / Awaiting"| AwaitPlanReview["Present/Update plan<br/>& Await explicit approval"] --> ReportProposal
 
             SelectStep["Select First Uncompleted Step<br/>Mark [/] In-Progress<br/>(STRICT LIMIT: ONE active)"] --> ExecuteStep["Execute Step"]
         end
@@ -137,7 +137,7 @@ flowchart TD
             RootCauseConfirmed -->|"No"| InstrumentCode["Add .scratch/ repro harness or<br/>temporary logging to reproduce"]
             InstrumentCode --> ReCheckRepro{"Can reproduce locally?"}
             ReCheckRepro -->|"Yes"| Phase1Read
-            ReCheckRepro -->|"No (Need User logs/env)"| CollabStop["STOP — Request user manual test / logs"] --> ReportResult
+            ReCheckRepro -->|"No (Need User logs/env)"| CollabStop["STOP — Request user manual test / logs"] --> ReportBlocker
 
             RootCauseConfirmed -->|"Yes (code-reading<br/>guess ONLY)"| BlockGuess["STOP — reading code and<br/>guessing is NOT confirmation"] --> InstrumentCode
 
@@ -145,7 +145,7 @@ flowchart TD
             Phase2Trace --> Phase3Propose["Phase 3: Propose solution<br/>addressing root cause directly"]
 
             Phase3Propose --> InvestApproval{"Explicit User Approval?<br/>(Command or T3 Tag)"}
-            InvestApproval -->|"No (Await Approval)"| ReportResult
+            InvestApproval -->|"No (Await Approval)"| ReportProposal
             InvestApproval -->|"Yes"| DirectExec
         end
 
@@ -163,12 +163,12 @@ flowchart TD
 
             VerifyGate -->|"Failed (Bugs in solution code,<br/>same root cause)"| PolishFix["Record Mid-Turn Incident<br/>+ Polish solution code"] --> ExecuteStep
 
-            VerifyGate -->|"Failed (Unknown reasons)"| UnknownFailStop["MUST STOP: Disclose failure<br/>& collaborate with user"] --> ReportResult
+            VerifyGate -->|"Failed (Unknown reasons)"| UnknownFailStop["MUST STOP: Disclose failure<br/>& collaborate with user"] --> ReportBlocker
 
             VerifyGate -->|"Failed (Bug / Leak<br/>Discovered in existing code)"| MandatoryDisclose["MUST Disclose Failure UPFRONT:<br/>• Exact error / leaked output<br/>• Root cause code location<br/>• Proposed fix plan"]
             MandatoryDisclose --> UserFixApproval{"User Approved Fix Plan?"}
             UserFixApproval -->|"Yes"| ApplyFix["Apply Fix & Re-verify"] --> VerifyGate
-            UserFixApproval -->|"No / Await Approval"| ReportResult
+            UserFixApproval -->|"No / Await Approval"| ReportBlocker
 
             MarkComplete --> CheckRemaining{"More Uncompleted Steps?"}
             CheckRemaining -->|"Yes"| ContextCheckMid{"Context Truncated?"}
@@ -184,16 +184,19 @@ flowchart TD
 
             PrePushFetch --> PushConflict{"Conflicts?"}
             PushConflict -->|"Trivial / Resolved locally"| ResolvePush["Resolve locally +<br/>verify tests/build"] --> PrePushFetch
-            PushConflict -->|"Non-trivial Conflicts"| AbortPushStop["git rebase --abort<br/>→ Consult user"] --> ReportResult
+            PushConflict -->|"Non-trivial Conflicts"| AbortPushStop["git rebase --abort<br/>→ Consult user"] --> ReportBlocker
             PushConflict -->|"No Conflicts"| VerifyBuild["Verify tests/build pass"]
             VerifyBuild --> GitPush["git push"] --> FinalizeWalkthrough["Generate/Update walkthrough.md<br/>& Finalize Artifacts"]
 
             GitNeeded -->|"No"| FinalizeWalkthrough
         end
 
-        subgraph REPORTING_STAGE["3C: Output Reporting & Turn Finalization"]
-            FinalizeWalkthrough --> ReportResult["Report Honest Outcome:<br/>• Disclose Incidents & Mid-Turn Fixes (if any)<br/>• Clickable Markdown Links for all refs<br/>• State what is tested vs untested"]
-            ReportResult --> TurnEnd["Turn End"]
+        subgraph REPORTING_STAGE["3C: Context-Aware Output Reporting"]
+            FinalizeWalkthrough --> ReportOutcome["ReportOutcome:<br/>• Present empirical evidence & test verification<br/>• Disclose Incidents & Mid-Turn Fixes<br/>• Clickable Links + State tested vs untested"] --> TurnEnd["Turn End"]
+
+            ReportProposal["ReportProposal:<br/>• Present technical proposal / plan / question<br/>• Surface tradeoffs & await explicit approval"] --> TurnEnd
+
+            ReportBlocker["ReportBlocker:<br/>• Disclose exact failure / leak / conflict upfront<br/>• Provide logs, repro steps & ask user guidance"] --> TurnEnd
         end
     end
 ```
