@@ -26,11 +26,8 @@ flowchart TD
         CheckRepoAgents -->|"Not Found"| LoadGlobalRules["Apply Global Policies Only"]
         LoadRepoRules --> CheckContextLoss{"Context Truncated or New Turn?"}
         LoadGlobalRules --> CheckContextLoss
-        CheckContextLoss -->|"Yes"| CheckPlanExists{"implementation_plan.md exists?"}
+        CheckContextLoss -->|"Yes"| RecoverState["Recover Context & State:<br/>1. Read implementation_plan.md (find active [/])<br/>2. Inspect disk via git status & git diff"] --> EvalPrompt
         CheckContextLoss -->|"No"| EvalPrompt
-        CheckPlanExists -->|"Yes"| ReadPlanFirst["Read implementation_plan.md<br/>Locate active [/] or next [ ] step"]
-        CheckPlanExists -->|"No"| EvalPrompt
-        ReadPlanFirst --> EvalPrompt
     end
 
     %% ============================================================
@@ -170,7 +167,7 @@ flowchart TD
 
             MarkComplete --> CheckRemaining{"More Uncompleted Steps?"}
             CheckRemaining -->|"Yes"| ContextCheckMid{"Context Truncated?"}
-            ContextCheckMid -->|"Yes"| ReReadPlan["Re-read implementation_plan.md"] --> SelectStep
+            ContextCheckMid -->|"Yes"| ReReadPlan["Re-read implementation_plan.md<br/>+ inspect git status & git diff"] --> SelectStep
             ContextCheckMid -->|"No"| SelectStep
 
             CheckRemaining -->|"No (All [x])"| GitNeeded{"State-Modifying /<br/>Git Action Needed?"}
