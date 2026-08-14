@@ -279,14 +279,14 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
     - **Open-Ended / Architectural Debate:** When the design direction requires exploratory brainstorming, broad requirements gathering, or multi-faceted debate, MUST ask clarifying questions via direct Markdown text response and end turn to await user alignment.
 
 * **Maintainability-First Foundation Gate ("Make the change easy first"):**
-  Before implementing any User Request (UR), evaluate whether UR relies on foundational code and assess the foundation across **4 core maintainability axes**:
+  Before implementing any user request, evaluate whether the request relies on foundational code and assess the foundation across **4 core maintainability axes**:
   1. **Maintainability & Modifiability:** High cohesion, low coupling. Can changes be made cleanly without shotgun surgery across multiple files?
   2. **Extensibility:** Is the structure open for extension without modifying fragile existing logic?
   3. **Debuggability & Traceability:** Are data flow, state transitions, and error paths explicit and observable?
   4. **Updatability:** Can contracts or dependencies be updated without breaking unrelated modules?
 
   **Execution Rule:**
-  - If foundational code is in a **Bad State**, NEVER build the User Request on top of unstable architecture. Agent MUST STOP, formulate a **Prerequisite Refactoring Plan** to clean the foundation first, debate the refactoring approach with the user via direct text response, and end turn to await alignment before proceeding with the UR.
+  - If foundational code is in a **Bad State**, NEVER build the requested change on top of unstable architecture. Agent MUST STOP, formulate a **Prerequisite Refactoring Plan** to clean the foundation first, debate the refactoring approach with the user via direct text response, and end turn to await alignment before proceeding with the user's request.
 
 ---
 
