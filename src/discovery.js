@@ -51,6 +51,59 @@ export function loadSkillCatalog(baseDir) {
 }
 
 /**
+ * Loads all skills with name, category, and description from frontmatter.
+ * @param {string} baseDir 
+ * @param {string[]} validCategories 
+ * @returns {Array<{ name: string, category: string, description: string, srcPath: string }>}
+ */
+export function listSkillsDetailed(baseDir, validCategories = []) {
+  const skillCatalog = loadSkillCatalog(baseDir);
+  const results = [];
+
+  for (const [name, skill] of skillCatalog.entries()) {
+    const rel = path.relative(baseDir, skill.srcPath);
+    const parts = rel.split(path.sep);
+    let category = 'other';
+    if (parts.length > 1) {
+      category = parts[0];
+    }
+
+    let description = '';
+    const skillFile = path.join(skill.srcPath, 'SKILL.md');
+    if (fs.existsSync(skillFile)) {
+      try {
+        const content = fs.readFileSync(skillFile, 'utf-8');
+        const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+        if (match) {
+          const fm = match[1];
+          const descMatch = fm.match(/^description:\s*(.+)$/m);
+          if (descMatch) {
+            description = descMatch[1].trim().replace(/^['"]|['"]$/g, '');
+          }
+        }
+      } catch (e) {}
+    }
+
+    results.push({
+      name,
+      category,
+      description,
+      srcPath: skill.srcPath
+    });
+  }
+
+  // Sort by category then name
+  results.sort((a, b) => {
+    if (a.category !== b.category) {
+      return a.category.localeCompare(b.category);
+    }
+    return a.name.localeCompare(b.name);
+  });
+
+  return results;
+}
+
+/**
  * Check if a skill is local by reading its SKILL.md frontmatter.
  * @param {string} skillDir 
  * @returns {boolean}

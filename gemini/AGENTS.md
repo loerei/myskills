@@ -64,12 +64,12 @@ flowchart TD
             SetTier2 --> SQCheck
             SetTier3 --> SQCheck
 
-            SQCheck -->|"Yes"| FullSkillAudit["Force Full Skill Audit<br/>(Scan ALL skill metadata<br/>& read matching SKILL.md)"]
+            SQCheck -->|"Yes"| TargetedSkillAudit["Targeted Skill Audit<br/>(Run 'agents list -c <category>'<br/>& read matching SKILL.md)"]
             SQCheck -->|"No"| CategoryCheck{"Match Task to Categories<br/>in Table 1?"}
             CategoryCheck -->|"Match Found"| LookupTable["Look up required Skill list<br/>in Table 1"]
             CategoryCheck -->|"No Match"| DynamicMatch{"Skill Matched<br/>by Description Metadata?"}
 
-            FullSkillAudit --> MustReadSkill["MUST call view_file on SKILL.md<br/>BEFORE planning or coding"]
+            TargetedSkillAudit --> MustReadSkill["MUST call view_file on SKILL.md<br/>BEFORE planning or coding"]
             LookupTable --> MustReadSkill
             DynamicMatch -->|"Yes"| MustReadSkill
             DynamicMatch -->|"No"| ToolRouter
@@ -226,7 +226,7 @@ flowchart TD
   * **`T1` / `[T1]` (Force Tier 1 - Read & Debate Only):** Strictly forces Tier 1 execution regardless of prompt phrasing or directives. BANS ALL file writes (including `brain/scratch/`).
   * **`T2` / `[T2]` (Allow Tier 2 - Controlled Diagnostic):** Explicitly grants Tier 2 permissions for scratch scripts and builds in `brain/<conversation-id>/scratch/`. BANS source edits outside `brain/scratch/`.
   * **`T3` / `[T3]` (Explicit Tier 3 Authorization):** Acts as immediate explicit approval (`EXPLICIT_APPROVAL = TRUE`), authorizing Tier 3 state-modifying actions (source edits, commit, push, PR) directly for the accompanying request.
-  * **`SQ` / `[SQ]` (Self-Skill Querying Modifier):** Forces an immediate comprehensive Skill Audit across all available skill metadata and matching `SKILL.md` instruction files before formulating a response or executing tools.
+  * **`SQ` / `[SQ]` (Self-Skill Querying Modifier):** Forces targeted skill discovery by querying metadata via `agents list -c <category>` (or `agents list`) and reading matching `SKILL.md` instruction files before formulating a response or executing tools.
 
 #### Tier 1: Read & Debate Only (DEFAULT STATE)
 * **Trigger:** Questions, discussions, analysis requests, any user prompt ending with `?` (e.g., *"Should we...?"*, *"Is A better?"*, *"Push to GitHub?"*), or prompt containing `T1`/`[T1]`.
@@ -252,7 +252,7 @@ flowchart TD
 
 ### Phase 1B Reference: Task-Specific Skill Gateway
 
-When starting any task, MUST check available skills and descriptions. If a skill's purpose matches task requirements, MUST read its `SKILL.md` using `view_file` before writing code or planning. If a `SKILL.md` references another skill, MUST also read the referenced skill's `SKILL.md`. Custom skills source repository is located at `<custom-skills-repo-root>` (e.g., `myskills/`), and distribution CLI is globally linked in PATH as `agents`. ALWAYS invoke `agents` directly (e.g., `agents --help`, `agents read`, `agents distribute`) without prefixing `node`.
+When starting any task, MUST check available skills and descriptions. If a skill's purpose matches task requirements, MUST read its `SKILL.md` using `view_file` before writing code or planning. When in doubt or to discover candidate skills, run `agents list -c <category>` (e.g. `agents list -c engineering`) to inspect descriptions from disk. If a `SKILL.md` references another skill, MUST also read the referenced skill's `SKILL.md`. Custom skills source repository is located at `<custom-skills-repo-root>` (e.g., `myskills/`), and distribution CLI is globally linked in PATH as `agents`. ALWAYS invoke `agents` directly (e.g., `agents --help`, `agents list`, `agents read`, `agents distribute`) without prefixing `node`.
 
 #### Table 1: Task Category to Required Skills Catalog
 
