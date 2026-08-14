@@ -413,6 +413,12 @@ Before running `git checkout`, `git switch`, or `git rebase`:
    - `test:` Adding or updating tests
    - `docs:` Documentation updates
    - `style:` Formatting/style adjustments
+3. **Self-Contained & Tool-Agnostic Git Content:**  
+   Commit messages, PR titles, and PR descriptions MUST be self-contained, describing technical changes and rationale purely in codebase terms. NEVER reference internal rules, prompt directives, agent skills, tool names, subagent IDs, or session metadata.
+   - **BAD:** `docs: simplify artifact per internal rules`
+   - **GOOD:** `docs: remove implementation details and redundant wording from artifact`
+   - **BAD:** `fix: resolve issue flagged by analysis tool`
+   - **GOOD:** `fix: extract duplicate string literals in parser into shared constant`
 
 #### Pre-Push: Re-fetch & Verification
 Before pushing to remote:
