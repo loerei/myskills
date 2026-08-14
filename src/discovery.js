@@ -87,16 +87,13 @@ export function listSkillsDetailed(baseDir, validCategories = []) {
               if (line.trim()) {
                 descLines.push(line.trim());
               }
-            } else {
-              const singleLineMatch = line.match(/^description:\s*(.*)$/);
-              if (singleLineMatch) {
-                const val = singleLineMatch[1].trim();
-                if (val === '>' || val === '|' || val === '') {
-                  collectingDesc = true;
-                } else {
-                  description = val.replace(/^['"]|['"]$/g, '');
-                  break;
-                }
+            } else if (line.startsWith('description:')) {
+              const val = line.slice('description:'.length).trim();
+              if (val === '>' || val === '|' || val === '') {
+                collectingDesc = true;
+              } else {
+                description = val.replace(/^['"]|['"]$/g, '');
+                break;
               }
             }
           }
@@ -105,7 +102,7 @@ export function listSkillsDetailed(baseDir, validCategories = []) {
             description = descLines.join(' ');
           }
         }
-      } catch (_e) {
+      } catch {
         /* ignore unreadable or malformed frontmatter */
       }
     }
