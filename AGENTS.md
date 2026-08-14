@@ -57,7 +57,7 @@ flowchart TD
             Tier3Gate -->|"Explicit Command<br/>('Approve' / 'Proceed' / Directive)"| SetTier3
         end
 
-        subgraph SKILL_ROUTER["1B: Skill Gateway"]
+        subgraph SKILL_ROUTER["1B: Skill & Tool Gateway"]
             SetTier1 --> SQCheck{"Contains 'SQ' Tag?"}
             SetTier2 --> SQCheck
             SetTier3 --> SQCheck
@@ -70,20 +70,18 @@ flowchart TD
             TargetedSkillAudit --> MustReadSkill["MUST call view_file on SKILL.md<br/>BEFORE planning or coding"]
             LookupTable --> MustReadSkill
             DynamicMatch -->|"Yes"| MustReadSkill
-            DynamicMatch -->|"No"| ToolRouter
+            DynamicMatch -->|"No"| SelectMCPTools
 
             MustReadSkill --> CheckSkillRef{"Does SKILL.md reference<br/>another Skill?"}
-            CheckSkillRef -->|"Yes"| ReadRefSkill["MUST call view_file<br/>on referenced SKILL.md"] --> ToolRouter
-            CheckSkillRef -->|"No"| ToolRouter
+            CheckSkillRef -->|"Yes"| ReadRefSkill["MUST call view_file<br/>on referenced SKILL.md"] --> SelectMCPTools
+            CheckSkillRef -->|"No"| SelectMCPTools
+
+            SelectMCPTools["Select required MCP tools<br/>per Tool Selection Matrix<br/>(Call tool guide before use)"]
         end
 
-        subgraph TOOL_ROUTER["1C: Tool Selection Matrix"]
-            ToolRouter["Select required MCP tools<br/>per Tool Selection Matrix below.<br/>Call each tool's guide before use."]
-        end
+        SelectMCPTools --> AmbiguityGate
 
-        ToolRouter --> AmbiguityGate
-
-        subgraph TRIAGE["1D: Ambiguity & Architecture Triage"]
+        subgraph TRIAGE["1C: Ambiguity & Architecture Triage"]
             AmbiguityGate{"Define<br/>Ambiguity Level of User's Request?"}
 
             AmbiguityGate -->|"No Ambiguity / Clear"| FoundationCheck{"User Request heavily depends on<br/>foundational codebase?"}
@@ -255,7 +253,7 @@ flowchart TD
 
 ---
 
-### Phase 1B Reference: Task-Specific Skill Gateway
+### Phase 1B Reference: Task-Specific Skill Gateway & Tool Selection Matrix
 
 When starting any task, MUST check available skills and descriptions. If a skill's purpose matches task requirements, MUST read its `SKILL.md` using `view_file` before writing code or planning. When in doubt or to discover candidate skills, run `agents list -c <category>` (e.g. `agents list -c engineering`) to inspect descriptions from disk. If a `SKILL.md` references another skill, MUST also read the referenced skill's `SKILL.md`. Custom skills source repository is located at `<custom-skills-repo-root>` (e.g., `myskills/`), and distribution CLI is globally linked in PATH as `agents`. ALWAYS invoke `agents` directly (e.g., `agents --help`, `agents list`, `agents read`, `agents distribute`) without prefixing `node`.
 
@@ -269,9 +267,7 @@ When starting any task, MUST check available skills and descriptions. If a skill
 | **Productivity & Management** | Writing PR descriptions, managing custom skills, triaging issues, browser automation with Brave, handoff to other agents, requirements gathering, executing reviewer loops, creating tickets, or watching/analyzing video content. | `write-pr`, `create-and-update-pr`, `write-for-ai`, `manage-custom-skills`, `manage-global-policies`, `to-prd`, `to-issues`, `triage`, `review`, `handoff`, `grill-me`, `grill-with-docs`, `grilling`, `conduct-reviewing-loop`, `caveman`, `ponytail`, `ponytail-audit`, `ponytail-debt`, `ponytail-gain`, `ponytail-help`, `ponytail-review`, `update-mcp`, `review-upstream`, `git-lifecycle-management`, `qa`, `request-refactor-plan`, `research`, `write-a-skill`, `writing-great-skills`, `write-skill-subdocs`, `write-skill-dttc`, `prune-branches`, `batch-grill-me`, `claude-handoff`, `loop-me`, `to-questionnaire`, `brave-browsing`, `watch`, `prompt-override-architecture`, `write-an-rfc`, `be-blunt` |
 | **Content & Notes** | Modifying Obsidian vault, creative writing, draft shaping, or narrative structuring. | `obsidian-vault`, `writing-beats`, `writing-fragments`, `writing-shape`, `edit-article`, `full-output-enforcement`, `teach` |
 
----
-
-### Phase 1C Reference: Tool Selection Matrix Router
+#### Tool Selection Matrix Router
 
 Use this matrix to select tools inside repository paths. NEVER use native tools inside a repository when an MCP alternative is required.
 
@@ -284,7 +280,7 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
 
 ---
 
-### Phase 1D Reference: Ambiguity & Architecture Triage
+### Phase 1C Reference: Ambiguity & Architecture Triage
 
 * **Ambiguity Triage:**
   - **Minor Ambiguities:** If ambiguity is a minor configuration or default detail, resolve autonomously using sensible defaults, note choices in `implementation_plan.md` (under Key Decisions) or response, and disclose to user.

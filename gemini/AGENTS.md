@@ -59,7 +59,7 @@ flowchart TD
             Tier3Gate -->|"Explicit Command<br/>('Approve' / 'Proceed' / Directive)"| SetTier3
         end
 
-        subgraph SKILL_ROUTER["1B: Skill Gateway"]
+        subgraph SKILL_ROUTER["1B: Skill & Tool Gateway"]
             SetTier1 --> SQCheck{"Contains 'SQ' Tag?"}
             SetTier2 --> SQCheck
             SetTier3 --> SQCheck
@@ -72,20 +72,18 @@ flowchart TD
             TargetedSkillAudit --> MustReadSkill["MUST call view_file on SKILL.md<br/>BEFORE planning or coding"]
             LookupTable --> MustReadSkill
             DynamicMatch -->|"Yes"| MustReadSkill
-            DynamicMatch -->|"No"| ToolRouter
+            DynamicMatch -->|"No"| SelectMCPTools
 
             MustReadSkill --> CheckSkillRef{"Does SKILL.md reference<br/>another Skill?"}
-            CheckSkillRef -->|"Yes"| ReadRefSkill["MUST call view_file<br/>on referenced SKILL.md"] --> ToolRouter
-            CheckSkillRef -->|"No"| ToolRouter
+            CheckSkillRef -->|"Yes"| ReadRefSkill["MUST call view_file<br/>on referenced SKILL.md"] --> SelectMCPTools
+            CheckSkillRef -->|"No"| SelectMCPTools
+
+            SelectMCPTools["Select required MCP tools<br/>per Tool Selection Matrix<br/>(Call tool guide before use)"]
         end
 
-        subgraph TOOL_ROUTER["1C: Tool Selection Matrix"]
-            ToolRouter["Select required MCP tools<br/>per Tool Selection Matrix below.<br/>Call each tool's guide before use."]
-        end
+        SelectMCPTools --> AmbiguityGate
 
-        ToolRouter --> AmbiguityGate
-
-        subgraph TRIAGE["1D: Ambiguity & Architecture Triage"]
+        subgraph TRIAGE["1C: Ambiguity & Architecture Triage"]
             AmbiguityGate{"Define<br/>Ambiguity Level of User's Request?"}
 
             AmbiguityGate -->|"No Ambiguity / Clear"| FoundationCheck{"User Request heavily depends on<br/>foundational codebase?"}
