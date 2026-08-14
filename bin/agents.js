@@ -24,7 +24,7 @@ function findSubdocs(dirPath, excludeFiles = []) {
   if (!fs.existsSync(dirPath) || !fs.statSync(dirPath).isDirectory()) {
     return [];
   }
-  const excludeBasenames = excludeFiles.map(f => path.basename(f).toLowerCase());
+  const excludeBasenames = new Set(excludeFiles.map(f => path.basename(f).toLowerCase()));
   const results = [];
 
   function scan(currentDir) {
@@ -34,7 +34,7 @@ function findSubdocs(dirPath, excludeFiles = []) {
       if (entry.isDirectory()) {
         scan(fullPath);
       } else if (entry.isFile() && entry.name.toLowerCase().endsWith('.md')) {
-        if (!excludeBasenames.includes(entry.name.toLowerCase())) {
+        if (!excludeBasenames.has(entry.name.toLowerCase())) {
           results.push(fullPath);
         }
       }
@@ -401,7 +401,6 @@ if (firstArg === 'distribute' || firstArg === '--distribute') {
   const validDistributeFlags = ['--target', '-t', '--all', '-a', '--prune', '-p', '--dry-run', '-d', '--init', '-i'];
   if (validDistributeFlags.includes(firstArg)) {
     isDistributeAction = true;
-    optStartIndex = 0;
   }
 }
 
