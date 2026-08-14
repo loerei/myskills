@@ -79,7 +79,7 @@ flowchart TD
             AmbiguityGate{"Define<br/>Ambiguity Level of User's Request?"}
 
             AmbiguityGate -->|"No Ambiguity / Clear"| ArchRiskCheck{"Touching sensitive/coupled logic,<br/>multi-file edits,<br/>or cross-cutting shared code?"}
-            AmbiguityGate -->|"Minor (Config / Defaults)"| AutoResolve["Resolve autonomously<br/>+ Record in proactive_choices.md"] --> ArchRiskCheck
+            AmbiguityGate -->|"Minor (Config / Defaults)"| AutoResolve["Resolve autonomously<br/>using sensible defaults"] --> ArchRiskCheck
             AmbiguityGate -->|"Critical / Blocker<br/>(Multiple Candidates / Arch / Scope)"| ClarifyType{"Clarification Type?"}
 
             ClarifyType -->|"Discrete Choices / Candidates"| CallAskQuestion["Call 'ask_question' tool<br/>(Interactive UI Selection)"] --> ArchRiskCheck
@@ -272,7 +272,7 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
 ### Phase 1D Reference: Ambiguity & Architecture Triage
 
 * **Ambiguity Triage:**
-  - **Minor Ambiguities:** If ambiguity is a minor configuration or default detail, resolve autonomously using sensible defaults, document choices in `proactive_choices.md` inside `brain/`, and expose to user.
+  - **Minor Ambiguities:** If ambiguity is a minor configuration or default detail, resolve autonomously using sensible defaults, note choices in `implementation_plan.md` (under Key Decisions) or response, and disclose to user.
   - **Critical Ambiguities & Target Disambiguation:** If ambiguity impacts core architecture, requirements, or involves multiple candidate implementations matching the request:
     - **Discrete Choices / Candidates:** When choosing among a discrete set of known alternatives (e.g., candidate files/paths, candidate modules/components, design options A/B/C, library choices, or architectural approaches), MUST call the `ask_question` tool to present interactive selection options directly in the UI, resuming execution immediately upon user selection.
     - **Open-Ended / Architectural Debate:** When the design direction requires exploratory brainstorming, broad requirements gathering, or multi-faceted debate, MUST ask clarifying questions via direct Markdown text response and end turn to await user alignment.
