@@ -42,13 +42,13 @@ flowchart TD
             EvalPrompt{"Evaluate Prompt"} --> TagCheck{"Contains Explicit Tier Tag<br/>(T1 / T2 / T3)?"}
 
             TagCheck -->|"T1 / [T1]"| SetTier1["State: TIER 1<br/>Read & Debate Only<br/>STRICT WRITE BAN"]
-            TagCheck -->|"T2 / [T2]"| SetTier2["State: TIER 2<br/>Write ONLY to brain/scratch/<br/>Run diagnostics"]
+            TagCheck -->|"T2 / [T2]"| SetTier2["State: TIER 2<br/>Write ONLY to .scratch/ or brain/scratch/<br/>Run diagnostics"]
             TagCheck -->|"T3 / [T3]"| SetTier3["State: TIER 3<br/>Source Edits / Git Authorized<br/>(EXPLICIT_APPROVAL = TRUE)"]
 
             TagCheck -->|"No Tag"| InputAnalysis{"Analyze User Prompt Type"}
 
             InputAnalysis -->|"Question / Proposal / Analysis<br/>/ Prompt ends with '?'"| SetTier1
-            InputAnalysis -->|"Diagnostic / Scratch File Operation"| PathCheck{"Target Path inside brain/scratch/?"}
+            InputAnalysis -->|"Diagnostic / Scratch File Operation"| PathCheck{"Target Path inside .scratch/<br/>or brain/scratch/?"}
             PathCheck -->|"Yes"| SetTier2
             PathCheck -->|"No (Repo Source Path)"| Tier3Gate{"Explicit Approval Granted for Plan?"}
 
@@ -112,7 +112,7 @@ flowchart TD
             ProceedToExec --> CurrentTier{"Current Tier State?"}
 
             CurrentTier -->|"Tier 1"| ReadDebate["Execute Read & Debate<br/>Propose implementation_plan.md"]
-            CurrentTier -->|"Tier 2"| RunScratch["Execute Diagnostic<br/>in brain/scratch/<br/>Gather Empirical Evidence"]
+            CurrentTier -->|"Tier 2"| RunScratch["Execute Diagnostic<br/>in .scratch/ or brain/scratch/<br/>Gather Empirical Evidence"]
             CurrentTier -->|"Tier 3 (New Plan)"| CreatePlan["Create implementation_plan.md<br/>with [ ] checklist"]
             CurrentTier -->|"Tier 3 (Existing Plan)"| SelectStep
 
@@ -131,7 +131,7 @@ flowchart TD
             IsDebugTask -->|"Yes"| Phase1Read["Phase 1: Read relevant code<br/>+ inspect runtime behavior"]
 
             Phase1Read --> RootCauseConfirmed{"Root cause CONFIRMED?<br/>(reproduced or log evidence)"}
-            RootCauseConfirmed -->|"No"| InstrumentCode["Add logging/measurements,<br/>reproduce the problem"]
+            RootCauseConfirmed -->|"No"| InstrumentCode["Add .scratch/ repro harness or<br/>temporary logging to reproduce"]
             InstrumentCode --> ReCheckRepro{"Can reproduce locally?"}
             ReCheckRepro -->|"Yes"| Phase1Read
             ReCheckRepro -->|"No (Need User logs/env)"| CollabStop["STOP — Request user manual test / logs"] --> ToneFilter
@@ -228,7 +228,7 @@ flowchart TD
 * **Trigger:** User prompt explicitly includes `T1`, `T2`, `T3`, or `SQ` (case-insensitive, with or without brackets, e.g., `T1`, `[T2]`, `t3`, `SQ`, `[SQ]`).
 * **Tag Behaviors:**
   * **`T1` / `[T1]` (Force Tier 1 - Read & Debate Only):** Strictly forces Tier 1 execution regardless of prompt phrasing or directives. BANS ALL file writes (including `brain/scratch/`).
-  * **`T2` / `[T2]` (Allow Tier 2 - Controlled Diagnostic):** Explicitly grants Tier 2 permissions for scratch scripts and builds in `brain/<conversation-id>/scratch/`. BANS source edits outside `brain/scratch/`.
+  * **`T2` / `[T2]` (Allow Tier 2 - Controlled Diagnostic):** Explicitly grants Tier 2 permissions for scratch scripts, repro harnesses, and builds in `<repo-root>/.scratch/` or `brain/<conversation-id>/scratch/`. BANS source edits outside `.scratch/` and `brain/scratch/`.
   * **`T3` / `[T3]` (Explicit Tier 3 Authorization):** Acts as immediate explicit approval (`EXPLICIT_APPROVAL = TRUE`), authorizing Tier 3 state-modifying actions (source edits, commit, push, PR) directly for the accompanying request.
   * **`SQ` / `[SQ]` (Self-Skill Querying Modifier):** Forces targeted skill discovery by querying metadata via `agents list -c <category>` (or `agents list`) and reading matching `SKILL.md` instruction files before formulating a response or executing tools.
 
@@ -238,9 +238,13 @@ flowchart TD
 * **STRICT WRITE BAN:** MUST NOT edit project source files, commit, push, create PRs, or modify repository state while in Tier 1.
 
 #### Tier 2: Controlled Diagnostic & Scratch Execution
-* **Trigger:** Need for empirical runtime evidence (test execution, build verification) to validate a Tier 1 proposal, or prompt containing `T2`/`[T2]`.
-* **Permitted Actions:** Write temporary test/scratch scripts strictly inside `<appDataDir>\brain\<conversation-id>\scratch\`, run local compilation/test checks.
-* **Hard Boundary:** Any file write target outside `brain/scratch/` is classified as a Tier 3 action and MUST NOT execute in Tier 2.
+* **Trigger:** Need for empirical runtime evidence (test execution, reproduction harness, build verification) to validate a Tier 1 proposal or investigate bugs, or prompt containing `T2`/`[T2]`.
+* **Permitted Actions:** Write temporary diagnostic/reproduction scripts strictly inside `<repo-root>/.scratch/` or `<appDataDir>\brain\<conversation-id>\scratch\`, run local compilation/test checks.
+* **Empirical Repro First:** When investigating bugs or verifying behavior, PRIORITIZE writing a reproduction harness in `.scratch/` that directly imports and calls real codebase modules to observe runtime data flow and gather empirical evidence.
+* **Hard Boundary & Hygiene:** 
+  - Project-root `.scratch/` MUST be listed in `.gitignore` (agent is authorized to add `.scratch/` to `.gitignore` if missing).
+  - Any permanent file write target outside `.scratch/` or `brain/scratch/` is classified as a Tier 3 action and MUST NOT execute in Tier 2.
+  - Any temporary instrumentation (e.g. diagnostic logs) added to source files during investigation MUST be cleaned up before committing in Tier 3.
 
 #### Tier 3: State-Modifying Executions (Source Edits, Commit, Push, PR)
 * **Trigger:** Modifying repository source files, running `git commit`/`git push`, opening/updating PRs, deleting branches, or prompt containing `T3`/`[T3]`.
