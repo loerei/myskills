@@ -3,8 +3,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadSkillCatalog, listSkillsDetailed } from '../src/discovery.js';
-import { loadConfig, syncPlatformGlobals } from '../src/platforms.js';
-import { discoverProjects, processProject, printSummary } from '../src/projects.js';
+import { loadConfig } from '../src/platforms.js';
+import { printSummary } from '../src/projects.js';
+import { executeDistribution } from '../src/distribute.js';
 import { runPolicyAudit } from '../src/audit.js';
 import { readPolicySubdoc, readSkillContent } from '../src/reader.js';
 
@@ -454,52 +455,18 @@ try {
   process.exit(1);
 }
 
-if (!mode) {
-  mode = 'all';
-}
-if (!targetDir && mode === 'all') {
-  targetDir = config.projectsRoot;
-}
-
-if (!targetDir) {
-  console.error("[-] Error: Missing directory target.");
+try {
+  const summary = executeDistribution({
+    config,
+    mode: mode || 'all',
+    targetDir,
+    dryRun,
+    allowPrune,
+    init,
+    projectRoot
+  });
+  printSummary(summary);
+} catch (e) {
+  console.error(`[-] Error: ${e.message}`);
   process.exit(1);
 }
-
-const sourceRoot = path.resolve(projectRoot);
-const subagentRulesDir = path.join(sourceRoot, 'subagent_rules');
-
-const skillCatalog = loadSkillCatalog(sourceRoot);
-
-const platformResults = [];
-if (config.platforms) {
-  for (const platform of config.platforms) {
-    platformResults.push(syncPlatformGlobals(platform, skillCatalog, { sourceRoot, subagentRulesDir, dryRun }));
-  }
-}
-
-const projectResults = [];
-let initTarget = init;
-if (config.mattPocockInstall) initTarget = true;
-
-if (mode === 'target') {
-  const resolvedPath = path.resolve(targetDir);
-  if (!fs.existsSync(resolvedPath) || !fs.statSync(resolvedPath).isDirectory()) {
-    console.error(`[-] Error: Target directory does not exist: ${resolvedPath}`);
-    process.exit(1);
-  }
-  projectResults.push(processProject(resolvedPath, skillCatalog, { dryRun, allowPrune, init: initTarget }));
-} else {
-  const resolvedParent = path.resolve(targetDir);
-  if (!fs.existsSync(resolvedParent) || !fs.statSync(resolvedParent).isDirectory()) {
-    console.error(`[-] Error: Parent directory does not exist: ${resolvedParent}`);
-    process.exit(1);
-  }
-  
-  const projects = discoverProjects(resolvedParent, config.excludePatterns || []);
-  for (const proj of projects) {
-    projectResults.push(processProject(proj, skillCatalog, { dryRun, allowPrune, init: initTarget }));
-  }
-}
-
-printSummary({ platformResults, projectResults });
