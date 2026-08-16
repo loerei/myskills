@@ -13,9 +13,9 @@ Explain system mechanics directly through physical data movement and the machine
 2. **Explain Behavior, Never Read Code Aloud:** Translate variable names, method calls, and AST syntax into tangible moving parts in the machine (*The Ingest Worker*, *The Save Vault*, *The RAM Queue Buffer*, *The Disk Writer*) and active behavior (*"checks if active connection limit is reached"*). Do not recite code statements.
 3. **No Detached Analogies:** Never use unrelated real-world metaphors (pizza delivery, toy boxes, car engines, bouncers). Ground explanations in real system components (`files`, `loops`, `databases`, `network sockets`, `memory buffers`).
 4. **BLUF (Bottom Line Up Front):** State the direct recommendation, core tradeoff, or root discrepancy in the first sentence.
-5. **The "In Short" Cognitive Anchor:** At the end of the *Raw Core Idea* and each major subsystem / moving part, provide a single-line summary anchor:  
+5. **The "In Short" Cognitive Anchor (Explanation Mode Only):** Conclude *The Raw Core Idea* in Framework 2 with a single-line summary anchor:  
    `**In short:** The Problem (From User's POV) ➔ What It Does About That`  
-   *(Do NOT put literal square brackets around the text)*.
+   *(Do NOT place under BLUF—BLUF is already the bottom line. Do NOT attach to brief 1-line bullet points in The Moving Parts. Do NOT put literal square brackets around the text)*.
 6. **Factual Reality (No Defending, No Manufactured Flaws):** Describe the system's actual operational behavior. Do not sugarcoat real bottlenecks, and do not invent artificial flaws if a design is solid.
 
 ---
@@ -37,12 +37,13 @@ flowchart TD
 
 Use when making a concrete technical decision, choosing an architecture, or fixing a bug.
 
-1. **BLUF (Bottom Line Up Front):** State the core recommendation, winner, or root discrepancy in sentence #1.
+1. **BLUF (Bottom Line Up Front):** State the core recommendation, winner, or root discrepancy in sentence #1. (Do NOT duplicate with `In short:` underneath—BLUF already serves as the opening anchor).
 2. **Physical Mechanics & Visualization (Multi-Diagram & Visual Contrast):**
+   - **The Moving Parts:** List tangible actors in 1-sentence bullet points (*The Ingest Worker*, *The Save Vault*, *The RAM Queue Buffer*). Do NOT add `In short:` to individual bullets.
    - **Multi-Diagram Layering:** Provide focused single-purpose diagrams rather than one overloaded graph.
    - **Visual Contrast (Broken Reality vs Clean Design):** When analyzing bugs or tradeoffs, contrast two explicit flows:
-     - *Diagram A (Current Broken Reality):* Shows the mechanical failure (e.g. sequential fall-through, stale cache read, double-write).
-     - *Diagram B (Intended Clean Architecture):* Shows proper branching, early return, or atomic execution.
+     - *Current Code (Broken Flow):* Shows the mechanical failure (e.g. sequential fall-through, stale memory read, double-write).
+     - *How We Can Fix It (Clean Architecture):* Shows proper branching, early return, or synchronous RAM update.
    - **Concrete Verbal Tracing:** Numbered step-by-step trace of physical data flow (RAM, disk, wire). Every diagram MUST have accompanying text.
 3. **Point of Friction / Tradeoff / Gap:** State the exact mechanical bottleneck, broken branch, or expensive operation.
 4. **Concrete Decision & Next Action:** State the specific file, schema, or code change, then prompt for user alignment.
@@ -55,13 +56,11 @@ Use when explaining a tool, architecture pattern, or existing module without an 
 
 1. **Raw Core Idea:**
    State the single physical friction or constraint this entity solves in 1-2 sentences.  
-   Always end with the cognitive anchor:  
+   Always conclude this section with the cognitive anchor:  
    `**In short:** The Problem (From User's POV) ➔ What It Does About That`
 2. **Surface Layer Movement & The Moving Parts:**
    - **High-Level Map:** Trace top-level data paths across component boundaries using behavioral verbs.
-   - **The Moving Parts & Payloads:** Represent modules, services, and buffers as tangible moving parts in the machine (*The Ingest Worker*, *The Save Vault*, *The RAM Queue Buffer*, *The Disk Writer*), and data structures as payloads moving between them.
-   - **Subsystem Breakdowns:** For each major moving part, detail its physical operation and conclude with:  
-     `**In short:** The Subsystem Problem (From User's POV) ➔ How This Part Handles It`
+   - **The Moving Parts & Payloads:** Represent modules, services, and buffers as tangible moving parts in the machine (*The Ingest Worker*, *The Save Vault*, *The RAM Queue Buffer*, *The Disk Writer*), and data structures as payloads moving between them. (Do NOT clutter bullet points with repeated `In short:` tags).
    - **Visual Contrast on Defect (If flaws exist):** Diagram *Broken Reality* vs *Intended Clean Design*.
    - **Real Operational Boundaries:** State hard throughput or memory limits honestly. Do not manufacture synthetic flaws.
    - **Layered Depth Control:** Explain only the immediate surface layer. Never dump internal sub-layers upfront.
@@ -74,10 +73,10 @@ Use when explaining a tool, architecture pattern, or existing module without an 
 
 1. **Explain through the idea of tech terms:** Describe what data is read, where it is stored in RAM/disk, what condition was checked, and what action happened, rather than repeating technical classifications.
 2. **Explain behavior, never read code aloud:** Translate variable names, method calls, and AST conditions into tangible moving parts and active operations.
-3. **Anchor every section with "In short:":** Conclude the core idea and major subsystems with `**In short:** The Problem (From User's POV) ➔ What It Does About That` (without literal brackets).
+3. **Anchor The Raw Core Idea with "In short:":** In explanation tasks (Framework 2), conclude the Raw Core Idea with `**In short:** The Problem (From User's POV) ➔ What It Does About That`. Never duplicate under BLUF or spam inside bulleted component lists.
 4. **Preserve real entities:** Keep real filenames, directory paths, database tables, and module names.
 5. **Action-based diagram nodes:** Label diagram boxes with real system entities and plain behavioral actions, not raw code snippets or runtime engine jargon.
-6. **Multi-diagram layering & visual contrast:** Use multiple focused diagrams rather than one overloaded graph. For defects or tradeoffs, explicitly contrast *Current Broken Reality* against *Intended Clean Architecture*.
+6. **Multi-diagram layering & visual contrast:** Use multiple focused diagrams rather than one overloaded graph. For defects or tradeoffs, explicitly contrast *Current Code* against *How We Can Fix It*.
 7. **Pair diagrams with prose:** Always accompany Mermaid flowcharts with numbered step-by-step physical traces.
 8. **No patronizing tone:** Be direct, factual, and concise. Simplicity is a tool for speed, not condescension.
 9. **Layered depth control:** In explanation tasks, present only one layer of surface at a time before asking to proceed.

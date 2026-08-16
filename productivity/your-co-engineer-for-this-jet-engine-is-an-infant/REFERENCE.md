@@ -60,9 +60,6 @@ Diagrams must communicate data paths and operational states at a glance. Label n
 
 * **Step 1 (BLUF):**  
   We should use Server-Sent Events (SSE) instead of WebSockets because the server only needs to push one-way alerts to the browser, and SSE runs over plain HTTP without needing a separate connection server.
-  
-  **In short:** Opening heavy two-way WebSockets tunnels just to receive occasional 1-line alerts ➔ Use lightweight HTTP Server-Sent Events to push notifications down a standard open socket.
-
 * **Step 2 (Physical Mechanics & Visualization):**  
 
 ```mermaid
@@ -84,9 +81,6 @@ flowchart LR
 
 * **Step 1 (BLUF):**  
   We should put `status` and `user_id` in separate SQL columns and only keep custom user tags in a `metadata` JSON column, because filtering inside JSON across 100,000 rows forces the database to read every single row from disk.
-
-  **In short:** Filtering 100,000 JSON records from disk causes 100% CPU spikes ➔ Store queryable fields in indexed SQL columns so the database can jump directly to the target rows in 2ms.
-
 * **Step 2 (Physical Mechanics & Visual Contrast):**  
 
 ```mermaid
@@ -113,12 +107,9 @@ flowchart TD
 
 * **Step 1 (BLUF):**  
   The rate limiter allowed all 20 concurrent requests instead of capping at 5 because the system paused to wait for a slow disk save before recording the first request in RAM, causing all 19 subsequent requests to check an empty RAM counter and independently mark themselves as request #1.
-
-  **In short:** 20 requests arrive simultaneously and all pass through because disk saving is slow ➔ Increment the counter in RAM immediately before triggering the slow background disk write.
-
 * **Step 2 (Physical Mechanics & Visual Contrast):**  
 
-#### Diagram A: Broken Flow (Inverted Order Creates a Stale Memory Window)
+#### Current Code (Broken Flow: Inverted Order Creates a Stale Memory Window)
 ```mermaid
 flowchart TD
     subgraph INCOMING["1. 20 Requests Arrive Simultaneously"]
@@ -141,7 +132,7 @@ flowchart TD
     Wait1 -.-> Wake1
 ```
 
-#### Diagram B: Clean Architecture (Immediate Synchronous RAM Update)
+#### How We Can Fix It (Immediate Synchronous RAM Update)
 ```mermaid
 flowchart TD
     subgraph FIXED["Clean Flow: Immediate RAM Write"]
@@ -175,7 +166,7 @@ flowchart TD
 
 * **2. High-Level Movement & Visual Contrast:**  
 
-#### Diagram A: Current Reality (Sequential Fall-Through Causes Duplicate Processing)
+#### Current Code (Broken Flow: Sequential Fall-Through Causes Duplicate Processing)
 ```mermaid
 flowchart TD
     subgraph BROKEN_INGEST["Current Reality: Sequential Fall-Through"]
@@ -190,7 +181,7 @@ flowchart TD
     end
 ```
 
-#### Diagram B: Intended Clean Architecture (Mutually Exclusive Storage Guard)
+#### How We Can Fix It (Mutually Exclusive Storage Guard)
 ```mermaid
 flowchart TD
     subgraph CLEAN_INGEST["Intended Design: Mutually Exclusive Storage Guard"]
@@ -204,12 +195,9 @@ flowchart TD
 ```
 
 * **The Moving Parts & Data Paths:**
-  - *The Ingest Handler:* Validates incoming job payloads and checks current memory buffer capacity.  
-    **In short:** Sudden burst of incoming HTTP requests ➔ Validates payload and checks if RAM queue has room.
-  - *The RAM Queue Buffer:* Fast FIFO array in memory holding up to 100 jobs for instant worker pickup.  
-    **In short:** Worker threads need instant access to pending jobs ➔ Holds jobs in zero-latency RAM array.
-  - *The Emergency Disk Spooler:* File append stream that safely stores overflow jobs when RAM is saturated.  
-    **In short:** RAM queue fills up completely ➔ Saves overflow payloads to disk to avoid out-of-memory crashes.
+  - *The Ingest Handler:* Validates incoming job payloads and checks current memory buffer capacity.
+  - *The RAM Queue Buffer:* Fast FIFO array in memory holding up to 100 jobs for instant worker pickup.
+  - *The Emergency Disk Spooler:* File append stream that safely stores overflow jobs when RAM is saturated.
 
 * **3. Real Operational Boundaries:**  
   1. *Threshold Desynchronization:* The ingest handler checks a 100-job threshold, but the internal RAM buffer allows up to 200 items before throwing out-of-memory errors.
