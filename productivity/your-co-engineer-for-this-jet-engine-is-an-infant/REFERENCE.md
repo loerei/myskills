@@ -1,8 +1,8 @@
 # Reference: Jet Engine Co-Engineer Guide
 
-## 1. The Core Ideology: Explain Through the Idea of Tech Terms
+## 1. Core Ideology: Explain Through the Idea of Tech Terms
 
-Never explain a technical label by throwing another technical label at the reader. Explain the **underlying physical idea, operational intent, and behavioral mechanics** using real system entities (`RAM`, `disk`, `network`, `requests`, `counters`).
+Never explain a technical label by throwing another technical label at the reader. Explain the underlying physical mechanics and behavioral intent using real system entities (`RAM`, `disk`, `network`, `requests`, `counters`).
 
 ### Translating Software Artifacts into Behavioral Actions
 
@@ -23,9 +23,10 @@ Never explain a technical label by throwing another technical label at the reade
 
 ## 2. Diagram Node Labels & Topology Patterns
 
-Diagrams must communicate topography and movement at a glance. Do NOT turn Mermaid boxes into code dumps or fake anthropomorphic metaphors:
+Diagrams must communicate data paths and operational states at a glance. Label nodes with real entities and behavioral actions.
 
 ### A. Labeling Anti-Patterns vs Good Behavioral Labels
+
 | Element | ❌ BAD (Reading Code Aloud / AST Dump) | ✔ GOOD (Real Entity & Behavioral Action) |
 | :--- | :--- | :--- |
 | **Condition Node** | `if (user.activeConnections >= config.MAX_LIMIT)` | `Gateway checks: Does user already have 10 open connections?` |
@@ -35,29 +36,30 @@ Diagrams must communicate topography and movement at a glance. Do NOT turn Merma
 | **Error / Retry Node** | `catch (e) { this.retryCount++; retryQueue.push(job); }` | `On connection failure: Bumps retry count to 1 and re-queues job` |
 
 ### B. Graph Topology Patterns: Fall-Through vs Clean Guard
+
 | Flow Pattern | ❌ BAD (Misleading Parallel Fork) | ✔ GOOD (True Sequential Fall-Through) |
 | :--- | :--- | :--- |
 | **Missing Return / Fall-Through** | `Diamond --> BranchA`<br/>`Diamond --> BranchB` | `Diamond -- Yes --> Action 1 --> Action 2 (Continues sequentially)`<br/>`Diamond -- No --> Action 2` |
 
 ---
 
-## 3. The 3 Explanation Styles Compared
+## 3. Explanation Styles Compared
 
 | Dimension | Style 1: Abstract Jargon (Opaque) | Style 2: Detached Metaphor (Distorted) | Style 3: Jet Engine Infant (Optimal) |
 | :--- | :--- | :--- | :--- |
 | **Language** | `"Unidirectional sync without garbage collection."` | `"The pizza delivery guy dropped the box."` | `"The computer copies from A to B, but never checks B to delete old files."` |
 | **Target Entities** | Abstract CS concepts | Unrelated real-world objects (pizza, toys) | **The actual files, paths, databases, and code branches** |
-| **Understanding** | Only accessible to domain experts | Feels accessible, but distorts how the code actually works | **100% accurate mental model in plain English** |
-| **Actionability** | User cannot reason about the fix | User cannot map pizza to their code | **User can immediately collaborate on the exact solution** |
+| **Understanding** | Accessible only to domain specialists | Feels accessible, but distorts how the code actually works | **100% accurate mental model in plain English** |
+| **Actionability** | User cannot reason about the fix | User cannot map metaphor to code | **User can immediately collaborate on the exact solution** |
 
 ---
 
-## 4. Multi-Mode Case Studies: Applying the Frameworks
+## 4. Multi-Mode Case Studies
 
 ### Mode A: Architecture Planning (Live Notification System)
 
 * **Step 1 (The Punchline):**  
-  We should use Server-Sent Events (SSE) instead of WebSockets because the server only needs to push one-way alerts to the browser, and SSE runs over plain HTTP without needing a separate connection server.
+  We should use Server-Sent Events (SSE) instead of WebSockets because the server only needs to push one-way alerts to the browser, and SSE runs over plain HTTP without requiring a separate connection server.
 * **Step 2 (Physical Mechanics & Visualization):**  
 
 ```mermaid
@@ -157,7 +159,7 @@ flowchart TD
 
 * **Task:** *"Explain how this background job ingestion and processing service works."*
 
-* **1. The Raw Core Idea (Why does this exist?):**  
+* **1. Raw Core Idea:**  
   Web servers crash when 5,000 users upload files at once, so this service acts as an **in-memory staging buffer**: it absorbs incoming jobs into fast RAM, spills excess payloads to an emergency disk file when RAM is full, and worker threads process jobs continuously in the background.
 
 * **2. High-Level Movement & Visual Contrast:**  
