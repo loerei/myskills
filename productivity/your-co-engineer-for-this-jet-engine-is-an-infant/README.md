@@ -121,10 +121,10 @@ If you drop an AI into an unfamiliar 50,000-line codebase and say *"Explain how 
 ### Claude Code Plugin (Recommended)
 
 ```bash
-/plugin marketplace add loerei/jet-engine-infant
+/plugin marketplace add loerei/your-co-engineer-for-this-jet-engine-is-an-infant
 ```
 ```bash
-/plugin install jet-engine-infant@jet-engine-infant
+/plugin install your-co-engineer-for-this-jet-engine-is-an-infant@your-co-engineer-for-this-jet-engine-is-an-infant
 ```
 *(Two separate prompts in Claude Code)*
 
@@ -132,19 +132,19 @@ If you drop an AI into an unfamiliar 50,000-line codebase and say *"Explain how 
 
 ```bash
 # For Gemini / Google Antigravity
-git clone https://github.com/loerei/jet-engine-infant.git ~/.gemini/config/skills/your-co-engineer-for-this-jet-engine-is-an-infant
+git clone https://github.com/loerei/your-co-engineer-for-this-jet-engine-is-an-infant.git ~/.gemini/config/skills/your-co-engineer-for-this-jet-engine-is-an-infant
 
 # For Claude Code (Global)
-git clone https://github.com/loerei/jet-engine-infant.git ~/.claude/skills/your-co-engineer-for-this-jet-engine-is-an-infant
+git clone https://github.com/loerei/your-co-engineer-for-this-jet-engine-is-an-infant.git ~/.claude/skills/your-co-engineer-for-this-jet-engine-is-an-infant
 
 # For Cursor
-git clone https://github.com/loerei/jet-engine-infant.git ~/.cursor/skills/your-co-engineer-for-this-jet-engine-is-an-infant
+git clone https://github.com/loerei/your-co-engineer-for-this-jet-engine-is-an-infant.git ~/.cursor/skills/your-co-engineer-for-this-jet-engine-is-an-infant
 
 # For Codex / OpenAI
-git clone https://github.com/loerei/jet-engine-infant.git ~/.codex/skills/your-co-engineer-for-this-jet-engine-is-an-infant
+git clone https://github.com/loerei/your-co-engineer-for-this-jet-engine-is-an-infant.git ~/.codex/skills/your-co-engineer-for-this-jet-engine-is-an-infant
 
 # For Current Project Workspace (Universal Agent Standard)
-git clone https://github.com/loerei/jet-engine-infant.git .agents/skills/your-co-engineer-for-this-jet-engine-is-an-infant
+git clone https://github.com/loerei/your-co-engineer-for-this-jet-engine-is-an-infant.git .agents/skills/your-co-engineer-for-this-jet-engine-is-an-infant
 ```
 
 Or sync across all workspaces via [`myskills`](https://github.com/loerei/myskills):
