@@ -21,16 +21,23 @@ Never explain a technical label by throwing another technical label at the reade
 
 ---
 
-## 2. Diagram Node Labels: Code Dumps vs Behavioral Actions
+## 2. Diagram Node Labels & Topology Patterns
 
 Diagrams must communicate topography and movement at a glance. Do NOT turn Mermaid boxes into code dumps or fake anthropomorphic metaphors:
 
-| Element | ❌ BAD (Raw Code / Runtime Jargon Dump) | ✔ GOOD (Real Entity & Behavioral Action) |
+### A. Labeling Anti-Patterns vs Good Behavioral Labels
+| Element | ❌ BAD (Reading Code Aloud / AST Dump) | ✔ GOOD (Real Entity & Behavioral Action) |
 | :--- | :--- | :--- |
-| **Source Node** | `store.get('rate:user_99') -> undefined` | `Check RAM State -> No prior requests recorded` |
+| **Condition Node** | `if (user.activeConnections >= config.MAX_LIMIT)` | `Gateway checks: Does user already have 10 open connections?` |
+| **State Buffer Node** | `this.pendingQueue = new Array(capacity = 50)` | `RAM Queue Buffer (Holds up to 50 pending jobs in memory)` |
 | **Action Node** | `await this.store.flushToDisk()` | `❌ PAUSE: Wait 50ms for disk save (RAM not updated yet!)` |
-| **Component** | `AsyncStore (this.memory Map in Heap)` | `RAM State (Fast Memory)` |
-| **State Mutation** | `this.store.set('key', { count: 1 }) x19` | `19 requests all write 'Count = 1' into RAM` |
+| **Mutation Node** | `await db.insert(record); notifyChannel.emit(event);` | `1. Writes record to database table<br/>2. Immediately pushes live alert down socket` |
+| **Error / Retry Node** | `catch (e) { this.retryCount++; retryQueue.push(job); }` | `On connection failure: Bumps retry count to 1 and re-queues job` |
+
+### B. Graph Topology Patterns: Fall-Through vs Clean Guard
+| Flow Pattern | ❌ BAD (Misleading Parallel Fork) | ✔ GOOD (True Sequential Fall-Through) |
+| :--- | :--- | :--- |
+| **Missing Return / Fall-Through** | `Diamond --> BranchA`<br/>`Diamond --> BranchB` | `Diamond -- Yes --> Action 1 --> Action 2 (Continues sequentially)`<br/>`Diamond -- No --> Action 2` |
 
 ---
 
@@ -45,7 +52,7 @@ Diagrams must communicate topography and movement at a glance. Do NOT turn Merma
 
 ---
 
-## 4. Multi-Mode Case Studies: Applying the 4-Step Framework
+## 4. Multi-Mode Case Studies: Applying the Frameworks
 
 ### Mode A: Architecture Planning (Live Notification System)
 
@@ -72,7 +79,7 @@ flowchart LR
 
 * **Step 1 (The Punchline):**  
   We should put `status` and `user_id` in separate SQL columns and only keep custom user tags in a `metadata` JSON column, because filtering inside JSON across 100,000 rows forces the database to read every single row from disk.
-* **Step 2 (Physical Mechanics & Visualization):**  
+* **Step 2 (Physical Mechanics & Visual Contrast):**  
 
 ```mermaid
 flowchart TD
@@ -94,12 +101,13 @@ flowchart TD
 
 ---
 
-### Mode C: System Debugging (Concurrent State Overwrite in Rate Limiting)
+### Mode C: System Debugging (Concurrent State Overwrite in Rate Limiter)
 
 * **Step 1 (The Punchline):**  
-  The rate limiter allowed all 20 concurrent requests instead of capping at 5 because the system paused to wait for a slow disk save before recording the first request in RAM, causing all 19 subsequent requests to see an empty RAM counter and independently mark themselves as request #1.
-* **Step 2 (Physical Mechanics & Visualization):**  
+  The rate limiter allowed all 20 concurrent requests instead of capping at 5 because the system paused to wait for a slow disk save before recording the first request in RAM, causing all 19 subsequent requests to check an empty RAM counter and independently mark themselves as request #1.
+* **Step 2 (Physical Mechanics & Visual Contrast):**  
 
+#### Sơ Đồ A: Thực Tế Bị Lỗi (Thứ tự ngược gây ra Cửa Sổ Mù trong RAM)
 ```mermaid
 flowchart TD
     subgraph INCOMING["1. 20 Requests Arrive Simultaneously"]
@@ -107,33 +115,34 @@ flowchart TD
         ReqRest["Requests #2 through #20 (Right behind)"]
     end
 
-    subgraph LIMITER["2. Rate Limiting Check & Counter Update"]
-        Check1["Request 1: Reads RAM -> Empty<br/>-> Prepares count = 1"]
-        Wait1["❌ PAUSE: Waits 50ms for disk save<br/>(Has NOT written count = 1 into RAM yet!)"]
+    subgraph BROKEN["2. Broken Flow: Inverted Order of Operations"]
+        Check1["Request 1: Reads RAM -> Empty"]
+        Wait1["❌ PAUSE: Waits 50ms for disk save<br/>(RAM NOT UPDATED YET!)"]
         
-        CheckRest["Requests 2-20: Read RAM<br/>(RAM is still empty because Req 1 paused!)"]
+        CheckRest["Requests 2-20: Read RAM<br/>(Still sees empty RAM because Req 1 paused!)"]
         PassRest["All 19 requests allowed through<br/>-> All write 'Count = 1' into RAM"]
         
-        Wake1["50ms later: Req 1 finishes disk save<br/>-> Allowed through and also writes 'Count = 1'"]
-    end
-
-    subgraph RAM["3. RAM State (Fast Memory)"]
-        StateEmpty["Initial State: Empty"]
-        StateFinal["Final State: Recorded only 1 count!"]
+        Wake1["50ms later: Req 1 finishes disk save<br/>-> Also writes 'Count = 1'"]
     end
 
     Req1 --> Check1 --> Wait1
-    ReqRest --> CheckRest --> PassRest --> StateFinal
-    Wait1 -.->|"Paused waiting for disk"| Wake1 --> StateFinal
-    StateEmpty -.-> Check1
-    StateEmpty -.-> CheckRest
+    ReqRest --> CheckRest --> PassRest
+    Wait1 -.-> Wake1
 ```
 
-  1. Request 1 arrives and inspects the counter in RAM. It finds no prior requests recorded for this user.
-  2. Before writing *"Count = 1"* into RAM, the system pauses to wait 50ms for a background disk save to finish.
-  3. While Request 1 is paused waiting for disk, Requests 2 through 20 arrive. They all check RAM, see that it is still completely empty, and conclude they are each the very first request.
-  4. All 19 requests allow themselves through and all write "Count = 1" into RAM.
-  5. Request 1 finishes its disk wait, wakes up, also assumes it is the first request, and overwrites RAM with "Count = 1" one last time. Result: 20 requests enter, but RAM only recorded 1.
+#### Sơ Đồ B: Thiết Kế Đúng (Cập nhật RAM tức thì trước khi ghi đĩa ngầm)
+```mermaid
+flowchart TD
+    subgraph FIXED["Clean Flow: Immediate RAM Write"]
+        CleanCheck["Incoming Request: Checks RAM Counter"]
+        CleanInc["1. Immediately increment counter in RAM"]
+        CleanFlush["2. Trigger background disk write without waiting"]
+        CleanAllow["3. Allow request through if count <= 5"]
+
+        CleanCheck --> CleanInc --> CleanFlush --> CleanAllow
+    end
+```
+
 * **Step 3 (Point of Friction / Gap):**  
   The physical sequence of operations was inverted:
   - *Correct:* Update counter in RAM immediately $\rightarrow$ Trigger background disk save without waiting.
@@ -141,3 +150,49 @@ flowchart TD
   The 50ms pause created a blind window where incoming callers acted on stale RAM state.
 * **Step 4 (Concrete Decision & Next Action):**  
   We reverse the order: write the updated counter into RAM synchronously first, and let the disk save run in the background without blocking the request path.
+
+---
+
+### Mode D: Layered System Explanation ("Just Explain" with Visual Contrast)
+
+* **Task:** *"Explain how this item purchase and inventory system works."*
+
+* **1. The Raw Core Idea:**  
+  This codebase simulates an in-memory shopping loop: a player buys items, stores them in an array in RAM, drops overflow items to a ground array, and picks them back up when space clears.
+* **2. High-Level Movement & Visual Contrast:**  
+
+#### Sơ Đồ A: Thực Tế Vận Hiện Tại (Trôi lệnh tuần tự gây lỗi nhân đôi)
+```mermaid
+flowchart TD
+    subgraph BROKEN_SHOP["Current Reality: Sequential Fall-Through"]
+        CheckFull{"Check: Is bag already holding >= 5 items?"}
+        DropToGround["1. Drop 1 item onto ground list in RAM"]
+        FallThrough["❌ MISSING RETURN:<br/>Execution falls through to next step!"]
+        AddToBag["2. Push item into player bag in RAM<br/>(Accepts up to 10 slots!)"]
+        LeakResult["RESULT: 1 on ground + 1 in bag (Double Allocation)"]
+
+        CheckFull -->|"Yes (5/5 full)"| DropToGround --> FallThrough --> AddToBag --> LeakResult
+        CheckFull -->|"No (has room)"| AddToBag
+    end
+```
+
+#### Sơ Đồ B: Thiết Kế Chuẩn Mực (Rẽ nhánh loại trừ dứt khoát)
+```mermaid
+flowchart TD
+    subgraph CLEAN_SHOP["Intended Design: Mutually Exclusive Branch"]
+        CheckFullClean{"Check: Is bag full?"}
+        DropClean["Drop 1 item onto ground<br/>-> RETURN & EXIT TRANSACTION"]
+        AddBagClean["Put 1 item into player bag<br/>-> FINISH TRANSACTION"]
+
+        CheckFullClean -->|"Yes (Full)"| DropClean
+        CheckFullClean -->|"No (Room)"| AddBagClean
+    end
+```
+
+* **3. Real Operational Boundaries:**  
+  1. *Capacity Desync:* The shop checks a 5-item rule, but the inventory internally accepts 10 items in RAM while the UI only displays the first 5.
+  2. *Missing Guard:* The shop executes both the drop action and the insertion action sequentially without an early return.
+* **4. Progressive Depth Check-in:**  
+  Does this surface layer give you the mental model you need, or do you want to drill into:
+  - **(A)** The exact patch to gate the shop drop logic, or
+  - **(B)** Synchronizing the 5-item capacity limit across all modules?
