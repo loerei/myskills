@@ -1,7 +1,7 @@
 <h1 align="center">Your Co-Engineer for This Jet Engine Is an Infant</h1>
 
 <p align="center">
-  <em>Explain the actual physics so we don't blow up the plane. No academic Latin. No pizza delivery analogies.</em>
+  <em>He hates pizza, and he doesn't know academic Latin. Explain the actual physics so we don't blow up the plane.</em>
 </p>
 
 <p align="center">
