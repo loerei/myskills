@@ -6,18 +6,21 @@ Never explain a technical label by throwing another technical label at the reade
 
 ### Translating Software Artifacts into Behavioral Actions
 
-| Technical Concept / Code Artifact | What NOT to Say (Jargon / Code Snippet) | What to Say Instead (The Literal Action) |
-| :--- | :--- | :--- |
-| **In-Memory Map / Cache** | `Heap Map<string, object>`, `Key-Value Store` | *The fast counter stored in temporary RAM* |
-| **Rate Limiter / Guard** | `TokenBucketLimiter.isAllowed()`, `Middleware` | *The check verifying if a user exceeded their allowed requests* |
-| **Async Pause / I/O Yield** | `await flushToDisk()`, `Microtask queue yield` | *Waiting 50ms for a slow disk save before updating RAM* |
-| **Reconciliation / GC** | `State reconciliation loop`, `Garbage collection` | *Reading the destination list and asking source to delete leftovers* |
-| **Race Condition** | `Non-atomic concurrent read-modify-write` | *Two requests reading the same count before either writes back* |
-| **Deadlock** | `Circular resource lock acquisition failure` | *Two operations holding each other's keys and both waiting* |
-| **Cache Invalidation** | `Cache invalidation / eviction TTL` | *Throwing away the fast RAM copy when the main database changes* |
-| **AST / Parsing Drift** | `AST representation out of sync with disk` | *Looking at an old cached copy in memory instead of the actual file on disk* |
-| **Backpressure** | `TCP flow control / reactive streams backpressure` | *Telling the sender to pause because incoming requests are piling up* |
-| **Atomic Transaction** | `ACID atomic transaction boundary` | *Bundling 5 steps together so if step 4 fails, steps 1-3 undo instantly* |
+| Technical Concept / Code Artifact | ❌ What NOT to Say (Jargon / AST Dump) | ❌ What NOT to Say (Cringe / Fantasy Titles) | ✔ What to Say Instead (Functional Role on Physical Medium) |
+| :--- | :--- | :--- | :--- |
+| **In-Memory Map / Cache** | `Heap Map<string, object>`, `Key-Value Store` | *The Fast Vault*, *Két Sắt RAM* | *The fast counter/list stored in temporary RAM* |
+| **Rate Limiter / Guard** | `TokenBucketLimiter.isAllowed()`, `Middleware` | *The Gatekeeper Bouncer*, *Người Gác Cổng* | *The check in RAM verifying if a user exceeded allowed requests* |
+| **Timeout / Retry Loop** | `while(true) with setTimeout & throw` | *Bộ Canh Khóa Kéo*, *Cầu Chì 10s* | *The retry loop in RAM pausing 200ms for mouse release, aborting after 10s* |
+| **State / Tab Validation** | `chrome.tabs.get(id)`, `tab.windowId` | *Đầu Dò Kiểm Tra Tab*, *The Scout Probe* | *The check verifying if the dragged tab is still open in this window* |
+| **Async Pause / I/O Yield** | `await flushToDisk()`, `Microtask queue yield` | *The Great Sleep Chamber* | *Waiting 50ms for a slow disk save before updating RAM* |
+| **Disk Spillover / Overflow** | `EmergencyDiskSpooler.append()` | *The Emergency Disk Spooler* | *Appending overflow jobs to a backup file on disk when RAM is full* |
+| **Reconciliation / GC** | `State reconciliation loop`, `Garbage collection` | *The Garbage Goblin*, *Bộ Bóc Tách* | *Reading the destination list and asking source to delete leftovers* |
+| **Race Condition** | `Non-atomic concurrent read-modify-write` | *The Double-Cross Duel* | *Two requests reading the same count from RAM before either writes back* |
+| **Deadlock** | `Circular resource lock acquisition failure` | *The Mexican Standoff* | *Two operations holding each other's keys and both waiting* |
+| **Cache Invalidation** | `Cache invalidation / eviction TTL` | *The Vault Purge* | *Throwing away the fast RAM copy when the main database on disk changes* |
+| **AST / Parsing Drift** | `AST representation out of sync with disk` | *The Mirror Illusion* | *Looking at an old cached copy in memory instead of the actual file on disk* |
+| **Backpressure** | `TCP flow control / reactive streams backpressure` | *The Traffic Cop* | *Telling the sender over the network to pause because incoming requests are piling up in RAM* |
+| **Atomic Transaction** | `ACID atomic transaction boundary` | *The Magic Bundle* | *Bundling 5 database writes together on disk so if step 4 fails, steps 1-3 undo instantly* |
 
 ---
 
@@ -45,12 +48,12 @@ Diagrams must communicate data paths and operational states at a glance. Label n
 
 ## 3. Explanation Styles Compared
 
-| Dimension | Style 1: Abstract Jargon (Opaque) | Style 2: Detached Metaphor (Distorted) | Style 3: Jet Engine Infant (Optimal) |
+| Dimension | Style 1: Abstract Jargon (Opaque) | Style 2: Cringe / Detached Metaphor (Distorted) | Style 3: Jet Engine Infant (Optimal) |
 | :--- | :--- | :--- | :--- |
-| **Language** | `"Unidirectional sync without garbage collection."` | `"The pizza delivery guy dropped the box."` | `"The computer copies from A to B, but never checks B to delete old files."` |
-| **Target Entities** | Abstract CS concepts | Unrelated real-world objects (pizza, toys) | **The actual files, paths, databases, and code branches** |
-| **Understanding** | Accessible only to domain specialists | Feels accessible, but distorts how the code actually works | **100% accurate mental model in plain English** |
-| **Actionability** | User cannot reason about the fix | User cannot map metaphor to code | **User can immediately collaborate on the exact solution** |
+| **Language** | `"Unidirectional sync without garbage collection."` | `"The pizza delivery guy dropped the box"` or `"The Save Vault locked the door."` | `"The computer copies from A to B, but never checks B to delete old files."` |
+| **Target Entities** | Abstract CS concepts | Unrelated real-world objects (pizza, bouncers) or fantasy steampunk titles (*The Save Vault*, *Bộ Canh Khóa*) | **Real system components (`RAM`, `disk`, `network`) and literal functional actions** |
+| **Understanding** | Accessible only to domain specialists | Feels accessible, but distorts reality and sounds cartoonish | **100% accurate mental model in plain English without cringe** |
+| **Actionability** | User cannot reason about the fix | User cannot map metaphor/fantasy names to actual code lines | **User can immediately collaborate on the exact solution** |
 
 ---
 
@@ -195,9 +198,9 @@ flowchart TD
 ```
 
 * **The Moving Parts & Data Paths:**
-  - *The Ingest Handler:* Validates incoming job payloads and checks current memory buffer capacity.
-  - *The RAM Queue Buffer:* Fast FIFO array in memory holding up to 100 jobs for instant worker pickup.
-  - *The Emergency Disk Spooler:* File append stream that safely stores overflow jobs when RAM is saturated.
+  - *Ingestion Handler:* Validates incoming job payloads and checks current RAM buffer capacity.
+  - *RAM Queue Buffer:* Fast FIFO array in memory holding up to 100 jobs for instant worker pickup.
+  - *Emergency Disk File:* File append stream on disk that safely stores overflow jobs when RAM is saturated.
 
 * **3. Real Operational Boundaries:**  
   1. *Threshold Desynchronization:* The ingest handler checks a 100-job threshold, but the internal RAM buffer allows up to 200 items before throwing out-of-memory errors.

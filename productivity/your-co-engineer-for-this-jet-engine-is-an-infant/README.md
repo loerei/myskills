@@ -90,7 +90,7 @@ If you're making an architectural call or hunting a bug, the AI is strictly forb
 If you drop an AI into an unfamiliar 50,000-line codebase and say *"Explain how this works"*, it usually either barfs AST method names or tells you a bedtime story. Instead, it peels back only the top surface layer:
 ```
 1. The Raw Core Idea          → Why does this machine exist? What physical headache does it solve?
-2. The Moving Parts (Layer 1) → High-level data paths across tangible components (The Scanner, The Save Vault, The Ingest Worker).
+2. The Moving Parts (Layer 1) → High-level data paths across real functional components (RAM buffer, database table, background worker).
 3. Progressive Check-in       → Stop right there. Ask the human which sub-layer to drill into next before dumping internals.
 ```
 
