@@ -58,7 +58,7 @@ Diagrams must communicate data paths and operational states at a glance. Label n
 
 ### Mode A: Architecture Planning (Live Notification System)
 
-* **Step 1 (The Punchline):**  
+* **Step 1 (BLUF):**  
   We should use Server-Sent Events (SSE) instead of WebSockets because the server only needs to push one-way alerts to the browser, and SSE runs over plain HTTP without needing a separate connection server.
   
   **In short:** Opening heavy two-way WebSockets tunnels just to receive occasional 1-line alerts ➔ Use lightweight HTTP Server-Sent Events to push notifications down a standard open socket.
@@ -82,7 +82,7 @@ flowchart LR
 
 ### Mode B: Technical Debate / Tradeoff (JSON Column vs SQL Table)
 
-* **Step 1 (The Punchline):**  
+* **Step 1 (BLUF):**  
   We should put `status` and `user_id` in separate SQL columns and only keep custom user tags in a `metadata` JSON column, because filtering inside JSON across 100,000 rows forces the database to read every single row from disk.
 
   **In short:** Filtering 100,000 JSON records from disk causes 100% CPU spikes ➔ Store queryable fields in indexed SQL columns so the database can jump directly to the target rows in 2ms.
@@ -111,7 +111,7 @@ flowchart TD
 
 ### Mode C: System Debugging (Concurrent State Overwrite in Rate Limiter)
 
-* **Step 1 (The Punchline):**  
+* **Step 1 (BLUF):**  
   The rate limiter allowed all 20 concurrent requests instead of capping at 5 because the system paused to wait for a slow disk save before recording the first request in RAM, causing all 19 subsequent requests to check an empty RAM counter and independently mark themselves as request #1.
 
   **In short:** 20 requests arrive simultaneously and all pass through because disk saving is slow ➔ Increment the counter in RAM immediately before triggering the slow background disk write.

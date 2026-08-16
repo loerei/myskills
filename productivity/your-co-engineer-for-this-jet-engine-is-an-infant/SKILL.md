@@ -12,7 +12,7 @@ Explain system mechanics directly through physical data movement and the machine
 1. **Explain Through the Idea of Tech Terms (Not the Terms Themselves):** Describe literal physical data movement (what is read, what is updated in RAM/disk, where execution pauses) instead of abstract CS labels (`race condition`, `reconciliation`, `AST drift`) or low-level runtime engine vocabulary (`microtask queue`, `heap allocation`, `call stack`). Express interactions using real system entities (`RAM`, `disk`, `network`, `database`, `requests`, `counters`) and everyday behavioral verbs.
 2. **Explain Behavior, Never Read Code Aloud:** Translate variable names, method calls, and AST syntax into tangible moving parts in the machine (*The Ingest Worker*, *The Save Vault*, *The RAM Queue Buffer*, *The Disk Writer*) and active behavior (*"checks if active connection limit is reached"*). Do not recite code statements.
 3. **No Detached Analogies:** Never use unrelated real-world metaphors (pizza delivery, toy boxes, car engines, bouncers). Ground explanations in real system components (`files`, `loops`, `databases`, `network sockets`, `memory buffers`).
-4. **Punchline First (BLUF):** State the direct recommendation, core tradeoff, or root discrepancy in the first sentence.
+4. **BLUF (Bottom Line Up Front):** State the direct recommendation, core tradeoff, or root discrepancy in the first sentence.
 5. **The "In Short" Cognitive Anchor:** At the end of the *Raw Core Idea* and each major subsystem / moving part, provide a single-line summary anchor:  
    `**In short:** The Problem (From User's POV) ➔ What It Does About That`  
    *(Do NOT put literal square brackets around the text)*.
@@ -26,7 +26,7 @@ Explain system mechanics directly through physical data movement and the machine
 flowchart TD
     Task["Incoming Task"] --> TaskType{"Task Nature?"}
     
-    TaskType -->|"Planning / Debating / Debugging<br/>(Action-Oriented)"| Framework4["The 4-Step Action Framework<br/>1. Punchline (BLUF)<br/>2. Physical Mechanics & Visual Contrast<br/>3. Point of Friction / Tradeoff<br/>4. Concrete Decision & Next Action"]
+    TaskType -->|"Planning / Debating / Debugging<br/>(Action-Oriented)"| Framework4["The 4-Step Action Framework<br/>1. BLUF (Bottom Line Up Front)<br/>2. Physical Mechanics & Visual Contrast<br/>3. Point of Friction / Tradeoff<br/>4. Concrete Decision & Next Action"]
     
     TaskType -->|"System / Concept Explanation<br/>('Just Explain' / Knowledge-Oriented)"| Framework3["The Layered Surface Framework<br/>1. Raw Core Idea + 'In short' Anchor<br/>2. The Moving Parts & Data Paths<br/>3. Progressive Depth Check-in"]
 ```
@@ -37,7 +37,7 @@ flowchart TD
 
 Use when making a concrete technical decision, choosing an architecture, or fixing a bug.
 
-1. **The Punchline (BLUF):** State the core recommendation, winner, or root discrepancy in sentence #1.
+1. **BLUF (Bottom Line Up Front):** State the core recommendation, winner, or root discrepancy in sentence #1.
 2. **Physical Mechanics & Visualization (Multi-Diagram & Visual Contrast):**
    - **Multi-Diagram Layering:** Provide focused single-purpose diagrams rather than one overloaded graph.
    - **Visual Contrast (Broken Reality vs Clean Design):** When analyzing bugs or tradeoffs, contrast two explicit flows:

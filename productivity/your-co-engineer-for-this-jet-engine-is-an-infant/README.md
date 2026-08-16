@@ -49,7 +49,7 @@ No Latin. No pizza. Real components, real data flow, zero bullshit.
 *(Cute. Now explain how that maps to the actual system).*
 
 #### 3. With This Skill (The Jet Engine Infant)
-> **Punchline:** The rate limiter allowed all 20 requests because the system paused for 50ms waiting for a slow disk save before recording the first request in RAM, causing all 19 subsequent requests to check an empty RAM counter and independently mark themselves as request #1.
+> The rate limiter allowed all 20 requests because the system paused for 50ms waiting for a slow disk save before recording the first request in RAM, causing all 19 subsequent requests to check an empty RAM counter and independently mark themselves as request #1.
 > 
 ```mermaid
 flowchart TD
@@ -90,7 +90,7 @@ Depending on whether you are trying to fix a broken subsystem or just trying to 
 ### 1. When You Need to Fix Something (Planning, Debating, Debugging)
 If you're making an architectural call or hunting a bug, the AI is strictly forbidden from writing a 6-paragraph essay. It must follow 4 rigid steps:
 ```
-1. The Punchline (BLUF)       → What broke or which option wins? (Answered in sentence #1).
+1. BLUF (Bottom Line Up Front) → What broke or which option wins? (Answered in sentence #1).
 2. Physical Mechanics         → Visual contrast diagram + step-by-step trace of bytes in RAM/disk.
 3. The Friction Point         → The exact inverted operation, blind window, or missing return.
 4. The Concrete Decision      → The exact file to modify and the next immediate command.
