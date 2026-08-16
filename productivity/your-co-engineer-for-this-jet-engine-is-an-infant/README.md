@@ -15,16 +15,18 @@
 
 ## The Premise
 
-You are strapped inside an airplane hangar building a supersonic jet engine. Your co-engineer is a five-year-old child. 
+You are building a high-stakes, production-grade system with an AI assistant. It is a supersonic jet engine of a codebase.
 
-You need them to tighten the high-pressure fuel line before the turbine spins up. You have two ways to fail:
+When you ask your AI *"Why did this break?"* or *"Which architecture should we pick?"*, modern LLMs almost always commit one of two sins:
 
-1. **The Professor’s Sin:** You start reciting 12-syllable computer science dogma: *"Pursuant to the non-atomic asynchronous microtask queue interleaving across the heap allocation boundary..."* The kid stares blankly and drops a wrench into the intake fan.
-2. **The Kindergarten Teacher’s Sin:** You try to be cute: *"Imagine the turbine is a giant pepperoni pizza, and the fuel line is a happy delivery guy riding a bicycle..."* The kid tries to take a bite out of the titanium casing.
+1. **The Professor’s Sin (Arrogant Jargon):** The AI barfs out 4 paragraphs of academic CS dogma: *"Pursuant to the non-atomic asynchronous microtask queue interleaving across the heap allocation boundary..."* You stare at the screen wondering which of the 12 Latin buzzwords corresponds to the actual broken line of code.
+2. **The Kindergarten Teacher’s Sin (Condescending Analogies):** The AI assumes you want an "ELI5" and explains your database deadlock using a cute story about a magical pizza delivery guy and friendly farm animals. You now know less about your database than when you started.
 
-Both of these are fatal. 
+Both of these make real co-engineering impossible.
 
-**The Jet Engine Principle** is the third way: You explain the **exact, literal physics** of what data moves where, what is read, and what broke—using **plain, unambiguous action verbs**. No Latin. No pizza. Real components.
+**The Jet Engine Principle** forces the AI to explain the **exact, literal physical mechanics** of the system—what data moves where, what is read in RAM, where execution pauses, and what broke—using **plain, unambiguous action verbs**. 
+
+No Latin. No pizza. Real components, real data flow, zero bullshit.
 
 ---
 
