@@ -39,12 +39,16 @@ Replace opaque technical labels with concrete physical and behavioral mechanics:
 * **Step 1 (The Punchline):**  
   We should use Server-Sent Events (SSE) instead of WebSockets because the server only needs to push one-way alerts to the browser, and SSE runs over plain HTTP without needing a separate connection server.
 * **Step 2 (Physical Mechanics & Visualization):**  
-  When an alert happens in the backend, the server writes a single line of text over an already open HTTP connection:
+  The physical transmission works in a single, straight line without connection brokers:
 
 ```mermaid
 flowchart LR
     Backend["Backend Service"] -->|"1. Plain HTTP Alert (text/event-stream)"| Browser["Browser Client (EventSource)"]
 ```
+
+  1. The browser initiates a standard HTTP GET request with `Accept: text/event-stream` and leaves the socket open.
+  2. Whenever a notification event occurs, the server immediately flushes a UTF-8 text string down that existing socket.
+  3. The browser triggers the `onmessage` callback instantly without polling or packet headers.
 * **Step 3 (Point of Friction / Tradeoff):**  
   WebSockets keeps a two-way tunnel open and requires custom ping/pong heartbeats to keep the connection alive. For simple one-way notifications, that extra machinery adds maintenance overhead without providing any two-way benefits.
 * **Step 4 (Concrete Decision & Next Action):**  
@@ -57,6 +61,7 @@ flowchart LR
 * **Step 1 (The Punchline):**  
   We should put `status` and `user_id` in separate SQL columns and only keep custom user tags in a `metadata` JSON column, because filtering inside JSON across 100,000 rows forces the database to read every single row from disk.
 * **Step 2 (Physical Mechanics & Visualization):**  
+  The disk read operations differ fundamentally in hardware access:
 
 ```mermaid
 flowchart TD
@@ -68,6 +73,9 @@ flowchart TD
         FullScan["Disk Read: 100,000 Rows"] -->|"Unpack JSON for every row"| JsonTarget["Target Rows (High CPU Spike)"]
     end
 ```
+
+  1. **Relational Path:** The database traverses a pre-sorted B-Tree index on disk (reading ~3 index pages), directly locates the 10 matching row pointers, and reads only those 10 rows into RAM. Total time: ~2ms.
+  2. **JSON Blob Path:** Because keys inside JSON are unstructured text strings, the database has no index pointers. It must read all 100,000 table rows from disk into memory, parse the JSON text of every single row, and check the string value. Total time: ~450ms with 100% CPU usage.
 * **Step 3 (Point of Friction / Tradeoff):**  
   Putting all fields in JSON saves 5 minutes of schema migration today, but causes database CPU to spike to 100% as soon as table size grows past 10,000 records.
 * **Step 4 (Concrete Decision & Next Action):**  
@@ -80,6 +88,7 @@ flowchart TD
 * **Step 1 (The Punchline):**  
   The reason deleted images still appear on the storage server is that the upload script only checks for new local files to upload, but never inspects the server to remove deleted files.
 * **Step 2 (Physical Mechanics & Visualization):**  
+  The sync command executes asymmetrically because only one branch is connected:
 
 ```mermaid
 flowchart TD
@@ -101,6 +110,10 @@ flowchart TD
     Run --> UploadBranch --> ServerState
     Run -.->|"Missing reverse check"| PruneBranch
 ```
+
+  1. You delete `avatar.png` in the local `images/` directory.
+  2. The upload script runs, inspects the local directory, finds 0 new files to upload, and immediately exits.
+  3. Because the reverse check branch was never wired to the storage server, the script never opens the server directory to compare files. The old `avatar.png` remains on the server indefinitely.
 * **Step 3 (Point of Friction / Gap):**  
   The sync script only loops over local files. It has no reverse loop that reads the server directory and compares it against local files.
 * **Step 4 (Concrete Decision & Next Action):**  

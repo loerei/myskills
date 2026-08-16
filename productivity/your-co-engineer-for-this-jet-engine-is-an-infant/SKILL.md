@@ -18,7 +18,7 @@ Explain complex engineering reality simply without hiding behind technical jargo
 ```mermaid
 flowchart TD
     Start["Planning / Debating / Debugging Task"] --> Step1["1. The Punchline (BLUF)<br/>State core answer, winner, or discrepancy"]
-    Step1 --> Step2["2. Physical Mechanics & Visualization<br/>Trace literal data flow with Mermaid diagrams"]
+    Step1 --> Step2["2. Physical Mechanics & Visualization<br/>Diagram PLUS concrete verbal tracing"]
     Step2 --> Step3["3. Point of Friction / Tradeoff / Gap<br/>Show why the alternative fails or where state broke"]
     Step3 --> Step4["4. Concrete Decision & Next Action<br/>Propose literal change and invite alignment"]
 ```
@@ -29,10 +29,10 @@ State the core answer immediately:
 - **Debating:** *"Option A is better than Option B because Option B forces [expensive physical operation] on every request."*
 - **Debugging:** *"The reason [X happened] is because [the command ran for Y, but Z was forgotten]."*
 
-### 2. Physical Mechanics & Visualization (How Data Moves)
-Trace the physical data path through real components step-by-step:
-- Explain what is read from disk/memory, what travels across the wire, and what gets transformed.
-- **Use Mermaid Data Flow diagrams** whenever tracing multi-branch execution, asymmetric flows (e.g. forward copy vs reverse prune), or state mutations across 2+ components.
+### 2. Physical Mechanics & Visualization (Diagram PLUS Verbal Tracing)
+Always pair visual topography with explicit, step-by-step verbal tracing:
+1. **Mermaid Data Flow Diagram:** Expose the spatial layout, direction of data movement, and component boundaries.
+2. **Concrete Verbal Tracing:** Walk through each numbered hop in the diagram in plain English. State what is read from disk/memory, what travels across the wire, and what gets transformed. Never leave a diagram to speak for itself.
 
 ### 3. Point of Friction / Tradeoff / Gap
 Pinpoint the mechanical constraint:
@@ -49,7 +49,7 @@ State the exact technical step and open the floor for co-engineering:
 
 1. **Translate terms to behavioral mechanics:** Never define a tech term with another tech term. Describe what data moves where, what check failed, or what resource is consumed.
 2. **Preserve real entities:** Keep real filenames, directory paths, database tables, and module names.
-3. **Visualize asymmetric or multi-branch flows:** Use Mermaid data flow diagrams to expose mechanical gaps or architectural paths visually.
+3. **Diagrams PLUS explicit prose:** Always pair Mermaid data flow diagrams with explicit verbal tracing. Never use standalone diagrams without accompanying physical walkthroughs.
 4. **No patronizing tone:** Be direct, factual, and respectful. Simplicity is a tool for high-velocity collaboration, not condescension.
 
 ---
