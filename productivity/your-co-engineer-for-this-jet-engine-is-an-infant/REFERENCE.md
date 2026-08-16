@@ -107,7 +107,7 @@ flowchart TD
   The rate limiter allowed all 20 concurrent requests instead of capping at 5 because the system paused to wait for a slow disk save before recording the first request in RAM, causing all 19 subsequent requests to check an empty RAM counter and independently mark themselves as request #1.
 * **Step 2 (Physical Mechanics & Visual Contrast):**  
 
-#### Sơ Đồ A: Thực Tế Bị Lỗi (Thứ tự ngược gây ra Cửa Sổ Mù trong RAM)
+#### Diagram A: Broken Flow (Inverted Order Creates a Stale Memory Window)
 ```mermaid
 flowchart TD
     subgraph INCOMING["1. 20 Requests Arrive Simultaneously"]
@@ -130,7 +130,7 @@ flowchart TD
     Wait1 -.-> Wake1
 ```
 
-#### Sơ Đồ B: Thiết Kế Đúng (Cập nhật RAM tức thì trước khi ghi đĩa ngầm)
+#### Diagram B: Clean Architecture (Immediate Synchronous RAM Update)
 ```mermaid
 flowchart TD
     subgraph FIXED["Clean Flow: Immediate RAM Write"]
@@ -155,44 +155,45 @@ flowchart TD
 
 ### Mode D: Layered System Explanation ("Just Explain" with Visual Contrast)
 
-* **Task:** *"Explain how this item purchase and inventory system works."*
+* **Task:** *"Explain how this background job ingestion and processing service works."*
 
-* **1. The Raw Core Idea:**  
-  This codebase simulates an in-memory shopping loop: a player buys items, stores them in an array in RAM, drops overflow items to a ground array, and picks them back up when space clears.
+* **1. The Raw Core Idea (Why does this exist?):**  
+  Web servers crash when 5,000 users upload files at once, so this service acts as an **in-memory staging buffer**: it absorbs incoming jobs into fast RAM, spills excess payloads to an emergency disk file when RAM is full, and worker threads process jobs continuously in the background.
+
 * **2. High-Level Movement & Visual Contrast:**  
 
-#### Sơ Đồ A: Thực Tế Vận Hiện Tại (Trôi lệnh tuần tự gây lỗi nhân đôi)
+#### Diagram A: Current Reality (Sequential Fall-Through Causes Duplicate Processing)
 ```mermaid
 flowchart TD
-    subgraph BROKEN_SHOP["Current Reality: Sequential Fall-Through"]
-        CheckFull{"Check: Is bag already holding >= 5 items?"}
-        DropToGround["1. Drop 1 item onto ground list in RAM"]
-        FallThrough["❌ MISSING RETURN:<br/>Execution falls through to next step!"]
-        AddToBag["2. Push item into player bag in RAM<br/>(Accepts up to 10 slots!)"]
-        LeakResult["RESULT: 1 on ground + 1 in bag (Double Allocation)"]
+    subgraph BROKEN_INGEST["Current Reality: Sequential Fall-Through"]
+        CheckBuffer{"Buffer Check:<br/>Does RAM Queue hold >= 100 jobs?"}
+        SpillToDisk["1. Write payload to Emergency Disk Spillover file"]
+        FallThrough["❌ MISSING RETURN:<br/>Execution falls through to next line!"]
+        PushToRAM["2. Push payload directly into RAM Worker Queue"]
+        DuplicateResult["RESULT: Payload saved on Disk AND pushed to RAM<br/>(Worker processes same job twice!)"]
 
-        CheckFull -->|"Yes (5/5 full)"| DropToGround --> FallThrough --> AddToBag --> LeakResult
-        CheckFull -->|"No (has room)"| AddToBag
+        CheckBuffer -->|"Yes (RAM Buffer Full)"| SpillToDisk --> FallThrough --> PushToRAM --> DuplicateResult
+        CheckBuffer -->|"No (Has Room)"| PushToRAM
     end
 ```
 
-#### Sơ Đồ B: Thiết Kế Chuẩn Mực (Rẽ nhánh loại trừ dứt khoát)
+#### Diagram B: Intended Clean Architecture (Mutually Exclusive Storage Guard)
 ```mermaid
 flowchart TD
-    subgraph CLEAN_SHOP["Intended Design: Mutually Exclusive Branch"]
-        CheckFullClean{"Check: Is bag full?"}
-        DropClean["Drop 1 item onto ground<br/>-> RETURN & EXIT TRANSACTION"]
-        AddBagClean["Put 1 item into player bag<br/>-> FINISH TRANSACTION"]
+    subgraph CLEAN_INGEST["Intended Design: Mutually Exclusive Storage Guard"]
+        CheckBufferClean{"Buffer Check:<br/>Is RAM Queue full?"}
+        SpillClean["Write payload to Emergency Disk File<br/>-> RETURN & EXIT INGESTION"]
+        PushRAMClean["Push payload into RAM Worker Queue<br/>-> FINISH INGESTION"]
 
-        CheckFullClean -->|"Yes (Full)"| DropClean
-        CheckFullClean -->|"No (Room)"| AddBagClean
+        CheckBufferClean -->|"Yes (Full)"| SpillClean
+        CheckBufferClean -->|"No (Room)"| PushRAMClean
     end
 ```
 
 * **3. Real Operational Boundaries:**  
-  1. *Capacity Desync:* The shop checks a 5-item rule, but the inventory internally accepts 10 items in RAM while the UI only displays the first 5.
-  2. *Missing Guard:* The shop executes both the drop action and the insertion action sequentially without an early return.
+  1. *Threshold Desynchronization:* The ingest handler checks a 100-job threshold, but the internal RAM buffer allows up to 200 items before throwing out-of-memory errors.
+  2. *Missing Guard:* When RAM is full, the handler writes to disk but fails to return early, accidentally pushing the job into RAM as well.
 * **4. Progressive Depth Check-in:**  
   Does this surface layer give you the mental model you need, or do you want to drill into:
-  - **(A)** The exact patch to gate the shop drop logic, or
-  - **(B)** Synchronizing the 5-item capacity limit across all modules?
+  - **(A)** How worker threads drain the emergency disk spillover file once RAM clears, or
+  - **(B)** Gating the ingestion handler with an explicit early return branch?
