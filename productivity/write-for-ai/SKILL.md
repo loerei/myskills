@@ -1,6 +1,6 @@
 ---
 name: write-for-ai
-description: Review, edit, deslop, defluff, or write AI-facing text — tool descriptions, MCP instructions, system prompts, AGENTS.md, GEMINI.md, SKILL.md frontmatter, parameter docs, error messages — so the AI reads it correctly with maximum signal density and minimum tokens. Use when user asks to review, optimize, rewrite, deslop, defluff, remove over-explanation, strip jargon, or create any text that an AI model reads.
+description: Edit, deslop, or write AI-facing text (prompts, rules, tool schemas, error messages). Use when reviewing, writing, or deslopping text read by AI models.
 ---
 
 # Write for AI
