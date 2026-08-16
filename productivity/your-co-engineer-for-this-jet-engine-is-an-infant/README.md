@@ -51,7 +51,7 @@ No Latin. No pizza. Real components, real data flow, zero bullshit.
 #### 3. With This Skill (The Jet Engine Infant)
 > The Shop allowed the player to hold 7 items in a 5-slot bag because it checked the available slots before waiting for the slow payment save to finish on disk, allowing all 3 clicks to see an empty slot and insert their items.
 
-#### Diagram A: Broken Flow (Slow Disk Save Creates a Blind Window in RAM)
+#### Current Code (Broken Flow: Slow Disk Save Creates a Blind Window in RAM)
 ```mermaid
 flowchart LR
     Buy["3 Rapid Clicks:<br/>Buy Item"] --> Check{"Check Bag:<br/>4/5 items (1 slot left!)"}
@@ -60,7 +60,7 @@ flowchart LR
     Add --> Broken["❌ Bag overflows to 7/5 items!"]
 ```
 
-#### Diagram B: Clean Architecture (Immediate RAM Update & Guard)
+#### How We Can Fix It (Immediate RAM Update & Guard)
 ```mermaid
 flowchart LR
     Buy["3 Rapid Clicks:<br/>Buy Item"] --> Inc["1. Claim slot in RAM immediately"]
