@@ -28,7 +28,7 @@ When you ask your AI *"Why did this break?"* or *"Which architecture should we p
 
 Both of these make real co-engineering impossible.
 
-**The Jet Engine Principle** forces the AI to explain the **exact, literal physical mechanics** of the system—what data moves where, what is read in RAM, where execution pauses, and what broke—using **plain, unambiguous action verbs**. 
+**The Jet Engine Principle** forces the AI to explain the **literal mechanics** of the system—what data moves where, what is read in RAM, where execution pauses, and what broke—using **plain, unambiguous action verbs**. 
 
 No Latin. No pizza. Real components, real data flow, zero bullshit.
 
