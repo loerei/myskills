@@ -59,7 +59,10 @@ Diagrams must communicate data paths and operational states at a glance. Label n
 ### Mode A: Architecture Planning (Live Notification System)
 
 * **Step 1 (The Punchline):**  
-  We should use Server-Sent Events (SSE) instead of WebSockets because the server only needs to push one-way alerts to the browser, and SSE runs over plain HTTP without requiring a separate connection server.
+  We should use Server-Sent Events (SSE) instead of WebSockets because the server only needs to push one-way alerts to the browser, and SSE runs over plain HTTP without needing a separate connection server.
+  
+  **In short:** Opening heavy two-way WebSockets tunnels just to receive occasional 1-line alerts ➔ Use lightweight HTTP Server-Sent Events to push notifications down a standard open socket.
+
 * **Step 2 (Physical Mechanics & Visualization):**  
 
 ```mermaid
@@ -81,6 +84,9 @@ flowchart LR
 
 * **Step 1 (The Punchline):**  
   We should put `status` and `user_id` in separate SQL columns and only keep custom user tags in a `metadata` JSON column, because filtering inside JSON across 100,000 rows forces the database to read every single row from disk.
+
+  **In short:** Filtering 100,000 JSON records from disk causes 100% CPU spikes ➔ Store queryable fields in indexed SQL columns so the database can jump directly to the target rows in 2ms.
+
 * **Step 2 (Physical Mechanics & Visual Contrast):**  
 
 ```mermaid
@@ -107,6 +113,9 @@ flowchart TD
 
 * **Step 1 (The Punchline):**  
   The rate limiter allowed all 20 concurrent requests instead of capping at 5 because the system paused to wait for a slow disk save before recording the first request in RAM, causing all 19 subsequent requests to check an empty RAM counter and independently mark themselves as request #1.
+
+  **In short:** 20 requests arrive simultaneously and all pass through because disk saving is slow ➔ Increment the counter in RAM immediately before triggering the slow background disk write.
+
 * **Step 2 (Physical Mechanics & Visual Contrast):**  
 
 #### Diagram A: Broken Flow (Inverted Order Creates a Stale Memory Window)
@@ -159,8 +168,10 @@ flowchart TD
 
 * **Task:** *"Explain how this background job ingestion and processing service works."*
 
-* **1. Raw Core Idea:**  
-  Web servers crash when 5,000 users upload files at once, so this service acts as an **in-memory staging buffer**: it absorbs incoming jobs into fast RAM, spills excess payloads to an emergency disk file when RAM is full, and worker threads process jobs continuously in the background.
+* **1. The Raw Core Idea:**  
+  Web servers crash when thousands of users upload high-resolution files simultaneously. This service acts as an **in-memory staging buffer**: it absorbs incoming jobs into fast RAM, spills excess payloads to an emergency disk file when RAM is full, and worker threads process jobs continuously in the background.
+
+  **In short:** Sudden bursts of heavy uploads crash web server RAM ➔ Buffer jobs in fast RAM, spill excess to disk, and let background worker threads drain the queue.
 
 * **2. High-Level Movement & Visual Contrast:**  
 
@@ -191,6 +202,14 @@ flowchart TD
         CheckBufferClean -->|"No (Room)"| PushRAMClean
     end
 ```
+
+* **The Moving Parts & Data Paths:**
+  - *The Ingest Handler:* Validates incoming job payloads and checks current memory buffer capacity.  
+    **In short:** Sudden burst of incoming HTTP requests ➔ Validates payload and checks if RAM queue has room.
+  - *The RAM Queue Buffer:* Fast FIFO array in memory holding up to 100 jobs for instant worker pickup.  
+    **In short:** Worker threads need instant access to pending jobs ➔ Holds jobs in zero-latency RAM array.
+  - *The Emergency Disk Spooler:* File append stream that safely stores overflow jobs when RAM is saturated.  
+    **In short:** RAM queue fills up completely ➔ Saves overflow payloads to disk to avoid out-of-memory crashes.
 
 * **3. Real Operational Boundaries:**  
   1. *Threshold Desynchronization:* The ingest handler checks a 100-job threshold, but the internal RAM buffer allows up to 200 items before throwing out-of-memory errors.

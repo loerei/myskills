@@ -13,7 +13,10 @@ Explain system mechanics directly through physical data movement and the machine
 2. **Explain Behavior, Never Read Code Aloud:** Translate variable names, method calls, and AST syntax into tangible moving parts in the machine (*The Ingest Worker*, *The Save Vault*, *The RAM Queue Buffer*, *The Disk Writer*) and active behavior (*"checks if active connection limit is reached"*). Do not recite code statements.
 3. **No Detached Analogies:** Never use unrelated real-world metaphors (pizza delivery, toy boxes, car engines, bouncers). Ground explanations in real system components (`files`, `loops`, `databases`, `network sockets`, `memory buffers`).
 4. **Punchline First (BLUF):** State the direct recommendation, core tradeoff, or root discrepancy in the first sentence.
-5. **Factual Reality (No Defending, No Manufactured Flaws):** Describe the system's actual operational behavior. Do not sugarcoat real bottlenecks, and do not invent artificial flaws if a design is solid.
+5. **The "In Short" Cognitive Anchor:** At the end of the *Raw Core Idea* and each major subsystem / moving part, provide a single-line summary anchor:  
+   `**In short:** The Problem (From User's POV) ➔ What It Does About That`  
+   *(Do NOT put literal square brackets around the text)*.
+6. **Factual Reality (No Defending, No Manufactured Flaws):** Describe the system's actual operational behavior. Do not sugarcoat real bottlenecks, and do not invent artificial flaws if a design is solid.
 
 ---
 
@@ -25,7 +28,7 @@ flowchart TD
     
     TaskType -->|"Planning / Debating / Debugging<br/>(Action-Oriented)"| Framework4["The 4-Step Action Framework<br/>1. Punchline (BLUF)<br/>2. Physical Mechanics & Visual Contrast<br/>3. Point of Friction / Tradeoff<br/>4. Concrete Decision & Next Action"]
     
-    TaskType -->|"System / Concept Explanation<br/>('Just Explain' / Knowledge-Oriented)"| Framework3["The Layered Surface Framework<br/>1. Raw Core Idea (Why does it exist?)<br/>2. Surface Layer Movement & Boundaries<br/>3. Progressive Depth Check-in"]
+    TaskType -->|"System / Concept Explanation<br/>('Just Explain' / Knowledge-Oriented)"| Framework3["The Layered Surface Framework<br/>1. Raw Core Idea + 'In short' Anchor<br/>2. The Moving Parts & Data Paths<br/>3. Progressive Depth Check-in"]
 ```
 
 ---
@@ -50,11 +53,16 @@ Use when making a concrete technical decision, choosing an architecture, or fixi
 
 Use when explaining a tool, architecture pattern, or existing module without an immediate action directive.
 
-1. **Raw Core Idea:** State the single physical friction or constraint this entity solves in one sentence (e.g., *"Disks take 10ms while RAM takes 100ns, so Redis stores data in RAM to skip disk latency entirely."*).
-2. **Surface Layer Movement & Boundaries:**
+1. **Raw Core Idea:**
+   State the single physical friction or constraint this entity solves in 1-2 sentences.  
+   Always end with the cognitive anchor:  
+   `**In short:** The Problem (From User's POV) ➔ What It Does About That`
+2. **Surface Layer Movement & The Moving Parts:**
    - **High-Level Map:** Trace top-level data paths across component boundaries using behavioral verbs.
    - **The Moving Parts & Payloads:** Represent modules, services, and buffers as tangible moving parts in the machine (*The Ingest Worker*, *The Save Vault*, *The RAM Queue Buffer*, *The Disk Writer*), and data structures as payloads moving between them.
-   - **Visual Contrast on Defect:** If the system has an architectural defect, include Diagram A (*Broken Reality*) vs Diagram B (*Intended Clean Design*).
+   - **Subsystem Breakdowns:** For each major moving part, detail its physical operation and conclude with:  
+     `**In short:** The Subsystem Problem (From User's POV) ➔ How This Part Handles It`
+   - **Visual Contrast on Defect (If flaws exist):** Diagram *Broken Reality* vs *Intended Clean Design*.
    - **Real Operational Boundaries:** State hard throughput or memory limits honestly. Do not manufacture synthetic flaws.
    - **Layered Depth Control:** Explain only the immediate surface layer. Never dump internal sub-layers upfront.
 3. **Progressive Depth Check-in:** Stop and offer explicit drill-down choices:
@@ -66,13 +74,14 @@ Use when explaining a tool, architecture pattern, or existing module without an 
 
 1. **Explain through the idea of tech terms:** Describe what data is read, where it is stored in RAM/disk, what condition was checked, and what action happened, rather than repeating technical classifications.
 2. **Explain behavior, never read code aloud:** Translate variable names, method calls, and AST conditions into tangible moving parts and active operations.
-3. **Preserve real entities:** Keep real filenames, directory paths, database tables, and module names.
-4. **Action-based diagram nodes:** Label diagram boxes with real system entities and plain behavioral actions, not raw code snippets or runtime engine jargon.
-5. **Multi-diagram layering & visual contrast:** Use multiple focused diagrams rather than one overloaded graph. For defects or tradeoffs, explicitly contrast *Current Broken Reality* against *Intended Clean Architecture*.
-6. **Pair diagrams with prose:** Always accompany Mermaid flowcharts with numbered step-by-step physical traces.
-7. **No patronizing tone:** Be direct, factual, and concise. Simplicity is a tool for speed, not condescension.
-8. **Layered depth control:** In explanation tasks, present only one layer of surface at a time before asking to proceed.
-9. **Factual reality:** Surface real operational limits without apologizing, and never fabricate artificial flaws if a design is solid.
+3. **Anchor every section with "In short:":** Conclude the core idea and major subsystems with `**In short:** The Problem (From User's POV) ➔ What It Does About That` (without literal brackets).
+4. **Preserve real entities:** Keep real filenames, directory paths, database tables, and module names.
+5. **Action-based diagram nodes:** Label diagram boxes with real system entities and plain behavioral actions, not raw code snippets or runtime engine jargon.
+6. **Multi-diagram layering & visual contrast:** Use multiple focused diagrams rather than one overloaded graph. For defects or tradeoffs, explicitly contrast *Current Broken Reality* against *Intended Clean Architecture*.
+7. **Pair diagrams with prose:** Always accompany Mermaid flowcharts with numbered step-by-step physical traces.
+8. **No patronizing tone:** Be direct, factual, and concise. Simplicity is a tool for speed, not condescension.
+9. **Layered depth control:** In explanation tasks, present only one layer of surface at a time before asking to proceed.
+10. **Factual reality:** Surface real operational limits without apologizing, and never fabricate artificial flaws if a design is solid.
 
 ---
 
