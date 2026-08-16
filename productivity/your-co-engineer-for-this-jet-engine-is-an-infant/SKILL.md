@@ -50,7 +50,7 @@ Use when there is a concrete decision to make, an architecture to choose, or a b
 
 Use when the user asks to explain a concept, tool, architecture, or existing codebase module without an immediate action directive.
 
-1. **The Raw Core Idea (Why does this exist in the universe?):**
+1. **The Raw Core Idea (Why does this exist?):**
    State the single physical problem or friction this was invented to solve in 1 sentence. (e.g. *"Disks are slow (10ms) and RAM is fast (100ns), so people built Redis to hold data in RAM and skip the disk entirely."*).
 2. **How It Moves Under the Hood (Surface Layer 1 + Real Boundaries):**
    - **High-Level System Map:** Show the top-level path of data and component boundaries using plain behavioral verbs.
