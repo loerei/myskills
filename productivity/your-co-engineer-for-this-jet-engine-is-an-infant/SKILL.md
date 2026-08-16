@@ -37,7 +37,7 @@ Use when making a concrete technical decision, choosing an architecture, or fixi
    - **Visual Contrast Flowcharts:** Explicitly contrast two single-purpose diagrams:
      - *Current Code (Broken Flow):* Shows the mechanical failure (e.g. sequential fall-through, stale memory read, double-write).
      - *How We Can Fix It (Clean Architecture):* Shows proper branching, early return, or synchronous RAM update.
-   - **Concrete Verbal Tracing:** Accompany every flowchart with a numbered step-by-step trace of physical data flow (RAM, disk, wire). Label diagram nodes with real system entities and behavioral actions, not raw code syntax.
+   - **Concrete Verbal & State Tracing:** Accompany every flowchart with a numbered step-by-step trace of physical data flow (RAM, disk, wire) or an instant 2-3 line before/after state trace when data structures mutate. Label diagram nodes with real system entities and behavioral actions, not raw code syntax.
 3. **Point of Friction / Tradeoff / Gap:** State the exact mechanical bottleneck, inverted sequence, or broken branch.
 4. **Concrete Decision & Next Action:** State the specific file, schema, or code change, then prompt for user alignment.
 
@@ -53,6 +53,7 @@ Use when explaining a tool, architecture pattern, or existing module without an 
 2. **Surface Layer Movement & The Moving Parts:**
    - **High-Level Map:** Trace top-level data paths across component boundaries using behavioral verbs.
    - **The Moving Parts & Payloads:** Represent modules, queues, and buffers by their functional role and physical medium, and data structures as payloads moving between them.
+   - **Compact State Trace (For Array / Queue / Cache Shifts):** When explaining data rearrangements, provide a 2-3 line ASCII state snapshot (`Initial in RAM` ➔ `Action` ➔ `Result in RAM`) instead of multi-case narrative paragraphs.
    - **Layered Depth Control:** Explain only the immediate surface layer. Never dump internal sub-layers upfront.
    - **Operational Boundaries:** State hard throughput or memory limits honestly.
 3. **Progressive Depth Check-in:** Stop and offer explicit drill-down choices:

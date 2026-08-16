@@ -57,7 +57,34 @@ Diagrams must communicate data paths and operational states at a glance. Label n
 
 ---
 
-## 4. Multi-Mode Case Studies
+## 4. Compact State Trace Patterns (Arrays, Queues, Caches)
+
+When explaining algorithms that transform, reorder, or evict data structures, avoid multi-paragraph narrative cases. Use an instant 3-line mechanical state trace:
+
+### Pattern A: Array / Domain Reordering (In-Memory Swapping)
+```text
+Initial in RAM:  [ G1 | G2 | G3 ] [ Y1 | Y2 ]
+Physical Drag:   Move G2 past Y1
+Result in RAM:   [ Y1 | Y2 ] [ G1 | G3 | G2 ] (Preserves internal G order from RAM Cache)
+```
+
+### Pattern B: Buffer Overflow / Spillover
+```text
+Initial Buffer:  [ Job A (RAM) | Job B (RAM) | Job C (RAM) ] (Capacity: 3)
+Incoming Event:  Job D arrives
+Result on Disk:  Job D appended to `overflow.log` on Disk (RAM buffer remains intact at 3)
+```
+
+### Pattern C: Cache Eviction (LRU / TTL)
+```text
+RAM Cache Map:   { keyA: dataA (oldest), keyB: dataB, keyC: dataC } (Max: 3)
+Read/Insert:     Insert keyD into RAM
+Eviction Action: Drops keyA from RAM -> { keyB: dataB, keyC: dataC, keyD: dataD }
+```
+
+---
+
+## 5. Multi-Mode Case Studies
 
 ### Mode A: Architecture Planning (Live Notification System)
 
@@ -201,6 +228,14 @@ flowchart TD
   - *Ingestion Handler:* Validates incoming job payloads and checks current RAM buffer capacity.
   - *RAM Queue Buffer:* Fast FIFO array in memory holding up to 100 jobs for instant worker pickup.
   - *Emergency Disk File:* File append stream on disk that safely stores overflow jobs when RAM is saturated.
+
+* **Compact State Trace (Spillover Transition):**
+```text
+Initial State:   RAM Queue Buffer holds 100/100 jobs (Full)
+Incoming Event:  Job #101 arrives at Ingestion Handler
+Correct Action:  Writes Job #101 to Emergency Disk File -> Returns early
+Result:          RAM Queue Buffer remains at 100; Job #101 safely persisted on Disk
+```
 
 * **3. Real Operational Boundaries:**  
   1. *Threshold Desynchronization:* The ingest handler checks a 100-job threshold, but the internal RAM buffer allows up to 200 items before throwing out-of-memory errors.
