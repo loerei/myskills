@@ -12,7 +12,7 @@ Format PR titles using conventional commits: `feat(<scope>): <description>` or `
 Example of a standard PR description:
 ```markdown
 ## Summary
-Adds a user-friendly CLI help interface and short option aliases.
+Adds a CLI help interface and short option aliases.
 
 ---
 
@@ -39,10 +39,23 @@ Adds a user-friendly CLI help interface and short option aliases.
 - `src/cli.ts`: Added help print function and short alias mappings.
 ```
 
+## Plain English (No Fluff)
+
+Write factual PR descriptions. State what changed, not how "powerful" or "robust" it is.
+
+| Bad (Marketing / Fluff) | Good (Plain English) |
+| :--- | :--- |
+| `Leverages a cutting-edge, robust parsing engine to seamlessly process user input` | `Parses command-line arguments using a key-value dictionary` |
+| `Significantly elevates developer velocity and eliminates workflow friction` | `Adds CLI aliases (-h, -d) for common commands` |
+| `Engineered robust fail-safe mechanisms to mitigate critical crash hazards` | `Catches null pointer errors and returns default config if file is missing` |
+| `Seamlessly integrates groundbreaking synchronization across distributed nodes` | `Syncs config files on save via webhook` |
+| `Refactored foundational abstractions for superior maintainability and elegance` | `Extracted shared authentication logic into src/auth.ts` |
+
 ## Workflows
 
 Checklist for generating PR descriptions:
-- [ ] **Verify Session History & Scope**: Before drafting the description, retrieve the current conversational history using the `chronicle-mcp` server's `get_session_details` tool (prioritize `conversationStepsOnly: true`). Review the sequence of actions and check against the base branch status. Do NOT read raw SQLite or jsonl transcripts directly. Ensure you distinguish between newly introduced features and modifications to pre-existing code.
+- [ ] **Verify Session History & Scope**: Before drafting the description, retrieve conversational history using `chronicle-mcp` (`get_session_details` with `conversationStepsOnly: true`). Review the sequence of actions and check against base branch status. Do NOT read raw SQLite or jsonl transcripts directly. Distinguish between new features and modifications to existing code.
+- [ ] **Plain English**: Ensure PR title and body are free of marketing adjectives ("robust", "seamless", "advanced").
 - [ ] **Determine Scope**: Pick a scope for the title (e.g. `cli`, `server`, `core`, `utils`).
 - [ ] **Draft Summary**: Summarize modifications and affected files concisely.
 - [ ] **State Rationale (Why)**: Detail the problem solved and core improvements.

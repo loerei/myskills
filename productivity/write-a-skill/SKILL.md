@@ -8,9 +8,9 @@ description: Create new agent skills with proper structure, progressive disclosu
 ## Process
 
 1. **Gather requirements**: Domain scope, specific use cases, scripts needed, reference materials.
-2. **Draft skill**: SKILL.md instructions, Mermaid decision trees for multi-branch workflows, reference files based on complexity heuristics, utility scripts for deterministic tasks.
+2. **Draft skill**: SKILL.md instructions, plain English rules, Mermaid decision trees for multi-branch workflows, reference files based on complexity heuristics, utility scripts for deterministic tasks.
 3. **Review with user**: Confirm use case coverage, clarity, and detail level.
-4. **Distribute skill**: Sync across workspace targets using `node <projects_root>/distribute-skills.js --target <target-repo>`.
+4. **Distribute skill**: Sync across workspace targets using `agents --target <target-repo>` (or `agents --distribute`).
 
 ## Skill Structure
 
@@ -28,7 +28,7 @@ skill-name/
 ````md
 ---
 name: skill-name
-description: Brief description of capability. Use when [specific triggers].
+description: Use when [specific triggers].
 ---
 
 # Skill Name
@@ -53,14 +53,26 @@ flowchart TD
 See [REFERENCE.md](REFERENCE.md) for advanced configuration and tool parameters.
 ````
 
+## Plain English (No Fluff)
+
+Keep skill instructions and templates simple. Do not write self-important rule titles or inflate basic steps.
+
+| Bad (Bloated / Self-Important Skill Text) | Good (Plain English / Direct Workflow) |
+| :--- | :--- |
+| `Comprehensive Execution Architecture & Phased Pipeline` | `Workflow` |
+| `Verify that optimal state convergence has occurred across all targets` | `Verify all tests pass and output matches schema` |
+| `Execute deep forensic behavioral telemetry capture on unexpected anomalies` | `Save error logs to a file on failure` |
+| `Robust enterprise-grade solution engineered to effortlessly orchestrate Git pull requests` | `Create and format pull requests. Use when opening or updating PRs.` |
+| `Maintain absolute cognitive synergy with domain constraints throughout the turn` | `Follow existing naming conventions in the codebase` |
+
 ## Description Requirements
 
-Surfaced in system prompt. Max 1024 chars, third-person, format: `<Capability>. Use when [specific triggers].`
+Surfaced in system prompt. Max 1024 chars, third-person, format: `<Capability>. Use when [specific triggers].` or simply `Use when [specific triggers].`
 
 - **Good**: `Extract text/tables from PDF files. Use when working with PDF files or user mentions PDFs.`
-- **Bad**: `Helps with documents.`
-
-The bad example gives your agent no way to distinguish this from other document skills.
+- **Good**: `Use when asked to write a report for a bug.`
+- **Bad**: `Helps with documents.` (Too vague)
+- **Bad**: `Comprehensive multi-paradigm enterprise utility engineered to optimize document workflows...` (Marketing fluff)
 
 ## Mermaid Decision Trees
 
@@ -75,10 +87,12 @@ The bad example gives your agent no way to distinguish this from other document 
 ## Review Checklist
 
 - [ ] Description includes explicit triggers ("Use when...")
+- [ ] Plain English: Section headers and rules are direct and fluff-free
 - [ ] SKILL.md kept lean via complexity heuristics — see [HEURISTICS.md](../writing-great-skills/HEURISTICS.md)
 - [ ] Mermaid decision tree used for workflows with 3+ branches
 - [ ] No time-sensitive info
 - [ ] Consistent terminology
 - [ ] Concrete examples included
 - [ ] References one level deep
-- [ ] Skill distributed via `distribute-skills.js`
+- [ ] Skill distributed via `agents` CLI (`agents --distribute`)
+- [ ] Policy coverage verified and auto-updated via `agents` CLI (`agents audit --add`)

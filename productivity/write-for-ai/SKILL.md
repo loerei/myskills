@@ -10,19 +10,31 @@ Text written for AI must help it make decisions — not explain how things work,
 ## Core Rules
 
 1. **One sentence = one decision signal.** Each sentence must help the AI distinguish this tool/concept from alternatives. If removing it changes nothing, remove it.
-2. **No mechanism explanations.** Say what happens, not how it's implemented internally.
-3. **No marketing adjectives.** Cut: robust, seamless, powerful, atomic, crash-resilient, smart, advanced, best-in-class.
-4. **Don't repeat the schema.** Tool descriptions must not restate what parameter descriptions already say.
-5. **Keep failure conditions.** AI needs to know *when it will fail* to plan its next step.
-6. **Prefer Mermaid for control flow; prefer tables for lookup.** Use Mermaid diagrams whenever the AI must follow a control flow (e.g. workflows, branching logic, state machines, retry loops, exception paths). Use tables for reference data, enums, schemas, and independent facts where rows are order-independent.
-7. **Don't rename domain terms.** If a word is used consistently in the codebase or spec, keep it -- even if a synonym sounds simpler.
-8. **Only add information to resolve ambiguity.** Add a purpose statement only if it helps AI distinguish this tool from an alternative. Don't add what the tool name already implies.
-9. **Don't cut "e.g." from enum lists** unless you've confirmed the list is exhaustive. Removing it signals to AI that the list is complete when it may not be.
-10. **Preserve rule-strength signals.** MUST, NEVER, do NOT, 100%, always in rule context are not filler -- they signal non-negotiability. Only cut if the surrounding sentence already carries absolute force without them.
+2. **Use plain English, no fluff.** Say things simply. Avoid pompous, pseudo-technical, or corporate jargon.
+3. **No mechanism explanations.** Say what happens, not how it's implemented internally.
+4. **No marketing adjectives.** Cut: robust, seamless, powerful, atomic, crash-resilient, smart, advanced, best-in-class.
+5. **Don't repeat the schema.** Tool descriptions must not restate what parameter descriptions already say.
+6. **Keep failure conditions.** AI needs to know *when it will fail* to plan its next step.
+7. **Prefer Mermaid for control flow; prefer tables for lookup.** Use Mermaid diagrams whenever the AI must follow a control flow (e.g. workflows, branching logic, state machines, retry loops, exception paths). Use tables for reference data, enums, schemas, and independent facts where rows are order-independent.
+8. **Don't rename domain terms.** If a word is used consistently in the codebase or spec, keep it -- even if a synonym sounds simpler.
+9. **Only add information to resolve ambiguity.** Add a purpose statement only if it helps AI distinguish this tool from an alternative. Don't add what the tool name already implies.
+10. **Don't cut "e.g." from enum lists** unless you've confirmed the list is exhaustive. Removing it signals to AI that the list is complete when it may not be.
+11. **Preserve rule-strength signals.** MUST, NEVER, do NOT, 100%, always in rule context are not filler -- they signal non-negotiability. Only cut if the surrounding sentence already carries absolute force without them.
+
+## Plain English vs. AI Fluff
+
+| Bad (AI Fluff / Jargon / Noise) | Good (Plain English / Actionable Signal) |
+| :--- | :--- |
+| `Utilize the provided mechanism to facilitate data retrieval` | `Fetch user records from the database` |
+| `Engineered with state-of-the-art fallback paradigms for enhanced resilience` | `Returns [] if the file does not exist` |
+| `Uses a multi-threaded SHA-256 hashing algorithm to verify file integrity` | `Checks if a file was modified` |
+| `Safely and intelligently orchestrate code modifications without corrupting state` | `Edit source files using exact line replacements` |
+| `Strict deterministic non-hallucinatory boundaries must be observed at all times` | `Do not guess missing parameters. Ask the user.` |
 
 ## Noise Checklist (things to cut)
 
-- Implementation details the AI can't act on ("uses SHA-256", "Fuzz = 0", "ephemeral backup files")
+- Implementation details the AI can't act on ("uses SHA-256", "written in Rust", "ephemeral cache")
+- Pompous or pseudo-intellectual phrases ("paradigm", "facilitate", "orchestrate")
 - Reassurance phrases ("safely", "no corrupted files", "with a safety lock")
 - Restatements of parameter descriptions
 - Reasons the feature was built ("cutting token usage roughly in half")
