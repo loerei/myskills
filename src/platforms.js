@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import { isLocalSkill } from './discovery.js';
 import { copyRecursiveIfDifferent } from './sync.js';
 
 /**
@@ -15,6 +16,13 @@ export function loadConfig(configPath) {
   const expand = (p) => p ? p.replace(/^~(?=$|\/|\\)/, os.homedir()) : p;
   
   config.projectsRoot = expand(config.projectsRoot);
+  
+  config.policy = {
+    rootFile: config.policy?.rootFile || 'AGENTS.md',
+    subdocsDir: config.policy?.subdocsDir || 'subdocs'
+  };
+
+  config.categories = config.categories || ['design', 'engineering', 'quality', 'productivity', 'personal'];
   
   if (config.platforms) {
     for (const platform of config.platforms) {
@@ -53,7 +61,7 @@ export function resolvePlatformSource(platform, file, sourceRoot) {
  * @param {object} options 
  * @returns {object}
  */
-export function syncPlatformGlobals(platform, skillCatalog, { sourceRoot, subagentRulesDir, dryRun = false }) {
+export function syncPlatformGlobals(platform, skillCatalog, { sourceRoot, subagentRulesDir, dryRun = false, allowPrune = false }) {
   const result = { platform: platform.name, synced: false, changes: [], errors: [] };
   
   if (!fs.existsSync(platform.baseDir)) {
@@ -85,9 +93,61 @@ export function syncPlatformGlobals(platform, skillCatalog, { sourceRoot, subage
       }
     }
   }
+
+  // 1.1 Sync Policy Subdocs (Two-pass overlay)
+  const destSubdocsDir = path.join(path.dirname(platform.agentsDest), 'subdocs');
+  
+  // Pass 1: Copy root subdocs/ directory if exists
+  const rootSubdocsDir = path.join(sourceRoot, 'subdocs');
+  if (fs.existsSync(rootSubdocsDir)) {
+    try {
+      const cp = copyRecursiveIfDifferent(rootSubdocsDir, destSubdocsDir, { dryRun });
+      if (cp.changed) {
+        result.changes.push({ type: 'subdocs', src: rootSubdocsDir, dest: destSubdocsDir, changes: cp.files });
+      }
+    } catch (e) {
+      result.errors.push(`Failed to sync root policy subdocs: ${e.message}`);
+    }
+  }
+
+  // Pass 2: Overlay platform-specific subdocs if present in platform.sourceDir
+  if (platform.sourceDir) {
+    const platformSubdocsDir = path.join(sourceRoot, platform.sourceDir, 'subdocs');
+    if (fs.existsSync(platformSubdocsDir)) {
+      try {
+        const cp = copyRecursiveIfDifferent(platformSubdocsDir, destSubdocsDir, { dryRun });
+        if (cp.changed) {
+          result.changes.push({ type: 'subdocs_overlay', src: platformSubdocsDir, dest: destSubdocsDir, changes: cp.files });
+        }
+      } catch (e) {
+        result.errors.push(`Failed to sync platform policy subdocs: ${e.message}`);
+      }
+    }
+  }
   
   // 2. Sync Custom Skills
-  if (platform.skillsDir) {
+  if (platform.skillsDir && fs.existsSync(platform.skillsDir)) {
+    if (allowPrune) {
+      const activeNames = new Set(skillCatalog.keys());
+      const existingItems = fs.readdirSync(platform.skillsDir);
+      for (const item of existingItems) {
+        const itemPath = path.join(platform.skillsDir, item);
+        try {
+          if (fs.statSync(itemPath).isDirectory() && !activeNames.has(item)) {
+            if (isLocalSkill(itemPath)) {
+              continue;
+            }
+            if (!dryRun) {
+              fs.rmSync(itemPath, { recursive: true, force: true });
+            }
+            result.changes.push({ type: 'pruned_skill', name: item });
+          }
+        } catch (e) {
+          result.errors.push(`Failed to prune skill ${item}: ${e.message}`);
+        }
+      }
+    }
+
     for (const [name, skill] of skillCatalog.entries()) {
       const destDir = path.join(platform.skillsDir, name);
       try {

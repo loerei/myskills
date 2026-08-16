@@ -35,7 +35,7 @@ export function executeDistribution({
   const skillCatalog = loadSkillCatalog(sourceRoot);
 
   const platformResults = (config.platforms || []).map(platform =>
-    syncPlatformGlobals(platform, skillCatalog, { sourceRoot, subagentRulesDir, dryRun })
+    syncPlatformGlobals(platform, skillCatalog, { sourceRoot, subagentRulesDir, dryRun, allowPrune })
   );
 
   const initTarget = init || Boolean(config.mattPocockInstall);
