@@ -100,7 +100,7 @@ Whenever an agent explains a bug, architecture plan, or technical tradeoff, it i
 
 ## Install
 
-### Claude Code
+### Claude Code Plugin (Recommended)
 
 ```bash
 /plugin marketplace add loerei/jet-engine-infant
@@ -110,13 +110,36 @@ Whenever an agent explains a bug, architecture plan, or technical tradeoff, it i
 ```
 *(Two separate prompts in Claude Code)*
 
-### Gemini / Antigravity / Cursor / Codex
+### Direct Git Clone (By Platform)
 
-1. Clone or copy this repository into your skills directory:
-```bash
-git clone https://github.com/loerei/jet-engine-infant.git ~/.gemini/config/skills/your-co-engineer-for-this-jet-engine-is-an-infant
-```
-2. Or use the central [`myskills`](https://github.com/loerei/myskills) distribution engine:
+Clone into your platform's global skill directory:
+
+- **Gemini / Google Antigravity:**
+  ```bash
+  git clone https://github.com/loerei/jet-engine-infant.git ~/.gemini/config/skills/your-co-engineer-for-this-jet-engine-is-an-infant
+  ```
+
+- **Claude Code (Global):**
+  ```bash
+  git clone https://github.com/loerei/jet-engine-infant.git ~/.claude/skills/your-co-engineer-for-this-jet-engine-is-an-infant
+  ```
+
+- **Cursor:**
+  ```bash
+  git clone https://github.com/loerei/jet-engine-infant.git ~/.cursor/skills/your-co-engineer-for-this-jet-engine-is-an-infant
+  ```
+
+- **Codex / OpenAI:**
+  ```bash
+  git clone https://github.com/loerei/jet-engine-infant.git ~/.codex/skills/your-co-engineer-for-this-jet-engine-is-an-infant
+  ```
+
+- **Current Project Workspace (Universal Agent Standard):**
+  ```bash
+  git clone https://github.com/loerei/jet-engine-infant.git .agents/skills/your-co-engineer-for-this-jet-engine-is-an-infant
+  ```
+
+Or sync across all workspaces via [`myskills`](https://github.com/loerei/myskills):
 ```bash
 agents distribute
 ```
