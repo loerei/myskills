@@ -5,6 +5,10 @@
 </p>
 
 <p align="center">
+  <img src="assets/jet-engine-infant.png" alt="Your Co-Engineer for This Jet Engine Is an Infant" width="380">
+</p>
+
+<p align="center">
   <img src="https://img.shields.io/badge/license-MIT-111111?style=flat-square" alt="MIT License">
   <img src="https://img.shields.io/badge/works%20with-Claude%20%7C%20Gemini%20%7C%20Codex%20%7C%20Cursor-111111?style=flat-square" alt="Works with all agents">
   <img src="https://img.shields.io/badge/jargon-0%25-111111?style=flat-square" alt="0% Jargon">
