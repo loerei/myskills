@@ -112,32 +112,22 @@ Whenever an agent explains a bug, architecture plan, or technical tradeoff, it i
 
 ### Direct Git Clone (By Platform)
 
-Clone into your platform's global skill directory:
+```bash
+# For Gemini / Google Antigravity
+git clone https://github.com/loerei/jet-engine-infant.git ~/.gemini/config/skills/your-co-engineer-for-this-jet-engine-is-an-infant
 
-- **Gemini / Google Antigravity:**
-  ```bash
-  git clone https://github.com/loerei/jet-engine-infant.git ~/.gemini/config/skills/your-co-engineer-for-this-jet-engine-is-an-infant
-  ```
+# For Claude Code (Global)
+git clone https://github.com/loerei/jet-engine-infant.git ~/.claude/skills/your-co-engineer-for-this-jet-engine-is-an-infant
 
-- **Claude Code (Global):**
-  ```bash
-  git clone https://github.com/loerei/jet-engine-infant.git ~/.claude/skills/your-co-engineer-for-this-jet-engine-is-an-infant
-  ```
+# For Cursor
+git clone https://github.com/loerei/jet-engine-infant.git ~/.cursor/skills/your-co-engineer-for-this-jet-engine-is-an-infant
 
-- **Cursor:**
-  ```bash
-  git clone https://github.com/loerei/jet-engine-infant.git ~/.cursor/skills/your-co-engineer-for-this-jet-engine-is-an-infant
-  ```
+# For Codex / OpenAI
+git clone https://github.com/loerei/jet-engine-infant.git ~/.codex/skills/your-co-engineer-for-this-jet-engine-is-an-infant
 
-- **Codex / OpenAI:**
-  ```bash
-  git clone https://github.com/loerei/jet-engine-infant.git ~/.codex/skills/your-co-engineer-for-this-jet-engine-is-an-infant
-  ```
-
-- **Current Project Workspace (Universal Agent Standard):**
-  ```bash
-  git clone https://github.com/loerei/jet-engine-infant.git .agents/skills/your-co-engineer-for-this-jet-engine-is-an-infant
-  ```
+# For Current Project Workspace (Universal Agent Standard)
+git clone https://github.com/loerei/jet-engine-infant.git .agents/skills/your-co-engineer-for-this-jet-engine-is-an-infant
+```
 
 Or sync across all workspaces via [`myskills`](https://github.com/loerei/myskills):
 ```bash
