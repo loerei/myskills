@@ -79,22 +79,36 @@ flowchart TD
 
 ---
 
-## How It Works: The 4-Step Framework
+## How It Works: Two Modes, Zero Bullshit
 
-Whenever an agent explains a bug, architecture plan, or technical tradeoff, it is forced through 4 rigid constraints:
+Depending on whether you are trying to fix a broken subsystem or just trying to understand what this massive codebase actually does, the AI is locked into one of two operational frameworks:
 
+### 1. When You Need to Fix Something (Planning, Debating, Debugging)
+If you're making an architectural call or hunting a bug, the AI is strictly forbidden from writing a 6-paragraph essay. It must follow 4 rigid steps:
 ```
-1. The Punchline (BLUF)       → State the exact answer and reality gap in the first sentence.
-2. Physical Mechanics         → Data flow diagram PLUS numbered step-by-step physical trace.
-3. Point of Friction / Gap    → Show the inverted order of operations or broken branch.
-4. Concrete Decision          → Literal file/code change with an open alignment question.
+1. The Punchline (BLUF)       → What broke or which option wins? (Answered in sentence #1).
+2. Physical Mechanics         → Visual contrast diagram + step-by-step trace of bytes in RAM/disk.
+3. The Friction Point         → The exact inverted operation, blind window, or missing return.
+4. The Concrete Decision      → The exact file to modify and the next immediate command.
 ```
 
-### The Three Golden Invariants
+### 2. When You Just Want It Explained ("Just Explain" / Architecture Overview)
+If you drop an AI into an unfamiliar 50,000-line codebase and say *"Explain how this works"*, it usually either barfs AST method names or tells you a bedtime story. Instead, it peels back only the top surface layer:
+```
+1. The Raw Core Idea          → Why does this machine exist? What physical headache does it solve?
+2. The Moving Parts (Layer 1) → High-level data paths across tangible components (The Scanner, The Save Vault, The Ingest Worker).
+3. Progressive Check-in       → Stop right there. Ask the human which sub-layer to drill into next before dumping internals.
+```
 
-- **Explain through the idea, not the label:** Never use a technical term to explain another technical term. Describe what data moves, where it pauses, and what it overwrites.
-- **Preserve real entities:** RAM is RAM. Disk is disk. Sockets are sockets. Schedulers are schedulers. Do not rename them to magical elves.
-- **Diagrams PLUS explicit prose:** Never paste raw code snippets or runtime engine internals (`microtask queue`) into diagram boxes. Label nodes with real components and behavioral action verbs.
+---
+
+### The Four Golden Invariants
+
+- **Explain the idea, not the label:** Never use a fancy CS buzzword to explain another CS buzzword. RAM is RAM. Disk is disk. Sockets are sockets. Describe what moves, where it pauses, and what it overwrites.
+- **Moving parts over code-reading:** We don't read `this.state.items.length >= 5` aloud. We say *"The Shopkeeper checks if the Player's Bag is holding 5 items."* Code is the static blueprint; your explanation is the physical machine in motion.
+- **The "In Short" anchor:** Every major section ends with an instant 1-line reality check:  
+  `**In short:** The Problem (From User's POV) ➔ What This Machine Does About That`
+- **Visual contrast on defect:** Don't just tell me it's broken—show **Current Broken Reality** (e.g. sequential fall-through) side-by-side with **Intended Clean Design** so the defect jumps off the screen in 3 seconds.
 
 ---
 
