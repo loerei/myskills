@@ -9,7 +9,7 @@ Explain complex engineering reality simply without hiding behind technical jargo
 
 ## The Core Philosophy (The Jet Engine Principle)
 
-1. **No Jargon Masking:** Do not use academic buzzwords (`reconciliation`, `race condition`, `idempotent`, `loosely coupled`) to hand-wave explanations. Explain the literal operational mechanics of what data moves where.
+1. **Explain Through the Idea of Tech Terms (Not the Terms Themselves):** Never define a technical concept with another technical label. Do not substitute high-level buzzwords with low-level runtime engine vocabulary (`microtask queue`, `heap map`, `call stack`). Express components as physical roles (e.g. *The Gatekeeper*), state as physical storage (e.g. *The Memory Notebook*), and operations as physical actions (e.g. *Pausing to write to disk before reserving the counter*).
 2. **No Detached Analogies:** Do not invent unrelated metaphors (pizza delivery, toy boxes, car engines) that distort the actual system. Stick to real system entities (`files`, `code loops`, `databases`, `network sockets`, `memory buffers`).
 3. **Punchline First (BLUF):** State the direct recommendation, core tradeoff, or root discrepancy in the very first sentence.
 
@@ -18,7 +18,7 @@ Explain complex engineering reality simply without hiding behind technical jargo
 ```mermaid
 flowchart TD
     Start["Planning / Debating / Debugging Task"] --> Step1["1. The Punchline (BLUF)<br/>State core answer, winner, or discrepancy"]
-    Step1 --> Step2["2. Physical Mechanics & Visualization<br/>Diagram PLUS concrete verbal tracing"]
+    Step1 --> Step2["2. Physical Mechanics & Visualization<br/>Idea-based diagram PLUS concrete verbal tracing"]
     Step2 --> Step3["3. Point of Friction / Tradeoff / Gap<br/>Show why the alternative fails or where state broke"]
     Step3 --> Step4["4. Concrete Decision & Next Action<br/>Propose literal change and invite alignment"]
 ```
@@ -31,7 +31,7 @@ State the core answer immediately:
 
 ### 2. Physical Mechanics & Visualization (Diagram PLUS Verbal Tracing)
 Always pair visual topography with explicit, step-by-step verbal tracing:
-1. **Mermaid Data Flow Diagram:** Expose the spatial layout, direction of data movement, and component boundaries.
+1. **Mermaid Data Flow Diagram (Idea-Based Nodes):** Expose the spatial layout, direction of movement, and component boundaries. **Never paste raw code syntax (`func()`, `this.store`) or engine internals (`microtask queue`) into diagram boxes.** Label boxes with physical roles and behavioral verbs in plain language.
 2. **Concrete Verbal Tracing:** Walk through each numbered hop in the diagram in plain English. State what is read from disk/memory, what travels across the wire, and what gets transformed. Never leave a diagram to speak for itself.
 
 ### 3. Point of Friction / Tradeoff / Gap
@@ -47,13 +47,14 @@ State the exact technical step and open the floor for co-engineering:
 
 ## Rules
 
-1. **Translate terms to behavioral mechanics:** Never define a tech term with another tech term. Describe what data moves where, what check failed, or what resource is consumed.
+1. **Explain through the idea of tech terms:** Describe the mechanical action, physical movement, and human intent rather than repeating technical identifiers.
 2. **Preserve real entities:** Keep real filenames, directory paths, database tables, and module names.
-3. **Diagrams PLUS explicit prose:** Always pair Mermaid data flow diagrams with explicit verbal tracing. Never use standalone diagrams without accompanying physical walkthroughs.
-4. **No patronizing tone:** Be direct, factual, and respectful. Simplicity is a tool for high-velocity collaboration, not condescension.
+3. **Idea-based diagram nodes:** Label diagram boxes with plain actions and physical roles, not code snippets or language runtime jargon.
+4. **Diagrams PLUS explicit prose:** Always pair Mermaid data flow diagrams with explicit verbal tracing. Never use standalone diagrams without accompanying physical walkthroughs.
+5. **No patronizing tone:** Be direct, factual, and respectful. Simplicity is a tool for high-velocity collaboration, not condescension.
 
 ---
 
 ## Detailed Reference & Multi-Mode Case Studies
 
-For the complete dictionary translating software engineering terms into physical mechanics and in-depth before/after case studies across planning, debating, and debugging, see [REFERENCE.md](REFERENCE.md).
+For the complete dictionary translating software engineering terms into physical mechanics, node-label anti-patterns, and in-depth case studies across planning, debating, and debugging, see [REFERENCE.md](REFERENCE.md).
