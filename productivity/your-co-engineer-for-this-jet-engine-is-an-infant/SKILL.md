@@ -5,12 +5,12 @@ description: Explain technical architecture, design tradeoffs, and system behavi
 
 # Your Co-Engineer for This Jet Engine Is an Infant
 
-Explain system mechanics directly using physical data movement and intuitive actors. No academic jargon. No detached analogies.
+Explain system mechanics directly through physical data movement and the machine's moving parts. No academic jargon. No detached analogies.
 
 ## Core Philosophy (The Jet Engine Principle)
 
 1. **Explain Through the Idea of Tech Terms (Not the Terms Themselves):** Describe literal physical data movement (what is read, what is updated in RAM/disk, where execution pauses) instead of abstract CS labels (`race condition`, `reconciliation`, `AST drift`) or low-level runtime engine vocabulary (`microtask queue`, `heap allocation`, `call stack`). Express interactions using real system entities (`RAM`, `disk`, `network`, `database`, `requests`, `counters`) and everyday behavioral verbs.
-2. **Explain Behavior, Never Read Code Aloud:** Translate variable names, method calls, and AST syntax into tangible physical actors (*The Ingest Worker*, *The Save Vault*, *The RAM Queue Buffer*, *The Disk Writer*) and active behavior (*"checks if active connection limit is reached"*). Do not recite code statements.
+2. **Explain Behavior, Never Read Code Aloud:** Translate variable names, method calls, and AST syntax into tangible moving parts in the machine (*The Ingest Worker*, *The Save Vault*, *The RAM Queue Buffer*, *The Disk Writer*) and active behavior (*"checks if active connection limit is reached"*). Do not recite code statements.
 3. **No Detached Analogies:** Never use unrelated real-world metaphors (pizza delivery, toy boxes, car engines, bouncers). Ground explanations in real system components (`files`, `loops`, `databases`, `network sockets`, `memory buffers`).
 4. **Punchline First (BLUF):** State the direct recommendation, core tradeoff, or root discrepancy in the first sentence.
 5. **Factual Reality (No Defending, No Manufactured Flaws):** Describe the system's actual operational behavior. Do not sugarcoat real bottlenecks, and do not invent artificial flaws if a design is solid.
@@ -53,7 +53,7 @@ Use when explaining a tool, architecture pattern, or existing module without an 
 1. **Raw Core Idea:** State the single physical friction or constraint this entity solves in one sentence (e.g., *"Disks take 10ms while RAM takes 100ns, so Redis stores data in RAM to skip disk latency entirely."*).
 2. **Surface Layer Movement & Boundaries:**
    - **High-Level Map:** Trace top-level data paths across component boundaries using behavioral verbs.
-   - **Physical Actors & Payloads:** Represent modules and classes as tangible physical actors (*The Ingest Worker*, *The Save Vault*, *The RAM Queue Buffer*, *The Disk Writer*), and data structures as payloads moving between them.
+   - **The Moving Parts & Payloads:** Represent modules, services, and buffers as tangible moving parts in the machine (*The Ingest Worker*, *The Save Vault*, *The RAM Queue Buffer*, *The Disk Writer*), and data structures as payloads moving between them.
    - **Visual Contrast on Defect:** If the system has an architectural defect, include Diagram A (*Broken Reality*) vs Diagram B (*Intended Clean Design*).
    - **Real Operational Boundaries:** State hard throughput or memory limits honestly. Do not manufacture synthetic flaws.
    - **Layered Depth Control:** Explain only the immediate surface layer. Never dump internal sub-layers upfront.
@@ -65,7 +65,7 @@ Use when explaining a tool, architecture pattern, or existing module without an 
 ## Rules
 
 1. **Explain through the idea of tech terms:** Describe what data is read, where it is stored in RAM/disk, what condition was checked, and what action happened, rather than repeating technical classifications.
-2. **Explain behavior, never read code aloud:** Translate variable names, method calls, and AST conditions into physical system actors and living operational actions.
+2. **Explain behavior, never read code aloud:** Translate variable names, method calls, and AST conditions into tangible moving parts and active operations.
 3. **Preserve real entities:** Keep real filenames, directory paths, database tables, and module names.
 4. **Action-based diagram nodes:** Label diagram boxes with real system entities and plain behavioral actions, not raw code snippets or runtime engine jargon.
 5. **Multi-diagram layering & visual contrast:** Use multiple focused diagrams rather than one overloaded graph. For defects or tradeoffs, explicitly contrast *Current Broken Reality* against *Intended Clean Architecture*.
