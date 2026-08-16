@@ -19,7 +19,7 @@ You are building a high-stakes, production-grade system with an AI assistant. It
 
 When you ask your AI *"Why did this break?"* or *"Which architecture should we pick?"*, modern LLMs almost always commit one of two sins:
 
-1. **The Professor’s Sin (Arrogant Jargon):** The AI barfs out 4 paragraphs of academic CS dogma: *"Pursuant to the non-atomic asynchronous microtask queue interleaving across the heap allocation boundary..."* You stare at the screen wondering which of the 12 Latin buzzwords corresponds to the actual broken line of code.
+1. **The Professor’s Sin (Arrogant Jargon & Code Dumps):** The AI barfs out 4 paragraphs of academic CS dogma drenched in function names: *"Upon static AST evaluation of `TokenBucketLimiter.isAllowed()`, we detected a non-deterministic race condition where concurrent `Promise.all` invocations across the microtask queue trigger unhandled yield points in `await this.store.flushToDisk()`, inducing asynchronous state divergence across `this.memory.get()` before the `this.store.set()` critical section commits to the heap allocation boundary..."* You stare at the screen wondering which of the 12 Latin buzzwords corresponds to the actual broken line of code.
 2. **The Kindergarten Teacher’s Sin (Condescending Analogies):** The AI assumes you want an "ELI5" and explains your database deadlock using a cute story about a magical pizza delivery guy and friendly farm animals. You now know less about your database than when you started.
 
 Both of these make real co-engineering impossible.
@@ -35,14 +35,14 @@ No Latin. No pizza. Real components, real data flow, zero bullshit.
 ### Scenario: A rate limiter accidentally lets 20 abusive requests bypass a 5-request limit.
 
 #### 1. Standard AI (The Professor)
-> *"We observed a non-deterministic race condition stemming from unhandled microtask interleaving during asynchronous I/O yields within the token bucket reconciliation lifecycle, causing heap state divergence across concurrent execution contexts."*
+> *"Upon static AST evaluation of `TokenBucketLimiter.isAllowed()`, we detected a non-deterministic race condition where concurrent `Promise.all` invocations across the microtask queue trigger unhandled yield points in `await this.store.flushToDisk()`, inducing asynchronous state divergence across `this.memory.get()` before the `this.store.set()` critical section commits to the heap allocation boundary."*
 > 
-*(Thanks. That sounded very smart and told me literally nothing about which line of code to touch).*
+*(Thanks. You just read me a stack trace with a thesaurus and I still have no idea what broke).*
 
 #### 2. The Bad ELI5 (The Kindergarten Teacher)
 > *"Imagine your server is a magical bouncer at a club who counts party guests with toy blocks, but when the mailman brings a letter, the bouncer forgets where he put his toys!"*
 > 
-*(Cute. Now explain how that maps to `this.memory.get()`).*
+*(Cute. Now explain how that maps to the actual system).*
 
 #### 3. With This Skill (The Jet Engine Infant)
 > **Punchline:** The rate limiter allowed all 20 requests because the system paused for 50ms waiting for a slow disk save before recording the first request in RAM, causing all 19 subsequent requests to check an empty RAM counter and independently mark themselves as request #1.
