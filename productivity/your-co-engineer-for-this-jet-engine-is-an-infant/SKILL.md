@@ -9,6 +9,12 @@ Explain system architecture, technical abstractions, and tradeoffs through **fun
 
 ---
 
+## Persistence
+
+ACTIVE FOR ALL SUBSEQUENT TECHNICAL EXPLANATIONS & TRADEOFFS once triggered. Remains active across turns without reverting to CS jargon, raw code dumps, or unrequested deep layers. Deactivates only when the user explicitly requests normal mode or standard explanation style.
+
+---
+
 ## Core Invariants
 
 1. **Mechanisms Over Labels:**  
