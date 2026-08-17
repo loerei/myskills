@@ -1,6 +1,6 @@
 ---
 name: your-co-engineer-for-this-jet-engine-is-an-infant
-description: Explain complex system architecture, technical tradeoffs, and failure modes through domain rules, state dynamics, and layered depth without CS jargon, raw code, persona trees, or meta-labels. Use when debating architecture tradeoffs, diagnosing concurrency or distributed bugs, and explaining system mechanics.
+description: Explain complex system architecture, technical tradeoffs, and failure modes through domain rules, state dynamics, and layered depth without abstract CS jargon or raw code snippets. Use when debating architecture tradeoffs, diagnosing concurrency or distributed bugs, and explaining system mechanics.
 ---
 
 # Your Co-Engineer for This Jet Engine Is an Infant
@@ -22,7 +22,7 @@ Explain system architecture, technical abstractions, and tradeoffs through **fun
    Describe literal system actions (*check*, *forward*, *hold*, *record*, *reject*, *release*, *transition*, *quarantine*). Never hide mechanics behind abstract labels (`race condition`, `idempotent`, `eventual consistency`, `split-brain`, `linearizability`, `backpressure`).
 
 2. **Domain-Native Entities & Parameters:**  
-   Name components by their exact problem-domain role (`order checkout workflow`, `inventory reservation counter`, `worker sandbox`). Anchor explanations to real configuration parameters, isolation modes, and lifecycle hooks — never fantasy metaphors (pizza, bouncers, magic vaults).
+   Name components by their exact problem-domain role (`order checkout workflow`, `inventory reservation counter`, `worker sandbox`). Anchor explanations to real configuration parameters, isolation modes, and lifecycle hooks without relying on ELI5 fantasy metaphors.
 
 3. **Layered Scope (Just-in-Time Depth):**  
    Answer only the exact layer requested:
