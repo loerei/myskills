@@ -107,6 +107,8 @@ How I link `agents` CLI globally so I can run it from any terminal:
   agents read skill.writing-great-skills/GLOSSARY # Print raw content of auxiliary skill subdoc
   agents audit                     # Check if 100% of skills are documented in AGENTS.md
   agents audit --add               # Auto-insert missing skills into AGENTS.md & deltas
+  agents audit --prune             # Auto-prune orphan/obsolete skills from AGENTS.md & deltas
+  agents audit -a -p               # Full 2-way sync (add missing + prune orphans)
   ```
 
 ---

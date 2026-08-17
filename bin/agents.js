@@ -88,12 +88,15 @@ Distribute Options (use with 'distribute' or '--distribute'):
   -i, --init                        Run 'npx skills add' initialization in projects
 
 Audit Options (use with 'audit' or '--audit'):
-  -a, --add                         Auto-insert missing skills into AGENTS.md Task-Specific Workflows tables
+  -a, --add                         Auto-insert missing skills into AGENTS.md Table 1 catalogs
+  -p, --prune                       Auto-prune orphan/obsolete skills from AGENTS.md Table 1 catalogs
 
 Examples:
   agents where                      # Print myskills repo root path
   agents audit                      # Check if 100% of skills are documented in AGENTS.md
   agents audit --add                # Auto-insert missing skills into AGENTS.md & deltas
+  agents audit --prune              # Auto-prune orphan skills from AGENTS.md & deltas
+  agents audit -a -p                # Full 2-way sync (add missing + prune orphans)
   agents read policy.git_workflow                 # Print content of subdocs/git_workflow.md
   agents read policy.plan_template.md             # Print content with explicit .md extension
   agents read skill.tdd                           # Print content of tdd/SKILL.md
@@ -144,8 +147,9 @@ if (firstArg === 'audit' || firstArg === '--audit') {
 
   const auditArgs = args.slice(1);
   const autoAdd = auditArgs.includes('--add') || auditArgs.includes('-a');
+  const autoPrune = auditArgs.includes('--prune') || auditArgs.includes('-p');
 
-  const result = runPolicyAudit({ sourceRoot: projectRoot, config, autoAdd });
+  const result = runPolicyAudit({ sourceRoot: projectRoot, config, autoAdd, autoPrune });
   process.exit(result.exitCode);
 }
 

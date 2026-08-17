@@ -20,7 +20,7 @@ flowchart TD
     PickCat --> WriteSource["3. Write Source SKILL.md<br/>myskills/<category>/<skill-name>/SKILL.md"]
     WriteSource --> CheckLocal{"Local Project Edit Attempt?"}
     CheckLocal -->|"Direct Project Edit (Banned)"| BlockLocal["STOP: Must edit base myskills source path first<br/>(Unless frontmatter contains 'local: true')"]
-    CheckLocal -->|"Source Updated"| Distribute["4. Run Distribution Engine<br/>distribute-skills --all <projects-dir>"]
+    CheckLocal -->|"Source Updated"| Distribute["4. Run Distribution Engine<br/>agents --distribute"]
     
     CheckAction -->|"Redistribute Only"| Distribute
     
@@ -46,8 +46,12 @@ Before scaffolding or editing a skill, confirm:
 Always modify or create skills directly in the central source repository:
 `Path: <projects-dir>/myskills/<category>/<skill-name>/SKILL.md`
 
-> [!TIP]
-> **Source Location Lookup**: When working in any project workspace, run `distribute-skills --info <skill-name>` to get the exact `skillFile` path in `myskills` without searching manually.
+> [!IMPORTANT]
+> **Source Location Lookup & Reading Protocol**: When working inside any project repository:
+> 1. To inspect source location metadata, run `agents info skill.<skill-name>`.
+> 2. To read raw skill instructions or auxiliary subdocs directly to stdout, run `agents read skill.<skill-name>` (or `agents read skill.<skill-name>/<subdoc-name>`).
+> 3. **ONLY edit the source file in `myskills` directly.** NEVER modify local project copies inside `.agents/skills/` (local edits will be overwritten).
+> 4. After editing the source file in `myskills`, run `agents distribute` (or `agents distribute -t .`) to sync changes back to local project workspaces and active IDE global targets (`~/.gemini`, `~/.claude`, `~/.cursor`).
 
 ### Standard Categories:
 - `design/`: Layout, visual aesthetics, UI taste, styling, mobile/web comps.
@@ -70,10 +74,10 @@ description: <Capability description>. Use when [specific triggers].
 ### Cross-Repository Editing Protocol
 
 When requested to create or update a custom skill while working inside an external project repository:
-1. **Query Source Location:** Run `distribute-skills --info <skill-name>` to get the exact `skillFile` path in `myskills`. (For new skills, run `distribute-skills --where` to get `<myskills-root>`).
-2. **Edit Source File:** Edit the source `SKILL.md` inside `myskills` directly. **DO NOT edit the local `.agents/skills/<skill-name>/` copy.**
-3. **Distribute Back:** Run `distribute-skills` (or `distribute-skills --target .` for current workspace) to deploy the updated skill back to your current repository and IDE configs.
-4. **Commit & Push `myskills`:** Commit and push the changes in `myskills`.
+1. **Query Source Location:** Run `agents info skill.<skill-name>` to get the exact `skillFile` path in `myskills`. (For new skills, run `agents where` to get `<myskills-root>`).
+2. **Edit Source File Only:** Edit the source `SKILL.md` inside `myskills` directly. **DO NOT edit the local `.agents/skills/<skill-name>/` copy.**
+3. **Distribute Back:** Run `agents distribute` (or `agents distribute -t .` for current workspace) to deploy updated skill files back to your current repository and IDE configs.
+4. **Auto-Audit & Sync:** Run `agents audit --add` to keep policy coverage at 100%, then commit & push `myskills`.
 
 ---
 
@@ -82,12 +86,12 @@ When requested to create or update a custom skill while working inside an extern
 Run the distribution engine to sync the central source across all local workspace repositories and global IDE targets (`~/.gemini`, `~/.claude`, `~/.cursor`):
 
 ```powershell
-distribute-skills --all <projects-dir>
+agents --distribute
 ```
 
 Or target a specific project workspace:
 ```powershell
-distribute-skills --target <projects-dir>/<project-folder>
+agents --target <projects-dir>/<project-folder>
 ```
 
 ---
@@ -103,8 +107,10 @@ git push
 
 ---
 
-## 5. Global Policy Matrix Update
+## 5. Global Policy Matrix Auto-Audit & Update
 
-When a custom skill is added or re-categorized, update the task-to-skill classification table in the global policy file (`AGENTS.md`):
-1. Locate the **Task-Specific Workflows** table.
-2. Add the skill name under the **Required Skills to Read** column for its matching category.
+When a custom skill is added, updated, re-categorized, or deleted:
+1. Run `agents audit --add` to automatically insert missing skills into the **Table 1** catalogs of `AGENTS.md` and platform deltas (`gemini/AGENTS.md`).
+2. Run `agents audit --prune` to automatically prune orphan/obsolete skills from `AGENTS.md` when skills are removed from the repository.
+3. Run `agents audit -a -p` for full 2-way policy synchronization.
+4. Alternatively, run `agents audit` to verify 100% policy skill coverage and zero orphan skills without modifying files.
