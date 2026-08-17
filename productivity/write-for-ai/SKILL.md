@@ -68,6 +68,6 @@ Answer only these 4 questions before writing:
 
 ---
 
-## Detailed Reference & Before/After Examples
+## Reference
 
-For artifact-specific target matrices, transformation tables, and in-depth before/after case studies across all AI text types, see [REFERENCE.md](REFERENCE.md).
+For target matrices, transformation tables, and before/after case studies, see [REFERENCE.md](REFERENCE.md).

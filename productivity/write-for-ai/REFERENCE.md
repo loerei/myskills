@@ -192,3 +192,36 @@ flowchart TD
 {"error": "run_id 'abc123' not found or expired. Re-run edit_file with dry_run=true to get a fresh run_id."}
 ```
 **Why:** The error gives the model its exact next recovery action rather than causing an undirected retry loop.
+
+---
+
+### I. Reference Over-Specification & Spoilers
+
+**Before:**
+```markdown
+For detailed architectural guides, configuration parameters, and canonical case studies (Multi-Agent, Raft Consensus, Game Concurrency, Payment Idempotency, Write Buffering), see [REFERENCE.md](REFERENCE.md).
+```
+**After:**
+```markdown
+For configuration parameters and canonical case studies, see [REFERENCE.md](REFERENCE.md).
+```
+**What was cut and why:**
+- Parenthetical catalog list (`Multi-Agent, Raft Consensus, ...`) — spoils internal sub-topics inside the link sentence (Vector 2: Reference Over-Specification).
+- Filler padding (`detailed architectural guides...`) — redundant descriptive padding.
+
+---
+
+### J. Reactionary Negative Constraints (Phantom Bans)
+
+**Scenario:** User asks to remove an unwanted multi-role survey format (`[For DevOps]`, `[For Implementers]`) that was introduced in an earlier prompt draft.
+
+**Before (Phantom Ban):**
+```markdown
+STRICT BAN: NEVER append multi-role persona survey trees (e.g., [For DevOps], [For Implementers], [For Cost Leads]) to any output under any circumstances.
+```
+**After (Clean Deletion):**
+*(Delete the prompt instruction that originally requested persona survey trees. Add zero negative rules.)*
+
+**Why:**
+- Base models have no natural tendency to output multi-role persona trees unless prompted.
+- Adding explicit bans against custom prompt artifacts wastes tokens and risks triggering the Pink Elephant effect. Reserve `NEVER` strictly for overriding default LLM biases.
