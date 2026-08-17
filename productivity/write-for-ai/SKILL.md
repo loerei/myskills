@@ -17,12 +17,13 @@ Strip pompous phrasing, marketing fluff, and pseudo-technical vocabulary. Replac
 - **Use simple, active verbs:** Prefer `get`, `set`, `run`, `check`, `edit`, `delete` over Latinate verbs.
 
 ### Vector 2: De-overexplaining (Redundancy Elimination)
-Strip information the AI already knows, cannot act upon, or that duplicates existing definitions. Target the 5 universal forms of redundancy:
+Strip information the AI already knows, cannot act upon, or that duplicates existing definitions. Target the 6 universal forms of redundancy:
 - **Schema & Location Duplication:** Repeating types, default values, enums, or layout rules already defined in parameter schemas or global configs.
 - **Tautology / Circular Naming:** Explaining what the identifier, tool name, or section title already makes obvious (e.g., `# Tool delete_user` -> `"This tool deletes a user"`).
 - **Conversational Chaff & Hedging:** Polite filler, introductory padding, and weak modals (`"Please note that you should try to..."`). Replace with direct imperatives (`MUST`, `NEVER`).
 - **Motivational & Historical Justification:** Explaining why a feature was built, its architectural history, or how much time/tokens it saves.
 - **Synonym Stacking:** Chaining redundant synonyms and qualifiers (`"strict, absolute, mandatory, and non-negotiable boundary"`).
+- **Reference Over-Specification:** Explaining, summarizing, or itemizing the sub-topics, case studies, or internal contents of a referenced document inside the link sentence (e.g., write `see [REFERENCE.md](REFERENCE.md)` instead of `see [REFERENCE.md](REFERENCE.md) (Topic A, Topic B, Topic C)`).
 
 ## Core Rules
 
@@ -40,7 +41,7 @@ Strip information the AI already knows, cannot act upon, or that duplicates exis
 ### 1. Deslop & Optimize Existing Text
 1. **Read as the AI:** Put yourself in the model's context.
 2. **Jargon Pass:** Strip buzzwords and marketing claims. Replace with concrete verbs.
-3. **Redundancy Pass:** Check against the 5 redundancy forms (Schema duplication, Tautology, Chaff/Hedging, Motivation, Synonym stacking).
+3. **Redundancy Pass:** Check against the 6 redundancy forms (Schema duplication, Tautology, Chaff/Hedging, Motivation, Synonym stacking, Reference over-specification).
 4. **Signal Test:** For each remaining sentence: *"Does this change what action the AI takes?"* If no, delete.
 5. **Present Output:** Show Original -> Deslopped with concise rationale for cuts.
 
@@ -60,6 +61,7 @@ Answer only these 4 questions before writing:
 - [ ] **Conversational chaff & hedging:** `Please note`, `You should try to`, `Keep in mind that`, `Make sure to`
 - [ ] **Motivational & historical justification:** Explaining why a feature exists or what tokens/speed it saves
 - [ ] **Synonym stacking:** Chaining multiple near-identical descriptors (`strict, mandatory, non-negotiable`)
+- [ ] **Reference over-specification:** Listing sub-topics, case study titles, or cataloging contents inside link references
 - [ ] **Implementation trivia:** Internal algorithms, memory caches, languages, or threading models
 
 ---

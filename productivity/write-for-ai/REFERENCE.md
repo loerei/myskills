@@ -13,11 +13,12 @@
 | **Conversational Chaff & Hedging** | `Please make sure to always remember that you should try to run tests before committing` | `MUST run tests before committing` |
 | **Motivational Justification** | `Commit patch previewed with dry_run=true. Avoids resending diffs to cut token usage.` | `Apply patch cached by dry_run=true using its run_id.` |
 | **Synonym Stacking** | `This rule is a strict, absolute, mandatory, and non-negotiable boundary.` | `MUST NOT modify files outside workspace root.` |
+| **Reference Over-Specification** | `For canonical case studies (Multi-Agent, Raft, Game Loop, Storage), see [REFERENCE.md](REFERENCE.md).` | `For canonical case studies, see [REFERENCE.md](REFERENCE.md).` |
 | **Opaque Error vs Actionable** | `An unexpected internal exception occurred within the subsystem processing pipeline.` | `Invalid file path: 'src/main.ts'. Check that the file exists and retry.` |
 
 ---
 
-## 2. The 5 Universal Forms of Redundancy
+## 2. The 6 Universal Forms of Redundancy
 
 | Redundancy Form | Definition & Anti-Pattern | How to Fix |
 | :--- | :--- | :--- |
@@ -26,6 +27,7 @@
 | **3. Conversational Chaff & Hedging** | Polite conversational filler, introductory padding, and weak modals (`"Please note that you should try to..."`, `"You may want to consider..."`). | Strip polite phrasing. Replace with direct, standard imperatives (`MUST`, `NEVER`, `ALWAYS`). |
 | **4. Motivational & Historical Justification** | Explaining why a feature was created, past architecture decisions, or how much time/tokens/bandwidth it saves. | State only the operational contract and requirements. AI models execute instructions; they do not need justification. |
 | **5. Synonym Stacking** | Chaining multiple near-identical adjectives, adverbs, or qualifiers to emphasize importance (`"strict, absolute, mandatory, and non-negotiable"`). | Use a single unambiguous RFC 2119 keyword (`MUST`, `MUST NOT`). |
+| **6. Reference Over-Specification** | Itemizing, summarizing, or listing internal sub-topics, case study titles, or contents of a referenced document inside the link sentence. | State only the high-level category of the target file without cataloging its contents. |
 
 ---
 
