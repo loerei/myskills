@@ -57,6 +57,8 @@ Translate complex technical concepts into literal domain mechanics:
 
 ## 2. Universal Domain Mapping Guide
 
+*These 4 categories apply to complex multi-component or distributed architectures. For standalone scripts, tools, or localized bugs, describe only the directly relevant mechanics.*
+
 | Domain | 1. Identity & Role | 2. Resource & Isolation | 3. Permissions & Limits | 4. Lifecycle & Signaling |
 | :--- | :--- | :--- | :--- | :--- |
 | **AI Multi-Agents** | Agent Type & Role Name | Workspace (`inherit`, `branch`, `share`) | Tool access, Max Depth = 2 | Event messaging, 0-token idle, active kill |
@@ -292,3 +294,24 @@ flowchart LR
    - *Buffering:* Aggregate high-frequency counters in memory. No single raw event writes directly to disk.
    - *Flush Schedule:* Background worker flushes pending totals every 60 seconds or at 50,000 records.
    - *Crash Boundary:* Server crash risks losing up to 60s of non-critical telemetry counters, protecting primary database integrity.
+
+---
+
+### Case Study 6: Quick Targeted Explainer (Lightweight Scope)
+
+**Query:** *"What is the difference between `agents audit --add` and `agents audit --prune`?"*
+
+1. **Direct Answer:**  
+   Both flags sync the policy manifest table in `AGENTS.md` against actual skill directories on disk, but in opposite directions:
+   - `agents audit --add` (`-a`): Scans the disk for newly created skills and inserts them into their matching category rows in `AGENTS.md`.
+   - `agents audit --prune` (`-p`): Scans `AGENTS.md` for obsolete skills whose directories were deleted and removes them from the table.
+
+2. **Summary Comparison:**
+
+| Flag | Trigger Condition | Disk Action |
+| :--- | :--- | :--- |
+| `--add` (`-a`) | New skill created on disk but missing from `AGENTS.md`. | In-place row append in `AGENTS.md`. |
+| `--prune` (`-p`) | Deleted skill still listed in `AGENTS.md`. | In-place row cleanup in `AGENTS.md`. |
+| `-a -p` | Both new additions and deletions present. | Full two-way reconciliation. |
+
+*(Stop immediately. Do not generate unrequested Mermaid diagrams, timing breakdowns, or 5-part state machine rules for simple inquiries).*
