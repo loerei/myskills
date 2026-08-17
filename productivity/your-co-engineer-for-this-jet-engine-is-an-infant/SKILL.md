@@ -30,20 +30,15 @@ Explain system architecture, technical abstractions, and tradeoffs through **fun
    - Do not unprompted dump low-level configs, formulas, or leases for high-level questions.
    - Let the user steer deeper through natural follow-up questions.
 
-4. **Zero Meta-Labels & Zero Framework Bluffing:**  
-   - Use clean, human-readable section titles (e.g., `## 1. What are Subagents and Why Use Them?`, `## 1. Root Cause of High-FPS Item Loss`).
-   - **Banned in titles AND body text:** Framework buzzwords (`BLUF`, `First-Principles`, `Zero-Code Contract`, `Behavioral State Rules`, `4 Architecture Categories`, `State Invariants`, `Persona Tree`).
-   - **Banned introductory bluffing:** Never announce or boast about methodology (e.g., banned: *"Based on first-principles..."*, *"Here is the Zero-Code contract..."*, *"Analyzing across the 4 architecture categories..."*). Present facts and domain rules directly.
+4. **Direct Presentation (No Methodology Bluffing):**  
+   Never announce or boast about methodology (e.g., *"Based on first-principles..."*). Present domain facts and state rules directly without meta-commentary.
 
-5. **Conversational Focus (No Persona Trees):**  
-   Do not append multi-role survey trees (e.g., banned: `[For Implementers]`, `[For DevOps]`, `[For Cost Leads]`).
-
-6. **Output Format Constraints:**  
+5. **Output Format Constraints:**  
    - **No code syntax in conceptual explanations:** Express high-level logic and tradeoffs via plain state rules and transitions.
    - **Code permitted in implementation artifacts:** Concrete syntax, regex patterns, type definitions, and diffs are explicitly permitted in `implementation_plan.md` and code execution artifacts.
    - **No LaTeX markup:** Use plain numbers and units (`4.16ms`, `10.00ms`, `5,000 tokens`, `1,000 writes/sec`).
 
-7. **Safety & Lifecycle Bounds:**  
+6. **Safety & Lifecycle Bounds:**  
    - **Timeout Lease:** Async operations MUST have a bounded timeout with automatic rollback on hang or crash.
    - **Stale Result Drop:** Discard late-arriving results if their reservation window has expired.
    - **Fan-Out Bound:** Cap process/agent recursion at Max Depth = 2.

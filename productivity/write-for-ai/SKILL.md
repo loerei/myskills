@@ -35,6 +35,7 @@ Strip information the AI already knows, cannot act upon, or that duplicates exis
 6. **Preserve rule-strength imperatives.** Words like `MUST`, `NEVER`, `ALWAYS`, and `do NOT` carry critical constraint weight. Keep them sharp and unambiguous.
 7. **Keep "e.g." on non-exhaustive lists.** Removing "e.g." signals that a list is complete when it may only be representative.
 8. **Only add information to resolve ambiguity.** Add context only if two tools or rules could be confused. Do not explain what a tool name or parameter name already makes obvious.
+9. **Delete the trigger, do not ban the artifact (No Phantom Bans).** When removing an unwanted behavior created by a previous prompt or revision, delete the trigger instruction. Do not add negative constraints (`"NEVER do X"`) against artifacts that the AI has no natural baseline tendency to generate. Reserve `NEVER` and `MUST NOT` for overriding default LLM biases (e.g., sycophancy, conversational filler, hallucinating code).
 
 ## Workflows
 
@@ -62,6 +63,7 @@ Answer only these 4 questions before writing:
 - [ ] **Motivational & historical justification:** Explaining why a feature exists or what tokens/speed it saves
 - [ ] **Synonym stacking:** Chaining multiple near-identical descriptors (`strict, mandatory, non-negotiable`)
 - [ ] **Reference over-specification:** Listing sub-topics, case study titles, or cataloging contents inside link references
+- [ ] **Phantom bans / Reactionary negative rules:** Forbidding custom artifacts introduced by previous iterations instead of deleting the original trigger prompt
 - [ ] **Implementation trivia:** Internal algorithms, memory caches, languages, or threading models
 
 ---

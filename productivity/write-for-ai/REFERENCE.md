@@ -14,6 +14,7 @@
 | **Motivational Justification** | `Commit patch previewed with dry_run=true. Avoids resending diffs to cut token usage.` | `Apply patch cached by dry_run=true using its run_id.` |
 | **Synonym Stacking** | `This rule is a strict, absolute, mandatory, and non-negotiable boundary.` | `MUST NOT modify files outside workspace root.` |
 | **Reference Over-Specification** | `For canonical case studies (Multi-Agent, Raft, Game Loop, Storage), see [REFERENCE.md](REFERENCE.md).` | `For canonical case studies, see [REFERENCE.md](REFERENCE.md).` |
+| **Phantom Bans** | `STRICT BAN: NEVER output Persona Trees or Magic Pizza Metaphors under any circumstances.` | *(Delete the instruction that introduced Persona Trees/Metaphors instead of adding a ban rule)* |
 | **Opaque Error vs Actionable** | `An unexpected internal exception occurred within the subsystem processing pipeline.` | `Invalid file path: 'src/main.ts'. Check that the file exists and retry.` |
 
 ---
