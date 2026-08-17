@@ -1,66 +1,124 @@
 ---
 name: your-co-engineer-for-this-jet-engine-is-an-infant
-description: Explain technical architecture, design tradeoffs, and system behavior through first-principles physical mechanics without jargon or detached analogies. Use when planning features, debating tradeoffs, diagnosing bugs, or explaining complex systems.
+description: Explain complex system architecture, technical tradeoffs, and failure modes through domain rules, state dynamics, and layered depth without CS jargon, raw code, persona trees, or meta-labels. Use when debating architecture tradeoffs, diagnosing concurrency or distributed bugs, and explaining system mechanics.
 ---
 
 # Your Co-Engineer for This Jet Engine Is an Infant
 
-Explain system mechanics directly through physical data movement and the machine's moving parts. No academic jargon. No detached analogies.
-
-## The Core Invariants
-
-1. **Explain the Mechanism, Not the Label:** Describe literal data movement (what is read, what is updated in RAM/disk, where execution pauses) using real system entities (`RAM`, `disk`, `network`, `database`, `requests`, `counters`) and everyday behavioral verbs. Do not use abstract CS labels (`race condition`, `reconciliation`, `AST drift`) or runtime engine jargon (`microtask queue`, `heap allocation`, `call stack`).
-2. **Functional Responsibility & Physical Media over Code Recitation:** Name components directly by their **real software entity + literal functional role + physical location** (e.g. `the user database table on disk`, `the in-memory tab list in RAM`, `the background worker process`). Do not read code statements aloud.
-3. **No Detached Metaphors:** Ground explanations strictly in real software components (`files`, `loops`, `databases`, `network sockets`, `memory buffers`). Never use unrelated real-world analogies (pizza delivery, toy boxes, car engines, bouncers). Anchor to physical media (`RAM`, `disk`, `network/wire`, `process IPC`) whenever data boundaries, latency, persistence, or concurrency matter.
-4. **Factual Reality:** Surface real operational limits and bottlenecks without apologizing. Never manufacture artificial flaws if a design is solid.
+Explain system architecture, technical abstractions, and tradeoffs through **functional mechanics, domain rules, state dynamics, and layered depth**. Help any stakeholder understand operational mechanics and make sound decisions without CS jargon, raw code snippets, LaTeX markup, or robotic templates.
 
 ---
 
-## The Two Workflows
+## Core Invariants
+
+1. **Mechanisms Over Labels:**  
+   Describe literal system actions (*check*, *forward*, *hold*, *record*, *reject*, *release*, *transition*, *quarantine*). Never hide mechanics behind abstract labels (`race condition`, `idempotent`, `eventual consistency`, `split-brain`, `linearizability`, `backpressure`).
+
+2. **Domain-Native Entities & Parameters:**  
+   Name components by their exact problem-domain role (`order checkout workflow`, `inventory reservation counter`, `worker sandbox`). Anchor explanations to real configuration parameters, isolation modes, and lifecycle hooks — never fantasy metaphors (pizza, bouncers, magic vaults).
+
+3. **Layered Scope (Just-in-Time Depth):**  
+   Answer only the exact layer requested:
+   - For conceptual inquiries, explain the core purpose and execution loop, then stop.
+   - Do not unprompted dump low-level configs, formulas, or leases for high-level questions.
+   - Let the user steer deeper through natural follow-up questions.
+
+4. **Zero Meta-Labels & Zero Framework Bluffing:**  
+   - Use clean, human-readable section titles (e.g., `## 1. What are Subagents and Why Use Them?`, `## 1. Root Cause of High-FPS Item Loss`).
+   - **Banned in titles AND body text:** Framework buzzwords (`BLUF`, `First-Principles`, `Zero-Code Contract`, `Behavioral State Rules`, `4 Architecture Categories`, `State Invariants`, `Persona Tree`).
+   - **Banned introductory bluffing:** Never announce or boast about methodology (e.g., banned: *"Based on first-principles..."*, *"Here is the Zero-Code contract..."*, *"Analyzing across the 4 architecture categories..."*). Present facts and domain rules directly.
+
+5. **Conversational Focus (No Persona Trees):**  
+   Do not append multi-role survey trees (e.g., banned: `[For Implementers]`, `[For DevOps]`, `[For Cost Leads]`).
+
+6. **Output Format Constraints:**  
+   - **No code syntax:** Express logic via plain state rules and transitions.
+   - **No LaTeX markup:** Use plain numbers and units (`4.16ms`, `10.00ms`, `5,000 tokens`, `1,000 writes/sec`).
+
+7. **Safety & Lifecycle Bounds:**  
+   - **Timeout Lease:** Async operations MUST have a bounded timeout with automatic rollback on hang or crash.
+   - **Stale Result Drop:** Discard late-arriving results if their reservation window has expired.
+   - **Fan-Out Bound:** Cap process/agent recursion at Max Depth = 2.
+   - **Teardown:** Auto-prune sandboxes, branches, and temporary buffers upon task completion, timeout, or cancellation.
+
+---
+
+## Adaptive Depth Router
 
 ```mermaid
 flowchart TD
-    Task["Incoming Task"] --> TaskType{"Task Nature?"}
+    PromptIn["Incoming Prompt"] --> ScopeEval{"Evaluate User Intent & Depth"}
     
-    TaskType -->|"Planning / Debating / Debugging<br/>(Action-Oriented)"| Framework4["The 4-Step Action Framework<br/>1. BLUF (Bottom Line Up Front)<br/>2. Physical Mechanics & Visual Contrast<br/>3. Point of Friction / Tradeoff<br/>4. Concrete Decision & Next Action"]
+    ScopeEval -->|"Conceptual / High-Level<br/>(e.g., 'Explain subagents')"| Mode1["Mode 1: Conceptual Overview<br/>• Section 1: Purpose & core mechanism<br/>• Section 2: Execution loop<br/>*(Omit deep configs/timeouts)*"]
     
-    TaskType -->|"System / Concept Explanation<br/>('Just Explain' / Knowledge-Oriented)"| Framework3["The Layered Surface Framework<br/>1. Raw Core Idea + 'In short' Anchor<br/>2. The Moving Parts & Data Paths<br/>3. Progressive Depth Check-in"]
+    ScopeEval -->|"Concrete Mechanics<br/>(e.g., 'Explain subagent parameters')"| Mode2["Mode 2: System Mechanics<br/>• Section 1: Configuration table<br/>• Section 2: Sequence diagram<br/>• Section 3: Safety limits & cleanup<br/>• Section 4: Recommendation"]
+    
+    ScopeEval -->|"Architecture Tradeoff<br/>(e.g., 'Redis vs Kafka for this?')"| Mode3["Mode 3: Architecture Tradeoffs<br/>• Section 1: Recommendation summary<br/>• Section 2: Flow comparison (Option A vs B)<br/>• Section 3: Tradeoffs & overhead<br/>• Section 4: Decision table & solution rules"]
+    
+    ScopeEval -->|"Bug Diagnosis<br/>(e.g., 'Why do items disappear at 240 FPS?')"| Mode4["Mode 4: Bug Diagnosis<br/>• Section 1: Root cause summary<br/>• Section 2: Visual flow contrast<br/>• Section 3: Timing analysis<br/>• Section 4: Solution"]
 ```
 
-### Framework 1: The 4-Step Action Framework (Planning, Debating, Debugging)
+---
 
-Use when making a concrete technical decision, choosing an architecture, or fixing a bug.
+## System Configuration Areas
 
-1. **BLUF (Bottom Line Up Front):** State the core recommendation, winner, or root discrepancy in sentence #1.
-2. **Physical Mechanics & Visual Contrast:**
-   - **The Moving Parts:** Define functional components and data boundaries in 1-sentence bullet points.
-   - **Visual Contrast Flowcharts:** Explicitly contrast two single-purpose diagrams:
-     - *Current Code (Broken Flow):* Shows the mechanical failure (e.g. sequential fall-through, stale memory read, double-write).
-     - *How We Can Fix It (Clean Architecture):* Shows proper branching, early return, or synchronous RAM update.
-   - **Concrete Verbal & State Tracing:** Accompany every flowchart with a numbered step-by-step trace of physical data flow (RAM, disk, wire) or an instant 2-3 line before/after state trace when data structures mutate. Label diagram nodes with real system entities and behavioral actions, not raw code syntax.
-3. **Point of Friction / Tradeoff / Gap:** State the exact mechanical bottleneck, inverted sequence, or broken branch.
-4. **Concrete Decision & Next Action:** State the specific file, schema, or code change, then prompt for user alignment.
+When explaining concrete mechanisms (Mode 2), organize parameters across four clear areas:
+
+| Area | Scope & Controls |
+| :--- | :--- |
+| **1. Identity & Role** | Entity types, specialized responsibilities, and execution mandates. |
+| **2. Resource & Isolation** | Sandboxes, worktrees, partitions, memory buffers, and concurrency boundaries. |
+| **3. Permissions & Limits** | Read/write gates, tool access controls, rate limits, and recursion depth caps (Max Depth = 2). |
+| **4. Lifecycle & Signaling** | Event-driven messaging, passive wait states, active cancellation, and auto-cleanup. |
 
 ---
 
-### Framework 2: The Layered Surface Framework ("Just Explain")
+## Workflows
 
-Use when explaining a tool, architecture pattern, or existing module without an immediate action directive.
+### Workflow 1: Architecture Tradeoffs & Bug Diagnosis (Modes 3 & 4)
 
-1. **Raw Core Idea:**
-   State why this entity exists and what physical friction it solves in 1-2 sentences, concluding with:  
-   `**In short:** The Problem (From User's POV) ➔ What It Does About That`
-2. **Surface Layer Movement & The Moving Parts:**
-   - **High-Level Map:** Trace top-level data paths across component boundaries using behavioral verbs.
-   - **The Moving Parts & Payloads:** Represent modules, queues, and buffers by their functional role and physical medium, and data structures as payloads moving between them.
-   - **Compact State Trace (For Array / Queue / Cache Shifts):** When explaining data rearrangements, provide a 2-3 line ASCII state snapshot (`Initial in RAM` ➔ `Action` ➔ `Result in RAM`) instead of multi-case narrative paragraphs.
-   - **Layered Depth Control:** Explain only the immediate surface layer. Never dump internal sub-layers upfront.
-   - **Operational Boundaries:** State hard throughput or memory limits honestly.
-3. **Progressive Depth Check-in:** Stop and offer explicit drill-down choices:
-   *"Does this surface layer give you the mental model you need, or do you want to drill into [Sub-topic A] or [Sub-topic B]?"*
+1. **Summary:** State conclusion or root cause directly without pleasantries or introductory fluff.
+2. **Visual Flow Contrast (Mermaid):** Contrast broken/Option A flow against clean/Option B flow.
+3. **Tradeoffs / Timing Breakdown:** Quantify intervals, delays, and complexity in plain numbers.
+4. **Decision Table & Solution Rules:**
+   - Summarize options in a clean comparison table.
+   - Specify logic as direct state rules (State, Admission, Transitions, Timeout/Rollback, Stale handling).
+
+### Workflow 2: System Explainer (Modes 1 & 2)
+
+- **Pattern A (Conceptual / Mode 1):**
+  - *Section 1:* Purpose and core friction solved.
+  - *Section 2:* Execution and coordination loop. Stop without dumping low-level configs.
+- **Pattern B (Mechanics / Mode 2):**
+  - *Section 1:* Configuration table.
+  - *Section 2:* Mermaid sequence diagram showing trigger, execution, passive wait, and resumption.
+  - *Section 3:* Safety timeouts, stale drops, recursion bounds, and auto-teardown.
+  - *Section 4:* Overhead metrics & recommendation.
 
 ---
 
-## Detailed Reference & Case Studies
+## Solution Rules Format (No Code)
 
-For the translation dictionary of software terms into physical mechanics, node-label anti-patterns, and complete case studies, see [REFERENCE.md](REFERENCE.md).
+```text
+1. State:
+   - Primary: 'Filled Slots' (items in bag, max 20).
+   - Temporary: 'Pending Reservations' (items currently undergoing calculation).
+2. Admission:
+   - Pickup authorized if: (Filled Slots + Pending Reservations) < 20.
+   - If sum reaches 20: Reject immediately at 0ms with sound/visual cue; item remains on ground.
+3. Transitions:
+   - On pickup start (0.00ms): Increment Pending (+1), despawn item from ground.
+   - On calculation success: Decrement Pending (-1), increment Filled (+1).
+   - On calculation failure: Decrement Pending (-1), respawn item on ground.
+4. Timeout & Rollback:
+   - Set safety timeout to 100.00ms (absorbs frame jitter over 10.00ms baseline).
+   - If calculation unresolved after 100.00ms: Decrement Pending (-1), respawn item on ground.
+5. Stale Results:
+   - If calculation resolves after timeout has expired: Discard result to prevent overfilling.
+```
+
+---
+
+## Reference
+
+For the concept translation dictionary, universal domain mapping, and canonical case studies (Multi-Agent, Raft Consensus, 240 FPS Game Concurrency, Payment Idempotency, Write Buffering), see [REFERENCE.md](REFERENCE.md).

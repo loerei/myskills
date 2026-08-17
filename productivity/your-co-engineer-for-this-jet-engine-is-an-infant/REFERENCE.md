@@ -1,246 +1,294 @@
 # Reference: Jet Engine Co-Engineer Guide
 
-## 1. Core Ideology: Explain Through the Idea of Tech Terms
+---
 
-Never explain a technical label by throwing another technical label at the reader. Explain the underlying physical mechanics and behavioral intent using real system entities (`RAM`, `disk`, `network`, `requests`, `counters`).
+## 1. Concept Translation Dictionary
 
-### Translating Software Artifacts into Behavioral Actions
+Translate complex technical concepts into literal domain mechanics:
 
-| Technical Concept / Code Artifact | ❌ What NOT to Say (Jargon / AST Dump) | ❌ What NOT to Say (Cringe / Fantasy Titles) | ✔ What to Say Instead (Functional Role on Physical Medium) |
-| :--- | :--- | :--- | :--- |
-| **In-Memory Map / Cache** | `Heap Map<string, object>`, `Key-Value Store` | *The Fast Vault*, *Két Sắt RAM* | *The fast counter/list stored in temporary RAM* |
-| **Rate Limiter / Guard** | `TokenBucketLimiter.isAllowed()`, `Middleware` | *The Gatekeeper Bouncer*, *Người Gác Cổng* | *The check in RAM verifying if a user exceeded allowed requests* |
-| **Timeout / Retry Loop** | `while(true) with setTimeout & throw` | *Bộ Canh Khóa Kéo*, *Cầu Chì 10s* | *The retry loop in RAM pausing 200ms for mouse release, aborting after 10s* |
-| **State / Tab Validation** | `chrome.tabs.get(id)`, `tab.windowId` | *Đầu Dò Kiểm Tra Tab*, *The Scout Probe* | *The check verifying if the dragged tab is still open in this window* |
-| **Async Pause / I/O Yield** | `await flushToDisk()`, `Microtask queue yield` | *The Great Sleep Chamber* | *Waiting 50ms for a slow disk save before updating RAM* |
-| **Disk Spillover / Overflow** | `EmergencyDiskSpooler.append()` | *The Emergency Disk Spooler* | *Appending overflow jobs to a backup file on disk when RAM is full* |
-| **Reconciliation / GC** | `State reconciliation loop`, `Garbage collection` | *The Garbage Goblin*, *Bộ Bóc Tách* | *Reading the destination list and asking source to delete leftovers* |
-| **Race Condition** | `Non-atomic concurrent read-modify-write` | *The Double-Cross Duel* | *Two requests reading the same count from RAM before either writes back* |
-| **Deadlock** | `Circular resource lock acquisition failure` | *The Mexican Standoff* | *Two operations holding each other's keys and both waiting* |
-| **Cache Invalidation** | `Cache invalidation / eviction TTL` | *The Vault Purge* | *Throwing away the fast RAM copy when the main database on disk changes* |
-| **AST / Parsing Drift** | `AST representation out of sync with disk` | *The Mirror Illusion* | *Looking at an old cached copy in memory instead of the actual file on disk* |
-| **Backpressure** | `TCP flow control / reactive streams backpressure` | *The Traffic Cop* | *Telling the sender over the network to pause because incoming requests are piling up in RAM* |
-| **Atomic Transaction** | `ACID atomic transaction boundary` | *The Magic Bundle* | *Bundling 5 database writes together on disk so if step 4 fails, steps 1-3 undo instantly* |
+### Business & Domain Logic
+
+| Concept | ❌ Jargon / Bad Metaphor | ✔ Functional Mechanics |
+| :--- | :--- | :--- |
+| **Idempotency** | Deduplication token / Magic Coin Slot | Deduplicate by transaction ID so retrying does not charge twice. |
+| **Optimistic Locking** | OCC version column / Trusting Clerk | Let users edit freely, but verify document version before saving to prevent overwrites. |
+| **State Transition** | FSM predicate / Escalator of Destiny | Strict progression rules: an order cannot move to 'Shipped' unless already in 'Paid' status. |
+| **Atomic Transaction** | ACID 2PC boundary / All-or-Nothing Spell | Bundle steps (deduct stock, charge card) so if charging fails, stock deduction auto-reverses. |
+| **Reconciliation** | Asynchronous reconciliation loop / Goblin Cleaner | Periodically compare bank records against internal ledger and create adjustment entries. |
+
+### Distributed Systems & Consensus
+
+| Concept | ❌ Jargon / Bad Metaphor | ✔ Functional Mechanics |
+| :--- | :--- | :--- |
+| **Leader Election** | Raft quorum RPC / King's Crown Contest | Nodes vote for a leader; majority winner takes charge and sends heartbeats. |
+| **Split-Brain Prevention** | Quorum intersection / Two Rival Monarchs | Require decisions to have majority approval (`> N/2`), preventing isolated nodes from writing. |
+| **Message Broker** | Pub-sub event broker / Town Crier | Central board where services post events and listeners pick them up independently. |
+| **Backpressure** | Reactive flow control / Traffic Cop | Tell upstream sender to slow down when the processing queue is full. |
+| **Circuit Breaker** | Circuit breaker FSM / Electric Fuse | Pause calls to a failing external service for 30s to prevent system hangs, then test with 1 probe. |
+
+### Concurrency & State Dynamics
+
+| Concept | ❌ Jargon / Bad Metaphor | ✔ Functional Mechanics |
+| :--- | :--- | :--- |
+| **State Reservation (Lease)** | OCC lease with TTL / Melting Ice Key | Temporarily reserve a slot during processing; auto-release if processing hangs. |
+| **Stale Result Drop** | Epoch fencing token / Expired letters | Discard late calculation results if their reservation window already timed out. |
+| **Race Condition** | Non-atomic read-modify-write / Grabbing same toy | Two actions check available space at the exact same millisecond and both proceed, exceeding capacity. |
+| **Rate Limiting** | Token bucket middleware / Club Bouncer | Cap users at 100 requests/minute; reject excess requests immediately with retry delay. |
+
+### Storage & Performance
+
+| Concept | ❌ Jargon / Bad Metaphor | ✔ Functional Mechanics |
+| :--- | :--- | :--- |
+| **Two-Tier Storage** | Tiered write-back buffer / Vault Waiting Room | Store high-frequency counters in fast memory and flush aggregated batches to database once per minute. |
+| **Lock Contention** | Row-level exclusive lock / Toll Booth Jam | Multiple requests updating the same record simultaneously, forcing execution into single-file queue. |
+| **Eventual Consistency** | Gossip replication / Rumors in town | Allow local branches to write immediately, syncing and reconciling with headquarters shortly after. |
+
+### AI Multi-Agent Orchestration
+
+| Concept | ❌ Jargon / Bad Metaphor | ✔ Functional Mechanics |
+| :--- | :--- | :--- |
+| **Task Delegation** | Subagent RPC dispatch / Mini-Me Quest | Lead agent delegates sub-task to a worker agent, waits for report, then integrates results. |
+| **Passive Waiting** | Reactive wait vs busy-wait / CPU sleep loop | Coordinator pauses at zero token cost and wakes up only when an event arrives in inbox. |
+| **Context Window Limit** | Token budget exhaustion / Short-Term Brain Box | Conversation reaches max capacity AI can read in one turn, requiring older notes to be summarized or offloaded. |
+| **Workspace Isolation** | Worktree git branch sandbox / Parallel universes | Give workers private copies or sandboxed branches so concurrent edits never collide. |
+| **Fan-Out Bound** | Hierarchical depth invariant / Family Tree Pruner | Cap agent nesting at Max Depth = 2 (Lead -> Subagent -> Leaf) to prevent runaway spawning. |
 
 ---
 
-## 2. Diagram Node Labels & Topology Patterns
+## 2. Universal Domain Mapping Guide
 
-Diagrams must communicate data paths and operational states at a glance. Label nodes with real entities and behavioral actions.
-
-### A. Labeling Anti-Patterns vs Good Behavioral Labels
-
-| Element | ❌ BAD (Reading Code Aloud / AST Dump) | ✔ GOOD (Real Entity & Behavioral Action) |
-| :--- | :--- | :--- |
-| **Condition Node** | `if (user.activeConnections >= config.MAX_LIMIT)` | `Gateway checks: Does user already have 10 open connections?` |
-| **State Buffer Node** | `this.pendingQueue = new Array(capacity = 50)` | `RAM Queue Buffer (Holds up to 50 pending jobs in memory)` |
-| **Action Node** | `await this.store.flushToDisk()` | `❌ PAUSE: Wait 50ms for disk save (RAM not updated yet!)` |
-| **Mutation Node** | `await db.insert(record); notifyChannel.emit(event);` | `1. Writes record to database table<br/>2. Immediately pushes live alert down socket` |
-| **Error / Retry Node** | `catch (e) { this.retryCount++; retryQueue.push(job); }` | `On connection failure: Bumps retry count to 1 and re-queues job` |
-
-### B. Graph Topology Patterns: Fall-Through vs Clean Guard
-
-| Flow Pattern | ❌ BAD (Misleading Parallel Fork) | ✔ GOOD (True Sequential Fall-Through) |
-| :--- | :--- | :--- |
-| **Missing Return / Fall-Through** | `Diamond --> BranchA`<br/>`Diamond --> BranchB` | `Diamond -- Yes --> Action 1 --> Action 2 (Continues sequentially)`<br/>`Diamond -- No --> Action 2` |
+| Domain | 1. Identity & Role | 2. Resource & Isolation | 3. Permissions & Limits | 4. Lifecycle & Signaling |
+| :--- | :--- | :--- | :--- | :--- |
+| **AI Multi-Agents** | Agent Type & Role Name | Workspace (`inherit`, `branch`, `share`) | Tool access, Max Depth = 2 | Event messaging, 0-token idle, active kill |
+| **Distributed Consensus (Raft)** | Node State (`Follower`, `Candidate`, `Leader`) | Local State Machine Log & Partition | Majority Quorum Gate (`(N/2) + 1`) | Heartbeat leases, election timeouts, term bumps |
+| **Game Concurrency** | Player & Item Entity Role | Pending Reservations vs Filled Slots | Capacity check formula & frame window | Synchronous reservation, safety lease, stale drop |
+| **E-Commerce Payment** | Order Status & Webhook ID | Transaction isolation & row locks | Single-transition gate (`PENDING` -> `PROCESSING`) | Webhook callback, 30s timeout, idempotent ACK |
+| **High-Throughput Storage** | Ingestion Worker & DB Writer | In-memory buffer vs disk storage | Batch limit ceiling (50,000 events) | 60s scheduled flush, crash loss boundary |
 
 ---
 
 ## 3. Explanation Styles Compared
 
-| Dimension | Style 1: Abstract Jargon (Opaque) | Style 2: Cringe / Detached Metaphor (Distorted) | Style 3: Jet Engine Infant (Optimal) |
-| :--- | :--- | :--- | :--- |
-| **Language** | `"Unidirectional sync without garbage collection."` | `"The pizza delivery guy dropped the box"` or `"The Save Vault locked the door."` | `"The computer copies from A to B, but never checks B to delete old files."` |
-| **Target Entities** | Abstract CS concepts | Unrelated real-world objects (pizza, bouncers) or fantasy steampunk titles (*The Save Vault*, *Bộ Canh Khóa*) | **Real system components (`RAM`, `disk`, `network`) and literal functional actions** |
-| **Understanding** | Accessible only to domain specialists | Feels accessible, but distorts reality and sounds cartoonish | **100% accurate mental model in plain English without cringe** |
-| **Actionability** | User cannot reason about the fix | User cannot map metaphor/fantasy names to actual code lines | **User can immediately collaborate on the exact solution** |
+| Style | Example Phrasing | Flaw / Value |
+| :--- | :--- | :--- |
+| **Abstract CS Jargon** | *"Non-atomic read-modify-write causes state divergence."* | ❌ Opaque; obscures physical mechanics. |
+| **Fantasy Metaphor** | *"The pizza baker dropped dough because the kitchen goblin slept."* | ❌ Childish; distorts real system levers. |
+| **Hardware Overkill** | *"Request pauses 50ms for disk write while Request 2 reads 0x12."* | ❌ Distracting low-level noise. |
+| **Domain Mechanics (Standard)** | *"Two users save at the same millisecond; the second save overwrites the first without checking."* | ✔ **100% domain-accurate, actionable mental model.** |
 
 ---
 
-## 4. Compact State Trace Patterns (Arrays, Queues, Caches)
+## 4. Decision Matrices
 
-When explaining algorithms that transform, reorder, or evict data structures, avoid multi-paragraph narrative cases. Use an instant 3-line mechanical state trace:
+### Matrix A: Task Delegation vs Inline Execution
 
-### Pattern A: Array / Domain Reordering (In-Memory Swapping)
-```text
-Initial in RAM:  [ G1 | G2 | G3 ] [ Y1 | Y2 ]
-Physical Drag:   Move G2 past Y1
-Result in RAM:   [ Y1 | Y2 ] [ G1 | G3 | G2 ] (Preserves internal G order from RAM Cache)
-```
+| Factor | Delegate to Worker | Execute Inline |
+| :--- | :--- | :--- |
+| **Output Volume** | High: Task produces > 500 lines of exploratory logs (saves > 5,000 tokens). | Low: Task inspects 1–2 specific files (< 1,000 tokens). |
+| **Startup Delay** | Tolerates ~3–8s initialization delay. | Requires immediate execution (< 1s). |
+| **Modification Risk** | Multi-file edits or exploratory changes. | Single deterministic file edit. |
+| **Concurrency** | Parallel exploration across 2–4 independent modules. | Sequential dependent steps. |
 
-### Pattern B: Buffer Overflow / Spillover
-```text
-Initial Buffer:  [ Job A (RAM) | Job B (RAM) | Job C (RAM) ] (Capacity: 3)
-Incoming Event:  Job D arrives
-Result on Disk:  Job D appended to `overflow.log` on Disk (RAM buffer remains intact at 3)
-```
+### Matrix B: Workspace Isolation Selection
 
-### Pattern C: Cache Eviction (LRU / TTL)
-```text
-RAM Cache Map:   { keyA: dataA (oldest), keyB: dataB, keyC: dataC } (Max: 3)
-Read/Insert:     Insert keyD into RAM
-Eviction Action: Drops keyA from RAM -> { keyB: dataB, keyC: dataC, keyD: dataD }
-```
+| Workspace Mode | Mechanics | When to Use |
+| :--- | :--- | :--- |
+| **`inherit` (Shared)** | Worker reads/writes coordinator directory. | Read-only research, docs lookup, diagnostics. |
+| **`branch` (Sandbox Copy)** | Private copy of repository. | Code edits, compiling, or experimental changes (< 1GB). |
+| **`share` (Worktree)** | Shared git storage with independent worktree branch. | Monorepos or repositories > 1GB to prevent disk bloat. |
+
+### Matrix C: Direct DB Writes vs Staged Buffer
+
+| Factor | Two-Tier Staged Buffer | Direct Database Writes |
+| :--- | :--- | :--- |
+| **Write Volume** | > 1,000 writes/sec (live click counters, telemetry). | < 100 writes/sec (orders, profile updates). |
+| **Loss Tolerance** | Tolerates minor loss on sudden crash (e.g. 60s of metrics). | Zero tolerance for data loss (financial ledgers). |
+| **Query Pattern** | Aggregated stats or ephemeral counters. | Exact point-in-time relational records. |
 
 ---
 
-## 5. Multi-Mode Case Studies
+## 5. Canonical Case Studies
 
-### Mode A: Architecture Planning (Live Notification System)
+---
 
-* **Step 1 (BLUF):**  
-  We should use Server-Sent Events (SSE) instead of WebSockets because the server only needs to push one-way alerts to the browser, and SSE runs over plain HTTP without needing a separate connection server.
-* **Step 2 (Physical Mechanics & Visualization):**  
+### Case Study 1: AI Multi-Agent Orchestration
+
+#### Concrete Mechanics
+
+1. **Purpose:** The delegation framework routes sub-tasks to worker agents in isolated workspaces. The lead coordinator pauses at zero token cost and resumes reactively upon incoming reports.
+2. **Configuration Parameters:**
+
+| Category | Parameter | Description |
+| :--- | :--- | :--- |
+| **Identity & Role** | Agent Type & Role Name | Assigns specialized mandate (e.g., *Researcher*, *Tester*). |
+| **Task Instruction** | Isolated Task Prompt | Provides focused context without parent conversation bloat. |
+| **Compute Tier** | Model Selection | Fast models for lookup/diagnostics; heavy models for reasoning. |
+| **Resource Isolation** | Workspace Mode | `inherit` (read-only), `branch` (isolated copy), `share` (worktree > 1GB). |
+| **Permissions** | Tool Access Gates | Least-privilege tool access with recursion capped at Max Depth = 2. |
+| **Lifecycle** | Event Messaging & Kill | Asynchronous message delivery; active kill on hung workers. |
+
+3. **Coordination Flow:**
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User
+    participant Coordinator
+    participant TaskBus
+    participant Worker1 as Research Worker (inherit)
+    participant Worker2 as Coding Worker (branch)
+
+    User->>Coordinator: Delegates project task
+    Coordinator->>TaskBus: Dispatches Worker 1 & Worker 2
+    
+    par Worker Execution
+        TaskBus->>Worker1: Inits Worker 1 (Shared read-only, fast model)
+        TaskBus->>Worker2: Inits Worker 2 (Sandboxed branch, deep model)
+    and Coordinator Pauses
+        Coordinator->>Coordinator: Pauses (Zero token cost during wait)
+    end
+    
+    Worker1->>TaskBus: Sends research summary
+    Worker2->>TaskBus: Sends test & patch confirmation
+    TaskBus->>Coordinator: Reactive Wakeup via completion events
+    Coordinator->>User: Synthesizes findings and presents plan
+```
+
+4. **Safety Rules:**
+   - **Log Isolation:** Raw exploratory logs remain in worker context; only distilled reports return to coordinator.
+   - **Teardown & Cleanup:** On task completion, timeout (300s), or manual kill, temporary branches and worktrees are automatically pruned.
+   - **Fan-Out Limit:** Subagent spawning is capped at recursion depth 2.
+
+5. **Recommendation:** Use `branch` mode for code-modifying workers and `share` (worktree) mode for repositories > 1GB.
+
+#### Conceptual Overview
+
+1. **What Subagents Are:** Specialized worker instances delegated by a coordinator to perform tasks in parallel within isolated contexts and private workspaces, preventing conversation token exhaustion.
+2. **How Coordination Works:** The coordinator assigns isolated tasks to workers. While workers execute in their own directories, the coordinator pauses at zero token cost, resuming only when workers deliver their distilled findings.
+
+---
+
+### Case Study 2: Distributed Consensus & Leader Election (Raft)
+
+1. **Core Takeaway:** Raft relies on **Randomized Election Timeouts and Strict Majority Quorums** so that only one leader is elected per term. During network partitions, minority groups cannot reach quorum, preventing split-brain corruption.
+2. **Visual Flow Comparison:**
+
+```mermaid
+flowchart TD
+    subgraph SPLIT_BRAIN["Broken: Naive Partitioning without Quorum Gate"]
+        Cut1["Partition splits 5 nodes (3 vs 2)"] --> G1["Minority (2 nodes): Elects Leader A"]
+        Cut1 --> G2["Majority (3 nodes): Elects Leader B"]
+        G1 --> C1["Leader A accepts writes"]
+        G2 --> C2["Leader B accepts writes"]
+        C1 & C2 --> Fail["❌ Split-Brain: Conflicting writes corrupt state upon healing"]
+    end
+
+    subgraph RAFT_CLEAN["Clean: Strict Majority Quorum + Heartbeat Leases"]
+        Cut2["Partition splits 5 nodes (3 vs 2)"] --> Check{"Can candidate gather majority votes: (5/2) + 1 = 3?"}
+        Check -->|"Majority (3 nodes)"| Win["Elected Leader: Sends heartbeat leases"]
+        Check -->|"Minority (2 nodes)"| Lose["Election Fails: Rejects all client writes"]
+        Win --> Safe["✔ Zero state corruption"]
+    end
+```
+
+3. **State Rules:**
+   - *Quorum Gate:* Leader transition requires `Votes >= (TotalNodes / 2) + 1`.
+   - *Monotonic Term:* Nodes reject any message with an older Term.
+   - *Heartbeat Lease:* Leader sends keep-alive heartbeats within 50ms lease; steps down if a higher Term is seen.
+   - *Randomized Timeout:* Follower timeouts randomized (150ms–300ms) to prevent split votes.
+4. **Tradeoff:** Guarantees 100% consistency at the expense of making the minority partition read-only during splits.
+
+---
+
+### Case Study 3: High-Frequency Concurrency (Game Inventory Loop)
+
+1. **Root Cause:** At 240 FPS (4.16ms/frame), rapid pickups inspect stale slot counts because items despawn immediately while stat calculations take 10.00ms. A 21st item is picked up, rejected by the full bag, and destroyed without rollback.
+2. **Visual Flow Contrast:**
+
+```mermaid
+flowchart TD
+    subgraph BROKEN["Current Broken Flow: Stale Reads Cause Item Loss"]
+        F1["Frame 1 (t=0.00ms): Reads 18/20"] --> P1["Despawns Item 1 -> 10ms calculation"]
+        P1 -.->|"Slots remain 18 during calc"| F2["Frame 2 (t=4.16ms): Reads 18/20 (Stale)"]
+        F2 --> P2["Despawns Item 2 -> 10ms calculation"]
+        P2 -.->|"Slots still 18"| F3["Frame 3 (t=8.33ms): Reads 18/20 (Stale)"]
+        F3 --> P3["Despawns Item 3 -> 10ms calculation"]
+        P1 -->|"t=10.00ms"| S1["Item 1 enters Slot 19"]
+        P2 -->|"t=14.16ms"| S2["Item 2 enters Slot 20 (Full)"]
+        P3 -->|"t=18.33ms"| S3["❌ Item 3 rejected from full bag and destroyed"]
+    end
+
+    subgraph CLEAN["Proposed Flow: Synchronous Reservation + Safety Lease"]
+        In["Pickup request (0.00ms)"] --> Check{"(Filled Slots + Pending Reservations) < 20?"}
+        Check -->|"Available"| Res["1. Increment Pending (+1)<br/>2. Despawn item<br/>3. Start 10ms calculation"]
+        Check -->|"Bag Full"| Deny["Reject pickup at 0ms: Item stays on ground + emit cue"]
+        Res --> Calc{"Calculation resolves before 100ms timeout?"}
+        Calc -->|"Success"| Commit["Convert Pending to Filled (+1 Filled, -1 Pending)"]
+        Calc -->|"Timeout / Fail"| Rollback["Respawn item on ground & release Pending (-1 Pending)"]
+    end
+```
+
+3. **Cycle Timing Breakdown:**
+   - **60 FPS (16.67ms frame):** Frame interval > 10.00ms calculation delay. Item 1 resolves before Frame 2 checks. **Passes.**
+   - **240 FPS (4.16ms frame):** Frame interval < 10.00ms calculation delay. 2-3 frames fire before Item 1 resolves. **Causes item loss.**
+4. **Solution Rules:**
+   - *State Partition:* Track `Filled Slots` (max 20) alongside `Pending Reservations`.
+   - *Admission Gate:* Allow pickup only if `(Filled Slots + Pending Reservations) < 20`. Reject at 0ms if full.
+   - *Synchronous Reservation:* Increment `Pending Reservations (+1)` at frame 0.00ms before starting calculation.
+   - *Safety Timeout:* 100.00ms timeout. If unresolved, decrement Pending (-1) and respawn item to ground.
+   - *Late Results:* Discard late calculation completions arriving after timeout.
+
+---
+
+### Case Study 4: E-Commerce Payment Webhook Race
+
+1. **Root Cause:** Payment webhook and browser redirect arrive at the same millisecond and both read Order status as `PENDING`, capturing payment twice before confirmation is written.
+2. **Visual Flow Comparison:**
+
+```mermaid
+flowchart TD
+    subgraph BROKEN["Current: Unprotected Duplicate Capture"]
+        R1["Redirect: Reads PENDING"] --> P1["Captures Payment"]
+        W1["Webhook: Reads PENDING"] --> P2["Captures Payment (DUPLICATE)"]
+        P1 --> M1["Sets CONFIRMED"]
+        P2 --> M2["Sets CONFIRMED"]
+    end
+
+    subgraph CLEAN["Clean: Atomic Transition Gate"]
+        EventIn["Incoming Event (Redirect or Webhook)"] --> Gate{"Atomic Update: PENDING -> PROCESSING"}
+        Gate -->|"First Event"| Proc["Process payment & mark CONFIRMED"]
+        Gate -->|"Second Event"| Drop["Already PROCESSING/CONFIRMED -> ACK and discard"]
+    end
+```
+
+3. **State Rules:**
+   - *Single Transition:* Order transitions from `PENDING` to `PROCESSING` exactly once.
+   - *Atomic Check:* Status check and update execute atomically.
+   - *Duplicate Acknowledgment:* Subsequent events for `PROCESSING` or `CONFIRMED` orders return success and discard payload.
+   - *Timeout Guard:* If payment processing exceeds 30s, background reconciliation resets order to `PENDING` or `FAILED`.
+
+---
+
+### Case Study 5: High-Performance Storage Write Buffering
+
+1. **Recommendation:** Store high-frequency telemetry counters in an **in-memory staging buffer** and flush aggregated batch totals to the **primary database** once per minute, preventing disk I/O saturation.
+2. **Visual Flow Comparison:**
 
 ```mermaid
 flowchart LR
-    Backend["Backend Service"] -->|"1. Plain HTTP Alert (text/event-stream)"| Browser["Browser Client (Listening Socket)"]
-```
-
-  1. The browser initiates a standard HTTP request and leaves the socket open.
-  2. Whenever a notification occurs, the backend flushes a UTF-8 text line down that open socket.
-  3. The browser immediately receives the line without needing two-way heartbeat tunnels.
-* **Step 3 (Point of Friction / Tradeoff):**  
-  WebSockets keeps a two-way tunnel open and requires custom ping/pong heartbeats. For simple one-way notifications, that extra machinery adds maintenance overhead without providing any two-way benefits.
-* **Step 4 (Concrete Decision & Next Action):**  
-  We create a single `/api/events` endpoint in `src/server.ts` and connect the frontend with `EventSource`. Do you want to review the endpoint code?
-
----
-
-### Mode B: Technical Debate / Tradeoff (JSON Column vs SQL Table)
-
-* **Step 1 (BLUF):**  
-  We should put `status` and `user_id` in separate SQL columns and only keep custom user tags in a `metadata` JSON column, because filtering inside JSON across 100,000 rows forces the database to read every single row from disk.
-* **Step 2 (Physical Mechanics & Visual Contrast):**  
-
-```mermaid
-flowchart TD
-    subgraph RELATIONAL["Relational Column: Jump via Index"]
-        IndexTree["Sorted Index Tree"] -->|"2ms direct lookup"| RelTarget["Target Rows (10 rows read)"]
+    subgraph DIRECT["Direct DB Writes"]
+        C1["10,000 events/sec"] -->|"10,000 disk writes/sec"| DB1["Primary Database"]
+        DB1 --> Sat["❌ Disk I/O saturation & row lock contention"]
     end
 
-    subgraph JSON_BLOB["JSON Column: Read Everything from Disk"]
-        FullScan["Disk Read: 100,000 Entire Rows"] -->|"Unpack JSON text per row"| JsonTarget["Target Rows (High CPU Spike)"]
+    subgraph STAGED["Two-Tier Buffer"]
+        C2["10,000 events/sec"] -->|"Sub-ms write"| Mem["In-Memory Buffer"]
+        Mem -->|"1 batch write / min"| DB2["Primary Database"]
+        DB2 --> Ok["✔ Database handles clean batch summaries"]
     end
 ```
 
-  1. **Relational Path:** The database traverses a pre-sorted index tree on disk (reading ~3 index pages), directly locates the 10 matching row pointers, and reads only those 10 rows into RAM. Total time: ~2ms.
-  2. **JSON Blob Path:** Because keys inside JSON are unstructured text, the database has no index pointers. It must read all 100,000 table rows from disk into memory, parse the text of every row, and check the string value. Total time: ~450ms with 100% CPU usage.
-* **Step 3 (Point of Friction / Tradeoff):**  
-  Putting all fields in JSON saves 5 minutes of schema migration today, but causes database CPU to spike to 100% as soon as table size grows past 10,000 records.
-* **Step 4 (Concrete Decision & Next Action):**  
-  We define explicit SQL columns for `id`, `status`, and `user_id`, and keep `metadata` JSON only for unstructured custom tags. Shall we write the database migration script?
-
----
-
-### Mode C: System Debugging (Concurrent State Overwrite in Rate Limiter)
-
-* **Step 1 (BLUF):**  
-  The rate limiter allowed all 20 concurrent requests instead of capping at 5 because the system paused to wait for a slow disk save before recording the first request in RAM, causing all 19 subsequent requests to check an empty RAM counter and independently mark themselves as request #1.
-* **Step 2 (Physical Mechanics & Visual Contrast):**  
-
-#### Current Code (Broken Flow: Inverted Order Creates a Stale Memory Window)
-```mermaid
-flowchart TD
-    subgraph INCOMING["1. 20 Requests Arrive Simultaneously"]
-        Req1["Request #1 (Arrives 1ms earlier)"]
-        ReqRest["Requests #2 through #20 (Right behind)"]
-    end
-
-    subgraph BROKEN["2. Broken Flow: Inverted Order of Operations"]
-        Check1["Request 1: Reads RAM -> Empty"]
-        Wait1["❌ PAUSE: Waits 50ms for disk save<br/>(RAM NOT UPDATED YET!)"]
-        
-        CheckRest["Requests 2-20: Read RAM<br/>(Still sees empty RAM because Req 1 paused!)"]
-        PassRest["All 19 requests allowed through<br/>-> All write 'Count = 1' into RAM"]
-        
-        Wake1["50ms later: Req 1 finishes disk save<br/>-> Also writes 'Count = 1'"]
-    end
-
-    Req1 --> Check1 --> Wait1
-    ReqRest --> CheckRest --> PassRest
-    Wait1 -.-> Wake1
-```
-
-#### How We Can Fix It (Immediate Synchronous RAM Update)
-```mermaid
-flowchart TD
-    subgraph FIXED["Clean Flow: Immediate RAM Write"]
-        CleanCheck["Incoming Request: Checks RAM Counter"]
-        CleanInc["1. Immediately increment counter in RAM"]
-        CleanFlush["2. Trigger background disk write without waiting"]
-        CleanAllow["3. Allow request through if count <= 5"]
-
-        CleanCheck --> CleanInc --> CleanFlush --> CleanAllow
-    end
-```
-
-* **Step 3 (Point of Friction / Gap):**  
-  The physical sequence of operations was inverted:
-  - *Correct:* Update counter in RAM immediately $\rightarrow$ Trigger background disk save without waiting.
-  - *Current (Broken):* Wait for disk save $\rightarrow$ Only then write counter to RAM.
-  The 50ms pause created a blind window where incoming callers acted on stale RAM state.
-* **Step 4 (Concrete Decision & Next Action):**  
-  We reverse the order: write the updated counter into RAM synchronously first, and let the disk save run in the background without blocking the request path.
-
----
-
-### Mode D: Layered System Explanation ("Just Explain" with Visual Contrast)
-
-* **Task:** *"Explain how this background job ingestion and processing service works."*
-
-* **1. The Raw Core Idea:**  
-  Web servers crash when thousands of users upload high-resolution files simultaneously. This service acts as an **in-memory staging buffer**: it absorbs incoming jobs into fast RAM, spills excess payloads to an emergency disk file when RAM is full, and worker threads process jobs continuously in the background.
-
-  **In short:** Sudden bursts of heavy uploads crash web server RAM ➔ Buffer jobs in fast RAM, spill excess to disk, and let background worker threads drain the queue.
-
-* **2. High-Level Movement & Visual Contrast:**  
-
-#### Current Code (Broken Flow: Sequential Fall-Through Causes Duplicate Processing)
-```mermaid
-flowchart TD
-    subgraph BROKEN_INGEST["Current Reality: Sequential Fall-Through"]
-        CheckBuffer{"Buffer Check:<br/>Does RAM Queue hold >= 100 jobs?"}
-        SpillToDisk["1. Write payload to Emergency Disk Spillover file"]
-        FallThrough["❌ MISSING RETURN:<br/>Execution falls through to next line!"]
-        PushToRAM["2. Push payload directly into RAM Worker Queue"]
-        DuplicateResult["RESULT: Payload saved on Disk AND pushed to RAM<br/>(Worker processes same job twice!)"]
-
-        CheckBuffer -->|"Yes (RAM Buffer Full)"| SpillToDisk --> FallThrough --> PushToRAM --> DuplicateResult
-        CheckBuffer -->|"No (Has Room)"| PushToRAM
-    end
-```
-
-#### How We Can Fix It (Mutually Exclusive Storage Guard)
-```mermaid
-flowchart TD
-    subgraph CLEAN_INGEST["Intended Design: Mutually Exclusive Storage Guard"]
-        CheckBufferClean{"Buffer Check:<br/>Is RAM Queue full?"}
-        SpillClean["Write payload to Emergency Disk File<br/>-> RETURN & EXIT INGESTION"]
-        PushRAMClean["Push payload into RAM Worker Queue<br/>-> FINISH INGESTION"]
-
-        CheckBufferClean -->|"Yes (Full)"| SpillClean
-        CheckBufferClean -->|"No (Room)"| PushRAMClean
-    end
-```
-
-* **The Moving Parts & Data Paths:**
-  - *Ingestion Handler:* Validates incoming job payloads and checks current RAM buffer capacity.
-  - *RAM Queue Buffer:* Fast FIFO array in memory holding up to 100 jobs for instant worker pickup.
-  - *Emergency Disk File:* File append stream on disk that safely stores overflow jobs when RAM is saturated.
-
-* **Compact State Trace (Spillover Transition):**
-```text
-Initial State:   RAM Queue Buffer holds 100/100 jobs (Full)
-Incoming Event:  Job #101 arrives at Ingestion Handler
-Correct Action:  Writes Job #101 to Emergency Disk File -> Returns early
-Result:          RAM Queue Buffer remains at 100; Job #101 safely persisted on Disk
-```
-
-* **3. Real Operational Boundaries:**  
-  1. *Threshold Desynchronization:* The ingest handler checks a 100-job threshold, but the internal RAM buffer allows up to 200 items before throwing out-of-memory errors.
-  2. *Missing Guard:* When RAM is full, the handler writes to disk but fails to return early, accidentally pushing the job into RAM as well.
-* **4. Progressive Depth Check-in:**  
-  Does this surface layer give you the mental model you need, or do you want to drill into:
-  - **(A)** How worker threads drain the emergency disk spillover file once RAM clears, or
-  - **(B)** Gating the ingestion handler with an explicit early return branch?
+3. **Storage Rules:**
+   - *Buffering:* Aggregate high-frequency counters in memory. No single raw event writes directly to disk.
+   - *Flush Schedule:* Background worker flushes pending totals every 60 seconds or at 50,000 records.
+   - *Crash Boundary:* Server crash risks losing up to 60s of non-critical telemetry counters, protecting primary database integrity.
