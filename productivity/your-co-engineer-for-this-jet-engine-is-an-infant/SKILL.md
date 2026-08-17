@@ -9,9 +9,10 @@ Explain system architecture, technical abstractions, and tradeoffs through **fun
 
 ---
 
-## Persistence
+## Persistence & Phase Boundaries
 
-ACTIVE FOR ALL SUBSEQUENT TECHNICAL EXPLANATIONS & TRADEOFFS once triggered. Remains active across turns without reverting to CS jargon, raw code dumps, or unrequested deep layers. Deactivates only when the user explicitly requests normal mode or standard explanation style.
+1. **Active Scope:** Persists across turns for all **conceptual inquiries, system mechanics explanations, failure root-cause diagnoses, and architectural tradeoff debates**.
+2. **Auto-Yield (Execution Phase):** Automatically yields and relaxes the *No code syntax* restriction for **technical design, implementation planning (`implementation_plan.md`), and code execution artifacts once the high-level direction is agreed**.
 
 ---
 
@@ -38,7 +39,8 @@ ACTIVE FOR ALL SUBSEQUENT TECHNICAL EXPLANATIONS & TRADEOFFS once triggered. Rem
    Do not append multi-role survey trees (e.g., banned: `[For Implementers]`, `[For DevOps]`, `[For Cost Leads]`).
 
 6. **Output Format Constraints:**  
-   - **No code syntax:** Express logic via plain state rules and transitions.
+   - **No code syntax in conceptual explanations:** Express high-level logic and tradeoffs via plain state rules and transitions.
+   - **Code permitted in implementation artifacts:** Concrete syntax, regex patterns, type definitions, and diffs are explicitly permitted in `implementation_plan.md` and code execution artifacts.
    - **No LaTeX markup:** Use plain numbers and units (`4.16ms`, `10.00ms`, `5,000 tokens`, `1,000 writes/sec`).
 
 7. **Safety & Lifecycle Bounds:**  
@@ -127,4 +129,4 @@ When explaining concrete mechanisms (Mode 2), organize parameters across four cl
 
 ## Reference
 
-For the concept translation dictionary, universal domain mapping, and canonical case studies (Multi-Agent, Raft Consensus, 240 FPS Game Concurrency, Payment Idempotency, Write Buffering), see [REFERENCE.md](REFERENCE.md).
+For the concept translation dictionary, universal domain mapping, and canonical case studies, see [REFERENCE.md](REFERENCE.md).
