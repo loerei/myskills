@@ -1,56 +1,47 @@
 ---
 name: write-a-request
-description: Use when asked to write a request.
+description: Use when asked to draft a feature request, change proposal, or RFC.
 ---
 
 # Write a Request
 
-## Core Rules
+Draft idea-level proposals, behavioral change requests, and policy enhancements in `REQUEST.md` (or `request_<topic>.md`).
 
-1. **Zero speculation**: Propose at the behavioral or interface level. State what capability, option, or behavior is needed; never dictate internal architecture or guess implementation details.
-2. **Ground in real context**: State the exact friction point, missing option, or workflow bottleneck with a concrete example.
-3. **Clear rationale**: Explain why the change matters without hype.
+## Directives
 
-## Workflow
-
-```mermaid
-flowchart TD
-    Start["Request / Proposal Need"] --> Identify["1. Identify Target & Concrete Problem"]
-    Identify --> Formulate["2. Formulate Idea-Level Proposal"]
-    Formulate --> Draft["3. Draft Request (REQUEST.md)"]
-    Draft --> Verify["4. Verify Against Checklist"]
-    Verify --> Deliver["5. Deliver Request & Artifact Links"]
-```
+1. **Zero Speculation**: Propose at the behavioral or interface level (`what/how it looks`); NEVER dictate internal algorithms or guessed architecture.
+2. **Concrete Grounding**: MUST anchor the problem in an observed bottleneck or real example; no hypothetical generalities.
+3. **No Fluff Rationale**: State direct technical value and saved friction without marketing hype.
 
 ---
 
-## Request Template (`REQUEST.md` / `request_*.md`)
+## Template (`REQUEST.md`)
 
 ```markdown
-# Request: [Short, Descriptive Summary of Request]
+# Request: [Short Descriptive Summary]
 
-**Target**: [e.g. `tool_name`, `DOCUMENT.md`, `project_name`]  
-**Type**: [Feature / Policy Change / Enhancement]  
-**Date**: [YYYY-MM-DD]  
+**Target**: `<tool / document / repository>`  
+**Type**: `[Feature / Policy / Enhancement]`  
+**Date**: YYYY-MM-DD  
 
 ---
 
 ## 1. Problem (What)
-- Describe the friction point, limitation, or missing capability with a concrete example.
+- Concrete friction point, missing option, or workflow bottleneck. Include observed example.
 
 ## 2. Proposed Idea (Do What)
-- Describe the desired behavior, option, or interface change at the concept level.
-- Focus on idea-level; do not dictate internal implementation.
+- Desired behavioral, parameter, or interface change at conceptual level.
+- Do NOT dictate internal implementation mechanics.
 
 ## 3. Rationale (Why)
-- Explain the concrete value.
+- Direct operational value and friction eliminated.
 ```
 
 ---
 
-## Quality Checklist
+## Workflow
 
-- [ ] **Zero Speculation**: Proposes behavior and interfaces only; does not assert or dictate internal mechanics.
-- [ ] **Concrete Problem**: Problem is backed by a real use case or example, not hypothetical generalities.
-- [ ] **Distinct Rationale**: Clearly states why the change is beneficial without marketing fluff.
-- [ ] **Self-Contained**: Clear and actionable for maintainers or policy reviewers.
+1. Identify the target entity and exact friction point.
+2. Formulate behavioral proposal following Directives.
+3. Write artifact to `REQUEST.md` (or `<appDataDir>/brain/<convo-id>/request_<topic>.md`).
+4. Present file link and brief summary to user.

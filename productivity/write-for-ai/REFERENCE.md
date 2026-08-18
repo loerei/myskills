@@ -39,7 +39,7 @@
 | **Tool Description** | Tool selection | When to call this vs. other tools? | Parameter repetition, internal implementation details, marketing adjectives |
 | **Parameter Doc** | Value formulation | What value format is expected & what does it trigger? | Type/default repeats, redundant explanations of obvious names |
 | **System / Agent Rule** | Behavioral constraint | What MUST / NEVER happen in this condition? | Polite hedging (`try to`), explanatory rationale, background context |
-| **SKILL.md Frontmatter** | Dynamic discovery | What exact user keywords/phrases trigger this skill? | Generic summaries (`Helps with code`), implementation details |
+| **SKILL.md Frontmatter** | Router gate / Trigger | When to load this skill? (Trigger condition only) | Feature summaries (What), benefits (Why), slash command mentions |
 | **Tool Error Message** | Agent recovery | What went wrong and what exact command/action fixes it? | Generic failures (`Something went wrong`), internal stack traces without recovery steps |
 
 ---
@@ -163,21 +163,23 @@ MUST run impact analysis before modifying any function or class symbol.
 
 ---
 
-### G. System Prompt / Branching Decision Rule
+### G. System Prompt / Decision Matrix vs. Multi-Step Workflow
 
-**Before (Prose Rule):**
-```
-Always use dry_run=true to preview large or risky changes before applying.
-```
-**After (Mermaid Decision Tree):**
-```mermaid
-flowchart TD
-    Check{"Scope of file edit?"}
-    Check -->|"3+ files or shared config"| DryRun["Use dry_run=true, then apply_dry_run"]
-    Check -->|"Single isolated file"| Direct["Apply directly (dry_run=false)"]
-```
+**1. Rule Branching (Decision Table):**
+- **Before (Prose Rule):**
+  ```
+  Always use dry_run=true to preview large or risky changes before applying.
+  ```
+- **After (2-Column Decision Table):**
+  | Condition | Action |
+  | :--- | :--- |
+  | `allow_multiple: true` | Use `dry_run=true`, then `apply_dry_run` |
+  | Batch touching 3+ files | Use `dry_run=true`, then `apply_dry_run` |
+  | Single isolated edit | Apply directly (`dry_run=false`) |
+- **Why:** Prose rules force AI to guess what `"large or risky"` means. A 2-column table gives exact branch conditions with minimal tokens.
 
-**Why:** Prose rules force the AI to guess what `"large or risky"` means. A Mermaid decision tree defines the exact branching control flow without ambiguity.
+**2. Multi-Step Workflows (Mermaid Diagram):**
+- Reserve Mermaid flowcharts strictly for multi-step execution loops, state machines, and cross-agent handoffs (where a flat table cannot represent progression or cyclic recovery).
 
 ---
 
@@ -225,3 +227,55 @@ STRICT BAN: NEVER append multi-role persona survey trees (e.g., [For DevOps], [F
 **Why:**
 - Base models have no natural tendency to output multi-role persona trees unless prompted.
 - Adding explicit bans against custom prompt artifacts wastes tokens and risks triggering the Pink Elephant effect. Reserve `NEVER` strictly for overriding default LLM biases.
+
+
+---
+
+### K. SKILL.md Frontmatter Description (The "Use When Only" Principle)
+
+When scaling to 60+ skills, frontmatter descriptions act strictly as a **Router Gate**. They must answer ONLY *"When to load this skill?"* in **10–15 words**. Never summarize internal features ("What"), justify benefits ("Why"), or add slash commands (`/command` is handled automatically by platform metadata).
+
+**Bad (What-Summary & Slash Command Clutter — 25+ words):**
+```yaml
+description: Draft reproducible bug reports with environment details, raw logs, and file replicas. Use when documenting bugs, tool failures, or invoking /write-a-bug-report.
+```
+*(Wastes context budget explaining "what" the skill does and redundantly repeating the slash command).*
+
+**Bad (Vague Fluff — No Actionable Trigger):**
+```yaml
+description: Helps write better bug reports.
+```
+*(Lacks trigger keywords for intent matching).*
+
+**Good (Use When Only — 10–14 words):**
+```yaml
+description: Use when asked to write a bug report or document tool failures.
+```
+*(Pure trigger condition; zero token waste).*
+
+---
+
+### L. Over-Pruning vs. True Deslop (The Zero-Info-Drop Invariant)
+
+Deslopping means eliminating conversational padding, marketing adjectives, and internal mechanism trivia — **NEVER dropping operational parameters, failure conditions, or recovery steps**.
+
+**Bad (Bloated Slop — Noisy & Verbose):**
+```
+Perform a robust, atomic, and state-of-the-art commit of a patch previewed with dry_run=true.
+Engineered to avoid resending diff contents across the wire, cutting token usage in half.
+Includes optimistic hash-locking guards to prevent concurrency corruption and fails with a clear error
+if the run_id is unknown, expired (TTL 300 s), or if the file was modified.
+```
+
+**Bad (Over-Pruned / Info Drop — Drops Critical Constraints):**
+```
+Apply the patch cached by dry_run=true.
+```
+*(Dangerous: Dropped the `run_id` requirement, dropped the `300 s` expiration window, and dropped the failure condition when files change on disk. The agent is left blind on recovery).*
+
+**Good (True Deslop with Zero Info Drop — 100% Signal Preserved):**
+```
+Apply the patch cached by a previous dry_run=true call using its run_id.
+Fails if run_id is expired (300 s TTL) or if target file was modified after the dry-run.
+```
+*(Strips 100% of the marketing fluff and internal hash trivia, but preserves 100% of the parameter contract, error triggers, and recovery conditions).*

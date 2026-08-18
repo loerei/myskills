@@ -5,7 +5,7 @@
 
 This directory (`gemini/`) contains the custom override rules for **Google Antigravity / Gemini**.
 
-When you run `distribute-skills`, `gemini/AGENTS.md` automatically overrides root `AGENTS.md` and syncs to `~/.gemini/AGENTS.md`.
+When you run `agents` (or `agents --distribute`), `gemini/AGENTS.md` automatically overrides root `AGENTS.md` and syncs to `~/.gemini/AGENTS.md`.
 
 ---
 
@@ -32,5 +32,5 @@ Exact, un-edited text of Antigravity system-level instruction tags (`<identity>`
 
 Inspect active policy resolution paths:
 ```bash
-distribute-skills --info gemini.policy
+agents --info gemini.policy
 ```

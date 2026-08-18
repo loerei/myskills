@@ -1,38 +1,29 @@
 ---
 name: write-a-bug-report
-description: Use when asked to write a report for a bug.
+description: Use when asked to write a bug report or document tool failures.
 ---
 
 # Write a Bug Report
 
-## Core Rules
+Document reproducible failures, tool errors, and bug reproductions in `BUG_REPORT.md` (or `bug_<topic>.md`).
 
-1. **Zero speculation**: NEVER speculate on internal root causes or unverified code mechanics. State only observed inputs, outputs, error traces, and measured timings (never guess or fabricate durations).
-2. **File snapshot on failure**: When a file operation or patch fails, save an exact copy of target file(s) into `scratch/replica_<filename>` at the moment of failure before making further changes.
-3. **Observed vs. expected**: State clearly what happened versus what was supposed to happen.
+## Directives
 
-## Workflow
-
-```mermaid
-flowchart TD
-    Start["Bug / Failure Occurs"] --> Snapshot["1. Snapshot Target File to scratch/"]
-    Snapshot --> Extract["2. Extract Environment & Raw Trigger"]
-    Extract --> Draft["3. Draft Bug Report (BUG_REPORT.md)"]
-    Draft --> Verify["4. Verify Against Checklist"]
-    Verify --> Deliver["5. Deliver Report & Artifact Links"]
-```
+1. **Zero Speculation**: State ONLY observed inputs, stderr/stdout logs, exit codes, and measured timings; NEVER guess unverified root causes or fabricate durations.
+2. **File Snapshot on Failure**: When a file operation or patch fails, MUST copy target file(s) to `scratch/replica_<filename>` immediately before further modifications.
+3. **Exact Payloads**: MUST preserve complete raw command invocations, request payloads, and minimal repro scripts without truncation.
 
 ---
 
-## Bug Report Template (`BUG_REPORT.md` / `issue_*.md`)
+## Template (`BUG_REPORT.md`)
 
 ```markdown
-# Bug Report: [Short, Descriptive Summary of Failure]
+# Bug Report: [Short Descriptive Summary]
 
-**Target**: [e.g. `tool_name:method`, `cli_command`, `package_name`]  
-**Environment**: [OS / Runtime / Versions]  
-**Severity**: [Blocker / Major / Minor]  
-**Date**: [YYYY-MM-DD]  
+**Target**: `<tool:method / command / package>`  
+**Environment**: `<OS / Runtime / Versions>`  
+**Severity**: `[Blocker / Major / Minor]`  
+**Date**: YYYY-MM-DD  
 
 ---
 
@@ -43,23 +34,22 @@ flowchart TD
 - Raw stderr/stdout log snippet.
 
 ### Expected Behavior
-- What should have happened instead (expected output, exit code, or clean error).
+- Expected output, exit code, or clean error.
 
 ## 2. Reproduction (Repro)
 
 * **Target Snapshot**: `[replica_filename](file:///absolute/path/to/replica)` (if applicable).
-* **Trigger (Command / Payload / Script)**:
-```bash / json / language
-[Exact command, payload, or minimal reproduction script]
+* **Trigger Payload / Command**:
+```bash
+<exact command, payload, or minimal reproduction script>
 ```
 ```
 
 ---
 
-## Quality Checklist
+## Workflow
 
-- [ ] **Zero Speculation**: Contains no unverified assertions about internal code or root causes.
-- [ ] **Replica Preserved**: Exact copy of the file at bug occurrence is saved and linked.
-- [ ] **Exact Payload**: Raw input payload or command is preserved without truncation.
-- [ ] **Environment & Timings**: OS/runtime documented; durations included only if measured (never guessed).
-- [ ] **Self-Contained**: An external developer can copy the payload + replica to reproduce immediately.
+1. Snapshot affected target files to `scratch/replica_<filename>` if a write/patch failed.
+2. Collect raw logs, error traces, and exact environment versions.
+3. Write bug artifact to `BUG_REPORT.md` (or `<appDataDir>/brain/<convo-id>/bug_<topic>.md`).
+4. Present file link and brief summary to user.

@@ -96,22 +96,29 @@ git commit -m "test: <dev-bypass-or-test-description>"
 3. Spawn $N$ subagents concurrently using `invoke_subagent` (1 subagent per updated diff file).
    *(If `!HU` tag is supplied, run Subagents in **Bloat Hunt Mode** focusing exclusively on identifying Type U / Type 2U diffs to strip before running full bug analysis).*
 4. Supply each subagent with: assigned `.diff` path, full codebase access (`file://`), `PR.md` Goal specification path (if `!GPR` was invoked), goal baseline metrics, and bug symptoms.
-5. See [REFERENCE.md](REFERENCE.md) via `view_file` for the exact ready-to-use subagent prompt template.
+5. **Per-Hunk Classification & Line-Weighted % Breakdown Rule**: Instruct subagents to evaluate the diff at the granular **Git Hunk level** (`@@ -L,N +L,M @@` or logical block):
+   - Assign a category code (`Type 0`, `Type 1`, `Type 2`, `Type 3`, `Type U`, `Type 2U`) to *each individual hunk*.
+   - Calculate the percentage breakdown of each Type based on changed line counts: `% Type X = (lines in Type X / total changed lines in diff) * 100%`.
+   - Provide an overall file action recommendation (e.g. **Full Keep**, **Partial Strip** [reverting only `Type U` hunks], **Surgical Fix**, or **Full Discard**).
+6. See [REFERENCE.md](REFERENCE.md) via `view_file` for the exact ready-to-use subagent prompt template and per-hunk schema.
 
 ### Phase 6: Confidence Voting & Extended Taxonomy Matrix
-1. Collect subagent assessments across Goal criticality (feature, perf, bugfix, refactor impact), confidence levels (0-100%), and 6-tier bug & goal taxonomy:
+1. Collect subagent assessments across Goal criticality (feature, perf, bugfix, refactor impact), per-hunk classifications, changed-line percentage breakdowns, confidence levels (0-100%), and 6-tier bug & goal taxonomy:
 
 | Category Code | Name | Description | Action Strategy |
 | :---: | :--- | :--- | :--- |
-| **Type 0** | **Clean / Clear** | Changes in diff are completely unrelated to the reported bug and are contributing to Goal. | **Keep** clean Goal code |
+| **Type 0** | **Clean / Clear** | Changes in diff/hunk are completely unrelated to the reported bug and are contributing to Goal. | **Keep** clean Goal code/hunk |
 | **Type 1** | **Missing Code** | Bug occurs because new code for the Goal feature is missing (existing code is fine). | **Implement** missing Goal logic |
 | **Type 2** | **Existing Code Bug** | Bug occurs because of a defect in pre-existing code contributing to Goal. | **Surgical Fix** pre-existing code |
 | **Type 3** | **Both** | Bug is caused by a combination of pre-existing code defects AND missing code for Goal. | **Implement + Surgical Fix** |
-| **Type U** | **Unrelated to Goal** | Code does not contribute to Goal (accidental prototype bloat / dead code). | **Strip / Discard** immediately |
+| **Type U** | **Unrelated to Goal** | Code does not contribute to Goal (accidental prototype bloat / dead code). | **Strip / Discard** hunk or file |
 | **Type 2U** | **Unrelated Buggy Code** | Bug is in pre-existing or prototype code that is unrelated to and does not contribute to Goal. | **Strip / Discard** (do NOT waste time fixing!) |
 
 2. Compile all assessments into `<appDataDir>\brain\<conversation-id>\subagents_diff_and_bug_analysis.md`.
-3. Discard diffs classified as **Type U** or **Type 2U** (preventing unnecessary surgical fix effort for non-goal code), retain **Type 0** clean Goal code, and pinpoint minimal surgical fix line edits for **Type 1/2/3** findings.
+3. Process action recommendations based on per-hunk taxonomy and percentage breakdown:
+   - **Full Discard**: Discard diffs where `Type U` + `Type 2U` > 80% of changed lines.
+   - **Partial Strip**: For mixed files, selectively revert/patch out `Type U` / `Type 2U` hunks while retaining `Type 0` clean Goal hunks.
+   - **Surgical Fix**: Pinpoint minimal surgical line edits for `Type 1/2/3` hunks.
 4. See [REFERENCE.md](REFERENCE.md) via `view_file` for subagent markdown/JSON schemas and consensus report templates.
 
 ---

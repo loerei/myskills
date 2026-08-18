@@ -1,0 +1,55 @@
+{
+  "projectsRoot": "D:\\Projects",
+  "excludePatterns": [
+    "backup",
+    "worktree",
+    "myskills"
+  ],
+  "policy": {
+    "rootFile": "AGENTS.md",
+    "subdocsDir": "subdocs"
+  },
+  "categories": [
+    "design",
+    "engineering",
+    "quality",
+    "productivity",
+    "personal"
+  ],
+  "mattPocockInstall": false,
+  "platforms": [
+    {
+      "name": "gemini",
+      "sourceDir": "gemini",
+      "baseDir": "~/.gemini",
+      "agentsDest": "~/.gemini/AGENTS.md",
+      "skillsDir": "~/.gemini/config/skills",
+      "subagentRulesDir": "~/.gemini/config/subagent_rules",
+      "syncFiles": [
+        "AGENTS.md"
+      ]
+    },
+    {
+      "name": "claude",
+      "sourceDir": "claude",
+      "baseDir": "~/.claude",
+      "agentsDest": "~/.claude/CLAUDE.md",
+      "skillsDir": "~/.claude/skills",
+      "subagentRulesDir": "~/.claude/subagent_rules",
+      "syncFiles": [
+        "AGENTS.md"
+      ]
+    },
+    {
+      "name": "cursor",
+      "sourceDir": "cursor",
+      "baseDir": "~/.cursor",
+      "agentsDest": "~/.cursor/rules/AGENTS.md",
+      "skillsDir": "~/.cursor/skills",
+      "subagentRulesDir": "~/.cursor/subagent_rules",
+      "syncFiles": [
+        "AGENTS.md"
+      ]
+    }
+  ]
+}

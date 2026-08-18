@@ -3,7 +3,8 @@
   "version": "2.0.0",
   "type": "module",
   "bin": {
-    "distribute-skills": "./bin/distribute-skills.js"
+    "agents": "./bin/agents.js",
+    "distribute-skills": "./bin/agents.js"
   },
   "engines": {
     "node": ">=18"

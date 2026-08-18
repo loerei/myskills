@@ -104,6 +104,25 @@ export function processProject(projectPath, skillCatalog, { dryRun = false, allo
     }
   }
   
+  // Sync Policy Subdocs into project workspace .agents/subdocs/
+  const sourceRoot = path.resolve(projectPath, '..', 'myskills');
+  const rootSubdocsDir = fs.existsSync(path.join(projectPath, 'subdocs'))
+    ? path.join(projectPath, 'subdocs')
+    : (fs.existsSync(sourceRoot) ? path.join(sourceRoot, 'subdocs') : null);
+
+  if (rootSubdocsDir && fs.existsSync(rootSubdocsDir)) {
+    const destSubdocsDir = path.join(projectPath, '.agents', 'subdocs');
+    try {
+      const cp = copyRecursiveIfDifferent(rootSubdocsDir, destSubdocsDir, { dryRun });
+      if (cp.changed) {
+        changedAny = true;
+        result.changes.push(`Updated policy subdocs`);
+      }
+    } catch (e) {
+      result.errors.push(`Failed to sync policy subdocs: ${e.message}`);
+    }
+  }
+
   if (result.status !== 'installed' && changedAny) {
     result.status = 'updated';
   }
