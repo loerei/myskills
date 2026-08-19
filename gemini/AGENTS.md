@@ -38,13 +38,13 @@ flowchart TD
             EvalPrompt{"Evaluate Prompt"} --> TagCheck{"Contains Explicit Tier Tag<br/>(T1 / T2 / T3)?"}
 
             TagCheck -->|"T1 / [T1]"| SetTier1["State: TIER 1<br/>Read & Debate Only<br/>STRICT WRITE BAN"]
-            TagCheck -->|"T2 / [T2]"| SetTier2["State: TIER 2<br/>Write ONLY to .scratch/ or brain/scratch/<br/>Run diagnostics"]
+            TagCheck -->|"T2 / [T2]"| SetTier2["State: TIER 2<br/>Write ONLY to .scratch/, .devutil/<br/>or brain/scratch/<br/>Run diagnostics"]
             TagCheck -->|"T3 / [T3]"| SetTier3["State: TIER 3<br/>Source Edits / Git Authorized<br/>(EXPLICIT_APPROVAL = TRUE)"]
 
             TagCheck -->|"No Tag"| InputAnalysis{"Analyze User Prompt Type"}
 
             InputAnalysis -->|"Question / Proposal / Analysis<br/>/ Prompt ends with '?'"| SetTier1
-            InputAnalysis -->|"Diagnostic / Scratch File Operation"| PathCheck{"Target Path inside .scratch/<br/>or brain/scratch/?"}
+            InputAnalysis -->|"Diagnostic / Scratch File Operation"| PathCheck{"Target Path inside .scratch/,<br/>.devutil/ or brain/scratch/?"}
             PathCheck -->|"Yes"| SetTier2
             PathCheck -->|"No (Repo Source Path)"| Tier3Gate{"Explicit Approval Granted for Plan?"}
 
@@ -104,7 +104,7 @@ flowchart TD
             ProceedToExec --> CurrentTier{"Current Tier State?"}
 
             CurrentTier -->|"Tier 1"| ReadDebate["Execute Read & Debate<br/>Propose implementation_plan.md"] --> ReportProposal
-            CurrentTier -->|"Tier 2"| RunScratch["Execute Diagnostic<br/>in .scratch/ or brain/scratch/<br/>Gather Empirical Evidence"] --> ReportOutcome
+            CurrentTier -->|"Tier 2"| RunScratch["Execute Diagnostic<br/>in .scratch/, .devutil/<br/>or brain/scratch/<br/>Gather Empirical Evidence"] --> ReportOutcome
             CurrentTier -->|"Tier 3"| PlanStateCheck{"Active Plan State?"}
 
             PlanStateCheck -->|"Active In-Progress<br/>(has [ ] or [/])"| SelectStep
@@ -233,13 +233,16 @@ flowchart TD
 * **Permitted Actions:** Read codebase files (`jcodemunch`, `view_file`), search documentation, analyze diagnostics, and propose architectural plans.
 * **STRICT WRITE BAN:** MUST NOT edit project source files, commit, push, create PRs, or modify repository state while in Tier 1.
 
-#### Tier 2: Controlled Diagnostic & Scratch Execution
-* **Trigger:** Need for empirical runtime evidence (test execution, reproduction harness, build verification) to validate a Tier 1 proposal or investigate bugs, or prompt containing `T2`/`[T2]`.
-* **Permitted Actions:** Write temporary diagnostic/reproduction scripts strictly inside `<repo-root>/.scratch/` or `<appDataDir>\brain\<conversation-id>\scratch\`, run local compilation/test checks.
+#### Tier 2: Controlled Diagnostic & Developer Utilities Execution
+* **Trigger:** Need for empirical runtime evidence (test execution, reproduction harness, benchmark simulation, build verification) to validate a Tier 1 proposal or investigate bugs, or prompt containing `T2`/`[T2]`.
+* **Permitted Actions & Scopes:**
+  - **`.scratch/` (or `<appDataDir>\brain\<conversation-id>\scratch\`):** For temporary, disposable diagnostic/reproduction scripts and raw exploratory tools (always gitignored). Hardcoded local paths and informal notes are permitted here.
+  - **`.devutil/`:** For permanent, shared developer utilities (Simulators, Benchmarks, Binary/Engine Inspectors). MUST be authored 100% in English, accept dynamic CLI arguments (`process.argv[2]` / flags) rather than hardcoded machine paths, and include a descriptive `README.md`.
+  - **Promotion Rule:** If requested for evaluation by the user, when a diagnostic tool in `.scratch/` demonstrates long-term testing, benchmarking, or inspection value, the agent is authorized to propose standardizing, translating to English, and promoting it into `.devutil/` prior to committing to the repository.
 * **Empirical Repro First:** When investigating bugs or verifying behavior, PRIORITIZE writing a reproduction harness in `.scratch/` that directly imports and calls real codebase modules to observe runtime data flow and gather empirical evidence.
 * **Hard Boundary & Hygiene:** 
   - Project-root `.scratch/` MUST be listed in `.gitignore` (agent is authorized to add `.scratch/` to `.gitignore` if missing).
-  - Any permanent file write target outside `.scratch/` or `brain/scratch/` is classified as a Tier 3 action and MUST NOT execute in Tier 2.
+  - Any permanent file write target outside `.scratch/`, `.devutil/`, or `brain/scratch/` is classified as a Tier 3 action and MUST NOT execute in Tier 2 without explicit user approval.
   - Any temporary instrumentation (e.g. diagnostic logs) added to source files during investigation MUST be cleaned up before committing in Tier 3.
 
 #### Tier 3: State-Modifying Executions (Source Edits, Commit, Push, PR)
@@ -265,7 +268,7 @@ When starting any task, MUST check available skills and descriptions. If a skill
 | **Design & Frontend UI** | Working on landing pages, portfolios, UI mockups, layout changes, styling, CSS, frontend animations, or redesigns. | `design-taste-frontend`, `design-taste-frontend-v1`, `gpt-tasteskill`, `minimalist-skill`, `high-end-visual-design`, `industrial-brutalist-ui`, `stitch-design-taste`, `brandkit`, `imagegen-frontend-mobile`, `imagegen-frontend-web`, `image-to-code`, `redesign-existing-projects`, `ux-friction-killer`, `taste-skill` |
 | **Engineering & Development** | Implementing new features, testing, debugging, prototyping, refactoring architecture, post-prototype distillation and production extraction, or modifying database/knowledge structures. | `afterplay`, `tdd`, `diagnose`, `prototype`, `improve-codebase-architecture`, `initialize-knowledge-graph`, `migrate-to-shoehorn`, `setup-pre-commit`, `codebase-design`, `design-an-interface`, `domain-modeling`, `resolving-merge-conflicts`, `setup-ts-deep-modules`, `to-spec`, `to-tickets`, `ubiquitous-language`, `wayfinder`, `wizard`, `zoom-out`, `chestertons-fence`, `make-the-change-easy` |
 | **Code Quality & CI/CD** | Analyzing pull requests, resolving sonar code smells, remediating bugs, or fixing CI/CD pipeline issues. | `sonar-remediation`, `sonarcloud-ci-workflow`, `code-review`, `run-benchmark` |
-| **Productivity & Management** | Writing PR descriptions, managing custom skills, filing bug reports, authoring feature or change requests, triaging issues, browser automation with Brave, handoff to other agents, requirements gathering, executing reviewer loops, creating tickets, or watching/analyzing video content. | `write-pr`, `write-for-ai`, `manage-custom-skills`, `manage-global-policies`, `to-prd`, `to-issues`, `triage`, `handoff`, `grilling`, `conduct-reviewing-loop`, `caveman`, `update-mcp`, `review-upstream`, `research`, `write-a-skill`, `write-skill-subdocs`, `write-skill-dttc`, `prune-branches`, `to-questionnaire`, `brave-browsing`, `prompt-override-architecture`, `write-a-bug-report`, `write-a-request`, `be-blunt`, `your-co-engineer-for-this-jet-engine-is-an-infant`, `skill-tdd`, `fixture-2-model-eval` |
+| **Productivity & Management** | Writing PR descriptions, managing custom skills, filing bug reports, authoring feature or change requests, triaging issues, browser automation with Brave, handoff to other agents, requirements gathering, executing reviewer loops, creating tickets, or watching/analyzing video content. | `write-pr`, `write-for-ai`, `manage-custom-skills`, `manage-global-policies`, `to-prd`, `to-issues`, `triage`, `handoff`, `grilling`, `conduct-reviewing-loop`, `caveman`, `update-mcp`, `review-upstream`, `research`, `write-a-skill`, `write-skill-subdocs`, `write-skill-dttc`, `prune-branches`, `to-questionnaire`, `brave-browsing`, `prompt-override-architecture`, `write-a-bug-report`, `write-a-request`, `be-blunt`, `your-co-engineer-for-this-jet-engine-is-an-infant`, `skill-tdd`, `fixture-2-model-eval`, `sloppy-change-easy` |
 | **Content & Notes** | Modifying Obsidian vault, creative writing, draft shaping, or narrative structuring. | `obsidian-vault`, `writing-beats`, `writing-fragments`, `writing-shape`, `edit-article`, `full-output-enforcement`, `teach` |
 
 ---
