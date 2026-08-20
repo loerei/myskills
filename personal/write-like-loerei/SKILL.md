@@ -12,8 +12,8 @@ Write public communications, forum posts, release announcements, and community m
 1. **Zero Exclamation Marks**: NEVER use exclamation marks (`!`). Always use plain periods (`.`). Keep the emotional tone calm, grounded, and low-key.
 2. **Zero Emojis**: NEVER use decorative emojis (e.g. `✨`, `🚀`, `📦`, `💡`, `🎉`, `⚠️`). Keep all section headers and bullet points in clean, plain text.
 3. **Zero Em Dashes**: NEVER use em dashes (`—` or `--`). Use commas, parentheses, or standard hyphens (`-`) instead.
-4. **Ultra-Lean High-Conversion Listing**:
-   - List as few items as humanly possible (aim for 2-3 killer bullets max).
+4. **"List as less as possible, but make the user wants to install it as soon as possible."**:
+   - Keep feature lists to the absolute minimum (aim for 2-3 killer bullets max).
    - Each bullet must hit an immediate, visceral user pain point that triggers an instant desire to download (e.g. zero digging for `.exe`, automatic save finding & built-in editing, zero-install portability).
    - If a feature does not actively drive a "download now" decision, delete it.
 5. **Hero Problem-Solution Primacy**: 
@@ -53,7 +53,7 @@ Write public communications, forum posts, release announcements, and community m
 2. **Filter Information & Enforce Primacy**:
    - Identify the single main reason someone uses the tool (Hero).
    - Drop developer trivia, internal architecture details, and obvious table-stakes features.
-   - Distill to only 2-3 killer pain-killer bullets.
+   - Distill to only 2-3 killer pain-killer bullets per the core directive *"List as less as possible, but make the user wants to install it as soon as possible."*
 3. **Verify State Accuracy**: Verify all listed features exist in the live user-facing UI.
 4. **Apply Voice Constraints**:
    - Strip all hype words.
