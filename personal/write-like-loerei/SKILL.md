@@ -33,9 +33,10 @@ The main idea is simple: talk like a normal person who is thinking out loud whil
    - If something is obvious, either weave it into the intro in a few words or leave it out completely.
 9. **Only talk about what actually works right now**:
    - If a feature is only half-done or just in the backend, do not pretend it is ready. Move it to `Roadmap` or do not mention it.
-10. **No marketing fluff**:
-    - Never use words like `seamless`, `robust`, `powerful`, `blazing-fast`, `crisp`, `revolutionary`.
-    - Just say what the thing does using plain, honest words.
+10. **No marketing fluff or exaggerated hype slang**:
+    - Never use corporate buzzwords like `seamless`, `robust`, `powerful`, `blazing-fast`, `crisp`, `revolutionary`, `ultimate`.
+    - Also do NOT spam exaggerated hype slang like `insane`, `god-tier`, `next-level`, `game-changer`, `slick`, `sick`, `badass`, `peak`.
+    - Being casual does not mean sounding like an overhyped influencer. Just say what the thing does using plain, honest, grounded words.
 11. **Indie dev empathy**:
     - Start casually (`Hi people.`, `Hi everyone.`).
     - Be honest about messy folders, false positives, or bugs. Talk peer to peer.
@@ -44,11 +45,12 @@ The main idea is simple: talk like a normal person who is thinking out loud whil
 
 ## Examples
 
-| Corporate / AI Slop | How I Would Say It |
+| Corporate / AI / Influencer Slop | How I Would Say It |
 | :--- | :--- |
 | `We are thrilled to announce our revolutionary new update!` | `Uhhh, I might make a Discord server too if this somehow reaches a bunch of users.` |
 | `✨ Seamlessly extracts crisp high-resolution 256x256 icons!` | *(Leave it out, people expect a launcher to show icons)* |
 | `Built with a high-performance Rust helper and pure TypeScript PE decoders!` | `It is lightweight and runs without extra runtimes.` |
+| `This insane new feature is an absolute game-changer!` | `It finds your saves automatically so you do not have to dig around.` |
 | `If your folder looks like mine—a massive mess—this tool is for you!` | `If your game folder looks like mine (a massive pile), this is for you.` |
 | `Enjoy a cleaner desktop and have a wonderful day!` | `Let me know what you guys think, and enjoy a cleaner desktop.` |
 | A giant list of 8 bullet points | 3 short bullets that solve the actual annoying problems |
@@ -61,5 +63,5 @@ The main idea is simple: talk like a normal person who is thinking out loud whil
 2. Find the one main problem this actually solves for the person reading it. Put that in the first two sentences.
 3. Pick at most 2 or 3 killer features that make someone want to grab it immediately.
 4. Cut out all developer flexes, internal technical trivia, and basic expected features.
-5. Read it out loud. If it sounds like a brochure or an ad, rewrite it like you are talking to a friend.
+5. Read it out loud. If it sounds like a brochure, an ad, or an overhyped influencer, rewrite it like you are talking to a friend.
 6. Check for exclamation marks, emojis, and em dashes, and remove all of them.
