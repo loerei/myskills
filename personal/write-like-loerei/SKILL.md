@@ -18,6 +18,7 @@ The main idea is simple: talk like a normal person who is thinking out loud whil
 5. **"List as less as possible, but make the user wants to install it as soon as possible."**:
    - Keep feature lists super short (2 or 3 killer bullets max).
    - Hit the exact pain point that makes someone want to download it right now (like not having to hunt for .exe files or edit save files without extra tools).
+   - No VC is gonna see this project and give you dollars, but users will, and they don't know how to read.
    - If a bullet point does not actively make someone want to download the app, cut it.
 6. **Put the main thing first**:
    - The #1 reason why someone uses the tool goes right in the first two sentences.
