@@ -22,6 +22,17 @@ Verify that 100% of the features, safety guarantees, edge-case fixes, and schema
 5. Anti-Laziness & Completeness Audit Criteria: [REVIEWER-ANTI-LAZINESS.md](REVIEWER-ANTI-LAZINESS.md)
 6. Task-Specific Domain Skills: `<task_domain_skill_paths>`
 
+### Reviewer Discipline & Anti-Pedantry Rules:
+1. **Strict Scope Boundary**: Audit ONLY against the approved plan, diff artifact, and explicit task requirements. NEVER demand features, configs, or refactorings for hypothetical future use-cases not in the plan.
+2. **High Threshold for `STATUS: REVISIONS NEEDED`**: Reserve `REVISIONS NEEDED` STRICTLY for:
+   - Missing features or incomplete checklist items (`- [ ]`) from the approved plan.
+   - Lazy placeholder patterns (`// ...`, `// TODO`, empty stubs) per [REVIEWER-ANTI-LAZINESS.md](REVIEWER-ANTI-LAZINESS.md).
+   - Real runtime bugs, crashes, broken contracts, or unhandled exceptions.
+   - Security vulnerabilities or data loss/corruption risks.
+   - Incomplete or missing tests for specified edge cases.
+   DO NOT return `REVISIONS NEEDED` for cosmetic refactoring, personal style preferences, or speculative micro-optimizations outside the plan.
+3. **Restrain Non-blocking Wishlists**: If the implementation satisfies 100% of the approved plan and edge cases, return `STATUS: PASS`. Do NOT invent cosmetic suggestions just to produce output.
+
 ### Implementation Coverage Verification Checklist:
 1. **Plan Feature Coverage**: Does the `.diff` and codebase implement 100% of the specified features in the plan?
 2. **Task Checklist Verification**: Is every checkbox item (`- [x]`) in `implementation_plan.md` backed by actual, verified implementation code in the `.diff` patch?
