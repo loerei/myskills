@@ -3,7 +3,7 @@
 > [!IMPORTANT]
 > **Audience: MAIN AGENT ONLY.**  
 > This document contains prompt synthesis templates and orchestration protocols for the Main Agent.  
-> **NEVER** pass this file or its path under `Required Reading` to Subagent Reviewers. Subagents must be given [REVIEWER-DISCIPLINE.md](REVIEWER-DISCIPLINE.md).
+> **NEVER** pass this file or its path under `Required Reading` to Subagent Reviewers. Subagents must be given [REVIEWER-DESIGN-AUDIT.md](REVIEWER-DESIGN-AUDIT.md).
 
 Templates, checklist builders, and anti-anchoring protocols for stress-testing and auditing unapproved plans, RFCs, PRDs, or skill drafts BEFORE writing code.
 
@@ -19,7 +19,7 @@ You are <Domain> Reviewer #<N>. Audit the proposed <Artifact Type> draft.
 ### Required Reading (MUST read using view_file / jcodemunch):
 1. Target Artifact Draft: `<draft_path>`
 2. Repository Guidelines & Rules: `AGENTS.md`
-3. Reviewer Discipline & Output Protocol: [REVIEWER-DISCIPLINE.md](file:///<repo-root>/.agents/skills/conduct-reviewing-loop/REVIEWER-DISCIPLINE.md)
+3. Reviewer Discipline & Output Protocol: [REVIEWER-DESIGN-AUDIT.md](file:///<repo-root>/.agents/skills/conduct-reviewing-loop/REVIEWER-DESIGN-AUDIT.md)
 4. Task-Specific Domain Skills: `<task_domain_skill_paths>` (e.g., /write-a-skill, /write-for-ai, /tdd, /design-taste-frontend)
 
 ### Dynamic Task Audit Checklist:
@@ -29,7 +29,7 @@ You are <Domain> Reviewer #<N>. Audit the proposed <Artifact Type> draft.
 4. **Template & Layout Adherence** *(For Implementation Plans)*: Verify mandatory plan layout sections (`AGENTS.md` Section 2).
 5. **Execution Checklist Completeness** *(For Implementation Plans)*: Verify that the Execution Checklist (`- [ ]`) covers 100% of proposed file edits, schema changes, and edge cases.
 
-*Evaluate strictly per the rules and standard output format in [REVIEWER-DISCIPLINE.md](file:///<repo-root>/.agents/skills/conduct-reviewing-loop/REVIEWER-DISCIPLINE.md).*
+*Evaluate strictly per the rules and standard output format in [REVIEWER-DESIGN-AUDIT.md](file:///<repo-root>/.agents/skills/conduct-reviewing-loop/REVIEWER-DESIGN-AUDIT.md).*
 ```
 
 ---

@@ -3,7 +3,7 @@
 > [!IMPORTANT]
 > **Audience: MAIN AGENT ONLY.**  
 > This document contains prompt synthesis templates and orchestration protocols for the Main Agent.  
-> **NEVER** pass this file or its path under `Required Reading` to Subagent Reviewers. Subagents must be given [REVIEWER-DISCIPLINE.md](REVIEWER-DISCIPLINE.md) and [REVIEWER-ANTI-LAZINESS.md](REVIEWER-ANTI-LAZINESS.md).
+> **NEVER** pass this file or its path under `Required Reading` to Subagent Reviewers. Subagents must be given [REVIEWER-CODE-VALIDATION.md](REVIEWER-CODE-VALIDATION.md) and [REVIEWER-ANTI-LAZINESS.md](REVIEWER-ANTI-LAZINESS.md).
 
 Templates, checklist builders, and .diff artifact protocols for validating codebase implementation against an approved plan.
 
@@ -24,7 +24,7 @@ Verify that 100% of the features, safety guarantees, edge-case fixes, and schema
 2. Diff Artifact: `<diff_path>` (e.g. `scratch/patch_changes.diff`)
 3. Key Codebase Implementation Files: `<code_file_paths>`
 4. Repository Guidelines: `AGENTS.md`
-5. Reviewer Discipline & Output Protocol: [REVIEWER-DISCIPLINE.md](file:///<repo-root>/.agents/skills/conduct-reviewing-loop/REVIEWER-DISCIPLINE.md)
+5. Reviewer Discipline & Output Protocol: [REVIEWER-CODE-VALIDATION.md](file:///<repo-root>/.agents/skills/conduct-reviewing-loop/REVIEWER-CODE-VALIDATION.md)
 6. Anti-Laziness Audit Criteria: [REVIEWER-ANTI-LAZINESS.md](file:///<repo-root>/.agents/skills/conduct-reviewing-loop/REVIEWER-ANTI-LAZINESS.md)
 7. Task-Specific Domain Skills: `<task_domain_skill_paths>`
 
@@ -36,7 +36,7 @@ Verify that 100% of the features, safety guarantees, edge-case fixes, and schema
 5. **Validation & State Consistency**: Are duplicate path checks, cache flags, and state initializations accurate?
 6. **Backward Compatibility**: Are legacy wrappers and public API schemas fully preserved?
 
-*Evaluate strictly per the rules and standard output format in [REVIEWER-DISCIPLINE.md](file:///<repo-root>/.agents/skills/conduct-reviewing-loop/REVIEWER-DISCIPLINE.md) and [REVIEWER-ANTI-LAZINESS.md](file:///<repo-root>/.agents/skills/conduct-reviewing-loop/REVIEWER-ANTI-LAZINESS.md).*
+*Evaluate strictly per the rules and standard output format in [REVIEWER-CODE-VALIDATION.md](file:///<repo-root>/.agents/skills/conduct-reviewing-loop/REVIEWER-CODE-VALIDATION.md) and [REVIEWER-ANTI-LAZINESS.md](file:///<repo-root>/.agents/skills/conduct-reviewing-loop/REVIEWER-ANTI-LAZINESS.md).*
 ```
 
 ---
