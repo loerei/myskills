@@ -12,18 +12,19 @@ Write public communications, forum posts, release announcements, and community m
 1. **Zero Exclamation Marks**: NEVER use exclamation marks (`!`). Always use plain periods (`.`). Keep the emotional tone calm, grounded, and low-key.
 2. **Zero Emojis**: NEVER use decorative emojis (e.g. `✨`, `🚀`, `📦`, `💡`, `🎉`, `⚠️`). Keep all section headers and bullet points in clean, plain text.
 3. **Zero Em Dashes**: NEVER use em dashes (`—` or `--`). Use commas, parentheses, or standard hyphens (`-`) instead.
-4. **Hero Problem-Solution Primacy**: 
+4. **Ultra-Lean High-Conversion Listing**:
+   - List as few items as humanly possible (aim for 2-3 killer bullets max).
+   - Each bullet must hit an immediate, visceral user pain point that triggers an instant desire to download (e.g. zero digging for `.exe`, automatic save finding & built-in editing, zero-install portability).
+   - If a feature does not actively drive a "download now" decision, delete it.
+5. **Hero Problem-Solution Primacy**: 
    - The primary #1 value proposition (the main friction the tool eliminates, e.g. "saves you from digging through folders to find the executable") MUST lead the message.
-   - NEVER let secondary or auxiliary features (like save editors, playtime, settings) overshadow the primary core purpose.
-5. **Hierarchy Separation (Core vs Extra)**:
-   - Present the primary job directly in the intro or leading bullet points.
-   - Group secondary features under a distinct, modest header (e.g. `Extra Features` or `What Else It Can Do`) so the main hook stays uncluttered.
+   - NEVER let secondary or auxiliary features overshadow the primary core purpose.
 6. **Ruthless Table-Stakes Pruning**:
-   - Strip out features that any user would already expect as the absolute minimum / table stakes (e.g. extracting icons, auto-updating, scanning subfolders, settings controls).
+   - Strip out features that any user would already expect as the absolute minimum / table stakes (e.g. extracting icons, auto-updating, scanning subfolders, settings controls, playtime tracking).
    - If a table-stakes capability is worth mentioning, weave it briefly into the 2-sentence hook; NEVER give it its own dedicated bullet point.
 7. **Strict Truthfulness to Current State**:
    - Only list features that are 100% active and accessible in the user-facing UI.
-   - If a feature is backend-only or in progress (e.g. category management), move it strictly to `Roadmap` or omit it.
+   - If a feature is backend-only or in progress, omit it entirely from short posts.
 8. **No Marketing Fluff or Hype**: NEVER use AI buzzwords or promotional adjectives (`seamless`, `robust`, `powerful`, `ultra-fast`, `crisp`, `fantastic`, `revolutionary`, `flawless`). State what the tool does plainly with concrete, modest verbs.
 9. **Authentic Indie Dev Empathy**: 
    - Start casually (`Hi people.`, `Hi everyone.`) without corporate greetings or enthusiasm inflation.
@@ -36,13 +37,13 @@ Write public communications, forum posts, release announcements, and community m
 
 | Bad (AI / Corporate Style) | Good (Loerei Style) |
 | :--- | :--- |
-| `✨ Extra Features` or `🚀 Download Latest Release!` | `Extra Features` / `Download Latest Release` |
+| Long 8-item feature laundry lists | 3 high-impact killer bullets only |
+| `✨ Extra Features` or `🚀 Download Latest Release!` | `What It Does` / `Download Latest Release` |
 | `like mine—a massive pile—this is for you` | `like mine (a massive pile), this is for you` |
 | `Revolutionary and lightning-fast game launcher!` | `A minimalist game library for your games.` |
 | `We have seamlessly integrated advanced Wine and Proton compatibility pipelines!` | `Works out of the box on Windows and Linux (.AppImage).` |
 | `Enjoy a cleaner desktop and have a wonderful day!` | `Let me know what you guys think, and enjoy a cleaner desktop.` |
 | `Our state-of-the-art icon engine extracts crisp 256x256 graphics!` | *(Cut entirely — table stakes)* |
-| Listing secondary utilities first (`What It Does: Save Editor...`) | Lead with primary job (`YumeShelf saves you from digging for the .exe...`), group extras under `Extra Features` |
 
 ---
 
@@ -52,11 +53,11 @@ Write public communications, forum posts, release announcements, and community m
 2. **Filter Information & Enforce Primacy**:
    - Identify the single main reason someone uses the tool (Hero).
    - Drop developer trivia, internal architecture details, and obvious table-stakes features.
-   - Separate secondary utilities under an `Extra Features` section.
-3. **Verify State Accuracy**: Verify all listed features exist in the live user-facing UI (move unfinished items to `Roadmap`).
+   - Distill to only 2-3 killer pain-killer bullets.
+3. **Verify State Accuracy**: Verify all listed features exist in the live user-facing UI.
 4. **Apply Voice Constraints**:
    - Strip all hype words.
    - Strip all exclamation marks (`!`).
    - Strip all emojis (`✨`, `🚀`, etc.).
    - Replace em dashes (`—`) with commas, parentheses, or hyphens.
-5. **Review & Finalize**: Ensure the tone reads like a real human indie developer sharing a practical project.
+5. **Review & Finalize**: Ensure the post reads fast, punches hard on real problems, and converts immediately.
