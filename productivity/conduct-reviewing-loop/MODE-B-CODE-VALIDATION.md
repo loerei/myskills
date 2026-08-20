@@ -1,15 +1,20 @@
 # Mode B: Post-Implementation Coverage Validation Reference
 
+> [!IMPORTANT]
+> **Audience: MAIN AGENT ONLY.**  
+> This document contains prompt synthesis templates and orchestration protocols for the Main Agent.  
+> **NEVER** pass this file or its path under `Required Reading` to Subagent Reviewers. Subagents must be given [REVIEWER-DISCIPLINE.md](REVIEWER-DISCIPLINE.md) and [REVIEWER-ANTI-LAZINESS.md](REVIEWER-ANTI-LAZINESS.md).
+
 Templates, checklist builders, and .diff artifact protocols for validating codebase implementation against an approved plan.
 
 ---
 
 ## 1. Mode B: Post-Implementation Coverage Validation Prompt Template
 
-Use when auditing actual code changes against an APPROVED plan:
+Use when creating `scratch/reviewer_prompt_v1.md` to audit actual code changes against an APPROVED plan:
 
 ```markdown
-You are Implementation Coverage Validator #<N>. Audit the codebase implementation against the approved Implementation Plan (`<plan_path>`).
+You are Implementation Coverage Validator #<N>. Audit the codebase implementation against the approved Implementation Plan.
 
 ### Audit Goal:
 Verify that 100% of the features, safety guarantees, edge-case fixes, and schema definitions specified in the approved plan are accurately, completely, and correctly implemented in the real codebase. Do NOT invent new requirements or alter the approved implementation plan.
@@ -19,43 +24,26 @@ Verify that 100% of the features, safety guarantees, edge-case fixes, and schema
 2. Diff Artifact: `<diff_path>` (e.g. `scratch/patch_changes.diff`)
 3. Key Codebase Implementation Files: `<code_file_paths>`
 4. Repository Guidelines: `AGENTS.md`
-5. Anti-Laziness & Completeness Audit Criteria: [REVIEWER-ANTI-LAZINESS.md](REVIEWER-ANTI-LAZINESS.md)
-6. Task-Specific Domain Skills: `<task_domain_skill_paths>`
+5. Reviewer Discipline & Output Protocol: [REVIEWER-DISCIPLINE.md](file:///<repo-root>/.agents/skills/conduct-reviewing-loop/REVIEWER-DISCIPLINE.md)
+6. Anti-Laziness Audit Criteria: [REVIEWER-ANTI-LAZINESS.md](file:///<repo-root>/.agents/skills/conduct-reviewing-loop/REVIEWER-ANTI-LAZINESS.md)
+7. Task-Specific Domain Skills: `<task_domain_skill_paths>`
 
-### Reviewer Discipline & Anti-Pedantry Rules:
-1. **Strict Scope Boundary**: Audit ONLY against the approved plan, diff artifact, and explicit task requirements. NEVER demand features, configs, or refactorings for hypothetical future use-cases not in the plan.
-2. **High Threshold for `STATUS: REVISIONS NEEDED`**: Reserve `REVISIONS NEEDED` STRICTLY for:
-   - Missing features or incomplete checklist items (`- [ ]`) from the approved plan.
-   - Lazy placeholder patterns (`// ...`, `// TODO`, empty stubs) per [REVIEWER-ANTI-LAZINESS.md](REVIEWER-ANTI-LAZINESS.md).
-   - Real runtime bugs, crashes, broken contracts, or unhandled exceptions.
-   - Security vulnerabilities or data loss/corruption risks.
-   - Incomplete or missing tests for specified edge cases.
-   DO NOT return `REVISIONS NEEDED` for cosmetic refactoring, personal style preferences, or speculative micro-optimizations outside the plan.
-3. **Restrain Non-blocking Wishlists**: If the implementation satisfies 100% of the approved plan and edge cases, return `STATUS: PASS`. Do NOT invent cosmetic suggestions just to produce output.
-
-### Implementation Coverage Verification Checklist:
+### Dynamic Coverage Verification Checklist:
 1. **Plan Feature Coverage**: Does the `.diff` and codebase implement 100% of the specified features in the plan?
 2. **Task Checklist Verification**: Is every checkbox item (`- [x]`) in `implementation_plan.md` backed by actual, verified implementation code in the `.diff` patch?
-3. **Anti-Laziness & Completeness**: Are there any placeholder comments (`// ...`, `// TODO`, `// rest of code`, `// similar to above`), empty method stubs, or truncated files in the `.diff`? (MUST reject with `STATUS: REVISIONS NEEDED` per [REVIEWER-ANTI-LAZINESS.md](REVIEWER-ANTI-LAZINESS.md)).
-4. **Safety & Transactional Guarantees**: Are rollback, directory creation, cleanup, and crash recovery mechanisms fully present?
-5. **Edge-Case & Line Handling**: Are empty/new file creation, boundary checks, and line end encodings handled correctly?
-6. **Validation & State Consistency**: Are duplicate path checks, cache flags, and state initializations accurate?
-7. **Backward Compatibility**: Are legacy wrappers and public API schemas fully preserved?
+3. **Safety & Transactional Guarantees**: Are rollback, directory creation, cleanup, and crash recovery mechanisms fully present?
+4. **Edge-Case & Line Handling**: Are empty/new file creation, boundary checks, and line end encodings handled correctly?
+5. **Validation & State Consistency**: Are duplicate path checks, cache flags, and state initializations accurate?
+6. **Backward Compatibility**: Are legacy wrappers and public API schemas fully preserved?
 
-### Output Directive:
-Return your evaluation to the parent agent using `send_message` containing:
-1. Explicit status (`STATUS: PASS` or `STATUS: REVISIONS NEEDED`)
-2. Numbered list of missing plan implementations or defects in the codebase (blocking issues)
-3. (Optional) `Suggestions for Improvement (Non-blocking)`: Polish or future considerations that do NOT affect PASS status.
-
-Conclude explicitly with either:
-- **STATUS: REVISIONS NEEDED** (with a numbered list of missing plan implementations or defects in the codebase), OR
-- **STATUS: PASS** (if 100% of the plan is fully and accurately implemented in the codebase).
+*Evaluate strictly per the rules and standard output format in [REVIEWER-DISCIPLINE.md](file:///<repo-root>/.agents/skills/conduct-reviewing-loop/REVIEWER-DISCIPLINE.md) and [REVIEWER-ANTI-LAZINESS.md](file:///<repo-root>/.agents/skills/conduct-reviewing-loop/REVIEWER-ANTI-LAZINESS.md).*
 ```
 
 ---
 
-## 2. Post-Implementation Coverage Validation Checklist
+## 2. Post-Implementation Coverage Validation Checklist (Main Agent Guidance)
+
+When synthesizing the prompt checklist, ensure coverage across:
 
 - [ ] 100% of plan components and Execution Checklist items (`- [x]`) verified in `.diff` and target files
 - [ ] Zero forbidden placeholder comments (`// ...`, `// TODO`, empty stubs) per [REVIEWER-ANTI-LAZINESS.md](REVIEWER-ANTI-LAZINESS.md)

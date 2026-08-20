@@ -74,7 +74,7 @@ For **Mode B (Post-Implementation Validation)**:
 
 > [!IMPORTANT]
 > **Prompt Persistence & Approval Gate Protocol**:
-> 1. **Synthesize Task Domain Skills & Read Templates**: Call `view_file` on `MODE-A-DESIGN-AUDIT.md` (Mode A) or `MODE-B-CODE-VALIDATION.md` (Mode B) to retrieve prompt templates. Always identify and include task-specific domain skills (e.g., `/write-a-skill`, `/write-for-ai`, `/writing-great-skills` when auditing skills; `/tdd` for tests; `/design-taste-frontend` for UI) under `Required Reading` in the reviewer prompt.
+> 1. **Synthesize Task Domain Skills & Read Templates**: Call `view_file` on `MODE-A-DESIGN-AUDIT.md` (Mode A) or `MODE-B-CODE-VALIDATION.md` (Mode B) to retrieve lean prompt templates. Always include [REVIEWER-DISCIPLINE.md](REVIEWER-DISCIPLINE.md) (and [REVIEWER-ANTI-LAZINESS.md](REVIEWER-ANTI-LAZINESS.md) for Mode B) alongside task domain skills under `Required Reading` in the synthesized reviewer prompt. NEVER pass `SKILL.md`, `MODE-A-DESIGN-AUDIT.md`, or `MODE-B-CODE-VALIDATION.md` to Subagents.
 > 2. **Save Prompt to File**: Save every reviewer prompt as a markdown file inside `<appDataDir>\brain\<conversation-id>\scratch\reviewer_prompt_v1.md`.
 > 3. **Initial User Approval Gate (Disambiguated)**: Present `scratch/reviewer_prompt_v1.md` to the user and **AWAIT EXPLICIT KEYWORD "Conduct?"** (or *"Conduct review"*) before spawning Reviewer #1. *Do NOT ask using "Approve" or "Proceed" for prompt authorization to prevent lower-tier models from confusing prompt confirmation with direct Tier 3 plan/source approval.*
 > 4. **Immutable Active Prompt Reuse**: Freeze the approved prompt as Active Prompt ($P_{active}$) and reuse it 100% identically for subsequent reviewers (#2, #3... #N), changing only the Reviewer ID.
@@ -88,9 +88,14 @@ For **Mode B (Post-Implementation Validation)**:
 
 ---
 
-## Output Templates & Checklists
+## Subdoc References
 
-See [MODE-A-DESIGN-AUDIT.md](MODE-A-DESIGN-AUDIT.md) for Mode A (Pre-Implementation Plan Audit) and [MODE-B-CODE-VALIDATION.md](MODE-B-CODE-VALIDATION.md) for Mode B (Post-Implementation Coverage Validation).
+- **Main Agent Orchestration Guides**:
+  - Mode A (Design & Plan Audit): see [MODE-A-DESIGN-AUDIT.md](MODE-A-DESIGN-AUDIT.md).
+  - Mode B (Code Implementation Validation): see [MODE-B-CODE-VALIDATION.md](MODE-B-CODE-VALIDATION.md).
+- **Subagent Reviewer Rubrics**:
+  - Reviewer Discipline & Output Protocol (Modes A & B): see [REVIEWER-DISCIPLINE.md](REVIEWER-DISCIPLINE.md).
+  - Anti-Laziness & Output Completeness (Mode B only): see [REVIEWER-ANTI-LAZINESS.md](REVIEWER-ANTI-LAZINESS.md).
 
 ---
 
