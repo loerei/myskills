@@ -5,65 +5,55 @@ description: Use when drafting public posts, announcements, or messages in Loere
 
 # Write Like Loerei
 
-Write public communications, forum posts, release announcements, and community messages in Loerei's distinctive understated, human voice.
+This skill is for writing public posts, forum threads, changelogs, and announcements the way I actually write.
 
-## Directives
+The main idea is simple: talk like a normal person who is thinking out loud while typing, not like a marketing team or a robot.
 
-1. **Write Like Talking Out Loud / Thinking Aloud**:
-   - Write exactly like you are casually talking to a peer or thinking while typing.
-   - Use natural, unforced conversational cues and candid parenthetical thoughts (e.g. `Uhhh, I might...`, `(which is totally fair)`, `this is for you`).
-   - NEVER sound like a rehearsed marketing pitch, PR statement, or AI copywriter.
-2. **Zero Exclamation Marks**: NEVER use exclamation marks (`!`). Always use plain periods (`.`). Keep the emotional tone calm, grounded, and low-key.
-3. **Zero Emojis**: NEVER use decorative emojis (e.g. `✨`, `🚀`, `📦`, `💡`, `🎉`, `⚠️`). Keep all section headers and bullet points in clean, plain text.
-4. **Zero Em Dashes**: NEVER use em dashes (`—` or `--`). Use commas, parentheses, or standard hyphens (`-`) instead.
+## How I Write
+
+1. **Talk like you are thinking out loud**: Write the same way you talk to someone. It is totally fine to drop casual thoughts, natural filler, or side comments in parentheses (like `(which is totally fair)` or `Uhhh, I might...`). Never sound like a pitch deck.
+2. **No exclamation marks**: I do not use exclamation marks. Just use a regular period. Keep it calm and low-key.
+3. **No emojis**: Do not put random sparkles, rockets, or fire emojis everywhere. Plain text is cleaner.
+4. **No em dashes**: Do not use em dashes (`—` or `--`). Use commas, parentheses, or simple hyphens instead.
 5. **"List as less as possible, but make the user wants to install it as soon as possible."**:
-   - Keep feature lists to the absolute minimum (aim for 2-3 killer bullets max).
-   - Each bullet must hit an immediate, visceral user pain point that triggers an instant desire to download (e.g. zero digging for `.exe`, automatic save finding & built-in editing, zero-install portability).
-   - If a feature does not actively drive a "download now" decision, delete it.
-6. **Hero Problem-Solution Primacy**: 
-   - The primary #1 value proposition (the main friction the tool eliminates, e.g. "saves you from digging through folders to find the executable") MUST lead the message.
-   - NEVER let secondary or auxiliary features overshadow the primary core purpose.
-7. **Ruthless Table-Stakes Pruning**:
-   - Strip out features that any user would already expect as the absolute minimum / table stakes (e.g. extracting icons, auto-updating, scanning subfolders, settings controls, playtime tracking).
-   - If a table-stakes capability is worth mentioning, weave it briefly into the 2-sentence hook; NEVER give it its own dedicated bullet point.
-8. **Strict Truthfulness to Current State**:
-   - Only list features that are 100% active and accessible in the user-facing UI.
-   - If a feature is backend-only or in progress, omit it entirely from short posts.
-9. **No Marketing Fluff or Hype**: NEVER use AI buzzwords or promotional adjectives (`seamless`, `robust`, `powerful`, `ultra-fast`, `crisp`, `fantastic`, `revolutionary`, `flawless`). State what the tool does plainly with concrete, modest verbs.
-10. **Authentic Indie Dev Empathy**: 
-    - Start casually (`Hi people.`, `Hi everyone.`) without corporate greetings or enthusiasm inflation.
-    - Speak peer-to-peer with dry, honest self-awareness (e.g. acknowledging unorganized folders, false positives, or bugs pragmatically).
-11. **Spare & Readable Layout**: Keep sentences short, paragraphs compact, and bullet points punchy. Avoid wall-of-text formatting.
+   - Keep feature lists super short (2 or 3 killer bullets max).
+   - Hit the exact pain point that makes someone want to download it right now (like not having to hunt for .exe files or edit save files without extra tools).
+   - If a bullet point does not actively make someone want to download the app, cut it.
+6. **Put the main thing first**:
+   - The #1 reason why someone uses the tool goes right in the first two sentences.
+   - Do not let extra side features (like save editors or playtime tracking) overshadow the main purpose of the app.
+   - Put extra stuff under a simple header like `What It Does` or `Extra Features`.
+7. **Cut the obvious table stakes**:
+   - Do not list things that any app in that category is already expected to do (like pulling icons, auto-updating, having a settings menu).
+   - If something is obvious, either weave it into the intro in a few words or leave it out completely.
+8. **Only talk about what actually works right now**:
+   - If a feature is only half-done or just in the backend, do not pretend it is ready. Move it to `Roadmap` or do not mention it.
+9. **No marketing fluff**:
+   - Never use words like `seamless`, `robust`, `powerful`, `blazing-fast`, `crisp`, `revolutionary`.
+   - Just say what the thing does using plain, honest words.
+10. **Indie dev empathy**:
+    - Start casually (`Hi people.`, `Hi everyone.`).
+    - Be honest about messy folders, false positives, or bugs. Talk peer to peer.
 
 ---
 
-## Negative Constraints (What to Avoid)
+## Examples
 
-| Bad (AI / Corporate Style) | Good (Loerei Style) |
+| Corporate / AI Slop | How I Would Say It |
 | :--- | :--- |
-| `We are thrilled to present our cutting-edge roadmap!` | `Uhhh, I might make a Discord server too if this somehow reaches a bunch of users.` |
-| Long 8-item feature laundry lists | 3 high-impact killer bullets only |
-| `✨ Extra Features` or `🚀 Download Latest Release!` | `What It Does` / `Download Latest Release` |
-| `like mine—a massive pile—this is for you` | `like mine (a massive pile), this is for you` |
-| `Revolutionary and lightning-fast game launcher!` | `A minimalist game library for your games.` |
-| `We have seamlessly integrated advanced Wine and Proton compatibility pipelines!` | `Works out of the box on Windows and Linux (.AppImage).` |
+| `We are thrilled to announce our revolutionary new update!` | `Uhhh, I might make a Discord server too if this somehow reaches a bunch of users.` |
+| `✨ Seamlessly extracts crisp high-resolution 256x256 icons!` | *(Leave it out, people expect a launcher to show icons)* |
+| `If your folder looks like mine—a massive mess—this tool is for you!` | `If your game folder looks like mine (a massive pile), this is for you.` |
 | `Enjoy a cleaner desktop and have a wonderful day!` | `Let me know what you guys think, and enjoy a cleaner desktop.` |
-| `Our state-of-the-art icon engine extracts crisp 256x256 graphics!` | *(Cut entirely — table stakes)* |
+| A giant list of 8 bullet points | 3 short bullets that solve the actual annoying problems |
 
 ---
 
-## Workflow
+## How to Do It
 
-1. **Intake Draft or Feature List**: Review the target message or release notes.
-2. **Filter Information & Enforce Primacy**:
-   - Identify the single main reason someone uses the tool (Hero).
-   - Drop developer trivia, internal architecture details, and obvious table-stakes features.
-   - Distill to only 2-3 killer pain-killer bullets per the core directive *"List as less as possible, but make the user wants to install it as soon as possible."*
-3. **Verify State Accuracy**: Verify all listed features exist in the live user-facing UI.
-4. **Apply Voice Constraints**:
-   - Write in a natural, thinking-out-loud spoken monologue tone.
-   - Strip all hype words.
-   - Strip all exclamation marks (`!`).
-   - Strip all emojis (`✨`, `🚀`, etc.).
-   - Replace em dashes (`—`) with commas, parentheses, or hyphens.
-5. **Review & Finalize**: Ensure the post sounds like a real human dev speaking candidly to peers.
+1. Look at what you want to post or announce.
+2. Find the one main problem this actually solves for the person reading it. Put that in the first two sentences.
+3. Pick at most 2 or 3 killer features that make someone want to grab it immediately.
+4. Cut out all developer flexes, internal technical trivia, and basic expected features.
+5. Read it out loud. If it sounds like a brochure or an ad, rewrite it like you are talking to a friend.
+6. Check for exclamation marks, emojis, and em dashes, and remove all of them.
