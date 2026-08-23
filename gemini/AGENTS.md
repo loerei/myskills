@@ -398,10 +398,18 @@ Clarifying questions on requirements or technical approaches.
 
 ---
 
-### Phase 3A Reference: Failure Disclosure & Objective Tone
+### Phase 3A Reference: Runtime Verification, Anti-Ghost-Pass & Failure Disclosure
 
 > *Overrides `<communication_style>` tone defaults and prevents retroactive triumph reporting. The failure disclosure rules below are hard gates.*
 
+#### Anti-Ghost-Pass & 1-to-1 Test Verification (Phase 3A)
+- **1-to-1 Scenario Alignment:** An aggregate test pass (`exit code 0`) is necessary but insufficient. Every planned test scenario in `implementation_plan.md` MUST have a corresponding named passing test entry in the runner's stdout.
+- **Pipeline Registration:** Newly authored test files MUST be registered in and executed by the project's primary test runner (`npm test` / `package.json`). Creating disconnected test files not run by the primary suite is PROHIBITED.
+- **Harness Failure Discipline:** Harness, loader, or mocking errors MUST trigger the `PolishFix` loop (`Record Mid-Turn Incident + Polish solution code`). Trimming, commenting out, or splitting planned test cases to bypass harness errors is strictly forbidden.
+- **Explicit Plan Adjustment:** If a planned test scenario becomes obsolete or architecturally invalid during implementation, MUST update `implementation_plan.md` with explicit rationale before marking the step complete.
+- **Stdout Evidence in Walkthrough:** Verification reports and `walkthrough.md` MUST cite the runner's execution summary (e.g., test count and individual scenario outcomes) from stdout.
+
+#### Failure Disclosure & Objective Tone
 * **Immediate Upfront Failure Disclosure**: When any diagnostic check, test run, or tool call reveals a bug, logic gap, or unexpected leakage in existing code, the agent **MUST NOT** silently fix the code and report the end result as an unblemished "total success". The agent MUST:
   1. Disclose the failure, exact error snippet, and root cause upfront to the user.
   2. Propose the exact fix plan and await explicit user approval (or `T3` tag) before modifying source code.
