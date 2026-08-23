@@ -309,11 +309,12 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
 #### Implementation Plan Directives
 1. **Plan Review Gate:** When submitting `implementation_plan.md` to the User for the first time, ask the user to review the plan and provide explicit approval before proceeding to execution.
 2. **Checklist State Machine:**
-   - `- [ ] <Step>`: **Pending.** Planned work awaiting execution.
-   - `- [/] <Step>`: **In-Progress.** Actively being executed (**STRICT LIMIT:** Exactly **ONE** item active at a time).
-   - `- [x] <Step>`: **Completed.** Fully executed AND verified by empirical runtime evidence (test output, build logs).
-3. **Post-Implementation Verification & Cumulative Walkthrough:** Upon completing all checklist items (`[x]`), generate or incrementally update `walkthrough.md` summarizing changes and verification results.
-4. **Living Cumulative Artifacts & Plan Lifecycle:**  
+   - `#### [ ] [ACTION]` / `- [ ] <test>`: **Pending.** Planned work awaiting execution.
+   - `#### [/] [ACTION]` / `- [/] <test>`: **In-Progress.** Actively being executed (**STRICT LIMIT:** Exactly **ONE** item active at a time).
+   - `#### [x] [ACTION]` / `- [x] <test>`: **Completed.** Fully executed AND verified by empirical runtime evidence (test output, build logs).
+3. **No Separate `## Tasks` Section:** MUST NOT create a separate `## Tasks` section. All actionable tasks are tracked directly on file headers (`#### [ ] [MODIFY|NEW|DELETE]`) and automated test commands (`- [ ] <cmd>`). Sub-bullets under each file header describe modifications without nested checkboxes.
+4. **Post-Implementation Verification & Cumulative Walkthrough:** Upon completing all checklist items (`[x]`), generate or incrementally update `walkthrough.md` summarizing changes and verification results.
+5. **Living Cumulative Artifacts & Plan Lifecycle:**  
    Artifacts (`implementation_plan.md`, `walkthrough.md`) are living, cumulative session documents.
    - **Single Active Plan:** At any given time, exactly ONE active plan MUST exist at `implementation_plan.md`.
    - **Expansion / Fix on Same Goal (In-Place Append):** When the current plan is completed (`All [x]`), if a subsequent request is a follow-up fix, edge-case remediation, phase extension, or polish related to the **same feature/goal**, the agent MUST **append new checklist items (`- [ ]`) in-place** under a new section (e.g., `### Phase 2: ...` or `### Follow-up Improvements`) within `implementation_plan.md`.
@@ -323,38 +324,44 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
 #### Mandatory Implementation Plan Layout (`implementation_plan.md`)
 
 ```markdown
-# [Goal / Feature Title]
+# [Goal Description]
 
-## Architectural Summary & Key Decisions
-- Brief description of the problem, background context, and key technical decisions.
+Brief summary of the problem, context, and objective.
+
+---
 
 ## User Review Required
 > [!IMPORTANT]
-> Document anything requiring explicit user approval or design intent decisions.
+> Critical changes, breaking changes, or architecture decisions requiring user attention.
 
-## Proposed Changes & Execution Checklist
+---
 
-### [Component / Feature Name]
+## Open Questions (if any)
+Clarifying questions on requirements or technical approaches.
 
-#### - [ ] [MODIFY] [`SettingsView.tsx`](file:///path/to/SettingsView.tsx)
-- [ ] Replace radio card group with clean `<select>` / custom dropdown control
-- [ ] Update handler when option is selected in Dropdown
+---
 
-#### - [ ] [MODIFY] [`theme.css`](file:///path/to/theme.css)
-- [ ] Add styling for `.settings-select` (background `#121215`, border `#27272a`, focus highlight)
+## Proposed Changes
 
-#### - [ ] [NEW] [`SelectDropdown.tsx`](file:///path/to/SelectDropdown.tsx)
-- [ ] Create custom dropdown component supporting keyboard navigation
+### [Component / Module Name]
+#### [ ] [MODIFY] [file_basename.ext](file:///absolute/path/to/file_basename.ext)
+- Specific modifications to make in this file...
+
+#### [ ] [NEW] [new_file.ext](file:///absolute/path/to/new_file.ext)
+- Purpose and contents of the new file...
+
+#### [ ] [DELETE] [deprecated_file.ext](file:///absolute/path/to/deprecated_file.ext)
+- Rationale and impact of deleting this file...
 
 ---
 
 ## Verification Plan
 
 ### Automated Tests
-- Command: `npm test` or `pytest`
+- [ ] Automated test command (e.g., `npm test`, `npm run typecheck`, `npm run build:vite`).
 
 ### Manual Verification
-- Instructions for user to visually verify UI controls or API endpoints
+- Steps to manually verify behavior or UI.
 ```
 
 ---
