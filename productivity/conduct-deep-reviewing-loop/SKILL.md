@@ -12,8 +12,8 @@ Multi-agent review loop using isolated domain reviewers, topological dependency 
 | Layer | Agent | Primary Responsibility |
 | :--- | :--- | :--- |
 | **Layer 1** | Main Agent | Spawns Layer 2 Host, applies clean DA mutations from `Changelog.md`, presents final output. |
-| **Layer 2** | Review Host & Critical Gate | Validates `Context.md`, summons Layer 3 reviewers using invariant prompts, purges `reports/` before each pass, isolates host artifacts in `host/`, runs Full Sweep before Final PASS, writes `Analyzation.md` and `Changelog.md`. |
-| **Layer 3** | Domain Reviewers | Independent subagents executing domain audits per `<Role>-REVIEWER-GUIDE.md`. |
+| **Layer 2** | Review Host & Critical Gate | Dynamically selects active reviewers in `Reviewer_Choice_Rationale.md`, summons active reviewers using invariant prompts, purges `reports/` before passes, isolates host artifacts in `host/`, runs Full Sweep before Final PASS, writes `Analyzation.md` and `Changelog.md`. |
+| **Layer 3** | Domain Reviewers | Independent specialist subagents (up to 10 roles across 4 Tiers) executing domain audits per `<Role>-REVIEWER-GUIDE.md`. |
 
 ## Workflow
 
@@ -24,8 +24,8 @@ flowchart TD
     Apply --> TargetRun["Round N+1: Targeted Re-Review<br/>(Run modified tier + downstream tiers)"]
     TargetRun --> CheckTarget{"Targeted Roles PASS?"}
     CheckTarget -->|"No"| Apply
-    CheckTarget -->|"Yes"| FullSweep["Full Sweep Round<br/>(Run all 6 roles on static DA)"]
-    FullSweep --> SweepCheck{"All 6 Roles PASS?"}
+    CheckTarget -->|"Yes"| FullSweep["Full Sweep Round<br/>(Run active roles on static DA)"]
+    FullSweep --> SweepCheck{"All Active Roles PASS?"}
     SweepCheck -->|"No"| Apply
     SweepCheck -->|"Yes"| Accumulate["PassCount += 1"]
     Accumulate --> SPCheck{"PassCount >= SP?"}
@@ -41,7 +41,7 @@ Create `scratch/deep_review/host/` and `scratch/deep_review/reports/`. Initializ
 ### Step 2: Spawn Review Host & Critical Gate (Layer 2)
 
 Spawn Layer 2 Subagent with prompt:
-`You are Review Host & Critical Gate. Target DA: <da_path>. System Rules: AGENTS.md. Execution Protocol: PROTOCOL.md. Opinion Filtering: HOW-TO-PICK-UP-THE-RIGHT-OPINIONS.md. Context File: scratch/deep_review/Context.md. Execute DAG routing, spawn Layer 3 domain reviewers using invariant prompts, filter feedback, and generate Analyzation.md and Changelog.md in scratch/deep_review/host/.`
+`You are Review Host & Critical Gate. Target DA: <da_path>. System Rules: AGENTS.md. Execution Protocol: PROTOCOL.md. Opinion Filtering: HOW-TO-PICK-UP-THE-RIGHT-OPINIONS.md. Context File: scratch/deep_review/Context.md. Dynamically select active reviewers in scratch/deep_review/host/Reviewer_Choice_Rationale.md, execute DAG routing for active roles, spawn reviewers using invariant prompts, filter feedback, and generate Analyzation.md and Changelog.md in scratch/deep_review/host/.`
 
 ### Step 3: Handle Host Verdict
 

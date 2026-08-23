@@ -16,7 +16,10 @@ When updating draft artifacts between iterations, integrate fixes directly into 
 ### Workspace Layout
 ```text
 scratch/deep_review/
-├── host/                    # [HOST ONLY] Analyzation.md, Changelog.md (hidden from reviewers)
+├── host/                    # [HOST ONLY] Coordination artifacts (hidden from reviewers)
+│   ├── Analyzation.md
+│   ├── Changelog.md
+│   └── Reviewer_Choice_Rationale.md
 ├── Context.md               # [PUBLIC] Initialized by Layer 1 (DA path, rules, criteria, static SP)
 └── reports/                 # [REVIEWER OUTPUTS] Purged at pass starts; static overwrite (<Role>.md)
 ```
@@ -48,41 +51,54 @@ Audit the target document objectively from a clean-slate perspective. Follow you
 - **Tool Metadata Rule**: Host MUST specify neutral tool metadata (`toolAction: "Summoning reviewer"`, `toolSummary: "Domain review"`) to prevent leaking phase/round names in subagent tool logs.
 - **Banned Calling Tokens**: `Round`, `Sweep`, `Targeted`, `Re-verify`, `Re-audit`, `Fix`, `Pass`, `Iteration`, `Previous round`.
 
-## 4. Dynamic DAG Execution Sequence
+## 4. Dynamic Role Selection Protocol
 
-Host executes Layer 3 reviewers in dependency order:
+Before launching Round 1, Layer 2 Host inspects target DA scope and criteria, then writes `scratch/deep_review/host/Reviewer_Choice_Rationale.md`.
+
+### Selection Rules:
+1. **Mandatory Core Roles**: `Architect` (Tier 3.1) and `Logic` (Tier 3.3) MUST ALWAYS be `INCLUDED` for every DA and cannot be excluded.
+2. **Specialist Roles (Dynamic)**: `Readiness`, `Security`, `DataMigration`, `Testability`, `Edgecase`, `Performance`, `Observability`, `UXUI` are marked `INCLUDED` or `EXCLUDED` with concrete technical justification based on DA scope.
+3. **Roster Immutability**: If `scratch/deep_review/host/Reviewer_Choice_Rationale.md` exists (Round N+1), Host loads and preserves the active roster without re-evaluating exclusions.
+4. **Active Roster**: Only `INCLUDED` roles are summoned during DAG execution passes and Full Sweep rounds.
+
+## 5. Dynamic DAG Execution Sequence
+
+Host executes Layer 3 reviewers in dependency order across the active selected roster:
 
 | DAG Tier | Role | Prerequisite |
 | :--- | :--- | :--- |
-| **Layer 3.1** | Architect / Problem-Solving Director | None |
-| **Layer 3.2** | System Readiness Reviewer, Security Reviewer | Layer 3.1 PASS |
-| **Layer 3.3** | General Logic Reviewer, Edgecase Detector | Layer 3.2 PASS |
-| **Layer 3.4** | UX/UI Reviewer | Layer 3.3 PASS |
+| **Layer 3.1** | `Architect` *(Mandatory Core)* | None |
+| **Layer 3.2** | `Readiness`, `Security`, `DataMigration`, `Testability` | Layer 3.1 PASS |
+| **Layer 3.3** | `Logic` *(Mandatory Core)*, `Edgecase`, `Performance`, `Observability` | Layer 3.2 PASS |
+| **Layer 3.4** | `UXUI` | Layer 3.3 PASS |
+
+### Vacuous Tier Transition Rule
+If all roles in a DAG tier are `EXCLUDED`, Host treats that tier as vacuously passed and immediately advances to the next tier.
 
 If any layer returns `REVISION NEEDED`, suspend remaining downstream layers for the current round.
 
-## 4. Invalidation Matrix & Targeted Re-Review
+## 6. Invalidation Matrix & Targeted Re-Review
 
 When Layer 1 applies `Changelog.md` edits, identify the highest modified DAG tier. Host executes only the invalidated and downstream tiers during intermediate rounds:
 
 | Highest Modified Tier | Roles Run in Round N+1 | Skipped Roles (Cached PASS) |
 | :--- | :--- | :--- |
-| **Layer 3.1 (Architectural)** | All Roles (3.1, 3.2, 3.3, 3.4) | None (Full DAG Invalidation) |
-| **Layer 3.2 (Readiness / Security)** | 3.2, 3.3, 3.4 | Layer 3.1 (Architect) |
-| **Layer 3.3 (Logic / Edgecase)** | 3.3, 3.4 | Layer 3.1, Layer 3.2 |
-| **Layer 3.4 (UX/UI)** | 3.4 | Layer 3.1, Layer 3.2, Layer 3.3 |
+| **Layer 3.1 (Architectural)** | All Active Roles in Roster | None (Full DAG Invalidation) |
+| **Layer 3.2 (Readiness / Security / DataMigration / Testability)** | Active 3.2, 3.3, 3.4 Roles | Layer 3.1 (Architect) |
+| **Layer 3.3 (Logic / Edgecase / Performance / Observability)** | Active 3.3, 3.4 Roles | Layer 3.1, Layer 3.2 Roles |
+| **Layer 3.4 (UX/UI)** | Active 3.4 Roles (UXUI) | Layer 3.1, Layer 3.2, Layer 3.3 |
 
-## 5. Full Sweep Gate & `!SP` Threshold
+## 7. Full Sweep Gate & `!SP` Threshold
 
 Targeted re-review rounds do NOT count toward the `!SP` pass counter.
 
-- **Triggering Full Sweep**: When all active targeted roles return PASS, Host MUST run a **Full Sweep Round** (all 6 roles auditing the static DA snapshot).
+- **Triggering Full Sweep**: When all active targeted roles return PASS, Host MUST run a **Full Sweep Round** (all active roles in the frozen roster auditing the static DA snapshot).
 - **Pass Counter (`PassCount`)**:
-  - Increments by 1 ONLY when an unbroken Full Sweep round passes with zero blocking issues across all 6 roles.
+  - Increments by 1 ONLY when an unbroken Full Sweep round passes with zero blocking issues across all active roles in the frozen roster.
   - Resets to 0 if any role in any round returns `REVISION NEEDED`.
 - **Final Verdict**: Host issues `FINAL_PASS` ONLY when `PassCount >= SP`.
 
-## 6. Modifier Commands Matrix
+## 8. Modifier Commands Matrix
 
 | Tag | Parameter | Timing | System Behavior |
 | :--- | :--- | :--- | :--- |
