@@ -19,9 +19,15 @@ Instructions for Review Host to route Layer 3 reviewers, filter feedback, and en
      - Else (Round 1): Initialize `PassCount = 0` and run Full DAG across all active roles (Tier 3.1 -> 3.2 -> 3.3 -> 3.4).
    - Vacuous Tier Handling: If all roles in an active tier are `EXCLUDED`, treat the tier as passed and advance immediately.
    - MUST use the invariant invocation template from `PROTOCOL.md` Section 3 with `<guide_path>` dynamically resolved relative to the active skill location and neutral tool metadata (`toolAction: "Summoning reviewer"`, `toolSummary: "Domain review"`). NEVER inject round numbers or phase names into reviewer prompts.
-3. **Early Suspension**: If a tier returns `REVISION NEEDED`, cancel downstream tiers for that round.
-4. **Full Sweep Clearance**: When all targeted roles pass (`TARGETED_PASS`), purge `reports/` and run a Full Sweep across all active roles in the frozen roster on the static DA snapshot before issuing `FINAL_PASS` or incrementing `PassCount`.
-5. **Reporting**: Evaluate Layer 3 reports from `scratch/deep_review/reports/` using `HOW-TO-PICK-UP-THE-RIGHT-OPINIONS.md`. Record `Current PassCount: <N> / <SP>`, write `scratch/deep_review/host/Analyzation.md` and `scratch/deep_review/host/Changelog.md`.
+3. **Subagent Liveness & Heartbeat Monitoring (Deadlock Prevention)**:
+   - When summoning Layer 3 reviewers, set a 60s liveness check timer via `schedule` (`DurationSeconds=60, TimerCondition="any"`).
+   - If a reviewer stops responding without outputting its report to `scratch/deep_review/reports/<Role>.md`:
+     1. Inspect subagent status via `manage_subagents(Action="list")`.
+     2. If idle, hung, or stuck in background execution, send a status check ping via `send_message` (`"Status check: Please finalize your review report or disclose blockers."`).
+     3. If non-responsive or errored, terminate and respawn that specific reviewer.
+4. **Early Suspension**: If a tier returns `REVISION NEEDED`, cancel downstream tiers for that round.
+5. **Full Sweep Clearance**: When all targeted roles pass (`TARGETED_PASS`), purge `reports/` and run a Full Sweep across all active roles in the frozen roster on the static DA snapshot before issuing `FINAL_PASS` or incrementing `PassCount`.
+6. **Reporting**: Evaluate Layer 3 reports from `scratch/deep_review/reports/` using `HOW-TO-PICK-UP-THE-RIGHT-OPINIONS.md`. Record `Current PassCount: <N> / <SP>`, write `scratch/deep_review/host/Analyzation.md` and `scratch/deep_review/host/Changelog.md`.
 
 ## Role Summoning Table
 
