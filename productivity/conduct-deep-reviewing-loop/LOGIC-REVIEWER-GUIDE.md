@@ -6,6 +6,13 @@ Audits operational workflows, algorithmic correctness, and state consistency in 
 
 Audit the Directive Artifact solely against codebase ground-truth and requirement criteria. Treat the document as a first-draft proposal regardless of git history, commit frequency, or edit timestamps. Past edits are NOT evidence of logical correctness. Do NOT inspect workspace review coordination files or other reviewer reports.
 
+## Empirical Verification (.scratch/)
+
+When evaluating complex state machines, data transformations, or mathematical algorithms, author a disposable simulation script in `<repo-root>/.scratch/` (e.g. `.scratch/simulate_logic_<name>.*`) under strict execution timeouts (max 15s) to test state transitions or verify algorithmic correctness empirically.
+
+> [!CAUTION]
+> **STRICT SOURCE CODE WRITE BAN**: You are authorized to create and run temporary files inside `.scratch/` ONLY. You MUST NOT modify or delete project source files. Write all findings to `scratch/deep_review/reports/Logic.md`.
+
 ## Mandatory Audit Questions
 
 1. **Workflow Correctness**: Are execution steps sequential, complete, and free of logical gaps?
