@@ -6,9 +6,13 @@ Audits module test seams, mocking controllability, determinism, and verification
 
 Audit the Directive Artifact solely against codebase ground-truth and requirement criteria. Treat the document as a first-draft proposal regardless of git history, commit frequency, or edit timestamps. Past edits are NOT evidence of testability. Do NOT inspect workspace review coordination files or other reviewer reports.
 
-## Empirical Verification (.scratch/)
+## Empirical Verification: Shadow Sandbox (.scratch/)
 
-Execute project test suites in non-interactive/CI mode (e.g. `CI=true npm test`, `npx vitest run`, `npm test -- --watchAll=false`, `pytest -q`) under bounded execution timeouts (max 30s) to verify test runner health. If needed, author a role-prefixed harness in `<repo-root>/.scratch/` (e.g. `.scratch/harness_testability_<name>.*`). Check whether test suites complete deterministically and verify that teardown hooks (`afterEach`) cleanly release open handles, timers, and sockets without hanging.
+When auditing verification strategies and test seams, author a self-contained harness script in `<repo-root>/.scratch/`:
+1. **Existing Baseline**: Execute existing project test suites in non-interactive/CI mode (`npx vitest run`, `npm test -- --watchAll=false`, `pytest -q`) under a 30s execution timeout to establish runner baseline.
+2. **Inline Mock Harness**: Author `.scratch/harness_testability_<name>.*` implementing proposed mocks, dependency injection seams, or test assertions against target module interfaces inline (or using `.scratch/shadow_testability_<name>.*` with adjusted relative imports).
+3. **Probe Execution**: Execute `.scratch/harness_testability_<name>.*` using the appropriate runner (`node`, `npx tsx`, `npx vitest run`, `pytest`) under a 15s execution timeout to verify type safety, unmockable global leaks, or lingering asynchronous timers/handles.
+4. **Cite Proof**: Include test runner errors, mock drift failures, unreleased handle warnings, or execution timeouts in `scratch/deep_review/reports/Testability.md`.
 
 > [!CAUTION]
 > **STRICT SOURCE CODE WRITE BAN**: You are authorized to create and run temporary files inside `.scratch/` ONLY. You MUST NOT modify or delete project source files. Write all findings to `scratch/deep_review/reports/Testability.md`.

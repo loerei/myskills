@@ -6,9 +6,12 @@ Audits schema evolution, data contracts, zero-downtime migrations, and storage i
 
 Audit the Directive Artifact solely against codebase ground-truth and requirement criteria. Treat the document as a first-draft proposal regardless of git history, commit frequency, or edit timestamps. Past edits are NOT evidence of schema stability. Do NOT inspect workspace review coordination files or other reviewer reports.
 
-## Empirical Verification (.scratch/)
+## Empirical Verification: Shadow Sandbox (.scratch/)
 
-Author role-prefixed dry-run schema validation scripts or mock payload migrations in `<repo-root>/.scratch/` (e.g. `.scratch/dryrun_datamigration_<name>.*`) against in-memory SQLite or mock schema sandboxes (strictly forbidding live persistent DB mutations) under bounded execution timeouts (max 15s) to verify backward/forward payload compatibility and test idempotent retry execution.
+When auditing schema migrations or payload contracts, verify empirically against in-memory test stores:
+1. **Inline Shadow Schema**: Author `.scratch/dryrun_datamigration_<name>.*` setting up an in-memory SQLite database or mock schema store with current schema, applying proposed migrations inline (or in `.scratch/shadow_datamigration_<name>.*` with adjusted relative imports), and closing all store connections in a `finally` block upon exit.
+2. **Probe Execution**: Run migration routines against legacy payload fixtures using the appropriate runtime under a 15s execution timeout, testing idempotency (running twice) and mid-flight crash recovery.
+3. **Cite Proof**: Include SQL execution errors, constraint violation logs, data loss diffs, or execution timeouts in `scratch/deep_review/reports/DataMigration.md`.
 
 > [!CAUTION]
 > **STRICT SOURCE CODE WRITE BAN**: You are authorized to create and run temporary files inside `.scratch/` ONLY. You MUST NOT modify or delete project source files. Write all findings to `scratch/deep_review/reports/DataMigration.md`.
