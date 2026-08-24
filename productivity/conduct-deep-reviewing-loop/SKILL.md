@@ -40,7 +40,20 @@ Create `scratch/deep_review/host/` and `scratch/deep_review/reports/`. Initializ
 
 ### Step 2: Spawn Review Host & Critical Gate (Layer 2)
 
-Spawn Layer 2 Subagent with prompt:
+#### 2A. Define Host Subagent Type (Prerequisite)
+If `review_host` is not already defined in the active session, call `define_subagent` to register the subagent type:
+- `name`: `"review_host"`
+- `description`: `"Host and Critical Gate for multi-agent deep reviewing loop"`
+- `enable_subagent_tools: true` *(Mandatory: equips Host with `invoke_subagent` and `manage_subagents` to summon Layer 3 reviewers)*
+- `enable_write_tools: true` *(Mandatory: equips Host to write `Analyzation.md`, `Changelog.md`, and `Reviewer_Choice_Rationale.md`)*
+- `enable_mcp_tools: true`
+- `system_prompt`: Provide Host operational instructions referencing `REVIEW-HOST-GUIDE.md`, `PROTOCOL.md`, and `HOW-TO-PICK-UP-THE-RIGHT-OPINIONS.md`.
+
+#### 2B. Summon Review Host
+Invoke the registered `review_host` subagent via `invoke_subagent`:
+- `TypeName`: `"review_host"`
+- `Role`: `"Review Host & Critical Gate"`
+- `Prompt`:
 `You are Review Host & Critical Gate. Target DA: <da_path>. System Rules: AGENTS.md. Execution Protocol: PROTOCOL.md. Opinion Filtering: HOW-TO-PICK-UP-THE-RIGHT-OPINIONS.md. Context File: scratch/deep_review/Context.md. Dynamically select active reviewers in scratch/deep_review/host/Reviewer_Choice_Rationale.md, execute DAG routing for active roles, spawn reviewers using invariant prompts, filter feedback, and generate Analyzation.md and Changelog.md in scratch/deep_review/host/.`
 
 ### Step 3: Handle Host Verdict
