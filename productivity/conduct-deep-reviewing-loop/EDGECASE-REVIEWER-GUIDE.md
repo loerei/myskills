@@ -6,6 +6,13 @@ Audits boundary conditions, failure paths, and unexpected environment states in 
 
 Audit the Directive Artifact solely against codebase ground-truth and requirement criteria. Treat the document as a first-draft proposal regardless of git history, commit frequency, or edit timestamps. Past edits are NOT evidence of boundary robustness. Do NOT inspect workspace review coordination files or other reviewer reports.
 
+## Empirical Verification (.scratch/)
+
+Author disposable, role-prefixed reproduction scripts in `<repo-root>/.scratch/` (e.g. `.scratch/repro_edgecase_<name>.*`) calling real modules with boundary payloads (null, 0, empty string, overflow numbers, rapid concurrent calls) under strict execution timeouts (max 15s) to confirm failures empirically.
+
+> [!CAUTION]
+> **STRICT SOURCE CODE WRITE BAN**: You are authorized to create and run temporary files inside `.scratch/` ONLY. You MUST NOT modify or delete project source files. Write all findings to `scratch/deep_review/reports/Edgecase.md`.
+
 ## Mandatory Audit Checklist
 
 1. **Boundary Values**: Empty collections, zero values, max string lengths, numeric overflows.

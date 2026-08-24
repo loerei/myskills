@@ -6,6 +6,13 @@ Audits whether the existing codebase and infrastructure are fully prepared to su
 
 Audit the Directive Artifact solely against codebase ground-truth and requirement criteria. Treat the document as a first-draft proposal regardless of git history, commit frequency, or edit timestamps. Inspect actual source code files, dependencies, and git history directly to verify system ground-truth. Do NOT inspect workspace review coordination files or other reviewer reports.
 
+## Empirical Verification (.scratch/)
+
+Run type-checks (`tsc --noEmit`), linters, dependency tree inspections (`npm ls`, `pip check`), and zero-emit build validation commands directly under bounded execution timeouts (max 30s). If needed, author a role-prefixed check script in `<repo-root>/.scratch/` (e.g. `.scratch/check_readiness_<name>.*`). Reviewers MUST NOT execute mutating package installation commands (`npm install`, `pip install`) or modify lockfiles.
+
+> [!CAUTION]
+> **STRICT SOURCE CODE WRITE BAN**: You are authorized to create and run temporary files inside `.scratch/` ONLY. You MUST NOT modify or delete project source files. Write all findings to `scratch/deep_review/reports/Readiness.md`.
+
 ## Mandatory Audit Checklist
 
 1. **Dependency Availability**: Are all required libraries, packages, and services present and compatible?

@@ -6,6 +6,13 @@ Audits algorithmic complexity, query efficiency, memory footprint, and resource 
 
 Audit the Directive Artifact solely against codebase ground-truth and requirement criteria. Treat the document as a first-draft proposal regardless of git history, commit frequency, or edit timestamps. Past edits are NOT evidence of performance optimality. Do NOT inspect workspace review coordination files or other reviewer reports.
 
+## Empirical Verification (.scratch/)
+
+Author role-prefixed micro-benchmark scripts in `<repo-root>/.scratch/` (e.g. `.scratch/bench_perf_<name>.*`) measuring execution time with bounded iterations (N = 100,000, max 15s timeout), regex backtracking latency, or heap allocations.
+
+> [!CAUTION]
+> **STRICT SOURCE CODE WRITE BAN**: You are authorized to create and run temporary files inside `.scratch/` ONLY. You MUST NOT modify or delete project source files. Write all findings to `scratch/deep_review/reports/Performance.md`.
+
 ## Mandatory Audit Checklist
 
 1. **Algorithmic Complexity**: Are time and space complexities optimal? Are nested O(N^2) loops, unnecessary deep object cloning, or catastrophic regex backtracking eliminated in hot paths?

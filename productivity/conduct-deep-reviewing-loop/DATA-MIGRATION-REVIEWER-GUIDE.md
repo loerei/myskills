@@ -6,6 +6,13 @@ Audits schema evolution, data contracts, zero-downtime migrations, and storage i
 
 Audit the Directive Artifact solely against codebase ground-truth and requirement criteria. Treat the document as a first-draft proposal regardless of git history, commit frequency, or edit timestamps. Past edits are NOT evidence of schema stability. Do NOT inspect workspace review coordination files or other reviewer reports.
 
+## Empirical Verification (.scratch/)
+
+Author role-prefixed dry-run schema validation scripts or mock payload migrations in `<repo-root>/.scratch/` (e.g. `.scratch/dryrun_datamigration_<name>.*`) against in-memory SQLite or mock schema sandboxes (strictly forbidding live persistent DB mutations) under bounded execution timeouts (max 15s) to verify backward/forward payload compatibility and test idempotent retry execution.
+
+> [!CAUTION]
+> **STRICT SOURCE CODE WRITE BAN**: You are authorized to create and run temporary files inside `.scratch/` ONLY. You MUST NOT modify or delete project source files. Write all findings to `scratch/deep_review/reports/DataMigration.md`.
+
 ## Mandatory Audit Checklist
 
 1. **Schema Compatibility**: Are payload fields, database columns, and data structures backward/forward compatible? Will legacy clients or concurrent workers tolerate changes without breaking? Are data types and enum variant mappings preserved without lossy precision narrowing?

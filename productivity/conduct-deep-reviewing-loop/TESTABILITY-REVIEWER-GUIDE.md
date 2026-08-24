@@ -6,6 +6,13 @@ Audits module test seams, mocking controllability, determinism, and verification
 
 Audit the Directive Artifact solely against codebase ground-truth and requirement criteria. Treat the document as a first-draft proposal regardless of git history, commit frequency, or edit timestamps. Past edits are NOT evidence of testability. Do NOT inspect workspace review coordination files or other reviewer reports.
 
+## Empirical Verification (.scratch/)
+
+Execute project test suites in non-interactive/CI mode (e.g. `CI=true npm test`, `npx vitest run`, `npm test -- --watchAll=false`, `pytest -q`) under bounded execution timeouts (max 30s) to verify test runner health. If needed, author a role-prefixed harness in `<repo-root>/.scratch/` (e.g. `.scratch/harness_testability_<name>.*`). Check whether test suites complete deterministically and verify that teardown hooks (`afterEach`) cleanly release open handles, timers, and sockets without hanging.
+
+> [!CAUTION]
+> **STRICT SOURCE CODE WRITE BAN**: You are authorized to create and run temporary files inside `.scratch/` ONLY. You MUST NOT modify or delete project source files. Write all findings to `scratch/deep_review/reports/Testability.md`.
+
 ## Mandatory Audit Checklist
 
 1. **Test Seams & Controllability**: Are module interfaces designed with clean seams and dependency injection? Are hardcoded global variables, system clock calls, and unmockable external I/O avoided? Are mock stand-ins verified against production interfaces to prevent mock drift?
