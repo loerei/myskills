@@ -49,10 +49,11 @@ Domain Context: scratch/deep_review/Context.md
 Review Guide: <guide_path>
 Output Path: scratch/deep_review/reports/<Role>.md
 
-Audit the target document objectively from a clean-slate perspective. Follow your Review Guide strictly.
+Audit the target document objectively from a clean-slate perspective. Follow your Review Guide and any domain subdocuments referenced within it strictly.
 ```
 
 - `<guide_path>` MUST be resolved dynamically relative to the active skill location (`.agents/skills/conduct-deep-reviewing-loop/<Role>-REVIEWER-GUIDE.md` in distributed projects or `productivity/conduct-deep-reviewing-loop/<Role>-REVIEWER-GUIDE.md` in central `myskills`).
+- **Subdocument Progressive Disclosure**: Host passes only the primary `<Role>-REVIEWER-GUIDE.md` path. Reviewers autonomously load domain subdocuments referenced in their guide's routing table as needed via `view_file`.
 - **Tool Metadata Rule**: Host MUST specify neutral tool metadata (`toolAction: "Summoning reviewer"`, `toolSummary: "Domain review"`) to prevent leaking phase/round names in subagent tool logs.
 - **Banned Calling Tokens**: `Round`, `Sweep`, `Targeted`, `Re-verify`, `Re-audit`, `Fix`, `Pass`, `Iteration`, `Previous round`.
 

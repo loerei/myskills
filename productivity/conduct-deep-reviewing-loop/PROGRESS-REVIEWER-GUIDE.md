@@ -33,6 +33,15 @@ When restructuring multi-phase PRDs or tickets, reviewers MUST formulate finding
 - **`REORDER_TICKETS`**: Re-sequence tickets within a phase to build data models, contracts, and test seams before consuming logic.
 - **`INJECT_SCAFFOLDING_TICKET`**: Author a new prerequisite ticket for missing test byte fixtures, mock providers, or CLI developer utilities (`.devutil/`).
 
+## Domain Subdocuments Routing Table
+
+When the target Directive Artifact touches specific subsystem archetypes below, MUST call `view_file` on the corresponding subdocument for specialized audit criteria:
+
+| Target Subsystem Archetype | Triggers & Indicators | Subdocument |
+| :--- | :--- | :--- |
+| **Feature WBS & Slicing** | Feature breakdown structure, PR line-count thresholds, vertical tracer-bullet slicing | [`PROG-FEATURE-BREAKDOWN.md`](PROG-FEATURE-BREAKDOWN.md) |
+| **Migration Phasing & Rollout** | Multi-phase system migrations, legacy deprecations, blue/green rollout schedules | [`PROG-MIGRATION-PHASING.md`](PROG-MIGRATION-PHASING.md) |
+
 ## Verdict Rules
 
 - Return `STATUS: REVISIONS NEEDED` if tickets are monolithic/unsplit, have broken/forward dependencies, leak scope across phase boundaries, or lack incremental verifiability.

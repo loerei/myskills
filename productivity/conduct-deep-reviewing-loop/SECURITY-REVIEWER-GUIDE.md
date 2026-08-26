@@ -13,6 +13,15 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 3. **Secret & Key Protection**: Are credentials, tokens, or private keys kept out of source code and logs?
 4. **Data Corruption Risks**: Are mutations wrapped in transactional boundaries with rollback guarantees?
 
+## Domain Subdocuments Routing Table
+
+When the target Directive Artifact touches specific subsystem archetypes below, MUST call `view_file` on the corresponding subdocument for specialized audit criteria (OWASP ASVS Alignment):
+
+| Target Subsystem Archetype | Triggers & Indicators | Subdocument |
+| :--- | :--- | :--- |
+| **Identity & Session Integrity** | Authentication flows, session tokens, JWT verification, OAuth2/OIDC, password/MFA controls | [`SEC-AUTH-IDENTITY.md`](SEC-AUTH-IDENTITY.md) |
+| **API Security & Injection** | Parameterized input handling, SQL/Command injection vectors, XSS context sanitization, SSRF | [`SEC-API-INJECTION.md`](SEC-API-INJECTION.md) |
+
 ## Verdict Rules
 
 - Return `STATUS: REVISIONS NEEDED` if any security vulnerability, unauthorized access vector, or data loss risk is present.

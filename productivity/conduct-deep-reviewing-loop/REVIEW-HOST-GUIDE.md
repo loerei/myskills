@@ -18,7 +18,7 @@ Instructions for Review Host to route Layer 3 reviewers, filter feedback, and en
      - If previous `host/Analyzation.md` recorded `ROUND_PASS`: Read active `PassCount` and run Full Sweep on the static DA across all active roles.
      - Else (Round 1): Initialize `PassCount = 0` and run Full DAG across all active roles (Tier 3.1 -> 3.2 -> 3.3 -> 3.4).
    - Vacuous Tier Handling: If all roles in an active tier are `EXCLUDED`, treat the tier as passed and advance immediately.
-   - MUST use the invariant invocation template from `PROTOCOL.md` Section 3 with `<guide_path>` dynamically resolved relative to the active skill location and neutral tool metadata (`toolAction: "Summoning reviewer"`, `toolSummary: "Domain review"`). NEVER inject round numbers or phase names into reviewer prompts.
+   - MUST use the invariant invocation template from `PROTOCOL.md` Section 3 with `<guide_path>` dynamically resolved to the primary `<Role>-REVIEWER-GUIDE.md` relative to the active skill location and neutral tool metadata (`toolAction: "Summoning reviewer"`, `toolSummary: "Domain review"`). Reviewers autonomously load domain subdocuments referenced in their guide's routing table as needed via `view_file`. NEVER inject round numbers or phase names into reviewer prompts.
 3. **Subagent Liveness & Heartbeat Monitoring (Deadlock Prevention)**:
    - When summoning Layer 3 reviewers, set a 60s liveness check timer via `schedule` (`DurationSeconds=60, TimerCondition="any"`).
    - If a reviewer stops responding without outputting its report to `scratch/deep_review/reports/<Role>.md`:

@@ -23,6 +23,15 @@ When auditing boundary conditions or failure paths, author a self-contained inli
 3. **Concurrency & Race Conditions**: Simultaneous requests, stale cache hits, re-entrancy risks.
 4. **Malformed Payload Handling**: Missing JSON keys, invalid data types, unescaped special characters.
 
+## Domain Subdocuments Routing Table
+
+When the target Directive Artifact touches specific subsystem archetypes below, MUST call `view_file` on the corresponding subdocument for specialized audit criteria:
+
+| Target Subsystem Archetype | Triggers & Indicators | Subdocument |
+| :--- | :--- | :--- |
+| **Resource Lifecycle & Teardown** | Process resource allocation (defer/RAII), OS file handles, signal handling (SIGTERM), orphan prevention | [`EDGE-RESOURCE-CLEANUP.md`](EDGE-RESOURCE-CLEANUP.md) |
+| **Network Faults & Partitions** | Network partitions, RPC timeouts, circuit breaker state integrity, exponential backoff jitter | [`EDGE-NETWORK-PARTITION.md`](EDGE-NETWORK-PARTITION.md) |
+
 ## Verdict Rules
 
 - Return `STATUS: REVISIONS NEEDED` if an unhandled edge case could cause crashes, unhandled exceptions, or silent data corruption.

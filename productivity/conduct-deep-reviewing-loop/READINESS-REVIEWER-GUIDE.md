@@ -24,6 +24,15 @@ When auditing system prerequisites and dependencies, verify directly against cod
 4. **Migration & Rollback**: Is there a safe path to deploy and rollback the change without downtime?
 5. **Platform & Environment Portability**: Are serialized data formats, path separators, file access modes, and encodings portable across all target runtime platforms, containers, or emulation layers?
 
+## Domain Subdocuments Routing Table
+
+When the target Directive Artifact touches specific subsystem archetypes below, MUST call `view_file` on the corresponding subdocument for specialized audit criteria:
+
+| Target Subsystem Archetype | Triggers & Indicators | Subdocument |
+| :--- | :--- | :--- |
+| **Container Runtimes & Infra** | Dockerfiles, Kubernetes manifests, container base images, non-root execution, OOM limits | [`READ-RUNTIME-CONTAINER.md`](READ-RUNTIME-CONTAINER.md) |
+| **Native Toolchains & ABIs** | Native binaries, Cgo/FFI memory boundaries, cross-compilation flags, platform ABIs | [`READ-NATIVE-CROSSPLATFORM.md`](READ-NATIVE-CROSSPLATFORM.md) |
+
 ## Verdict Rules
 
 - Return `STATUS: REVISIONS NEEDED` if the plan assumes non-existent codebase structures, missing dependencies, or breaking API changes without migration steps.

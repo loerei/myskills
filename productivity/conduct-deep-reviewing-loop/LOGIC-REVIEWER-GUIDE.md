@@ -23,6 +23,15 @@ When auditing workflows, state machines, or algorithmic transforms, author a sel
 3. **Data Flow Validation**: Do inputs correctly transform into expected outputs across processing boundaries?
 4. **Invariant Preservation**: Are core operational invariants maintained during error states?
 
+## Domain Subdocuments Routing Table
+
+When the target Directive Artifact touches specific subsystem archetypes below, MUST call `view_file` on the corresponding subdocument for specialized audit criteria:
+
+| Target Subsystem Archetype | Triggers & Indicators | Subdocument |
+| :--- | :--- | :--- |
+| **State Machines & Transitions** | Business logic finite state machines, state transition matrices, invalid state guards, re-entrancy | [`LOGIC-STATE-MACHINE.md`](LOGIC-STATE-MACHINE.md) |
+| **Concurrency & Algorithms** | Multithreaded algorithms, concurrent data structures, lock ordering deadlocks, atomic pointer operations | [`LOGIC-CONCURRENCY-ALGO.md`](LOGIC-CONCURRENCY-ALGO.md) |
+
 ## Verdict Rules
 
 - Return `STATUS: REVISIONS NEEDED` if logic gaps, invalid state transitions, or deadlocks exist.

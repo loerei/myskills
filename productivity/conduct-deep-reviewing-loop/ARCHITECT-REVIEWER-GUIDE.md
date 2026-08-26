@@ -13,6 +13,16 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 3. **Domain Boundaries**: Are module responsibilities, domain models, and data boundaries correctly isolated?
 4. **Trade-Off Transparency**: Are performance, memory, and maintainability trade-offs explicitly identified?
 
+## Domain Subdocuments Routing Table
+
+When the target Directive Artifact touches specific subsystem archetypes below, MUST call `view_file` on the corresponding subdocument for specialized audit criteria:
+
+| Target Subsystem Archetype | Triggers & Indicators | Subdocument |
+| :--- | :--- | :--- |
+| **Event-Driven & Messaging** | Message queues, event streaming, pub/sub, transactional outbox, Kafka/SQS | [`ARCH-EVENT-DRIVEN.md`](ARCH-EVENT-DRIVEN.md) |
+| **Monolith & Domain Seams** | Package boundaries, internal APIs, circular dependencies, domain isolation | [`ARCH-MONOLITH-SEAMS.md`](ARCH-MONOLITH-SEAMS.md) |
+| **Distributed State & Sagas** | Distributed consensus, multi-region replication, distributed locks, saga rollbacks | [`ARCH-DISTRIBUTED-STATE.md`](ARCH-DISTRIBUTED-STATE.md) |
+
 ## Verdict Rules
 
 - Return `STATUS: REVISIONS NEEDED` if the architecture introduces unnecessary system complexity, breaks domain boundaries, or misses a simpler design.

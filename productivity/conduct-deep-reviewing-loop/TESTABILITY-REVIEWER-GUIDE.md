@@ -25,6 +25,15 @@ When auditing verification strategies and test seams, author a self-contained ha
 4. **Asynchronous Teardown & Handle Cleanup**: Does the test harness cleanly release all event listeners, open sockets, and timers in teardown hooks (e.g. `afterEach`) to prevent hanging test suites?
 5. **Verification Completeness**: Does the Verification Plan in the DA cover 100% of acceptance criteria and edge cases with explicit automated test commands and 1-to-1 stdout assertions?
 
+## Domain Subdocuments Routing Table
+
+When the target Directive Artifact touches specific subsystem archetypes below, MUST call `view_file` on the corresponding subdocument for specialized audit criteria:
+
+| Target Subsystem Archetype | Triggers & Indicators | Subdocument |
+| :--- | :--- | :--- |
+| **Unit & Integration Testing** | Unit test assertion determinism, mock object boundaries, edge-value coverage, test execution speed | [`TEST-UNIT-INTEGRATION.md`](TEST-UNIT-INTEGRATION.md) |
+| **E2E & Browser Test Harnesses**| End-to-end test suites, browser automation, flaky test mitigation, ephemeral test environments | [`TEST-E2E-HARNESS.md`](TEST-E2E-HARNESS.md) |
+
 ## Verdict Rules
 
 - Return `STATUS: REVISIONS NEEDED` if the proposed design creates untestable modules, relies on flaky test patterns, or lacks complete verification coverage.

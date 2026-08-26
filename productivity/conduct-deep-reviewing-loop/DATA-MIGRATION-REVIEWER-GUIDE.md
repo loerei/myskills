@@ -24,6 +24,15 @@ When auditing schema migrations or payload contracts, verify empirically against
 4. **Transactional Boundaries & ACID**: Are write mutations properly grouped within transactional boundaries to prevent partial state corruption upon crashes?
 5. **Rollback & Reversibility**: Is there an explicit rollback/down-migration path that does not drop columns with live data or destroy user state?
 
+## Domain Subdocuments Routing Table
+
+When the target Directive Artifact touches specific subsystem archetypes below, MUST call `view_file` on the corresponding subdocument for specialized audit criteria:
+
+| Target Subsystem Archetype | Triggers & Indicators | Subdocument |
+| :--- | :--- | :--- |
+| **Relational Schema Migrations** | SQL DDL execution safety, non-blocking index creation, foreign key lock hazards, rollback scripts | [`DATA-RELATIONAL-SCHEMA.md`](DATA-RELATIONAL-SCHEMA.md) |
+| **NoSQL & Event Stores** | Schema-less data evolution, eventual consistency backfills, partition key hot-spotting, stream replaying | [`DATA-NOSQL-EVENTSTORE.md`](DATA-NOSQL-EVENTSTORE.md) |
+
 ## Verdict Rules
 
 - Return `STATUS: REVISIONS NEEDED` if any schema change breaks compatibility, risks data loss/corruption, lacks transactional isolation, or causes blocking table locks.

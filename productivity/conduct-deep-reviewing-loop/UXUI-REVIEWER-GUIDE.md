@@ -14,6 +14,15 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 4. **Feedback Consistency**: Are loading, success, error, and empty states explicitly specified?
 5. **High-Volume Interaction Responsiveness**: Are complex interactions (e.g. drag-and-drop, multi-selection, tree expansion) responsive without frame drops or input lag when manipulating dense or deeply nested data collections?
 
+## Domain Subdocuments Routing Table
+
+When the target Directive Artifact touches specific subsystem archetypes below, MUST call `view_file` on the corresponding subdocument for specialized audit criteria:
+
+| Target Subsystem Archetype | Triggers & Indicators | Subdocument |
+| :--- | :--- | :--- |
+| **Interactive Flows & A11y** | User interface forms, input validation states, screen reader accessibility attributes (WCAG), visual hierarchy clarity | [`UX-INTERACTION-FLOW.md`](UX-INTERACTION-FLOW.md) |
+| **Layout Shifts & Latency Feedback** | Cumulative layout shift (CLS) prevention, immediate touch feedback (<100ms), optimistic UI rollbacks, skeleton states | [`UX-RESPONSIVE-PERFORMANCE.md`](UX-RESPONSIVE-PERFORMANCE.md) |
+
 ## Verdict Rules
 
 - Return `STATUS: REVISIONS NEEDED` if UI/UX specifications contain redundant elements, confusing interaction flows, or missing state indicators.

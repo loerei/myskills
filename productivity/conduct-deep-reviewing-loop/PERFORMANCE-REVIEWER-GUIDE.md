@@ -25,6 +25,15 @@ When auditing algorithmic complexity or throughput, author a self-contained inli
 5. **Resource & Memory Management**: Are file descriptors, database connections, and sockets explicitly released? Are connection pools protected against exhaustion with acquisition timeouts? Are in-memory caches bounded with eviction policies and protected against thundering-herd stampedes?
 6. **Client & Viewport Rendering Scale**: Are large collections ($N \gg 1$) virtualized (windowed/culled) to prevent unbounded view-tree allocation, DOM node bloat, and main-thread render stalls?
 
+## Domain Subdocuments Routing Table
+
+When the target Directive Artifact touches specific subsystem archetypes below, MUST call `view_file` on the corresponding subdocument for specialized audit criteria:
+
+| Target Subsystem Archetype | Triggers & Indicators | Subdocument |
+| :--- | :--- | :--- |
+| **Backend DB & Resource Pools** | Relational/NoSQL query execution plans, N+1 query patterns, index usage, connection pool exhaustion | [`PERF-BACKEND-DATABASE.md`](PERF-BACKEND-DATABASE.md) |
+| **Frontend DOM & Virtualization** | Web client DOM layout thrashing, component re-render loops, dynamic list virtualization, hydration bottlenecks | [`PERF-FRONTEND-DOM.md`](PERF-FRONTEND-DOM.md) |
+
 ## Verdict Rules
 
 - Return `STATUS: REVISIONS NEEDED` if the design introduces avoidable complexity bottlenecks, N+1 queries, unmanaged resource leaks, or unbounded memory growth.

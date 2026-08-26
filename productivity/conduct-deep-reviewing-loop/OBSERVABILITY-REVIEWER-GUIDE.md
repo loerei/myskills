@@ -14,6 +14,15 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 4. **Degradation & Feature Flags**: Can new capabilities or high-risk paths be disabled via feature flags or kill-switches during incidents? Are graceful degradation paths defined?
 5. **Health Checks & Metric Cardinality**: Are liveness/readiness probes updated to reflect critical dependencies? Are metric tag labels constrained to prevent high-cardinality crashes in metric stores?
 
+## Domain Subdocuments Routing Table
+
+When the target Directive Artifact touches specific subsystem archetypes below, MUST call `view_file` on the corresponding subdocument for specialized audit criteria:
+
+| Target Subsystem Archetype | Triggers & Indicators | Subdocument |
+| :--- | :--- | :--- |
+| **Telemetry, Tracing & Logs** | OpenTelemetry span context propagation across network hops, structured log key-value schemas, dynamic log levels | [`OBS-TELEMETRY-TRACING.md`](OBS-TELEMETRY-TRACING.md) |
+| **Alerting, SLOs & Probes** | Alerting configurations, SLO/SLA definitions, health check endpoints, DLQ backlog monitoring thresholds | [`OBS-ALERTING-SLO.md`](OBS-ALERTING-SLO.md) |
+
 ## Verdict Rules
 
 - Return `STATUS: REVISIONS NEEDED` if error paths swallow context, leak sensitive data, lack operational kill-switches for high-risk changes, or cause unobservable silent failures.
