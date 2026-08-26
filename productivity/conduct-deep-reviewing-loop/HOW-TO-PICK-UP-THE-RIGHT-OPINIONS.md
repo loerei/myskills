@@ -39,3 +39,10 @@ When specialist reviewer opinions conflict (e.g. `Performance` requesting aggres
 | 1+ Accepted Blocking Defects | `ROUND_REVISION_NEEDED` | Write `host/Analyzation.md` (rationale) and `host/Changelog.md` (clean edits). |
 | 0 Accepted Blocking Defects (Targeted Pass) | `TARGETED_PASS` *(Ephemeral Internal Host State)* | Purge `reports/` and trigger Full Sweep Round. |
 | 0 Accepted Blocking Defects (Full Sweep Pass) | `ROUND_PASS` (Increment `PassCount`) or `FINAL_PASS` (if `PassCount >= SP`) | Write `host/Analyzation.md`. |
+
+## Changelog.md Authoring Standards
+
+When authoring `scratch/deep_review/host/Changelog.md` for `ROUND_REVISION_NEEDED`:
+1. **Clean & Native Spec Diffs**: Write direct, actionable modification instructions without meta-tags or reviewer references.
+2. **Mandatory Context DA Tree Synchronization**: If accepted feedback splits, merges, creates, deletes, or moves Directive Artifact files (e.g. Progress Reviewer WBS actions), include a dedicated section:
+   - `## Target Directive Artifacts Synchronization (Context.md)`: Instruct Layer 1 to update `## Target Directive Artifacts` in `scratch/deep_review/Context.md` with the updated list of active DA paths.

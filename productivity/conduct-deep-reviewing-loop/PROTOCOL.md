@@ -108,5 +108,5 @@ Targeted re-review rounds do NOT count toward the `!SP` pass counter.
 | Tag | Parameter | Timing | System Behavior |
 | :--- | :--- | :--- | :--- |
 | `!SP<N>` | N (Integer >= 1) | Start-time | Sets required continuous Full Sweep PASS threshold `SP = N`. |
-| `!PA` | None | Mid-flight | Pauses loop after Layer 1 applies `Changelog.md` edits; awaits user command to proceed. |
+| `!PA` / `!WA` | None | Start-time / Mid-flight | Pre-mutation pause gate: When Host issues `ROUND_REVISION_NEEDED`, Main Agent stops immediately before modifying DA files, prompts user to verify API quota, and awaits keyword `"C"` to apply `Changelog.md` edits (synchronizing `Context.md` if DA tree changed) and proceed to Round N+1. Remains persistent across all rounds until `FINAL_PASS`. |
 | `!FPA` | None | Mid-flight | Instantly kills running subagent via process control, discards outputs, pauses loop. |

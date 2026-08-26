@@ -62,7 +62,7 @@ Read `scratch/deep_review/host/Analyzation.md`.
 
 | Verdict in `Analyzation.md` | Action |
 | :--- | :--- |
-| `ROUND_REVISION_NEEDED` | Read `scratch/deep_review/host/Changelog.md`. Apply edits to DA using Clean & Neutral Artifact Protocol. Re-spawn Layer 2 Host for Round N+1 (Host consumes Changelog on start). |
+| `ROUND_REVISION_NEEDED` | Read `scratch/deep_review/host/Changelog.md`.<br>• **If `!PA` / `!WA` active**: STOP execution immediately before modifying DA. Output standardized quota pause message (requesting keyword `"C"` to apply edits and proceed).<br>• **Upon receiving `"C"` (or if no pause tag)**: Apply edits to DA using Clean & Neutral Artifact Protocol. If `Changelog.md` includes `## Target Directive Artifacts Synchronization (Context.md)`, update `scratch/deep_review/Context.md`. Re-spawn/revive Layer 2 Host for Round N+1 (Host consumes Changelog on start). |
 | `ROUND_PASS` | Re-spawn Layer 2 Host for next Full Sweep round on unchanged DA. |
 | `FINAL_PASS` | Conclude review loop (`PassCount >= SP`). Present fully verified DA to user. |
 
@@ -71,5 +71,5 @@ Read `scratch/deep_review/host/Analyzation.md`.
 | Command | Action |
 | :--- | :--- |
 | `!SP<N>` | Set required continuous Full Sweep PASS rounds threshold to N (Default: 1). |
-| `!PA` | Pause execution after applying Layer 2 `Changelog.md` edits; await user confirmation before starting next round. |
+| `!PA` / `!WA` | Pre-mutation pause gate: When Host returns `ROUND_REVISION_NEEDED`, Main Agent stops immediately before mutating DA, prompts user to check quota, and awaits keyword `"C"` to apply `Changelog.md` (and update `Context.md` if DA list changed) and launch Round N+1. Remains active across the entire review loop until `FINAL_PASS`. |
 | `!FPA` | Instantly kill running subagents and pause execution. |
