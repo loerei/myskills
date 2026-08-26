@@ -13,7 +13,7 @@ Multi-agent review loop using isolated domain reviewers, topological dependency 
 | :--- | :--- | :--- |
 | **Layer 1** | Main Agent | Spawns Layer 2 Host, applies clean DA mutations from `Changelog.md`, presents final output. |
 | **Layer 2** | Review Host & Critical Gate | Dynamically selects active reviewers in `Reviewer_Choice_Rationale.md`, summons active reviewers using invariant prompts, purges `reports/` before passes, isolates host artifacts in `host/`, runs Full Sweep before Final PASS, writes `Analyzation.md` and `Changelog.md`. |
-| **Layer 3** | Domain Reviewers | Independent specialist subagents (up to 10 roles across 4 Tiers) executing domain audits per `<Role>-REVIEWER-GUIDE.md`. |
+| **Layer 3** | Domain Reviewers | Independent specialist subagents (up to 11 roles across 4 Tiers) executing domain audits per `<Role>-REVIEWER-GUIDE.md`. |
 
 ## Workflow
 

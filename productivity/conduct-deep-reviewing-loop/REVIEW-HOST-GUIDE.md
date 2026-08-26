@@ -10,7 +10,7 @@ Instructions for Review Host to route Layer 3 reviewers, filter feedback, and en
      ```markdown
      | Role Identifier | Selection Status (INCLUDED / EXCLUDED) | Technical Rationale |
      ```
-     Ensure `Architect` and `Logic` are `INCLUDED`, and explicitly mark remaining 8 roles as `INCLUDED` or `EXCLUDED`.
+     Ensure `Architect` and `Logic` are `INCLUDED`, and explicitly mark remaining 9 roles as `INCLUDED` or `EXCLUDED` (`Progress` MUST be `INCLUDED` for multi-phase/multi-ticket epics, roadmaps, or work-breakdown structures; `EXCLUDED` for single-ticket/simple plans).
 1. **Workspace Preparation**: Purge all files in `scratch/deep_review/reports/` and recursively purge all diagnostic files in `<repo-root>/.scratch/` (`.scratch/*`, idempotently handling missing directories) strictly at round start (before executing the first active tier) and before launching a Full Sweep pass (preserving intra-tier reports within an active pass). Validate `scratch/deep_review/Context.md` without overwriting criteria or `SP`.
 2. **DAG Routing & Targeted Execution**:
    - If `scratch/deep_review/host/Changelog.md` exists: Reset `PassCount = 0`, determine highest modified tier for Targeted DAG routing per `PROTOCOL.md` Section 6, then delete `scratch/deep_review/host/Changelog.md` before invoking reviewers.
@@ -34,6 +34,7 @@ Instructions for Review Host to route Layer 3 reviewers, filter feedback, and en
 | Role Identifier | Guide Reference Path | Output Artifact Path |
 | :--- | :--- | :--- |
 | `Architect` | `<skill-root>/ARCHITECT-REVIEWER-GUIDE.md` | `scratch/deep_review/reports/Architect.md` |
+| `Progress` | `<skill-root>/PROGRESS-REVIEWER-GUIDE.md` | `scratch/deep_review/reports/Progress.md` |
 | `Readiness` | `<skill-root>/READINESS-REVIEWER-GUIDE.md` | `scratch/deep_review/reports/Readiness.md` |
 | `Security` | `<skill-root>/SECURITY-REVIEWER-GUIDE.md` | `scratch/deep_review/reports/Security.md` |
 | `DataMigration` | `<skill-root>/DATA-MIGRATION-REVIEWER-GUIDE.md` | `scratch/deep_review/reports/DataMigration.md` |

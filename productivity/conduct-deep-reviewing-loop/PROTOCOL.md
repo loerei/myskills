@@ -62,7 +62,7 @@ Before launching Round 1, Layer 2 Host inspects target DA scope and criteria, th
 
 ### Selection Rules:
 1. **Mandatory Core Roles**: `Architect` (Tier 3.1) and `Logic` (Tier 3.3) MUST ALWAYS be `INCLUDED` for every DA and cannot be excluded.
-2. **Specialist Roles (Dynamic)**: `Readiness`, `Security`, `DataMigration`, `Testability`, `Edgecase`, `Performance`, `Observability`, `UXUI` are marked `INCLUDED` or `EXCLUDED` with concrete technical justification based on DA scope.
+2. **Specialist Roles (Dynamic)**: `Readiness`, `Security`, `DataMigration`, `Testability`, `Progress`, `Edgecase`, `Performance`, `Observability`, `UXUI` are marked `INCLUDED` or `EXCLUDED` with concrete technical justification based on DA scope (`Progress` MUST be `INCLUDED` for multi-phase/multi-ticket epics, roadmaps, or work-breakdown structures; `EXCLUDED` for single-ticket/simple plans).
 3. **Roster Immutability**: If `scratch/deep_review/host/Reviewer_Choice_Rationale.md` exists (Round N+1), Host loads and preserves the active roster without re-evaluating exclusions.
 4. **Active Roster**: Only `INCLUDED` roles are summoned during DAG execution passes and Full Sweep rounds.
 
@@ -72,7 +72,7 @@ Host executes Layer 3 reviewers in dependency order across the active selected r
 
 | DAG Tier | Role | Prerequisite |
 | :--- | :--- | :--- |
-| **Layer 3.1** | `Architect` *(Mandatory Core)* | None |
+| **Layer 3.1** | `Architect` *(Mandatory Core)*, `Progress` | None |
 | **Layer 3.2** | `Readiness`, `Security`, `DataMigration`, `Testability` | Layer 3.1 PASS |
 | **Layer 3.3** | `Logic` *(Mandatory Core)*, `Edgecase`, `Performance`, `Observability` | Layer 3.2 PASS |
 | **Layer 3.4** | `UXUI` | Layer 3.3 PASS |
@@ -88,8 +88,8 @@ When Layer 1 applies `Changelog.md` edits, identify the highest modified DAG tie
 
 | Highest Modified Tier | Roles Run in Round N+1 | Skipped Roles (Cached PASS) |
 | :--- | :--- | :--- |
-| **Layer 3.1 (Architectural)** | All Active Roles in Roster | None (Full DAG Invalidation) |
-| **Layer 3.2 (Readiness / Security / DataMigration / Testability)** | Active 3.2, 3.3, 3.4 Roles | Layer 3.1 (Architect) |
+| **Layer 3.1 (Architectural & Phasing)** | All Active Roles in Roster | None (Full DAG Invalidation) |
+| **Layer 3.2 (Readiness / Security / DataMigration / Testability)** | Active 3.2, 3.3, 3.4 Roles | Layer 3.1 (Architect, Progress) |
 | **Layer 3.3 (Logic / Edgecase / Performance / Observability)** | Active 3.3, 3.4 Roles | Layer 3.1, Layer 3.2 Roles |
 | **Layer 3.4 (UX/UI)** | Active 3.4 Roles (UXUI) | Layer 3.1, Layer 3.2, Layer 3.3 |
 
