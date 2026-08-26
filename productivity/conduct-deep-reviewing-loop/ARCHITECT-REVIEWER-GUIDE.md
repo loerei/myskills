@@ -22,6 +22,7 @@ When the target Directive Artifact touches specific subsystem archetypes below, 
 | **Event-Driven & Messaging** | Message queues, event streaming, pub/sub, transactional outbox, Kafka/SQS | [`ARCH-EVENT-DRIVEN.md`](ARCH-EVENT-DRIVEN.md) |
 | **Monolith & Domain Seams** | Package boundaries, internal APIs, circular dependencies, domain isolation | [`ARCH-MONOLITH-SEAMS.md`](ARCH-MONOLITH-SEAMS.md) |
 | **Distributed State & Sagas** | Distributed consensus, multi-region replication, distributed locks, saga rollbacks | [`ARCH-DISTRIBUTED-STATE.md`](ARCH-DISTRIBUTED-STATE.md) |
+| **Preparatory Refactoring & Seams** | Legacy code modifications, high cyclomatic complexity, missing seams, tidying requirements | [`ARCH-PREPARATORY-REFACTORING.md`](ARCH-PREPARATORY-REFACTORING.md) |
 
 ## Verdict Rules
 
