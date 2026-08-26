@@ -84,24 +84,28 @@ If any layer returns `REVISION NEEDED`, suspend remaining downstream layers for 
 
 ## 6. Invalidation Matrix & Targeted Re-Review
 
-When Layer 1 applies `Changelog.md` edits, identify the highest modified DAG tier. Host executes only the invalidated and downstream tiers during intermediate rounds:
+When Layer 1 applies `Changelog.md` edits, the Directive Artifact transitions to a new static snapshot $S_N$. Host identifies the highest modified DAG tier and executes only the invalidated and downstream tiers:
 
-| Highest Modified Tier | Roles Run in Round N+1 | Skipped Roles (Cached PASS) |
+| Highest Modified Tier | Targeted Roles Run on Snapshot $S_N$ | Skipped Upstream Roles (Pending Backfill) |
 | :--- | :--- | :--- |
-| **Layer 3.1 (Architectural & Phasing)** | All Active Roles in Roster | None (Full DAG Invalidation) |
-| **Layer 3.2 (Readiness / Security / DataMigration / Testability)** | Active 3.2, 3.3, 3.4 Roles | Layer 3.1 (Architect, Progress) |
-| **Layer 3.3 (Logic / Edgecase / Performance / Observability)** | Active 3.3, 3.4 Roles | Layer 3.1, Layer 3.2 Roles |
-| **Layer 3.4 (UX/UI)** | Active 3.4 Roles (UXUI) | Layer 3.1, Layer 3.2, Layer 3.3 |
+| **Layer 3.1 (Architectural & Phasing)** | All Active Roles in Roster (Full DAG) | None (Full DAG Execution) |
+| **Layer 3.2 (Readiness / Security / DataMigration / Testability)** | Active 3.2, 3.3, 3.4 Roles | Active Layer 3.1 Roles (`Architect`, `Progress`) |
+| **Layer 3.3 (Logic / Edgecase / Performance / Observability)** | Active 3.3, 3.4 Roles | Active Layer 3.1 & Layer 3.2 Roles |
+| **Layer 3.4 (UX/UI)** | Active 3.4 Roles (`UXUI`) | Active Layer 3.1, Layer 3.2 & Layer 3.3 Roles |
 
-## 7. Full Sweep Gate & `!SP` Threshold
+## 7. Snapshot Delta Backfill & Full Sweep Clearance Gate
 
-Targeted re-review rounds do NOT count toward the `!SP` pass counter.
+To prevent redundant subagent invocations on identical static snapshots while preserving strict 100% roster audit coverage:
 
-- **Triggering Full Sweep**: When all active targeted roles return PASS, Host MUST run a **Full Sweep Round** (all active roles in the frozen roster auditing the static DA snapshot).
-- **Pass Counter (`PassCount`)**:
-  - Increments by 1 ONLY when an unbroken Full Sweep round passes with zero blocking issues across all active roles in the frozen roster.
-  - Resets to 0 if any role in any round returns `REVISION NEEDED`.
-- **Final Verdict**: Host issues `FINAL_PASS` ONLY when `PassCount >= SP`, recursively purges `<repo-root>/.scratch/*` diagnostic artifacts (idempotently handling missing directories), and presents clean final artifacts to Layer 1.
+- **Targeted Pass Verification**: When all active targeted roles return `PASS` on snapshot $S_N$, Host identifies any active roles in the frozen roster that have **not yet audited snapshot $S_N$** (the skipped upstream roles).
+- **Snapshot Delta Backfill**:
+  - If skipped upstream roles exist: Host executes the skipped upstream roles in **topological DAG dependency sequence** (e.g. Layer 3.1 then Layer 3.2), writing reports into `scratch/deep_review/reports/` (preserving intra-round targeted reports on snapshot $S_N$) and enforcing early tier suspension if any upstream role returns `REVISION NEEDED`.
+  - If no skipped upstream roles exist (i.e. Full DAG executed from Layer 3.1 to Layer 3.4 on snapshot $S_N$): The round is **natively recognized as a Full Sweep pass**.
+- **Full Sweep Pass (`ROUND_PASS`)**: Once 100% of active roles in the frozen roster have audited and passed snapshot $S_N$ with zero blocking issues:
+  - Increments `PassCount` by 1.
+  - If `PassCount < SP`: Host purges `scratch/deep_review/reports/` and initiates the next Full Sweep round on the unchanged static DA.
+  - If `PassCount >= SP`: Host issues `FINAL_PASS`, recursively purges `<repo-root>/.scratch/*` diagnostic artifacts (idempotently handling missing directories), and presents verified final artifacts to Layer 1.
+- **Pass Counter Invalidation**: `PassCount` resets to 0 whenever any role returns `REVISION NEEDED`.
 
 ## 8. Modifier Commands Matrix
 

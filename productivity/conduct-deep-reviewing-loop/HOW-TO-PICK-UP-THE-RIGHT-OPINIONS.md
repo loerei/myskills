@@ -37,8 +37,8 @@ When specialist reviewer opinions conflict (e.g. `Performance` requesting aggres
 | Condition | Gate Verdict | Output Artifacts |
 | :--- | :--- | :--- |
 | 1+ Accepted Blocking Defects | `ROUND_REVISION_NEEDED` | Write `host/Analyzation.md` (rationale) and `host/Changelog.md` (clean edits). |
-| 0 Accepted Blocking Defects (Targeted Pass) | `TARGETED_PASS` *(Ephemeral Internal Host State)* | Purge `reports/` and trigger Full Sweep Round. |
-| 0 Accepted Blocking Defects (Full Sweep Pass) | `ROUND_PASS` (Increment `PassCount`) or `FINAL_PASS` (if `PassCount >= SP`) | Write `host/Analyzation.md`. |
+| 0 Accepted Blocking Defects (Targeted Pass with Pending Upstream) | `TARGETED_PASS` *(Ephemeral Internal Host State)* | Trigger Snapshot Delta Backfill for skipped upstream roles in topological DAG sequence (preserving intra-round reports). |
+| 0 Accepted Blocking Defects (100% Roster Passed on Snapshot) | `ROUND_PASS` (Increment `PassCount`) or `FINAL_PASS` (if `PassCount >= SP`) | Write `host/Analyzation.md`. |
 
 ## Changelog.md Authoring Standards
 

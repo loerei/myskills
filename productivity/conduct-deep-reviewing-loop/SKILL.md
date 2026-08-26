@@ -12,26 +12,31 @@ Multi-agent review loop using isolated domain reviewers, topological dependency 
 | Layer | Agent | Primary Responsibility |
 | :--- | :--- | :--- |
 | **Layer 1** | Main Agent | Spawns Layer 2 Host, applies clean DA mutations from `Changelog.md`, presents final output. |
-| **Layer 2** | Review Host & Critical Gate | Dynamically selects active reviewers in `Reviewer_Choice_Rationale.md`, summons active reviewers using invariant prompts, purges `reports/` before passes, isolates host artifacts in `host/`, runs Full Sweep before Final PASS, writes `Analyzation.md` and `Changelog.md`. |
+| **Layer 2** | Review Host & Critical Gate | Dynamically selects active reviewers in `Reviewer_Choice_Rationale.md`, summons active reviewers using invariant prompts, purges `reports/` before passes, isolates host artifacts in `host/`, executes Snapshot Delta Backfill for skipped upstream roles, writes `Analyzation.md` and `Changelog.md`. |
 | **Layer 3** | Domain Reviewers | Independent specialist subagents (up to 11 roles across 4 Tiers) executing domain audits per `<Role>-REVIEWER-GUIDE.md`. |
 
 ## Workflow
 
 ```mermaid
 flowchart TD
-    Start["Round 1: Full DAG Sweep"] --> Eval{"Host Verdict?"}
-    Eval -->|"ROUND_REVISION_NEEDED"| Apply["Layer 1: Apply Changelog.md to DA"]
+    Start["Round 1: Full DAG Sweep"] --> Eval{"All Roles PASS?"}
+    Eval -->|"No"| Apply["Layer 1: Apply Changelog.md to DA"]
+    Eval -->|"Yes"| Accumulate["PassCount += 1"]
     Apply --> TargetRun["Round N+1: Targeted Re-Review<br/>(Run modified tier + downstream tiers)"]
-    TargetRun --> CheckTarget{"Targeted Roles PASS?"}
+    CheckTarget{"Targeted Roles PASS?"}
+    TargetRun --> CheckTarget
     CheckTarget -->|"No"| Apply
-    CheckTarget -->|"Yes"| FullSweep["Full Sweep Round<br/>(Run active roles on static DA)"]
+    CheckTarget -->|"Yes (Pending Upstream)"| Backfill["Snapshot Delta Backfill<br/>(Topologically summon skipped upstream roles on SN)"]
+    Backfill --> BackfillCheck{"Upstream Roles PASS?"}
+    BackfillCheck -->|"No"| Apply
+    BackfillCheck -->|"Yes"| Accumulate
+    CheckTarget -->|"Yes (100% Roster Audited)"| Accumulate
+    Accumulate --> SPCheck{"PassCount >= SP?"}
+    SPCheck -->|"No"| FullSweep["Next Full Sweep Round<br/>(Run active roles on static DA)"]
     FullSweep --> SweepCheck{"All Active Roles PASS?"}
     SweepCheck -->|"No"| Apply
-    SweepCheck -->|"Yes"| Accumulate["PassCount += 1"]
-    Accumulate --> SPCheck{"PassCount >= SP?"}
-    SPCheck -->|"No"| FullSweep
+    SweepCheck -->|"Yes"| Accumulate
     SPCheck -->|"Yes"| FinalPass["Issue FINAL_PASS & Conclude"]
-    Eval -->|"FINAL_PASS"| FinalPass
 ```
 
 ### Step 1: Initialize Workspace

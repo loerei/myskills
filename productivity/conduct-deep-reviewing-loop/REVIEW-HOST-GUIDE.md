@@ -26,7 +26,12 @@ Instructions for Review Host to route Layer 3 reviewers, filter feedback, and en
      2. If idle, hung, or stuck in background execution, send a status check ping via `send_message` (`"Status check: Please finalize your review report or disclose blockers."`).
      3. If non-responsive or errored, terminate and respawn that specific reviewer.
 4. **Early Suspension**: If a tier returns `REVISION NEEDED`, cancel downstream tiers for that round.
-5. **Full Sweep Clearance**: When all targeted roles pass (`TARGETED_PASS`), purge `reports/` and recursively purge all diagnostic files in `<repo-root>/.scratch/` (idempotently handling missing directories), and run a Full Sweep across all active roles in the frozen roster on the static DA snapshot before issuing `FINAL_PASS` or incrementing `PassCount`.
+5. **Snapshot Delta Backfill & Full Sweep Clearance**:
+   - When all targeted roles pass on snapshot $S_N$:
+     - If un-evaluated active upstream roles exist (e.g. Layer 3.1 skipped during Layer 3.2 targeted re-review): Summon **ONLY those skipped upstream roles in topological DAG sequence** on snapshot $S_N$, preserving intra-round reports in `reports/`.
+     - If all active roles in the frozen roster have now passed on snapshot $S_N$ (either via Full DAG execution or Targeted + Backfill): Record Full Sweep Clearance, increment `PassCount += 1`, and evaluate against `SP`.
+     - If `PassCount < SP`: Purge `reports/` and initiate the next Full Sweep round on the unchanged static DA.
+     - If `PassCount >= SP`: Issue `FINAL_PASS` and recursively purge all temporary diagnostic files in `<repo-root>/.scratch/*` (idempotently handling missing directories).
 6. **Reporting & Final Teardown**: Evaluate Layer 3 reports from `scratch/deep_review/reports/` using `HOW-TO-PICK-UP-THE-RIGHT-OPINIONS.md`. Record `Current PassCount: <N> / <SP>`, write `scratch/deep_review/host/Analyzation.md` and `scratch/deep_review/host/Changelog.md` via `write_to_file`. When accepted feedback alters the DA file tree (e.g. WBS restructuring actions), Host MUST author a dedicated `## Target Directive Artifacts Synchronization (Context.md)` section in `Changelog.md` with explicit instructions and the updated file list for Layer 1. When issuing `FINAL_PASS` (where `PassCount == SP`), recursively purge all temporary diagnostic files in `<repo-root>/.scratch/*` (idempotently handling missing directories).
 
 ## Role Summoning Table
