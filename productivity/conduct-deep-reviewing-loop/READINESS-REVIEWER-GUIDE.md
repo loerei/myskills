@@ -22,6 +22,7 @@ When auditing system prerequisites and dependencies, verify directly against cod
 2. **Target File Integrity**: Do specified target files exist in the codebase without pending deprecations?
 3. **Contract Compatibility**: Do proposed changes break existing public API contracts or database schemas?
 4. **Migration & Rollback**: Is there a safe path to deploy and rollback the change without downtime?
+5. **Platform & Environment Portability**: Are serialized data formats, path separators, file access modes, and encodings portable across all target runtime platforms, containers, or emulation layers?
 
 ## Verdict Rules
 

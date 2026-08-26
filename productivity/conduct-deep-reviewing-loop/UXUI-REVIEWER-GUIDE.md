@@ -12,6 +12,7 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 2. **Clarity & Micro-Copy**: Are labels, error messages, and state indicators clear and unambiguous?
 3. **Redundancy Elimination**: Are there visual elements or layouts that add zero value to the user?
 4. **Feedback Consistency**: Are loading, success, error, and empty states explicitly specified?
+5. **High-Volume Interaction Responsiveness**: Are complex interactions (e.g. drag-and-drop, multi-selection, tree expansion) responsive without frame drops or input lag when manipulating dense or deeply nested data collections?
 
 ## Verdict Rules
 

@@ -23,6 +23,7 @@ When auditing algorithmic complexity or throughput, author a self-contained inli
 3. **I/O & Query Efficiency**: Are database queries indexed and batched? Are N+1 query patterns, oversized payload transfers, or redundant network roundtrips prevented?
 4. **Stream Backpressure & Buffer Bounds**: Are fast producers throttled when writing to slow consumers? Are buffers bounded to prevent out-of-memory crashes under load?
 5. **Resource & Memory Management**: Are file descriptors, database connections, and sockets explicitly released? Are connection pools protected against exhaustion with acquisition timeouts? Are in-memory caches bounded with eviction policies and protected against thundering-herd stampedes?
+6. **Client & Viewport Rendering Scale**: Are large collections ($N \gg 1$) virtualized (windowed/culled) to prevent unbounded view-tree allocation, DOM node bloat, and main-thread render stalls?
 
 ## Verdict Rules
 

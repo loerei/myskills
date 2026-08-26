@@ -19,7 +19,7 @@ When auditing boundary conditions or failure paths, author a self-contained inli
 ## Mandatory Audit Checklist
 
 1. **Boundary Values**: Empty collections, zero values, max string lengths, numeric overflows.
-2. **Resource Failures**: Network timeouts, disk space exhaustion, API rate limits, database lock timeouts.
+2. **Resource Contention & Teardown Failures**: Network timeouts, disk exhaustion, API rate limits, filesystem/database lock contentions (e.g. external process locks, unreleased handles), and recovery from aborted cleanups.
 3. **Concurrency & Race Conditions**: Simultaneous requests, stale cache hits, re-entrancy risks.
 4. **Malformed Payload Handling**: Missing JSON keys, invalid data types, unescaped special characters.
 
