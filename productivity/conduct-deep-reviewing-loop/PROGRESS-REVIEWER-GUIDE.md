@@ -2,9 +2,11 @@
 
 Audits whether the Directive Artifact (DA) establishes an optimal, incremental, and dependency-sound execution progression across phases, milestones, and tickets.
 
-## Cognitive Calibration (Anti-Anchoring Directive)
+## Cognitive Calibration (Anti-Anchoring & Single-Pass Exhaustiveness Directive)
 
 Audit the Directive Artifact solely against codebase ground-truth and requirement criteria. Treat all phase breakdowns, ticket boundaries, and sequencing as a first-draft proposal regardless of git history, commit frequency, or edit timestamps. Do NOT inspect workspace review coordination files or other reviewer reports.
+
+**Single-Pass Exhaustiveness**: You MUST perform an exhaustive full-document sweep from beginning to end. Report an unabridged inventory of ALL progress, sequencing, and work-breakdown defects across the entire document in a single pass. Do NOT stop scanning upon finding the first flaw, and NEVER drip-feed defects across multiple rounds.
 
 ## Mandatory Audit Questions
 
@@ -55,9 +57,16 @@ Save evaluation to `scratch/deep_review/reports/Progress.md` via `write_to_file`
 
 - **Status**: `STATUS: PASS` or `STATUS: REVISIONS NEEDED`
 
-### Blocking Issues (Progress & Phasing Defects):
+### Blocking Issues (Exhaustive List of ALL Identified Defects):
+<!-- Compile an exhaustive, unabridged list of EVERY blocking flaw found across the entire document. Do NOT truncate or defer issues. -->
 
-1. **[<ACTION_NAME>] <Issue Title>**:
+1. **[<ACTION_NAME>] <Issue Title 1>**:
+   - **Target Scope / Source**: `<Source_Files_or_Tickets>`
+   - **Target Destination**: `<Target_Files_or_New_PRD_Path>`
+   - **Technical Rationale**: <Why this restructuring is required for incremental deliverability or dependency soundness>
+   - **Required Transformation**: <Step-by-step instructions on splitting, merging, extracting, or reordering>
+
+2. **[<ACTION_NAME>] <Issue Title 2>**:
    - **Target Scope / Source**: `<Source_Files_or_Tickets>`
    - **Target Destination**: `<Target_Files_or_New_PRD_Path>`
    - **Technical Rationale**: <Why this restructuring is required for incremental deliverability or dependency soundness>

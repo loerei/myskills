@@ -57,6 +57,12 @@ Audit the target document objectively from a clean-slate perspective. Follow you
 - **Tool Metadata Rule**: Host MUST specify neutral tool metadata (`toolAction: "Summoning reviewer"`, `toolSummary: "Domain review"`) to prevent leaking phase/round names in subagent tool logs.
 - **Banned Calling Tokens**: `Round`, `Sweep`, `Targeted`, `Re-verify`, `Re-audit`, `Fix`, `Pass`, `Iteration`, `Previous round`.
 
+### 3.1. Single-Pass Exhaustiveness & Anti-Drip-Feeding Directive
+Reviewers MUST conduct a single-pass exhaustive sweep:
+1. **Mandatory Full-Document Sweep**: Reviewers MUST read and audit the target DA from the very first line to the very last line before formulating their verdict.
+2. **Anti-Satisficing & Zero Drip-Feeding**: Finding a blocking defect early in the document MUST NOT trigger an early exit. Reviewers MUST continue scanning the remainder of the document to compile a complete, unabridged inventory of ALL blocking issues in a single pass.
+3. **No Deferred Discovery**: Reviewers MUST NOT defer discovered flaws to subsequent rounds. In round $N+1$, reviewers MUST NOT report defects in text that was unmodified since round $N$ unless directly caused by upstream modifications.
+
 ## 4. Dynamic Role Selection Protocol
 
 Before launching Round 1, Layer 2 Host inspects target DA scope and criteria, then writes `scratch/deep_review/host/Reviewer_Choice_Rationale.md`.

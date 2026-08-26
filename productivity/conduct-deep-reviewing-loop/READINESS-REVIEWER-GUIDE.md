@@ -2,9 +2,11 @@
 
 Audits whether the existing codebase and infrastructure are fully prepared to support the DA implementation.
 
-## Cognitive Calibration (Anti-Anchoring Directive)
+## Cognitive Calibration (Anti-Anchoring & Single-Pass Exhaustiveness Directive)
 
 Audit the Directive Artifact solely against codebase ground-truth and requirement criteria. Treat the document as a first-draft proposal regardless of git history, commit frequency, or edit timestamps. Inspect actual source code files, dependencies, and git history directly to verify system ground-truth. Do NOT inspect workspace review coordination files or other reviewer reports.
+
+**Single-Pass Exhaustiveness**: You MUST perform an exhaustive full-document sweep from beginning to end. Report an unabridged inventory of ALL readiness, dependency, and compatibility defects across the entire document in a single pass. Do NOT stop scanning upon finding the first flaw, and NEVER drip-feed defects across multiple rounds.
 
 ## Empirical Verification: Shadow Sandbox (.scratch/)
 
@@ -46,8 +48,15 @@ Save evaluation to `scratch/deep_review/reports/Readiness.md` using this format:
 
 - **Status**: `STATUS: PASS` or `STATUS: REVISIONS NEEDED`
 
-### Blocking Issues (Readiness Defects):
+### Blocking Issues (Exhaustive List of ALL Identified Defects):
+<!-- Compile an exhaustive, unabridged list of EVERY blocking flaw found across the entire document. Do NOT truncate or defer issues. -->
 
-1. **[Issue Title]**:
+1. **[Issue Title 1]**:
    - **Target Section**: `<Section_Name>`
-   - **Required Fix**:
+   - **Required Fix**: <Exact fix required>
+
+2. **[Issue Title 2]**:
+   - **Target Section**: `<Section_Name>`
+   - **Required Fix**: <Exact fix required>
+
+### Suggestions for Improvement (Non-blocking):

@@ -2,9 +2,11 @@
 
 Audits algorithmic complexity, query efficiency, memory footprint, and resource management in the DA.
 
-## Cognitive Calibration (Anti-Anchoring Directive)
+## Cognitive Calibration (Anti-Anchoring & Single-Pass Exhaustiveness Directive)
 
 Audit the Directive Artifact solely against codebase ground-truth and requirement criteria. Treat the document as a first-draft proposal regardless of git history, commit frequency, or edit timestamps. Past edits are NOT evidence of performance optimality. Do NOT inspect workspace review coordination files or other reviewer reports.
+
+**Single-Pass Exhaustiveness**: You MUST perform an exhaustive full-document sweep from beginning to end. Report an unabridged inventory of ALL performance bottlenecks, algorithmic inefficiencies, unmanaged memory leaks, and unbounded operations across the entire document in a single pass. Do NOT stop scanning upon finding the first flaw, and NEVER drip-feed defects across multiple rounds.
 
 ## Empirical Verification: Shadow Sandbox (.scratch/)
 
@@ -47,10 +49,17 @@ Save evaluation to `scratch/deep_review/reports/Performance.md` using this forma
 
 - **Status**: `STATUS: PASS` or `STATUS: REVISIONS NEEDED`
 
-### Blocking Issues (Performance Defects):
+### Blocking Issues (Exhaustive List of ALL Identified Defects):
+<!-- Compile an exhaustive, unabridged list of EVERY blocking flaw found across the entire document. Do NOT truncate or defer issues. -->
 
-1. **[Issue Title]**:
+1. **[Issue Title 1]**:
    - **Target Section**: `<Section_Name>`
-   - **Required Fix**:
+   - **Required Fix**: <Exact fix required>
+
+2. **[Issue Title 2]**:
+   - **Target Section**: `<Section_Name>`
+   - **Required Fix**: <Exact fix required>
 
 ### Suggestions for Improvement (Non-blocking):
+
+- <Optional performance polish or future optimization that does NOT block PASS status>
