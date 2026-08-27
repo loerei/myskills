@@ -20,7 +20,7 @@ Instructions for Review Host to route Layer 3 reviewers, filter feedback, and en
    - Vacuous Tier Handling: If all roles in an active tier are `EXCLUDED`, treat the tier as passed and advance immediately.
    - MUST use the invariant invocation template from `PROTOCOL.md` Section 3 with `<guide_path>` dynamically resolved to the primary `<Role>-REVIEWER-GUIDE.md` relative to the active skill location and neutral tool metadata (`toolAction: "Summoning reviewer"`, `toolSummary: "Domain review"`). Reviewers autonomously load domain subdocuments referenced in their guide's routing table as needed via `view_file`. NEVER inject round numbers or phase names into reviewer prompts.
 3. **Subagent Liveness & Heartbeat Monitoring (Deadlock Prevention)**:
-   - When summoning Layer 3 reviewers, set a 60s liveness check timer via `schedule` (`DurationSeconds=60, TimerCondition="any"`).
+   - When summoning Layer 3 reviewers, set a 180s liveness check timer via `schedule` (`DurationSeconds=180, TimerCondition="any"`).
    - If a reviewer stops responding without outputting its report to `scratch/deep_review/reports/<Role>.md`:
      1. Inspect subagent status via `manage_subagents(Action="list")`.
      2. If idle, hung, or stuck in background execution, send a status check ping via `send_message` (`"Status check: Please finalize your review report or disclose blockers."`).
