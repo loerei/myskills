@@ -35,6 +35,13 @@ When restructuring multi-phase PRDs or tickets, reviewers MUST formulate finding
 - **`REORDER_TICKETS`**: Re-sequence tickets within a phase to build data models, contracts, and test seams before consuming logic.
 - **`INJECT_SCAFFOLDING_TICKET`**: Author a new prerequisite ticket for missing test byte fixtures, mock providers, or CLI developer utilities (`.devutil/`).
 
+### 4. Nano & Step-Level Actions (Step ↔ Step / Checkbox Inside Ticket)
+- **`SPLIT_STEP`**: Decompose a multi-concern, overloaded checkbox (`- [ ]`) into atomic, single-turn executable steps.
+- **`REORDER_STEPS`**: Re-sequence checkboxes within a ticket (e.g. interfaces/fixtures first -> core logic -> edge cases -> verification).
+- **`EXTRACT_STEP_TO_TICKET`**: Promote a high-complexity or scope-creeping step out of a ticket into a dedicated prerequisite/subsequent ticket.
+- **`INJECT_VERIFICATION_STEP`**: Add a dedicated automated test/harness execution step (`- [ ]`) with stdout verification after complex modifications.
+- **`ISOLATE_STEP_TIDYING`**: Separate structural refactoring steps ($S$) from behavioral feature steps ($B$) within ticket execution checklists.
+
 ## Domain Subdocuments Routing Table
 
 When the target Directive Artifact touches specific subsystem archetypes below, MUST call `view_file` on the corresponding subdocument for specialized audit criteria:
