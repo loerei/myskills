@@ -6,9 +6,12 @@
 - [ ] Vertical Slicing: Verify that tasks are broken down vertically across layers (UI, API, Data, Tests) rather than horizontally by technical stack.
 - [ ] PR Line Count Thresholds: Ensure no individual PR proposal exceeds 400 lines of modified code (excluding auto-generated code and lockfiles).
 
-### 2. Tracer-Bullet Granularity
+### 2. Tracer-Bullet Granularity & Hierarchical Dot-Splitting
 - [ ] End-to-End Skeleton First: Confirm initial task phases deliver a fully connected end-to-end tracer bullet with minimal mock functionality before building complex edge cases.
 - [ ] Independent Value Delivery: Ensure each ticket delivers a testable unit of functionality that can be merged safely behind feature flags.
+- [ ] **Hierarchical Dot-Splitting (`X.1, X.2 ... X.n`)**: When splitting tickets, enforce symmetrical dot notation (`3.1, 3.2` rather than `3, 3b`). Deep nested splitting (`3.2.1, 3.2.2 ... 3.2.n`) is fully encouraged whenever sub-modules remain complex.
+- [ ] **Anti-Cascading Renumbering**: BANS re-indexing downstream tickets (`04 -> 05`). Downstream dependencies converge to the terminal child node.
+- [ ] **No Splitting Immunity (Ticket Number/Depth is NOT a Metric)**: A ticket having a deeply nested number (e.g. `3.2.1.2`) does NOT grant it immunity from further splitting, nor does it make the work breakdown "clean". Audit tickets purely on technical scope, cyclomatic complexity, and tracer-bullet boundaries. If a deeply nested ticket still violates granularity criteria, SPLIT IT FURTHER without hesitation. Ticket numbering/depth must NEVER be used as an evaluation metric.
 
 ### 3. Dependency DAG Structure
 - [ ] Dependency Ordering: Verify that ticket dependency structures are explicitly specified as a Directed Acyclic Graph (DAG) with no blocking loops.

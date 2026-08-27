@@ -30,10 +30,15 @@ When restructuring multi-phase PRDs or tickets, reviewers MUST formulate finding
 - **`DEMOTE_PRD_TO_TICKET`**: Demote an overly trivial PRD into a single ticket within an existing parent PRD.
 
 ### 3. Micro & Ticket-Level Actions (Ticket ↔ Ticket)
-- **`SPLIT_TICKET_TRACER_BULLETS`**: Split a monolithic ticket into sequential tracer bullets: `Ticket A` (minimal contract + stub/devutil harness) -> `Ticket B` (core implementation) -> `Ticket C` (edge cases & full rule coverage).
+- **`SPLIT_TICKET_TRACER_BULLETS`**: Split a monolithic ticket into sequential tracer bullets using **Hierarchical Dot Notation** (e.g., `Ticket 3` $\rightarrow$ `Ticket 3.1` and `Ticket 3.2`; `Ticket 3.2` $\rightarrow$ `Ticket 3.2.1` and `Ticket 3.2.2`). NEVER renumber subsequent tickets (`04 -> 05`).
 - **`MERGE_TICKETS`**: Combine fragmented tickets that cannot be independently tested or delivered in isolation into a single cohesive ticket.
 - **`REORDER_TICKETS`**: Re-sequence tickets within a phase to build data models, contracts, and test seams before consuming logic.
 - **`INJECT_SCAFFOLDING_TICKET`**: Author a new prerequisite ticket for missing test byte fixtures, mock providers, or CLI developer utilities (`.devutil/`).
+
+### Hierarchical Dot-Splitting & Anti-Renumbering Directives
+1. **Hierarchical Dot Notation (`X.1, X.2 ... X.n`)**: When decomposing a ticket, MUST use symmetrical dot notation (`3.1, 3.2` rather than `3, 3b` or `3a, 3b`). Arbitrary nesting depth (`3.2.1, 3.2.2 ... 3.2.n`) is fully authorized and encouraged whenever sub-scopes require granular tracer bullets.
+2. **Anti-Cascading Renumbering**: NEVER shift/renumber downstream tickets (e.g. do NOT rename `04` to `05` when splitting `03`). Downstream dependencies that depended on `3` automatically converge to depend on the terminal child node (`3.2` or `3.2.n`).
+3. **No Splitting Immunity (Ticket Number/Depth is NOT a Metric)**: A ticket having a deeply nested number (e.g., `3.2.1.2`) does NOT grant it immunity from further splitting, nor does it make the work breakdown "clean". Audit tickets purely on technical scope, cyclomatic complexity, and tracer-bullet boundaries. If a deeply nested ticket still violates granularity criteria, SPLIT IT FURTHER without hesitation. Ticket numbering/depth must NEVER be used as an evaluation metric.
 
 ### 4. Nano & Step-Level Actions (Step ↔ Step / Checkbox Inside Ticket)
 - **`SPLIT_STEP`**: Decompose a multi-concern, overloaded checkbox (`- [ ]`) into atomic, single-turn executable steps.
