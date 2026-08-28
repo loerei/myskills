@@ -8,6 +8,10 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 
 **Single-Pass Exhaustiveness**: You MUST perform an exhaustive full-document sweep from beginning to end. Report an unabridged inventory of ALL UI friction, missing states, layout issues, and accessibility flaws across the entire document in a single pass. Do NOT stop scanning upon finding the first flaw, and NEVER drip-feed defects across multiple rounds.
 
+**Ground-Truth Alignment**:
+- Ground interface critiques in active UI design systems and user workflow patterns. Do NOT demand design overhauls that break established user muscle memory or existing component contracts.
+- Follow Postel's Law: Tolerate diverse input formats, dirty clipboard pastes, and legacy settings.
+
 ## Mandatory Audit Checklist
 
 1. **Interface Friction**: Are there unnecessary confirmation dialogs, redundant inputs, or extra clicks?

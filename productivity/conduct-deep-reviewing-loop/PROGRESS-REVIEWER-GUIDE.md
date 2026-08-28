@@ -8,6 +8,10 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 
 **Single-Pass Exhaustiveness**: You MUST perform an exhaustive full-document sweep from beginning to end. Report an unabridged inventory of ALL progress, sequencing, and work-breakdown defects across the entire document in a single pass. Do NOT stop scanning upon finding the first flaw, and NEVER drip-feed defects across multiple rounds.
 
+**Ground-Truth Alignment**:
+- Ground ticket breakdowns in actual codebase dependencies and test suites. Do NOT demand speculative ticket splits for stable, working modules.
+- Follow Postel's Law: Preserve backward-compatible decoding during transitional milestone phases.
+
 ## Mandatory Audit Questions
 
 1. **Tracer-Bullet Granularity**: Is each ticket a thin, independently testable, single-responsibility vertical slice that can be implemented and verified without waiting for the entire phase? Are monolithic tickets (> 300-500 LOC or multi-concern scopes) identified for splitting?

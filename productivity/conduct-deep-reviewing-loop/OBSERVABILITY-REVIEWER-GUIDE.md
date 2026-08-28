@@ -8,6 +8,10 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 
 **Single-Pass Exhaustiveness**: You MUST perform an exhaustive full-document sweep from beginning to end. Report an unabridged inventory of ALL observability gaps, silent error swallowing, missing traces, and telemetry flaws across the entire document in a single pass. Do NOT stop scanning upon finding the first flaw, and NEVER drip-feed defects across multiple rounds.
 
+**Ground-Truth Alignment**:
+- Ground telemetry requirements in the operational environment of the codebase. Do NOT demand distributed tracing spans on local utility scripts or private helper functions.
+- Follow Postel's Law: Capture diagnostics without failing business logic or crashing on missing telemetry endpoints.
+
 ## Mandatory Audit Checklist
 
 1. **Structured Telemetry & Context**: Does error handling log sufficient structured context (operation ID, timestamp, resource identifiers, error stack)? Are secrets, tokens, and PII strictly redacted? Are telemetry logs guaranteed to flush synchronously on unhandled process exit?

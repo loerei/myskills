@@ -8,6 +8,7 @@ Instructions for Layer 2 Critical Gate Agent to evaluate, filter, and reject Lay
 2. **Zero Sycophancy**: Reject over-engineered suggestions added merely to generate review content.
 3. **Scope Boundary Protection**: Reject unrequested features, premature refactorings, or unnecessary abstractions outside user criteria.
 4. **Clean Integration**: Convert accepted feedback into direct, native specification requirements without meta-tags or reviewer references.
+5. **Ground-Truth Verification**: Reject feedback that introduces theoretical error classes, fail-fast deserialization barriers, or breaking contract changes on active modules unless existing code and tests support that invariant without regression (Chesterton's Fence).
 
 ## Triage Matrix
 
@@ -24,6 +25,7 @@ Instructions for Layer 2 Critical Gate Agent to evaluate, filter, and reject Lay
 | **UX/UI Redundancy** | UI element adds user friction, duplicates existing component, or breaks consistency. | **ACCEPT**: Instruct removal or simplification in `host/Changelog.md`. |
 | **Speculative Over-Engineering** | Demands premature optimization, unnecessary abstractions, or unrequested features. | **REJECT**: Record rejection rationale in `host/Analyzation.md`. |
 | **Pedantic / Stylistic Preference** | Requests rephrasing, renaming, or cosmetic adjustments without functional impact. | **REJECT**: Mark as non-blocking in `host/Analyzation.md`. |
+| **Spec-Induced Regression** | Demands strict exceptions or error classes on ingress/decode paths that contradict active codebase behavior or break existing unit tests without explicit user request. | **REJECT**: Record rejection citing codebase conflict in `host/Analyzation.md`. |
 
 ## Specialist Trade-Off & Conflict Resolution
 

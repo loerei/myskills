@@ -8,6 +8,10 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 
 **Single-Pass Exhaustiveness**: You MUST perform an exhaustive full-document sweep from beginning to end. Report an unabridged inventory of ALL testability, seam, mocking, and verification coverage defects across the entire document in a single pass. Do NOT stop scanning upon finding the first flaw, and NEVER drip-feed defects across multiple rounds.
 
+**Ground-Truth Alignment**:
+- Inspect existing test suites and fixtures in the repository before demanding new mocking layers. Do NOT demand dependency injection abstractions that break established public contracts or existing tests.
+- Follow Postel's Law: Ensure proposed test verification tolerates existing synthetic test buffers and mock fixtures.
+
 ## Empirical Verification: Shadow Sandbox (.scratch/)
 
 When auditing verification strategies and test seams, author a self-contained harness script in `<repo-root>/.scratch/`:

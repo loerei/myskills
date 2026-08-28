@@ -8,6 +8,10 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 
 **Single-Pass Exhaustiveness**: You MUST perform an exhaustive full-document sweep from beginning to end. Report an unabridged inventory of ALL security vulnerabilities, auth gaps, and data validation flaws across the entire document in a single pass. Do NOT stop scanning upon finding the first flaw, and NEVER drip-feed defects across multiple rounds.
 
+**Ground-Truth Alignment**:
+- Ground security demands in the actual threat model of the project (e.g. local desktop/CLI vs public cloud). Do NOT demand enterprise auth on internal IPC paths if it breaks internal test suites.
+- Follow Postel's Law: Allow lenient validation on internal mock fixtures; enforce strict validation on untrusted external boundaries.
+
 ## Mandatory Audit Checklist
 
 1. **Authn / Authz Boundaries**: Are tenant isolation, user permissions, and API tokens explicitly enforced?

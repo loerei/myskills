@@ -8,6 +8,10 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 
 **Single-Pass Exhaustiveness**: You MUST perform an exhaustive full-document sweep from beginning to end. Report an unabridged inventory of ALL logical flaws, state machine gaps, and unhandled branches across the entire document in a single pass. Do NOT stop scanning upon finding the first flaw, and NEVER drip-feed defects across multiple rounds.
 
+**Ground-Truth Alignment**:
+- Cross-reference active module implementations and test fixtures before flagging missing error branches or validation steps.
+- Follow Postel's Law: Differentiate Ingress (reading/decoding legacy or mock inputs) vs. Egress (writing/encoding canonical outputs). Do NOT mandate throwing exceptions on read paths if existing regression tests rely on lenient decoding.
+
 ## Empirical Verification: Shadow Sandbox (.scratch/)
 
 When auditing workflows, state machines, or algorithmic transforms, author a self-contained simulation script in `<repo-root>/.scratch/`:

@@ -8,6 +8,10 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 
 **Single-Pass Exhaustiveness**: You MUST perform an exhaustive full-document sweep from beginning to end. Report an unabridged inventory of ALL performance bottlenecks, algorithmic inefficiencies, unmanaged memory leaks, and unbounded operations across the entire document in a single pass. Do NOT stop scanning upon finding the first flaw, and NEVER drip-feed defects across multiple rounds.
 
+**Ground-Truth Alignment**:
+- Ground performance critique in actual workload scale and codebase realities. Do NOT demand multi-threaded workers, streaming pipelines, or caching for small payloads (< 1KB) or non-hot paths.
+- Follow Postel's Law: Prioritize backward compatibility over micro-benchmarked premature optimizations.
+
 ## Empirical Verification: Shadow Sandbox (.scratch/)
 
 When auditing algorithmic complexity or throughput, author a self-contained inline benchmark script in `<repo-root>/.scratch/`:

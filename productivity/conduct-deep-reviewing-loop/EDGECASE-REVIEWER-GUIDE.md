@@ -8,6 +8,10 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 
 **Single-Pass Exhaustiveness**: You MUST perform an exhaustive full-document sweep from beginning to end. Report an unabridged inventory of ALL edge-case failures, unhandled exceptions, resource leaks, and concurrency hazards across the entire document in a single pass. Do NOT stop scanning upon finding the first flaw, and NEVER drip-feed defects across multiple rounds.
 
+**Ground-Truth Alignment**:
+- Cross-reference edge cases against active codebase handlers. Do NOT demand fail-fast exception boundaries on ingress/decode paths that cause regressions for synthetic mock data or lenient user files.
+- Follow Postel's Law: Handle edge-case input malformations gracefully on read paths with fallback values.
+
 ## Empirical Verification: Shadow Sandbox (.scratch/)
 
 When auditing boundary conditions or failure paths, author a self-contained inline probe script in `<repo-root>/.scratch/`:

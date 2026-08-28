@@ -8,12 +8,17 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 
 **Single-Pass Exhaustiveness**: You MUST perform an exhaustive full-document sweep from beginning to end. Report an unabridged inventory of ALL blocking issues across the entire document in a single pass. Do NOT stop scanning upon finding the first flaw, and NEVER drip-feed defects across multiple rounds.
 
+**Ground-Truth Alignment**:
+- Cross-reference active codebase implementations and test fixtures before proposing new architectural constraints, abstractions, or error models.
+- Follow Postel's Law: Be liberal in what you accept on deserialization/ingress paths, conservative in what you produce on encode/egress paths. Do NOT demand fail-fast rejection on read paths if active code or tests tolerate uncalculated checksums, synthetic mocks, or lenient headers, unless the user explicitly requested a breaking change.
+
 ## Mandatory Audit Questions
 
 1. **Problem Formulation**: Does the DA address the root cause, or merely mitigate symptoms?
 2. **Solution Optimality**: Is there a simpler, lower-complexity architectural approach that achieves the same goals?
-3. **Domain Boundaries**: Are module responsibilities, domain models, and data boundaries correctly isolated?
-4. **Trade-Off Transparency**: Are performance, memory, and maintainability trade-offs explicitly identified?
+3. **Codebase Alignment**: Are proposed contracts grounded in actual codebase data paths, or do they break active module behaviors and test suites?
+4. **Domain Boundaries**: Are module responsibilities, domain models, and data boundaries correctly isolated?
+5. **Trade-Off Transparency**: Are performance, memory, and maintainability trade-offs explicitly identified?
 
 ## Domain Subdocuments Routing Table
 

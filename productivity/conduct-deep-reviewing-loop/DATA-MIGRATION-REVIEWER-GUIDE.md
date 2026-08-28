@@ -8,6 +8,10 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 
 **Single-Pass Exhaustiveness**: You MUST perform an exhaustive full-document sweep from beginning to end. Report an unabridged inventory of ALL schema, migration, locking, and data integrity defects across the entire document in a single pass. Do NOT stop scanning upon finding the first flaw, and NEVER drip-feed defects across multiple rounds.
 
+**Ground-Truth Alignment**:
+- Cross-reference legacy schema contracts, disk fixtures, and migration tests before demanding schema constraints.
+- Follow Postel's Law: Be liberal in reading legacy/mock records (allow field omissions), conservative in writing canonical schemas. Do NOT introduce deserialization validation that breaks mock databases.
+
 ## Empirical Verification: Shadow Sandbox (.scratch/)
 
 When auditing schema migrations or payload contracts, verify empirically against in-memory test stores:

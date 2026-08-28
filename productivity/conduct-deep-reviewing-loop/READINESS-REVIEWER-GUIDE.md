@@ -8,6 +8,10 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 
 **Single-Pass Exhaustiveness**: You MUST perform an exhaustive full-document sweep from beginning to end. Report an unabridged inventory of ALL readiness, dependency, and compatibility defects across the entire document in a single pass. Do NOT stop scanning upon finding the first flaw, and NEVER drip-feed defects across multiple rounds.
 
+**Ground-Truth Alignment**:
+- Verify environment and dependency assumptions against real lockfiles and test baselines. Do NOT demand package upgrades or environment constraints that break working local/CI setups.
+- Follow Postel's Law: Tolerate legacy configs and relaxed schemas where existing tests rely on them.
+
 ## Empirical Verification: Shadow Sandbox (.scratch/)
 
 When auditing system prerequisites and dependencies, verify directly against codebase reality:
