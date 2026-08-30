@@ -5,35 +5,36 @@ description: Use when discussing ideas, debating technical tradeoffs, or explori
 
 # Let's Just Talk
 
-Keep conversational pacing step-by-step along the decision tree. Prevent cognitive overload by addressing only the active decision node without premature architectural dumps.
+Enforce conversational, step-by-step decision tree pacing during exploratory technical discussions, preventing one-turn cognitive dumping.
 
 ## Directives
 
-1. **Single-Node Pacing**: Address ONLY the immediate decision node at hand. NEVER jump ahead to UI layouts, class structures, or implementation details for branches that have not been selected yet.
-2. **1-Sentence Tradeoff Rule**: If a downstream technical constraint (e.g. I/O bottleneck, complex decoding) impacts the current decision, state it in ONE concise sentence. Do NOT draft solutions or mitigation architectures until asked.
-3. **Observational Fact-Checking**: Inspect the codebase ONLY for facts relevant to the active decision node (e.g. checking if a feature already exists or if an API is missing). Do NOT expand the scope of the inspection.
-4. **Clean Ball-Toss**: End responses with a concise question, summary of the current branch options, or a clear prompt for the user's decision.
-5. **No Monolithic Dumps**: Do NOT output full implementation plans, mockups, or multi-step walkthroughs during conversational exploration.
+1. **Active Branch Focus (Never Jump to Tree Leaves)**:
+   - MUST address ONLY the immediate branch/question asked by the user.
+   - NEVER jump downstream to design UI layouts, define class architectures, or write implementation plans. Downstream solutions are valid *only* if their parent decision branch is chosen. If the branch is pruned, all downstream work is waste.
+
+2. **1-Sentence Constraint Rule**:
+   - If a downstream blocker, performance risk, or edge case affects the current branch choice, state it in **ONE concise sentence as a selection factor**.
+   - NEVER start designing the solution, caching strategy, or architectural workaround for that blocker unless the user explicitly chooses that branch or asks *"How do we solve that?"*.
+
+3. **Grounding via Codebase Facts**:
+   - Check real codebase facts (e.g. existing delays, current schemas, active configs) to inform the current choice.
+   - Do NOT propose new features or scope expansions beyond the immediate decision.
+
+4. **Clean Turn-Passing**:
+   - Conclude responses by summarizing the immediate branch options or asking a single question to pass the turn back to the user.
 
 ---
 
-## Conversational Pacing Matrix
+## Reference
 
-| Situation | Allowed | Forbidden |
-| :--- | :--- | :--- |
-| **Exploratory Question** (*"Should we do X?"*) | Evaluate pros/cons, state candidate choices, mention major blockers in 1 sentence. | Drafting UI mockups, creating class diagrams, proposing full implementation plans. |
-| **Feature Brainstorming** (*"What should we include?"*) | Bullet list of high-value items, quick observational facts from codebase. | Writing out complete CSS/HTML specs, caching algorithms, or database schemas. |
-| **Tradeoff Inquiry** (*"Why is X hard?"*) | Explain the technical bottleneck directly and factually. | Writing code solutions or jumping to alternative feature implementation. |
-| **Decision Reached** (*"Let's go with option A"*) | Acknowledge selection and ask if user wants an implementation plan. | Starting unapproved source code edits. |
+For the branching decision graph, branch pruning dynamics, and before/after case studies, see [REFERENCE.md](REFERENCE.md).
 
 ---
 
 ## Workflow
 
-```mermaid
-flowchart TD
-    Prompt["User Prompts an Idea / Question"] --> IdentifyNode["Identify Active Decision Node"]
-    IdentifyNode --> FactCheck["Run Quick Factual Codebase Check (If needed)"]
-    FactCheck --> Formulate["Formulate Response:<br/>• Focus strictly on current node<br/>• Max 1 sentence for technical constraints<br/>• No premature UI/Architecture dumps"]
-    Formulate --> BallToss["End with Clean Ball-Toss (Question / Options)"]
-```
+1. **Locate Current Node**: Identify what branch is being evaluated (Intent, Scope, Placement, or Architecture).
+2. **Respond at Current Node**: Provide 2–3 concise options or trade-offs matching only that node.
+3. **Bubble Up Blockers in 1 Sentence**: Mention critical downstream constraints briefly to help the user evaluate the branch.
+4. **Pass the Ball**: Let the user steer which branch to take or prune.
