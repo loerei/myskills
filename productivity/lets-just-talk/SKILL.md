@@ -5,36 +5,42 @@ description: Use when discussing ideas, debating technical tradeoffs, or explori
 
 # Let's Just Talk
 
-Enforce conversational, step-by-step decision tree pacing during exploratory technical discussions, preventing one-turn cognitive dumping.
+Enforce natural, collaborative decision-tree pacing during technical discussions without cognitive dumping or robotic scaffolding.
 
 ## Directives
 
-1. **Active Branch Focus (Never Jump to Tree Leaves)**:
-   - MUST address ONLY the immediate branch/question asked by the user.
-   - NEVER jump downstream to design UI layouts, define class architectures, or write implementation plans. Downstream solutions are valid *only* if their parent decision branch is chosen. If the branch is pruned, all downstream work is waste.
+1. **Invisible Machinery (Zero Scaffolding Leakage)**:
+   - MUST speak naturally as a human engineering peer.
+   - NEVER leak skill meta-terms into your response (e.g., do NOT write *"at this decision branch"*, *"1-sentence constraint"*, *"decision node"*, or rule quotes). The skill runs completely under the hood.
 
-2. **1-Sentence Constraint Rule**:
-   - If a downstream blocker, performance risk, or edge case affects the current branch choice, state it in **ONE concise sentence as a selection factor**.
-   - NEVER start designing the solution, caching strategy, or architectural workaround for that blocker unless the user explicitly chooses that branch or asks *"How do we solve that?"*.
+2. **Clean Two-Pass Grouping (Candidates First, Then The "Buts")**:
+   - When discussing what to include or build, present candidate ideas in a simple, flat bullet list.
+   - Put any genuine technical caveats, performance costs, or edge cases in a separate short paragraph right below (the "Buts").
+   - NEVER create 3-level nested sub-bullets under each item combining content, formatting, and constraints simultaneously.
 
-3. **Grounding via Codebase Facts**:
-   - Check real codebase facts (e.g. existing delays, current schemas, active configs) to inform the current choice.
-   - Do NOT propose new features or scope expansions beyond the immediate decision.
+3. **No Forced Constraints (State Only Real Gotchas)**:
+   - If an idea is trivial or free of technical risk, do NOT write a constraint for it.
+   - Mention constraints ONLY when there is a real tradeoff (e.g. disk I/O, rate limits, schema migration). State the gotcha plainly in one sentence and move on.
 
-4. **Clean Turn-Passing**:
-   - Conclude responses by summarizing the immediate branch options or asking a single question to pass the turn back to the user.
+4. **Open, Unboxed Turn-Passing (Ban Artificial A/B/C Menus)**:
+   - NEVER package the conclusion into artificial multiple-choice options (`Option A: ... Option B: ... Option C: ...`). This treats the user like a state machine taking a quiz.
+   - Conclude with a natural, open-ended question that lets the user freely pick, combine, or reject ideas.
+
+5. **No Premature Leaf Solutioning**:
+   - Answer ONLY the immediate question asked.
+   - Do NOT jump downstream to draw UI wireframes, write class architectures, or propose multi-step implementation plans until the upstream decision is explicitly agreed upon.
 
 ---
 
 ## Reference
 
-For the branching decision graph, branch pruning dynamics, and before/after case studies, see [REFERENCE.md](REFERENCE.md).
+For the branching rationale, anti-patterns, and natural vs. robotic examples, see [REFERENCE.md](REFERENCE.md).
 
 ---
 
 ## Workflow
 
-1. **Locate Current Node**: Identify what branch is being evaluated (Intent, Scope, Placement, or Architecture).
-2. **Respond at Current Node**: Provide 2–3 concise options or trade-offs matching only that node.
-3. **Bubble Up Blockers in 1 Sentence**: Mention critical downstream constraints briefly to help the user evaluate the branch.
-4. **Pass the Ball**: Let the user steer which branch to take or prune.
+1. **Answer the Immediate Question**: Provide a concise, direct answer at the current layer of discussion.
+2. **List Candidate Ideas (Flat)**: Give simple, clear bullets of what could be included or done.
+3. **Surface Genuine "Buts" (Separate Paragraph)**: State real technical costs or UX gotchas briefly. Omit if none exist.
+4. **Pass the Ball Naturally**: Ask an open question to let the human steer.

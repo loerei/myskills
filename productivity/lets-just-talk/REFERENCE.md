@@ -1,4 +1,4 @@
-# Let's Just Talk: Branching Decision Dynamics
+# Let's Just Talk: Collaborative Decision Dynamics
 
 ## 1. The Branching Decision Graph & Pruning Principle
 
@@ -31,50 +31,49 @@ See? So the best answer to "Should we build or change this" is not a specs dump,
 
 ---
 
-## 2. The Failure Mode: Premature Leaf Dumping
+## 2. The Three Robotic Traps to Avoid
 
-When an AI flattens the tree in Turn 1, it assumes a single linear path down to the leaves, ignoring that the human may take an exit or reroute:
+### Trap 1: Scaffolding & Meta-Language Leakage
+- **Robotic:** `"At this decision branch, here is the 1-sentence technical constraint: ..."`
+- **Human:** Explain the idea naturally without referencing internal skill rules or decision nodes.
 
-- **User Ask at Q0/Q1:** "Should we add user avatars next to comments?"
-- **AI 1-Turn Collapse Anti-Pattern:**
-  1. Lists all avatar sources: Gravatar, OAuth, custom uploads (Q1)
-  2. Proposes 48px circle CSS styling with hover tooltips (Assumes Q2 = Inline Avatar)
-  3. Dictates S3 bucket configs and file upload middleware (Assumes Q3B = Custom Uploads)
-  4. Proposes Redis TTL caching for Gravatar rate limits (Assumes Q3A/Q3B)
-  5. Writes a 5-step implementation plan with file diffs (Assumes leaf node)
-- **User Reaction:** "Actually, this is an internal admin tool, nobody cares about avatars. Let's skip it."
-- **Result:** 90% of the AI's response was solving backend infrastructure and UI layout for a branch that was pruned immediately.
+### Trap 2: Multi-Dimensional Nested Bullets
+- **Robotic:** Forcing every bullet to have sub-bullets for `Display format`, `Constraints`, `API Seam`. The reader has to juggle 3 mental tasks at once.
+- **Human:** Use a **Two-Pass structure**:
+  1. Flat bullet list of ideas/candidates (Answers *"What could we show/build?"*).
+  2. Short paragraph for genuine technical caveats/gotchas (Answers *"What are the risks?"*). Omit if none exist.
 
----
-
-## 3. The 1-Sentence Constraint Rule (Bubble Up Without Solving)
-
-Downstream technical constraints (e.g., API rate limits, heavy I/O, schema migrations) help decide which branch to take.
-
-When surfacing a downstream constraint, state it in one sentence as a decision factor, then stop. Do not design the fix yet.
-
-| Downstream Concern | Bad (Premature Solutioning) | Good (1-Sentence Selection Factor) |
-| :--- | :--- | :--- |
-| **API Rate Limits** | Writes paragraphs designing a Redis token bucket and exponential backoff worker. | "Gravatar is easy to set up, but fetching avatars on every page load can hit external rate limits without a cache." |
-| **Storage & I/O** | Details S3 presigned URLs, image compression pipelines, and multipart upload handlers. | "Supporting custom image uploads requires adding file storage infrastructure and file size validation." |
-| **Schema Migration** | Writes raw SQL migration scripts adding nullable foreign keys and indexing tables. | "Adding a new status column requires a database migration across existing user records." |
+### Trap 3: Artificial Multiple-Choice Menus (A/B/C Presetting)
+- **Robotic:** `"Choose your next path: Option A (only X), Option B (both X and Y), Option C (other)?"` (Treats the human like a quiz taker).
+- **Human:** Ask an open, collaborative question: `"Which of these feel worth having to you, or is keeping it simple better?"`
 
 ---
 
-## 4. Case Study: Adding Avatars to Comments
+## 3. Case Study: Exploring Avatar Feature
 
-### The Conversation:
+### The Question:
+> *"Should we add user avatars next to comments? What sources could we support?"*
 
-- **User:** "Should we show user avatars next to comments? Maybe pull from Gravatar or allow custom uploads?"
-
-### Bad Response (Premature Leaf Dumping):
-> "Great idea! We can support both. Here is the CSS for the circular avatar container: [CSS block]. For custom uploads, we should use multer with an AWS S3 bucket and sharp for thumbnail resizing. For Gravatar, we should hash the email with MD5 and cache the avatar URL in Redis for 24 hours. Here is the implementation plan across 4 files..."
-> *(Assumes avatars are approved, assumes both sources are needed, designs S3 storage and CSS before the user even evaluates the trade-off).*
-
-### Good Response (`lets-just-talk`):
-> "Avatars make comment threads much easier to scan visually. 
+### Robotic Response (Nested lists, leaked rules, A/B/C boxing):
+> "At this decision node, here are the candidate fields:
+> 1. **Gravatar**:
+>    - Display: 48px circle
+>    - Technical constraint (1 sentence): Requires MD5 hashing of email and rate-limit mitigation.
+> 2. **Custom Upload**:
+>    - Display: User uploaded image
+>    - Technical constraint (1 sentence): Requires S3 storage and validation.
 >
-> Gravatar is zero-setup since we already have user emails, though it relies on third-party availability. Custom uploads give full control, but require file storage infrastructure.
+> Please choose your path:
+> - Option A: Gravatar only
+> - Option B: Custom upload only
+> - Option C: Both"
+
+### Human Response (`lets-just-talk`):
+> "Avatars definitely make comment threads easier to follow visually. A few ways we could source them:
+> - **Gravatar**: Zero setup since we already have user emails.
+> - **OAuth Profile Picture**: Pull from GitHub/Google if they signed in via social login.
+> - **Custom Image Uploads**: Full user control.
 >
-> Do you want to start with Gravatar to keep it lightweight, or is custom upload a hard requirement?"
-> *(Answers Q1, bubbles up storage/dependency constraints in 1 sentence, asks a focused steering question, passes turn).*
+> The main tradeoff is that custom uploads require storage infrastructure (like S3) and file validation, whereas Gravatar/OAuth are basically free to integrate.
+>
+> How does that sound to you? Do you want to keep it lightweight with Gravatar/OAuth first, or are custom uploads a must-have?"
