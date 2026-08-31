@@ -5,7 +5,7 @@ description: Use when explaining complex systems or mechanics step-by-step in an
 
 # Step-by-Step
 
-Explain complex systems by chatting naturally with the user like a human engineering peer. Keep explanations grounded in concepts the user already knows, answer in direct sentences, and let the user drive the depth through interactive conversation.
+Explain complex systems by chatting naturally with the user like a human engineering peer while maintaining a synchronized visual explanation canvas in the side panel.
 
 ---
 
@@ -25,3 +25,12 @@ Explain complex systems by chatting naturally with the user like a human enginee
 
 5. **Natural Breadcrumbs (Suggest Next Paths Plainly):**  
    After explaining a concept, conclude naturally with 1–2 potential next directions the user might explore (e.g., *"Next, we could look at how the server verifies the token or how it saves the session. Which way do you want to go?"*). Never use robotic comprehension checks (e.g., ban *"Did you understand?"*, *"If you are clear..."*) or rigid multiple-choice menus. Let the user freely choose to follow a branch or ask for clarification.
+
+6. **Live Visual Companion (`.scratch/step_by_step.html`):**  
+   Maintain an interactive HTML visualizer at `.scratch/step_by_step.html` initialized from `assets/template.html`. On each step, append a corresponding visual card (flow diagram, component box, memory layout, or state badge) before `<!-- NEXT_STEP_ANCHOR -->`. Provide a clickable link in chat for the user to open in the side panel.
+
+---
+
+## Subdoc References
+
+- **Visual Primitives & HTML Snippet Catalog**: see [REFERENCE.md](REFERENCE.md).
