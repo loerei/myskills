@@ -1,352 +1,99 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title><!-- {{TITLE}} --> - Step-by-Step Visual Explainer</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
   <style>
-    :root {
-      --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-    }
-
-    html[data-theme="dark"] {
-      --bg-canvas: #0b0f17;
-      --bg-panel: #111827;
-      --bg-card: #1f2937;
-      --border: #374151;
-      --border-subtle: #1f2937;
-      --text-main: #f9fafb;
-      --text-muted: #9ca3af;
-      --text-dim: #6b7280;
-      
-      /* SVG Palette */
-      --svg-node-bg: #1e293b;
-      --svg-node-stroke: #475569;
-      --svg-node-active-bg: #0369a1;
-      --svg-node-active-stroke: #38bdf8;
-      --svg-node-text: #f1f5f9;
-      --svg-line: #64748b;
-      --svg-line-active: #38bdf8;
-      --svg-accent: #38bdf8;
-      --svg-accent-glow: rgba(56, 189, 248, 0.25);
-      --svg-badge-bg: #0f172a;
-    }
-
-    html[data-theme="light"] {
-      --bg-canvas: #f8fafc;
-      --bg-panel: #ffffff;
-      --bg-card: #f1f5f9;
-      --border: #cbd5e1;
-      --border-subtle: #e2e8f0;
-      --text-main: #0f172a;
-      --text-muted: #475569;
-      --text-dim: #94a3b8;
-      
-      /* SVG Palette */
-      --svg-node-bg: #ffffff;
-      --svg-node-stroke: #94a3b8;
-      --svg-node-active-bg: #e0f2fe;
-      --svg-node-active-stroke: #0284c7;
-      --svg-node-text: #0f172a;
-      --svg-line: #94a3b8;
-      --svg-line-active: #0284c7;
-      --svg-accent: #0284c7;
-      --svg-accent-glow: rgba(2, 132, 199, 0.15);
-      --svg-badge-bg: #f8fafc;
-    }
-
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: var(--font-sans);
-      background: var(--bg-canvas);
-      color: var(--text-main);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      padding: 1.25rem;
-      gap: 1.25rem;
-      transition: background-color 0.2s ease, color 0.2s ease;
-    }
-
-    /* Header Bar */
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 0.85rem 1.25rem;
-      background: var(--bg-panel);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    }
-
-    .header-left {
-      display: flex;
-      flex-direction: column;
-      gap: 0.2rem;
-    }
-
-    .topic-title {
-      font-size: 1.15rem;
-      font-weight: 700;
-      letter-spacing: -0.01em;
-      color: var(--text-main);
-    }
-
-    .step-badge {
-      font-size: 0.75rem;
-      font-family: var(--font-mono);
-      font-weight: 600;
-      color: var(--svg-accent);
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .theme-toggle-btn {
-      background: var(--bg-card);
-      color: var(--text-main);
-      border: 1px solid var(--border);
-      padding: 0.45rem 0.85rem;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      cursor: pointer;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      transition: all 0.15s ease;
-    }
-
-    .theme-toggle-btn:hover {
-      border-color: var(--svg-accent);
-      color: var(--svg-accent);
-    }
-
-    /* Steps Timeline Navigation */
-    .timeline {
-      display: flex;
-      gap: 0.5rem;
-      overflow-x: auto;
-      padding-bottom: 0.25rem;
-      scrollbar-width: thin;
-    }
-
-    .step-pill {
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-      padding: 0.4rem 0.75rem;
-      background: var(--bg-panel);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      font-size: 0.78rem;
-      font-weight: 500;
-      color: var(--text-muted);
-      white-space: nowrap;
-    }
-
-    .step-pill.active {
-      background: var(--svg-node-active-bg);
-      border-color: var(--svg-node-active-stroke);
-      color: var(--text-main);
-      font-weight: 600;
-      box-shadow: 0 0 10px var(--svg-accent-glow);
-    }
-
-    .step-pill .dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--text-dim);
-    }
-
-    .step-pill.active .dot {
-      background: var(--svg-accent);
-    }
-
-    /* Main SVG Canvas Container */
-    .canvas-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background: var(--bg-panel);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      overflow: hidden;
-      min-height: 420px;
-      position: relative;
-    }
-
-    .canvas-body {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      padding: 1.5rem;
-      width: 100%;
-    }
-
-    .canvas-body svg {
-      width: 100%;
-      height: auto;
-      max-height: 520px;
-      display: block;
-    }
-
-    /* SVG Default Class Rules */
+    /* SVG custom styling adapting to host design system tokens */
     .svg-node {
-      fill: var(--svg-node-bg);
-      stroke: var(--svg-node-stroke);
+      fill: var(--card);
+      stroke: var(--border);
       stroke-width: 1.5px;
       transition: all 0.3s ease;
     }
-
     .svg-node.active {
-      fill: var(--svg-node-active-bg);
-      stroke: var(--svg-node-active-stroke);
-      stroke-width: 2.2px;
-      filter: drop-shadow(0 0 8px var(--svg-accent-glow));
+      fill: var(--card);
+      stroke: var(--primary);
+      stroke-width: 2.5px;
+      filter: drop-shadow(0 0 8px rgba(56, 189, 248, 0.35));
     }
-
     .svg-node.dimmed {
-      opacity: 0.45;
+      opacity: 0.35;
     }
-
     .svg-text {
-      fill: var(--svg-node-text);
-      font-family: var(--font-sans);
+      fill: var(--foreground);
       font-size: 13px;
       font-weight: 500;
       text-anchor: middle;
       dominant-baseline: central;
       pointer-events: none;
     }
-
     .svg-text-title {
       font-weight: 700;
       font-size: 14px;
     }
-
     .svg-text-muted {
-      fill: var(--text-muted);
+      fill: var(--muted-foreground);
       font-size: 11px;
-      font-family: var(--font-mono);
+      font-family: ui-monospace, monospace;
     }
-
     .svg-line {
-      stroke: var(--svg-line);
+      stroke: var(--border);
       stroke-width: 1.75px;
       fill: none;
       stroke-linecap: round;
       stroke-linejoin: round;
     }
-
     .svg-line.active {
-      stroke: var(--svg-line-active);
+      stroke: var(--primary);
       stroke-width: 2.2px;
     }
-
     .svg-line-flow {
-      stroke: var(--svg-line-active);
+      stroke: var(--primary);
       stroke-dasharray: 6 6;
-      animation: dash 1s linear infinite;
+      animation: svg-flow 1s linear infinite;
     }
-
-    @keyframes dash {
+    @keyframes svg-flow {
       to {
         stroke-dashoffset: -12;
       }
     }
-
-    /* Note Card */
-    .note-card {
-      background: var(--bg-panel);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 1rem 1.25rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-    }
-
-    .note-title {
-      font-size: 0.85rem;
-      font-weight: 600;
-      color: var(--svg-accent);
-      display: flex;
-      align-items: center;
-      gap: 0.4rem;
-    }
-
-    .note-content {
-      font-size: 0.88rem;
-      line-height: 1.5;
-      color: var(--text-muted);
-    }
-
-    .note-content strong {
-      color: var(--text-main);
-    }
   </style>
 </head>
-<body>
-  <header>
-    <div class="header-left">
-      <div class="step-badge">Step <!-- {{STEP_NUMBER}} --></div>
-      <h1 class="topic-title"><!-- {{TITLE}} --></h1>
+<body class="bg-transparent text-[var(--foreground)] antialiased p-3 sm:p-4 flex flex-col gap-3">
+  <!-- Main Card Container -->
+  <div class="bg-[var(--card)] text-[var(--foreground)] border border-[var(--border)] rounded-xl p-4 sm:p-5 shadow-sm flex flex-col gap-4">
+    <!-- Header -->
+    <div class="flex items-center justify-between border-b border-[var(--border)] pb-3">
+      <div>
+        <span class="text-xs font-mono font-semibold text-[var(--primary)] uppercase tracking-wider">Step <!-- {{STEP_NUMBER}} --></span>
+        <h2 class="text-lg font-bold text-[var(--foreground)] tracking-tight"><!-- {{TITLE}} --></h2>
+      </div>
+      <div class="px-2.5 py-1 rounded-full text-xs font-medium bg-[var(--background)] text-[var(--muted-foreground)] border border-[var(--border)]">
+        Live Explainer
+      </div>
     </div>
-    <button class="theme-toggle-btn" id="theme-btn" onclick="toggleTheme()">
-      <span id="theme-icon">☀️</span> <span id="theme-label">Theme</span>
-    </button>
-  </header>
 
-  <div class="timeline" id="timeline">
-    <!-- {{STEPS_TIMELINE}} -->
-  </div>
+    <!-- Timeline pills -->
+    <div class="flex gap-2 overflow-x-auto pb-1" id="timeline">
+      <!-- {{STEPS_TIMELINE}} -->
+    </div>
 
-  <main class="canvas-container">
-    <div class="canvas-body">
+    <!-- SVG Canvas Area -->
+    <div class="bg-[var(--background)] border border-[var(--border)] rounded-lg p-4 flex items-center justify-center min-h-[280px] overflow-hidden">
       <!-- {{SVG_CONTENT}} -->
     </div>
-  </main>
 
-  <section class="note-card">
-    <div class="note-title">
-      <span>💡 Current Step Focus</span>
+    <!-- Current Step Focus Note -->
+    <div class="bg-[var(--background)] border border-[var(--border)] rounded-lg p-3.5 flex flex-col gap-1">
+      <div class="flex items-center gap-1.5 text-xs font-semibold text-[var(--primary)]">
+        <span>💡 Step Focus</span>
+      </div>
+      <p class="text-sm text-[var(--muted-foreground)] leading-relaxed">
+        <!-- {{NOTE_CONTENT}} -->
+      </p>
     </div>
-    <div class="note-content">
-      <!-- {{NOTE_CONTENT}} -->
-    </div>
-  </section>
-
-  <script>
-    function setTheme(theme) {
-      document.documentElement.setAttribute('data-theme', theme);
-      localStorage.setItem('step_by_step_theme', theme);
-      const icon = document.getElementById('theme-icon');
-      const label = document.getElementById('theme-label');
-      if (theme === 'dark') {
-        icon.textContent = '☀️';
-        label.textContent = 'Light';
-      } else {
-        icon.textContent = '🌙';
-        label.textContent = 'Dark';
-      }
-    }
-
-    function toggleTheme() {
-      const current = document.documentElement.getAttribute('data-theme') || 'dark';
-      setTheme(current === 'dark' ? 'light' : 'dark');
-    }
-
-    const savedTheme = localStorage.getItem('step_by_step_theme') || 'dark';
-    setTheme(savedTheme);
-  </script>
+  </div>
 </body>
 </html>
