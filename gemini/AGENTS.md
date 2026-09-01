@@ -26,7 +26,7 @@
           CheckRepoAgents -->|"Not Found"| LoadGlobalRules["Apply Global Policies Only"]
           LoadRepoRules --> CheckContextLoss{"Checkpoint / Context Truncated?"}
           LoadGlobalRules --> CheckContextLoss
-          CheckContextLoss -->|"Yes"| CheckpointRecovery["Checkpoint Recovery Protocol:<br/>1. Read 'What To Re-read After A Checkpoint.md'<br/>2. Re-read all active Skills & Artifacts<br/>3. Read implementation_plan.md & git status/diff<br/>4. Disclose Checkpoint to User"] --> EvalPrompt
+          CheckContextLoss -->|"Yes"| CheckpointRecovery["Checkpoint Recovery Protocol:<br/>1. Read 'What To Re-read After A Checkpoint.md'<br/>2. Re-read active Skills & Guides<br/>3. Re-read referenced Artifacts<br/>4. Read implementation_plan.md & git state<br/>5. Disclose Checkpoint to User"] --> EvalPrompt
           CheckContextLoss -->|"No"| EvalPrompt
       end
 
@@ -187,7 +187,7 @@
           end
 
           subgraph REPORTING_STAGE["3C: Response Formats & Checkpoint Maintenance"]
-              FinalizeWalkthrough --> MaintainCheckpointDoc["Maintain 'What To Re-read After A Checkpoint.md':<br/>• Sync Active Skills (add current / drop done)<br/>• Sync Referenced Artifacts (DAs, reports)<br/>• Record Active Tags & Invariants"]
+              FinalizeWalkthrough --> MaintainCheckpointDoc["Maintain 'What To Re-read After A Checkpoint.md':<br/>• Sync Active Skills & Tool Guides<br/>• Sync Referenced Artifacts<br/>• Record Active Tags & Invariants"]
               MaintainCheckpointDoc --> ReportOutcome["ReportOutcome:<br/>• Present empirical evidence & test verification<br/>• Disclose Incidents & Mid-Turn Fixes<br/>• Clickable Links + State tested vs untested"] --> TurnEnd["Turn End"]
 
               MaintainCheckpointDoc --> ReportProposal["ReportProposal:<br/>• Present technical proposal / plan / question<br/>• Surface tradeoffs & await explicit approval"] --> TurnEnd
@@ -211,12 +211,13 @@
 * **Checkpoint & Context Recovery Protocol:** Following a checkpoint, context window compaction/truncation, or turn resumption, the agent's **VERY FIRST ACTION** MUST be:
   1. **Read `What To Re-read After A Checkpoint.md`**: Locate and read `<appDataDir>\brain\<conversation-id>/What To Re-read After A Checkpoint.md` (or workspace `.scratch/`).
   2. **Reload Active Skills**: Execute `view_file` on `SKILL.md` for every skill listed under `## Active Skills` to restore behavioral rules and specialized execution paths into active memory.
-  3. **Reload Referenced Artifacts**: Execute `view_file` on all artifacts listed under `## Referenced Artifacts` (e.g. Directive Artifacts, review reports, PRDs, specs) to recover current task state.
-  4. **Restore Active Directives & Tags**: Re-adopt active modifier tags (e.g., `!PA`, `!SP<N>`, `!PU`), multi-agent review rosters, and operational invariants recorded under `## Active Context & Invariants`.
-  5. **Inspect Plan & Git State**: Read `implementation_plan.md` to identify the active `[/]` or next `[ ]` step, and inspect `git status` and `git diff` to determine what files have already been modified on disk before taking any code action, preventing duplicate or conflicting edits.
-  6. **Mandatory Checkpoint Disclosure to User**: Because Antigravity provides no native UI alert when a checkpoint occurs, the agent **MUST explicitly notify the user upfront** in the turn's response using an alert banner:
+  3. **Re-call Active Tool Guides**: Execute tool guide calls (e.g. `patchitright_guide`, `chronicle_guide`, `jcodemunch_guide`) with their specified arguments recorded under `## Active Tool Guides` to restore latest parameter constraints, schemas, and recipes into active memory.
+  4. **Reload Referenced Artifacts**: Execute `view_file` on all artifacts listed under `## Referenced Artifacts` (e.g. Directive Artifacts, review reports, PRDs, specs) to recover current task state.
+  5. **Restore Active Directives & Tags**: Re-adopt active modifier tags (e.g., `!PA`, `!SP<N>`, `!PU`), multi-agent review rosters, and operational invariants recorded under `## Active Context & Invariants`.
+  6. **Inspect Plan & Git State**: Read `implementation_plan.md` to identify the active `[/]` or next `[ ]` step, and inspect `git status` and `git diff` to determine what files have already been modified on disk before taking any code action, preventing duplicate or conflicting edits.
+  7. **Mandatory Checkpoint Disclosure to User**: Because Antigravity provides no native UI alert when a checkpoint occurs, the agent **MUST explicitly notify the user upfront** in the turn's response using an alert banner:
      > [!NOTE]
-     > **Checkpoint Detected:** Context was compacted. Automatically restored active skills (`<list>`), artifacts (`<list>`), and active context/tags (`<list>`) from `What To Re-read After A Checkpoint.md`.
+     > **Checkpoint Detected:** Context was compacted. Automatically restored active skills (`<list>`), tool guides (`<list>`), artifacts (`<list>`), and active context/tags (`<list>`) from `What To Re-read After A Checkpoint.md`.
 
 ---
 
@@ -511,6 +512,7 @@ Before pushing to remote:
 Across the entire conversation, the agent's duty at the conclusion of every turn is to maintain a dedicated markdown file at `<appDataDir>\brain\<conversation-id>/What To Re-read After A Checkpoint.md`.
 - **Lifecycle Operations**:
   - **Sync Active Skills**: Add every skill currently governing active or upcoming work in this session file link. Remove skills whose task lifecycle is completely finished.
+  - **Sync Active Tool Guides**: Add every tool guide currently governing active MCP usage along with its required arguments (e.g. `patchitright_guide` with `file_types`, `chronicle_guide` with `topic`). Remove guides no longer relevant.
   - **Sync Referenced Artifacts**: Add every artifact actively referenced by ongoing work. Remove artifacts that are obsolete or no longer referenced.
   - **Sync Active Context & Invariants**: Record active context, current operational constraints, and critical user directives that must survive context compression.
 - **Mandatory Markdown Template Schema**:
@@ -519,6 +521,9 @@ Across the entire conversation, the agent's duty at the conclusion of every turn
 
   ## Active Skills
   - [<skill-name>](file:///<absolute-path-to-SKILL.md>) — [Brief role / purpose in session]
+
+  ## Active Tool Guides (To Re-call)
+  - `<tool_guide_name>` (args: `{...}`) — [Purpose / topic / language scope]
 
   ## Referenced Artifacts
   - [<artifact-name>](file:///<absolute-path-to-artifact>) — [Current state / role]
