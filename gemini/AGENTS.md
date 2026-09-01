@@ -15,186 +15,186 @@
 > Follow this workflow decision tree from **Turn Start** to **Turn End**. Do NOT evaluate rules in isolation.
 
 ```mermaid
-flowchart TD
-    %% ============================================================
-    %% PHASE 0: TURN INTAKE, TONE MINDSET & WORKSPACE GATE
-    %% ============================================================
-    subgraph PHASE0["Phase 0: Turn Intake, Tone Mindset & Workspace Gate"]
-        TurnStart["Turn Start"] --> SetToneMindset["Initialize Tone & Objective Mindset<br/>• Blunt, factual, zero sycophancy<br/>• Claims require empirical evidence"]
-        SetToneMindset --> CheckRepoAgents{"Is there an AGENTS.md at Repo Root?"}
-        CheckRepoAgents -->|"Found"| LoadRepoRules["Apply Repo Rules ON TOP of Global<br/>(Repo overrides Global on conflict)"]
-        CheckRepoAgents -->|"Not Found"| LoadGlobalRules["Apply Global Policies Only"]
-        LoadRepoRules --> CheckContextLoss{"Checkpoint / Context Truncated?"}
-        LoadGlobalRules --> CheckContextLoss
-        CheckContextLoss -->|"Yes"| CheckpointRecovery["Checkpoint Recovery Protocol:<br/>1. Read 'What To Re-read After A Checkpoint.md'<br/>2. Re-read all active Skills & Artifacts<br/>3. Read implementation_plan.md & git status/diff<br/>4. Disclose Checkpoint to User"] --> EvalPrompt
-        CheckContextLoss -->|"No"| EvalPrompt
-    end
+  flowchart TD
+      %% ============================================================
+      %% PHASE 0: TURN INTAKE, TONE MINDSET & WORKSPACE GATE
+      %% ============================================================
+      subgraph PHASE0["Phase 0: Turn Intake, Tone Mindset & Workspace Gate"]
+          TurnStart["Turn Start"] --> SetToneMindset["Initialize Tone & Objective Mindset<br/>• Blunt, factual, zero sycophancy<br/>• Claims require empirical evidence"]
+          SetToneMindset --> CheckRepoAgents{"Is there an AGENTS.md at Repo Root?"}
+          CheckRepoAgents -->|"Found"| LoadRepoRules["Apply Repo Rules ON TOP of Global<br/>(Repo overrides Global on conflict)"]
+          CheckRepoAgents -->|"Not Found"| LoadGlobalRules["Apply Global Policies Only"]
+          LoadRepoRules --> CheckContextLoss{"Checkpoint / Context Truncated?"}
+          LoadGlobalRules --> CheckContextLoss
+          CheckContextLoss -->|"Yes"| CheckpointRecovery["Checkpoint Recovery Protocol:<br/>1. Read 'What To Re-read After A Checkpoint.md'<br/>2. Re-read all active Skills & Artifacts<br/>3. Read implementation_plan.md & git status/diff<br/>4. Disclose Checkpoint to User"] --> EvalPrompt
+          CheckContextLoss -->|"No"| EvalPrompt
+      end
 
-    %% ============================================================
-    %% PHASE 1: TIER GATE, SKILL/TOOL ROUTER, TRIAGE DISPATCH
-    %% ============================================================
-    subgraph PHASE1["Phase 1: Tier Gate, Router & Triage"]
-        subgraph TIER_GATE["1A: 3-Tier Execution Framework"]
-            EvalPrompt{"Evaluate Prompt"} --> TagCheck{"Contains Explicit Tier Tag<br/>(T1 / T2 / T3)?"}
+      %% ============================================================
+      %% PHASE 1: TIER GATE, SKILL/TOOL ROUTER, TRIAGE DISPATCH
+      %% ============================================================
+      subgraph PHASE1["Phase 1: Tier Gate, Router & Triage"]
+          subgraph TIER_GATE["1A: 3-Tier Execution Framework"]
+              EvalPrompt{"Evaluate Prompt"} --> TagCheck{"Contains Explicit Tier Tag<br/>(T1 / T2 / T3)?"}
 
-            TagCheck -->|"T1 / [T1]"| SetTier1["State: TIER 1<br/>Read & Debate Only<br/>STRICT WRITE BAN"]
-            TagCheck -->|"T2 / [T2]"| SetTier2["State: TIER 2<br/>Write ONLY to .scratch/, .devutil/<br/>or brain/scratch/<br/>Run diagnostics"]
-            TagCheck -->|"T3 / [T3]"| SetTier3["State: TIER 3<br/>Source Edits / Git Authorized<br/>(EXPLICIT_APPROVAL = TRUE)"]
+              TagCheck -->|"T1 / [T1]"| SetTier1["State: TIER 1<br/>Read & Debate Only<br/>STRICT WRITE BAN"]
+              TagCheck -->|"T2 / [T2]"| SetTier2["State: TIER 2<br/>Write ONLY to .scratch/, .devutil/<br/>or brain/scratch/<br/>Run diagnostics"]
+              TagCheck -->|"T3 / [T3]"| SetTier3["State: TIER 3<br/>Source Edits / Git Authorized<br/>(EXPLICIT_APPROVAL = TRUE)"]
 
-            TagCheck -->|"No Tag"| InputAnalysis{"Analyze User Prompt Type"}
+              TagCheck -->|"No Tag"| InputAnalysis{"Analyze User Prompt Type"}
 
-            InputAnalysis -->|"Question / Proposal / Analysis<br/>/ Prompt ends with '?'"| SetTier1
-            InputAnalysis -->|"Diagnostic / Scratch File Operation"| PathCheck{"Target Path inside .scratch/,<br/>.devutil/ or brain/scratch/?"}
-            PathCheck -->|"Yes"| SetTier2
-            PathCheck -->|"No (Repo Source Path)"| Tier3Gate{"Explicit Approval Granted for Plan?"}
+              InputAnalysis -->|"Question / Proposal / Analysis<br/>/ Prompt ends with '?'"| SetTier1
+              InputAnalysis -->|"Diagnostic / Scratch File Operation"| PathCheck{"Target Path inside .scratch/,<br/>.devutil/ or brain/scratch/?"}
+              PathCheck -->|"Yes"| SetTier2
+              PathCheck -->|"No (Repo Source Path)"| Tier3Gate{"Explicit Approval Granted for Plan?"}
 
-            InputAnalysis -->|"Source Edit / Commit / Push / PR<br/>/ State Change"| Tier3Gate
+              InputAnalysis -->|"Source Edit / Commit / Push / PR<br/>/ State Change"| Tier3Gate
 
-            Tier3Gate -->|"No / Ambiguous / Praise<br/>/ Follow-up Question"| Tier3Block["> [!CAUTION] EXECUTION BLOCK:<br/>STOP immediately.<br/>Present Plan / Walkthrough.<br/>Await explicit approval."] --> ReportProposal
-            Tier3Gate -->|"Explicit Command<br/>('Approve' / 'Proceed' / Directive)"| SetTier3
-        end
+              Tier3Gate -->|"No / Ambiguous / Praise<br/>/ Follow-up Question"| Tier3Block["> [!CAUTION] EXECUTION BLOCK:<br/>STOP immediately.<br/>Present Plan / Walkthrough.<br/>Await explicit approval."] --> ReportProposal
+              Tier3Gate -->|"Explicit Command<br/>('Approve' / 'Proceed' / Directive)"| SetTier3
+          end
 
-        subgraph SKILL_ROUTER["1B: Skill & Tool Gateway"]
-            SetTier1 --> SQCheck{"Contains 'SQ' Tag?"}
-            SetTier2 --> SQCheck
-            SetTier3 --> SQCheck
+          subgraph SKILL_ROUTER["1B: Skill & Tool Gateway"]
+              SetTier1 --> SQCheck{"Contains 'SQ' Tag?"}
+              SetTier2 --> SQCheck
+              SetTier3 --> SQCheck
 
-            SQCheck -->|"Yes"| CategorySkillSearch["Category Skill Discovery<br/>(Run 'agents list -c <category>'<br/>& read matching SKILL.md)"]
-            SQCheck -->|"No"| CategoryCheck{"Match Task to Categories<br/>in Table 1?"}
-            CategoryCheck -->|"Match Found"| LookupTable["Look up required Skill list<br/>in Table 1"]
-            CategoryCheck -->|"No Match"| DynamicMatch{"Skill Matched<br/>by Description?"}
+              SQCheck -->|"Yes"| CategorySkillSearch["Category Skill Discovery<br/>(Run 'agents list -c <category>'<br/>& read matching SKILL.md)"]
+              SQCheck -->|"No"| CategoryCheck{"Match Task to Categories<br/>in Table 1?"}
+              CategoryCheck -->|"Match Found"| LookupTable["Look up required Skill list<br/>in Table 1"]
+              CategoryCheck -->|"No Match"| DynamicMatch{"Skill Matched<br/>by Description?"}
 
-            CategorySkillSearch --> MustReadSkill["MUST call view_file on SKILL.md<br/>BEFORE planning or coding"]
-            LookupTable --> MustReadSkill
-            DynamicMatch -->|"Yes"| MustReadSkill
-            DynamicMatch -->|"No"| SelectMCPTools
+              CategorySkillSearch --> MustReadSkill["MUST call view_file on SKILL.md<br/>BEFORE planning or coding"]
+              LookupTable --> MustReadSkill
+              DynamicMatch -->|"Yes"| MustReadSkill
+              DynamicMatch -->|"No"| SelectMCPTools
 
-            MustReadSkill --> CheckSkillRef{"Does SKILL.md reference<br/>another Skill?"}
-            CheckSkillRef -->|"Yes"| ReadRefSkill["MUST call view_file<br/>on referenced SKILL.md"] --> SelectMCPTools
-            CheckSkillRef -->|"No"| SelectMCPTools
+              MustReadSkill --> CheckSkillRef{"Does SKILL.md reference<br/>another Skill?"}
+              CheckSkillRef -->|"Yes"| ReadRefSkill["MUST call view_file<br/>on referenced SKILL.md"] --> SelectMCPTools
+              CheckSkillRef -->|"No"| SelectMCPTools
 
-            SelectMCPTools["Select required MCP tools<br/>per Tool Selection Matrix<br/>(Call tool guide before use)"]
-        end
+              SelectMCPTools["Select required MCP tools<br/>per Tool Selection Matrix<br/>(Call tool guide before use)"]
+          end
 
-        SelectMCPTools --> AmbiguityGate
+          SelectMCPTools --> AmbiguityGate
 
-        subgraph TRIAGE["1C: Ambiguity & Question Routing"]
-            AmbiguityGate{"Define<br/>Ambiguity Level of User's Request?"}
+          subgraph TRIAGE["1C: Ambiguity & Question Routing"]
+              AmbiguityGate{"Define<br/>Ambiguity Level of User's Request?"}
 
-            AmbiguityGate -->|"No Ambiguity / Clear"| FoundationCheck{"User Request heavily depends on<br/>foundational codebase?"}
-            AmbiguityGate -->|"Minor (Config / Defaults)"| AutoResolve["Resolve autonomously<br/>using sensible defaults"] --> FoundationCheck
-            AmbiguityGate -->|"Critical / Blocker<br/>(Multiple Candidates / Arch / Scope)"| ClarifyType{"Clarification Type?"}
+              AmbiguityGate -->|"No Ambiguity / Clear"| FoundationCheck{"User Request heavily depends on<br/>foundational codebase?"}
+              AmbiguityGate -->|"Minor (Config / Defaults)"| AutoResolve["Resolve autonomously<br/>using sensible defaults"] --> FoundationCheck
+              AmbiguityGate -->|"Critical / Blocker<br/>(Multiple Candidates / Arch / Scope)"| ClarifyType{"Clarification Type?"}
 
-            ClarifyType -->|"Discrete Choices / Candidates"| CallAskQuestion["Call 'ask_question' tool<br/>(Interactive UI Selection)"] --> FoundationCheck
-            ClarifyType -->|"Open-Ended / Architectural Debate"| AskInText["Ask via Direct Response Text<br/>(Await User Clarification)"] --> ReportProposal
+              ClarifyType -->|"Discrete Choices / Candidates"| CallAskQuestion["Call 'ask_question' tool<br/>(Interactive UI Selection)"] --> FoundationCheck
+              ClarifyType -->|"Open-Ended / Architectural Debate"| AskInText["Ask via Direct Response Text<br/>(Await User Clarification)"] --> ReportProposal
 
-            FoundationCheck -->|"No (Isolated / Low Dependency)"| ProceedToExec["Proceed to Phase 2"]
-            FoundationCheck -->|"Yes"| FoundationState{"Is foundational code in bad state<br/>(hard to maintain/debug/extend)?"}
+              FoundationCheck -->|"No (Isolated / Low Dependency)"| ProceedToExec["Proceed to Phase 2"]
+              FoundationCheck -->|"Yes"| FoundationState{"Is foundational code in bad state<br/>(hard to maintain/debug/extend)?"}
 
-            FoundationState -->|"No (Good State)"| ProceedToExec
-            FoundationState -->|"Yes (Bad State)"| ProposeRefactorFirst["MUST Propose Prerequisite Refactoring Plan<br/>to stabilize foundation FIRST"] --> AskInText
-        end
-    end
+              FoundationState -->|"No (Good State)"| ProceedToExec
+              FoundationState -->|"Yes (Bad State)"| ProposeRefactorFirst["MUST Propose Prerequisite Refactoring Plan<br/>to stabilize foundation FIRST"] --> AskInText
+          end
+      end
 
-    %% ============================================================
-    %% PHASE 2: EXECUTION — PLAN LOOP & INVESTIGATION PROTOCOL
-    %% ============================================================
-    subgraph PHASE2["Phase 2: Execution & Investigation"]
-        subgraph PLAN_LOOP["2A: Implementation Plan Step Loop"]
-            ProceedToExec --> CurrentTier{"Current Tier State?"}
+      %% ============================================================
+      %% PHASE 2: EXECUTION — PLAN LOOP & INVESTIGATION PROTOCOL
+      %% ============================================================
+      subgraph PHASE2["Phase 2: Execution & Investigation"]
+          subgraph PLAN_LOOP["2A: Implementation Plan Step Loop"]
+              ProceedToExec --> CurrentTier{"Current Tier State?"}
 
-            CurrentTier -->|"Tier 1"| ReadDebate["Execute Read & Debate<br/>Propose implementation_plan.md"] --> ReportProposal
-            CurrentTier -->|"Tier 2"| RunScratch["Execute Diagnostic<br/>in .scratch/, .devutil/<br/>or brain/scratch/<br/>Gather Empirical Evidence"] --> ReportOutcome
-            CurrentTier -->|"Tier 3"| PlanStateCheck{"Active Plan State?"}
+              CurrentTier -->|"Tier 1"| ReadDebate["Execute Read & Debate<br/>Propose implementation_plan.md"] --> ReportProposal
+              CurrentTier -->|"Tier 2"| RunScratch["Execute Diagnostic<br/>in .scratch/, .devutil/<br/>or brain/scratch/<br/>Gather Empirical Evidence"] --> ReportOutcome
+              CurrentTier -->|"Tier 3"| PlanStateCheck{"Active Plan State?"}
 
-            PlanStateCheck -->|"Active In-Progress<br/>(has [ ] or [/])"| SelectStep
-            PlanStateCheck -->|"No Plan"| CreatePlan["Create implementation_plan.md<br/>with [ ] checklist"] --> PlanApproval
-            PlanStateCheck -->|"Previous Plan Done (All [x])"| GoalScopeCheck{"Is request an expansion/fix<br/>of the SAME goal?"}
+              PlanStateCheck -->|"Active In-Progress<br/>(has [ ] or [/])"| SelectStep
+              PlanStateCheck -->|"No Plan"| CreatePlan["Create implementation_plan.md<br/>with [ ] checklist"] --> PlanApproval
+              PlanStateCheck -->|"Previous Plan Done (All [x])"| GoalScopeCheck{"Is request an expansion/fix<br/>of the SAME goal?"}
 
-            GoalScopeCheck -->|"Yes (Same Goal)"| AppendPlan["Append new [ ] steps in-place<br/>to existing implementation_plan.md"] --> PlanApproval
-            GoalScopeCheck -->|"No (Distinct New Goal)"| ArchiveAndNew["Archive finished plan<br/>→ Create NEW implementation_plan.md"] --> PlanApproval
+              GoalScopeCheck -->|"Yes (Same Goal)"| AppendPlan["Append new [ ] steps in-place<br/>to existing implementation_plan.md"] --> PlanApproval
+              GoalScopeCheck -->|"No (Distinct New Goal)"| ArchiveAndNew["Archive finished plan<br/>→ Create NEW implementation_plan.md"] --> PlanApproval
 
-            CreatePlan --> PlanApproval
-            PlanApproval{"User Approved Plan?"}
-            PlanApproval -->|"Yes (Approved / T3)"| SelectStep
-            PlanApproval -->|"No / Feedback / Awaiting"| AwaitPlanReview["Present/Update plan<br/>& Await explicit approval"] --> ReportProposal
+              CreatePlan --> PlanApproval
+              PlanApproval{"User Approved Plan?"}
+              PlanApproval -->|"Yes (Approved / T3)"| SelectStep
+              PlanApproval -->|"No / Feedback / Awaiting"| AwaitPlanReview["Present/Update plan<br/>& Await explicit approval"] --> ReportProposal
 
-            SelectStep["Select First Uncompleted Step<br/>Mark [/] In-Progress<br/>(STRICT LIMIT: ONE active)"] --> ExecuteStep["Execute Step"]
-        end
+              SelectStep["Select First Uncompleted Step<br/>Mark [/] In-Progress<br/>(STRICT LIMIT: ONE active)"] --> ExecuteStep["Execute Step"]
+          end
 
-        subgraph INVESTIGATE["2B: 3-Phase Investigation Protocol"]
-            ExecuteStep --> IsDebugTask{"User reports problem<br/>(bug / perf / unexpected behavior)?"}
+          subgraph INVESTIGATE["2B: 3-Phase Investigation Protocol"]
+              ExecuteStep --> IsDebugTask{"User reports problem<br/>(bug / perf / unexpected behavior)?"}
 
-            IsDebugTask -->|"No (Normal execution)"| DirectExec["Execute Minimal Diffs<br/>via approved tools"]
-            IsDebugTask -->|"Yes"| Phase1Read["Phase 1: Read relevant code<br/>+ inspect runtime behavior"]
+              IsDebugTask -->|"No (Normal execution)"| DirectExec["Execute Minimal Diffs<br/>via approved tools"]
+              IsDebugTask -->|"Yes"| Phase1Read["Phase 1: Read relevant code<br/>+ inspect runtime behavior"]
 
-            Phase1Read --> RootCauseConfirmed{"Root cause CONFIRMED?<br/>(reproduced or log evidence)"}
-            RootCauseConfirmed -->|"No"| InstrumentCode["Add .scratch/ repro harness or<br/>temporary logging to reproduce"]
-            InstrumentCode --> ReCheckRepro{"Can reproduce locally?"}
-            ReCheckRepro -->|"Yes (New diagnostic clues)"| Phase1Read
-            ReCheckRepro -->|"No / Stagnant clues<br/>(Need User logs/env)"| CollabStop["STOP — Request user manual test / logs"] --> ReportBlocker
+              Phase1Read --> RootCauseConfirmed{"Root cause CONFIRMED?<br/>(reproduced or log evidence)"}
+              RootCauseConfirmed -->|"No"| InstrumentCode["Add .scratch/ repro harness or<br/>temporary logging to reproduce"]
+              InstrumentCode --> ReCheckRepro{"Can reproduce locally?"}
+              ReCheckRepro -->|"Yes (New diagnostic clues)"| Phase1Read
+              ReCheckRepro -->|"No / Stagnant clues<br/>(Need User logs/env)"| CollabStop["STOP — Request user manual test / logs"] --> ReportBlocker
 
-            RootCauseConfirmed -->|"Yes (code-reading<br/>guess ONLY)"| BlockGuess["STOP — reading code and<br/>guessing is NOT confirmation"] --> InstrumentCode
+              RootCauseConfirmed -->|"Yes (code-reading<br/>guess ONLY)"| BlockGuess["STOP — reading code and<br/>guessing is NOT confirmation"] --> InstrumentCode
 
-            RootCauseConfirmed -->|"Yes (reproduced /<br/>log evidence)"| Phase2Trace["Phase 2: Trace data flow<br/>Understand WHY not just WHERE"]
-            Phase2Trace --> Phase3Propose["Phase 3: Propose solution<br/>addressing root cause directly"]
+              RootCauseConfirmed -->|"Yes (reproduced /<br/>log evidence)"| Phase2Trace["Phase 2: Trace data flow<br/>Understand WHY not just WHERE"]
+              Phase2Trace --> Phase3Propose["Phase 3: Propose solution<br/>addressing root cause directly"]
 
-            Phase3Propose --> InvestApproval{"Explicit User Approval?<br/>(Command or T3 Tag)"}
-            InvestApproval -->|"No (Await Approval)"| ReportProposal
-            InvestApproval -->|"Yes"| DirectExec
-        end
+              Phase3Propose --> InvestApproval{"Explicit User Approval?<br/>(Command or T3 Tag)"}
+              InvestApproval -->|"No (Await Approval)"| ReportProposal
+              InvestApproval -->|"Yes"| DirectExec
+          end
 
-        DirectExec --> VerifyGate
-    end
+          DirectExec --> VerifyGate
+      end
 
-    %% ============================================================
-    %% PHASE 3: VERIFICATION, GIT & REPORTING
-    %% ============================================================
-    subgraph PHASE3["Phase 3: Verification, Git & Output"]
-        subgraph VERIFY_LOOP["3A: Runtime Verification & Failure Disclosure"]
-            VerifyGate{"Runtime Verification Passed?"}
+      %% ============================================================
+      %% PHASE 3: VERIFICATION, GIT & REPORTING
+      %% ============================================================
+      subgraph PHASE3["Phase 3: Verification, Git & Output"]
+          subgraph VERIFY_LOOP["3A: Runtime Verification & Failure Disclosure"]
+              VerifyGate{"Runtime Verification Passed?"}
 
-            VerifyGate -->|"Passed"| MarkComplete["Mark Step [x] Complete<br/>Update implementation_plan.md"]
+              VerifyGate -->|"Passed"| MarkComplete["Mark Step [x] Complete<br/>Update implementation_plan.md"]
 
-            VerifyGate -->|"Failed (Local bug &<br/>errors shrinking)"| PolishFix["Record Mid-Turn Incident<br/>+ Polish solution code"] --> ExecuteStep
+              VerifyGate -->|"Failed (Local bug &<br/>errors shrinking)"| PolishFix["Record Mid-Turn Incident<br/>+ Polish solution code"] --> ExecuteStep
 
-            VerifyGate -->|"Failed (Divergent / zero progress /<br/>unknown reasons)"| UnknownFailStop["MUST STOP: Disclose failure<br/>& collaborate with user"] --> ReportBlocker
+              VerifyGate -->|"Failed (Divergent / zero progress /<br/>unknown reasons)"| UnknownFailStop["MUST STOP: Disclose failure<br/>& collaborate with user"] --> ReportBlocker
 
-            VerifyGate -->|"Failed (Scope divergence /<br/>existing bug discovered)"| MandatoryDisclose["MUST Disclose Failure UPFRONT:<br/>• Exact error / leaked output<br/>• Root cause code location<br/>• Proposed fix plan"]
-            MandatoryDisclose --> UserFixApproval{"User Approved Fix Plan?"}
-            UserFixApproval -->|"Yes"| ApplyFix["Apply Fix & Re-verify"] --> VerifyGate
-            UserFixApproval -->|"No / Await Approval"| ReportBlocker
+              VerifyGate -->|"Failed (Scope divergence /<br/>existing bug discovered)"| MandatoryDisclose["MUST Disclose Failure UPFRONT:<br/>• Exact error / leaked output<br/>• Root cause code location<br/>• Proposed fix plan"]
+              MandatoryDisclose --> UserFixApproval{"User Approved Fix Plan?"}
+              UserFixApproval -->|"Yes"| ApplyFix["Apply Fix & Re-verify"] --> VerifyGate
+              UserFixApproval -->|"No / Await Approval"| ReportBlocker
 
-            MarkComplete --> CheckRemaining{"More Uncompleted Steps?"}
-            CheckRemaining -->|"Yes"| ContextCheckMid{"Context Truncated?"}
-            ContextCheckMid -->|"Yes"| ReReadPlan["Re-read implementation_plan.md<br/>+ inspect git status & git diff"] --> SelectStep
-            ContextCheckMid -->|"No"| SelectStep
+              MarkComplete --> CheckRemaining{"More Uncompleted Steps?"}
+              CheckRemaining -->|"Yes"| ContextCheckMid{"Context Truncated?"}
+              ContextCheckMid -->|"Yes"| ReReadPlan["Re-read implementation_plan.md<br/>+ inspect git status & git diff"] --> SelectStep
+              ContextCheckMid -->|"No"| SelectStep
 
-            CheckRemaining -->|"No (All [x])"| GitNeeded{"State-Modifying /<br/>Git Action Needed?"}
-        end
+              CheckRemaining -->|"No (All [x])"| GitNeeded{"State-Modifying /<br/>Git Action Needed?"}
+          end
 
-        subgraph GIT_SAFEGUARDS["3B: Git Workflow & Operational Safeguards"]
-            GitNeeded -->|"Yes"| GitCommit["git commit<br/>(atomic, conventional)"]
-            GitCommit --> PrePushFetch["git fetch origin +<br/>git rebase origin/<default-branch>"]
+          subgraph GIT_SAFEGUARDS["3B: Git Workflow & Operational Safeguards"]
+              GitNeeded -->|"Yes"| GitCommit["git commit<br/>(atomic, conventional)"]
+              GitCommit --> PrePushFetch["git fetch origin +<br/>git rebase origin/<default-branch>"]
 
-            PrePushFetch --> PushConflict{"Conflicts?"}
-            PushConflict -->|"Trivial / Resolved locally"| ResolvePush["Resolve locally +<br/>verify tests/build"] --> PrePushFetch
-            PushConflict -->|"Non-trivial Conflicts"| AbortPushStop["git rebase --abort<br/>→ Consult user"] --> ReportBlocker
-            PushConflict -->|"No Conflicts"| VerifyBuild["Verify tests/build pass"]
-            VerifyBuild --> GitPush["git push"] --> FinalizeWalkthrough["Generate/Update walkthrough.md<br/>& Finalize Artifacts"]
+              PrePushFetch --> PushConflict{"Conflicts?"}
+              PushConflict -->|"Trivial / Resolved locally"| ResolvePush["Resolve locally +<br/>verify tests/build"] --> PrePushFetch
+              PushConflict -->|"Non-trivial Conflicts"| AbortPushStop["git rebase --abort<br/>→ Consult user"] --> ReportBlocker
+              PushConflict -->|"No Conflicts"| VerifyBuild["Verify tests/build pass"]
+              VerifyBuild --> GitPush["git push"] --> FinalizeWalkthrough["Generate/Update walkthrough.md<br/>& Finalize Artifacts"]
 
-            GitNeeded -->|"No"| FinalizeWalkthrough
-        end
+              GitNeeded -->|"No"| FinalizeWalkthrough
+          end
 
-        subgraph REPORTING_STAGE["3C: Response Formats & Checkpoint Maintenance"]
-            FinalizeWalkthrough --> MaintainCheckpointDoc["Maintain 'What To Re-read After A Checkpoint.md':<br/>• Sync Active Skills (add current / drop done)<br/>• Sync Referenced Artifacts (DAs, reports)<br/>• Record Active Tags & Invariants"]
-            MaintainCheckpointDoc --> ReportOutcome["ReportOutcome:<br/>• Present empirical evidence & test verification<br/>• Disclose Incidents & Mid-Turn Fixes<br/>• Clickable Links + State tested vs untested"] --> TurnEnd["Turn End"]
+          subgraph REPORTING_STAGE["3C: Response Formats & Checkpoint Maintenance"]
+              FinalizeWalkthrough --> MaintainCheckpointDoc["Maintain 'What To Re-read After A Checkpoint.md':<br/>• Sync Active Skills (add current / drop done)<br/>• Sync Referenced Artifacts (DAs, reports)<br/>• Record Active Tags & Invariants"]
+              MaintainCheckpointDoc --> ReportOutcome["ReportOutcome:<br/>• Present empirical evidence & test verification<br/>• Disclose Incidents & Mid-Turn Fixes<br/>• Clickable Links + State tested vs untested"] --> TurnEnd["Turn End"]
 
-            MaintainCheckpointDoc --> ReportProposal["ReportProposal:<br/>• Present technical proposal / plan / question<br/>• Surface tradeoffs & await explicit approval"] --> TurnEnd
+              MaintainCheckpointDoc --> ReportProposal["ReportProposal:<br/>• Present technical proposal / plan / question<br/>• Surface tradeoffs & await explicit approval"] --> TurnEnd
 
-            MaintainCheckpointDoc --> ReportBlocker["ReportBlocker:<br/>• Disclose exact failure / leak / conflict upfront<br/>• Provide logs, repro steps & ask user guidance"] --> TurnEnd
-        end
-    end
+              MaintainCheckpointDoc --> ReportBlocker["ReportBlocker:<br/>• Disclose exact failure / leak / conflict upfront<br/>• Provide logs, repro steps & ask user guidance"] --> TurnEnd
+          end
+      end
 ```
 
 ---
@@ -510,9 +510,9 @@ Before pushing to remote:
 *Applies to: Every turn conclusion before outputting final response.*
 Across the entire conversation, the agent's duty at the conclusion of every turn is to maintain a dedicated markdown file at `<appDataDir>\brain\<conversation-id>/What To Re-read After A Checkpoint.md`.
 - **Lifecycle Operations**:
-  - **Sync Active Skills**: Add every skill currently governing active or upcoming work in this session (e.g. `conduct-deep-reviewing-loop`, `tdd`, `manage-global-policies`) with its clickable file link. Remove skills whose task lifecycle is completely finished.
-  - **Sync Referenced Artifacts**: Add every Directive Artifact (DA), review report, changelog, PRD, or benchmark doc actively referenced by ongoing work. Remove artifacts that are obsolete or no longer referenced.
-  - **Sync Active Context & Invariants**: Record active modifier tags (e.g., `!PA`, `!SP2`), active review roles/phases, current operational constraints, and critical user directives that must survive context compression.
+  - **Sync Active Skills**: Add every skill currently governing active or upcoming work in this session file link. Remove skills whose task lifecycle is completely finished.
+  - **Sync Referenced Artifacts**: Add every artifact actively referenced by ongoing work. Remove artifacts that are obsolete or no longer referenced.
+  - **Sync Active Context & Invariants**: Record active context, current operational constraints, and critical user directives that must survive context compression.
 - **Mandatory Markdown Template Schema**:
   ```markdown
   # What To Re-read After A Checkpoint
