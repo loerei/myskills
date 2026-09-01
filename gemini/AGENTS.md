@@ -24,9 +24,9 @@ flowchart TD
         SetToneMindset --> CheckRepoAgents{"Is there an AGENTS.md at Repo Root?"}
         CheckRepoAgents -->|"Found"| LoadRepoRules["Apply Repo Rules ON TOP of Global<br/>(Repo overrides Global on conflict)"]
         CheckRepoAgents -->|"Not Found"| LoadGlobalRules["Apply Global Policies Only"]
-        LoadRepoRules --> CheckContextLoss{"Context Truncated or New Turn?"}
+        LoadRepoRules --> CheckContextLoss{"Checkpoint / Context Truncated?"}
         LoadGlobalRules --> CheckContextLoss
-        CheckContextLoss -->|"Yes"| RecoverState["Recover Context & State:<br/>1. Read implementation_plan.md (find active [/])<br/>2. Inspect disk via git status & git diff"] --> EvalPrompt
+        CheckContextLoss -->|"Yes"| CheckpointRecovery["Checkpoint Recovery Protocol:<br/>1. Read 'What To Re-read After A Checkpoint.md'<br/>2. Re-read all active Skills & Artifacts<br/>3. Read implementation_plan.md & git status/diff<br/>4. Disclose Checkpoint to User"] --> EvalPrompt
         CheckContextLoss -->|"No"| EvalPrompt
     end
 
@@ -186,12 +186,13 @@ flowchart TD
             GitNeeded -->|"No"| FinalizeWalkthrough
         end
 
-        subgraph REPORTING_STAGE["3C: Response Formats"]
-            FinalizeWalkthrough --> ReportOutcome["ReportOutcome:<br/>• Present empirical evidence & test verification<br/>• Disclose Incidents & Mid-Turn Fixes<br/>• Clickable Links + State tested vs untested"] --> TurnEnd["Turn End"]
+        subgraph REPORTING_STAGE["3C: Response Formats & Checkpoint Maintenance"]
+            FinalizeWalkthrough --> MaintainCheckpointDoc["Maintain 'What To Re-read After A Checkpoint.md':<br/>• Sync Active Skills (add current / drop done)<br/>• Sync Referenced Artifacts (DAs, reports)<br/>• Record Active Tags & Invariants"]
+            MaintainCheckpointDoc --> ReportOutcome["ReportOutcome:<br/>• Present empirical evidence & test verification<br/>• Disclose Incidents & Mid-Turn Fixes<br/>• Clickable Links + State tested vs untested"] --> TurnEnd["Turn End"]
 
-            ReportProposal["ReportProposal:<br/>• Present technical proposal / plan / question<br/>• Surface tradeoffs & await explicit approval"] --> TurnEnd
+            MaintainCheckpointDoc --> ReportProposal["ReportProposal:<br/>• Present technical proposal / plan / question<br/>• Surface tradeoffs & await explicit approval"] --> TurnEnd
 
-            ReportBlocker["ReportBlocker:<br/>• Disclose exact failure / leak / conflict upfront<br/>• Provide logs, repro steps & ask user guidance"] --> TurnEnd
+            MaintainCheckpointDoc --> ReportBlocker["ReportBlocker:<br/>• Disclose exact failure / leak / conflict upfront<br/>• Provide logs, repro steps & ask user guidance"] --> TurnEnd
         end
     end
 ```
@@ -207,9 +208,15 @@ flowchart TD
 ### Phase 0 Reference: Startup & Workspace Policies
 
 * **Workspace Override Rule:** MUST ALWAYS check for a workspace-level `AGENTS.md` at the repository root as the very first action on any task. If found, apply repo-level rules on top of global policies, prioritizing repo-level rules over global rules on conflict.
-* **Context Recovery Protocol:** Following context window truncation or turn splits, the agent's **VERY FIRST ACTION** MUST be:
-  1. Reading `implementation_plan.md` to identify the active `[/]` or next `[ ]` step.
-  2. Inspecting repository state via `git status` and `git diff` to determine what files have already been modified on disk before taking any code action, preventing duplicate or conflicting edits.
+* **Checkpoint & Context Recovery Protocol:** Following a checkpoint, context window compaction/truncation, or turn resumption, the agent's **VERY FIRST ACTION** MUST be:
+  1. **Read `What To Re-read After A Checkpoint.md`**: Locate and read `<appDataDir>\brain\<conversation-id>/What To Re-read After A Checkpoint.md` (or workspace `.scratch/`).
+  2. **Reload Active Skills**: Execute `view_file` on `SKILL.md` for every skill listed under `## Active Skills` to restore behavioral rules and specialized execution paths into active memory.
+  3. **Reload Referenced Artifacts**: Execute `view_file` on all artifacts listed under `## Referenced Artifacts` (e.g. Directive Artifacts, review reports, PRDs, specs) to recover current task state.
+  4. **Restore Active Directives & Tags**: Re-adopt active modifier tags (e.g., `!PA`, `!SP<N>`, `!PU`), multi-agent review rosters, and operational invariants recorded under `## Active Context & Invariants`.
+  5. **Inspect Plan & Git State**: Read `implementation_plan.md` to identify the active `[/]` or next `[ ]` step, and inspect `git status` and `git diff` to determine what files have already been modified on disk before taking any code action, preventing duplicate or conflicting edits.
+  6. **Mandatory Checkpoint Disclosure to User**: Because Antigravity provides no native UI alert when a checkpoint occurs, the agent **MUST explicitly notify the user upfront** in the turn's response using an alert banner:
+     > [!NOTE]
+     > **Checkpoint Detected:** Context was compacted. Automatically restored active skills (`<list>`), artifacts (`<list>`), and active context/tags (`<list>`) from `What To Re-read After A Checkpoint.md`.
 
 ---
 
@@ -498,6 +505,28 @@ Before pushing to remote:
   - In reasoning: premature pattern-matching ("I found it!" before full investigation), excitement-driven shortcuts ("I'm zeroing in!" before reading all relevant code), and conviction without evidence ("This must be the cause" without runtime verification).
   - In communication: opening with compliments ("Great question!", "That's a great idea!"), hedging with enthusiasm ("I'd be happy to help!"), premature victory declarations ("Successfully fixed!", "All done!", "The bug is fixed!"), and filler transitions ("Let's dive in!", "Now for the exciting part!").
   Replace with investigation, then direct substance.
+
+#### Checkpoint Continuity File Maintenance (`What To Re-read After A Checkpoint.md`)
+*Applies to: Every turn conclusion before outputting final response.*
+Across the entire conversation, the agent's duty at the conclusion of every turn is to maintain a dedicated markdown file at `<appDataDir>\brain\<conversation-id>/What To Re-read After A Checkpoint.md`.
+- **Lifecycle Operations**:
+  - **Sync Active Skills**: Add every skill currently governing active or upcoming work in this session (e.g. `conduct-deep-reviewing-loop`, `tdd`, `manage-global-policies`) with its clickable file link. Remove skills whose task lifecycle is completely finished.
+  - **Sync Referenced Artifacts**: Add every Directive Artifact (DA), review report, changelog, PRD, or benchmark doc actively referenced by ongoing work. Remove artifacts that are obsolete or no longer referenced.
+  - **Sync Active Context & Invariants**: Record active modifier tags (e.g., `!PA`, `!SP2`), active review roles/phases, current operational constraints, and critical user directives that must survive context compression.
+- **Mandatory Markdown Template Schema**:
+  ```markdown
+  # What To Re-read After A Checkpoint
+
+  ## Active Skills
+  - [<skill-name>](file:///<absolute-path-to-SKILL.md>) — [Brief role / purpose in session]
+
+  ## Referenced Artifacts
+  - [<artifact-name>](file:///<absolute-path-to-artifact>) — [Current state / role]
+
+  ## Active Context & Invariants
+  - **Active Directives / Tags**: `<active tags, e.g. !PA, !SP2, custom rosters>`
+  - **Operational Invariants**: `<key constraints, user decisions, or states that must survive context compression>`
+  ```
 
 ---
 
