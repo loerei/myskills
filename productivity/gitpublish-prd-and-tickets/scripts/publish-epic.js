@@ -168,11 +168,9 @@ function buildGlobalRegistry(specsRootDir) {
             if (inTicketsSection && line.trim().startsWith('-')) {
                 const issueMatch = line.match(/-\s+#(\d+)\b/);
                 const fileMatch = line.match(/\(`?([^`\n]+\.md)`?\)/);
-                const keyMatch = line.match(/(?:#\d+\s+[—–-]\s+)?([0-9\.]+)\s+[—–-]/);
-
                 const issueId = issueMatch ? parseInt(issueMatch[1], 10) : null;
                 const fileName = fileMatch ? path.basename(fileMatch[1].trim()) : null;
-                const key = keyMatch ? keyMatch[1].trim() : (fileName ? extractSemanticKey(fileName) : null);
+                const key = fileName ? extractSemanticKey(fileName) : null;
 
                 if (key) {
                     globalRegistry[epicNum].tickets[key] = {
@@ -411,7 +409,7 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
 
     for (const t of targetTickets) {
         const issueNum = dynamicLocalMap[t.key];
-        ticketListMarkdown += `- #${issueNum} — ${t.title} (\`tickets/${t.fileName}\`)\n`;
+        ticketListMarkdown += `- #${issueNum} — ${t.key} — ${t.title.replace(/^[0-9\.]+\s*[—–-]\s*/, '')} (\`tickets/${t.fileName}\`)\n`;
     }
 
     updatedPrd = updatedPrd.replace(/## Tickets\n\n[\s\S]*?(?=\n## |$)/, `## Tickets\n\n${ticketListMarkdown}`);
