@@ -115,21 +115,36 @@ if (fs.existsSync(specsRootDir)) {
         };
 
         // Scan existing issue mappings from PRD ## Tickets
-        const ticketLineMatches = prdRaw.matchAll(/-\s+(?:#(\d+)\s+[—–-]\s+)?(?:([0-9\.]+)\s+[—–-]\s+)?([^(\n]+?)(?:\s+\(`?([^`)\n]+)`?\))?$/gm);
-        for (const m of ticketLineMatches) {
-            const issueId = m[1] ? parseInt(m[1], 10) : null;
-            const key = m[2] ? m[2].trim() : null;
-            const title = m[3] ? m[3].trim() : '';
-            const tFile = m[4] ? path.basename(m[4].trim()) : null;
+        // Robust pattern: handles lines like "- #138 — 01.1.1.1 — Title ($S$) (`tickets/01.1.1.1-*.md`)"
+        const lines = prdRaw.split('\n');
+        let inTicketsSection = false;
 
-            const effectiveKey = key || (tFile ? extractSemanticKey(tFile) : null);
-            if (effectiveKey) {
-                globalRegistry[epicNum].tickets[effectiveKey] = {
-                    key: effectiveKey,
-                    fileName: tFile,
-                    title,
-                    issueId
-                };
+        for (const line of lines) {
+            if (/^##\s+Tickets/i.test(line)) {
+                inTicketsSection = true;
+                continue;
+            }
+            if (inTicketsSection && /^##\s+/i.test(line)) {
+                inTicketsSection = false;
+                break;
+            }
+            if (inTicketsSection && line.trim().startsWith('-')) {
+                const issueMatch = line.match(/-\s+#(\d+)\b/);
+                const fileMatch = line.match(/\(`?([^`\n]+\.md)`?\)/);
+                const keyMatch = line.match(/(?:#\d+\s+[—–-]\s+)?([0-9\.]+)\s+[—–-]/);
+
+                const issueId = issueMatch ? parseInt(issueMatch[1], 10) : null;
+                const fileName = fileMatch ? path.basename(fileMatch[1].trim()) : null;
+                const key = keyMatch ? keyMatch[1].trim() : (fileName ? extractSemanticKey(fileName) : null);
+
+                if (key) {
+                    globalRegistry[epicNum].tickets[key] = {
+                        key,
+                        fileName,
+                        title: line.replace(/^-\s+/, '').trim(),
+                        issueId
+                    };
+                }
             }
         }
 
@@ -260,7 +275,7 @@ for (const [rKey, rTicket] of Object.entries(existingRemoteTickets)) {
 if (orphanedRemoteTickets.length > 0) {
     console.log(`Found ${orphanedRemoteTickets.length} orphaned/split remote tickets to close:`);
     for (const orphan of orphanedRemoteTickets) {
-        console.log(`  - Closing stale Issue #${orphan.issueId} [${orphan.key} — ${orphan.title}]...`);
+        console.log(`  - Closing stale Issue #${orphan.issueId} [${orphan.key}]...`);
         if (!isDryRun) {
             try {
                 const commentArgs = [
