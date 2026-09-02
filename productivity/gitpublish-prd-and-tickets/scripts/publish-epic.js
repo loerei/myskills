@@ -10,10 +10,8 @@ Usage:
 
 Options:
   --parent-id <id>          Existing parent PRD issue ID on GitHub (if already created)
-  --close-superseded <ids>  Comma-separated list of old issue IDs to close (e.g. "89,90,91")
   --repo <owner/repo>       GitHub repository target (default: current git origin)
-  --label <labels>          Issue labels (default: "enhancement,ready-for-agent")
-  --dry-run                 Simulate indexing, topological sort, and key replacements without calling GitHub CLI
+  --dry-run                 Simulate reconciliation, topological sorting, and key replacements without calling GitHub CLI
   --help, -h                Show this help message
 `);
     process.exit(1);
@@ -26,20 +24,14 @@ if (args.length === 0 || args.includes('--help') || args.includes('-h')) {
 
 let targetPath = null;
 let parentId = null;
-let closeSuperseded = [];
 let repo = null;
-let labels = 'enhancement,ready-for-agent';
 let isDryRun = false;
 
 for (let i = 0; i < args.length; i++) {
     if (args[i] === '--parent-id' && args[i + 1]) {
         parentId = parseInt(args[++i], 10);
-    } else if (args[i] === '--close-superseded' && args[i + 1]) {
-        closeSuperseded = args[++i].split(',').map(s => parseInt(s.trim(), 10)).filter(Boolean);
     } else if (args[i] === '--repo' && args[i + 1]) {
         repo = args[++i];
-    } else if (args[i] === '--label' && args[i + 1]) {
-        labels = args[++i];
     } else if (args[i] === '--dry-run') {
         isDryRun = true;
     } else if (!args[i].startsWith('--') && !targetPath) {
@@ -84,13 +76,17 @@ function runGh(ghArgs) {
 
 function extractEpicNumber(dirOrFileName) {
     const match = dirOrFileName.match(/^(\d+)/);
-    return match ? match[1] : null;
+    return match ? String(parseInt(match[1], 10)).padStart(2, '0') : null;
 }
 
 function extractSemanticKey(fileName) {
     const match = fileName.match(/^(\d+(?:\.\d+)*)/);
     return match ? match[1] : null;
 }
+
+const currentEpicNum = extractEpicNumber(path.basename(targetEpicDir));
+const prdLabels = `prd,epic,epic-${currentEpicNum}`;
+const ticketLabels = `ticket,ready-for-agent,epic-${currentEpicNum},enhancement`;
 
 console.log(`\n=== 1. Building Global Specs Index (Pre-scan) ===`);
 
@@ -158,11 +154,10 @@ if (fs.existsSync(specsRootDir)) {
     }
 }
 
-const currentEpicNum = extractEpicNumber(path.basename(targetEpicDir));
 console.log(`Current Target: Epic ${currentEpicNum} (${path.basename(targetEpicDir)})`);
 console.log(`Global Epics Indexed: ${Object.keys(globalRegistry).join(', ')}`);
 
-// Parse Current Target Tickets in PRD ordering / folder ordering
+// Parse Current Target Local Tickets
 const targetTickets = [];
 if (fs.existsSync(ticketsDirPath)) {
     const rawFiles = fs.readdirSync(ticketsDirPath).filter(f => f.endsWith('.md')).sort();
@@ -183,7 +178,7 @@ if (fs.existsSync(ticketsDirPath)) {
     }
 }
 
-console.log(`Found ${targetTickets.length} tickets to publish in topological order.`);
+console.log(`Found ${targetTickets.length} local tickets in specification.`);
 
 // Key Replacement Engine
 function replaceSemanticKeys(content, currentEpicNo, registry, dynamicLocalMap) {
@@ -212,7 +207,7 @@ function replaceSemanticKeys(content, currentEpicNo, registry, dynamicLocalMap) 
 }
 
 // Step 2: Handle Parent PRD Issue
-console.log(`\n=== 2. Managing Parent PRD Issue ===`);
+console.log(`\n=== 2. Managing Parent PRD Issue (Labels: ${prdLabels}) ===`);
 let finalParentId = parentId;
 let prdRawContent = fs.readFileSync(prdFilePath, 'utf8');
 
@@ -220,12 +215,20 @@ const prdTitleMatch = prdRawContent.match(/^#\s+(.+)$/m);
 const prdTitle = prdTitleMatch ? prdTitleMatch[1].trim() : `Epic ${currentEpicNum}: ${path.basename(targetEpicDir)}`;
 
 if (!finalParentId) {
+    // Check if PRD already has parent issue ID documented in ## Parent or title
+    const existingParentMatch = prdRawContent.match(/## Parent\n#(\d+)/m);
+    if (existingParentMatch) {
+        finalParentId = parseInt(existingParentMatch[1], 10);
+    }
+}
+
+if (!finalParentId) {
     if (isDryRun) {
         finalParentId = 999;
         console.log(`[DRY-RUN] Would create Parent Issue "${prdTitle}" -> Simulated #${finalParentId}`);
     } else {
         console.log(`Creating Parent Issue "${prdTitle}"...`);
-        const ghArgs = ['issue', 'create', '--title', prdTitle, '--body-file', prdFilePath, '--label', labels];
+        const ghArgs = ['issue', 'create', '--title', prdTitle, '--body-file', prdFilePath, '--label', prdLabels];
         if (repo) ghArgs.push('--repo', repo);
         const outUrl = runGh(ghArgs);
         const idMatch = outUrl.match(/\/issues\/(\d+)$/);
@@ -233,38 +236,56 @@ if (!finalParentId) {
         console.log(`Created Parent Issue #${finalParentId}: ${outUrl}`);
     }
 } else {
-    console.log(`Using existing Parent Issue #${finalParentId}. Updating content...`);
-    const ghArgs = ['issue', 'edit', String(finalParentId), '--body-file', prdFilePath];
+    console.log(`Using existing Parent Issue #${finalParentId}. Updating content & labels...`);
+    const ghArgs = ['issue', 'edit', String(finalParentId), '--body-file', prdFilePath, '--add-label', prdLabels];
     if (repo) ghArgs.push('--repo', repo);
     runGh(ghArgs);
     console.log(`Updated Parent Issue #${finalParentId}.`);
 }
 
-// Step 3: Close Superseded Issues
-if (closeSuperseded.length > 0) {
-    console.log(`\n=== 3. Closing ${closeSuperseded.length} Superseded Issues ===`);
-    for (const oldId of closeSuperseded) {
-        console.log(`Closing old Issue #${oldId}...`);
-        if (!isDryRun) {
-            try {
-                const commentArgs = ['issue', 'comment', String(oldId), '--body', `Superseded by refined granular tickets published under Parent PRD #${finalParentId}.`];
-                if (repo) commentArgs.push('--repo', repo);
-                runGh(commentArgs);
+// Step 3: Idempotent Reconciliation (Detect Match vs New vs Orphaned)
+console.log(`\n=== 3. Idempotent Ticket Reconciliation ===`);
 
-                const closeArgs = ['issue', 'close', String(oldId)];
-                if (repo) closeArgs.push('--repo', repo);
-                runGh(closeArgs);
-            } catch (err) {
-                console.warn(`Warning: Could not close #${oldId}: ${err.message}`);
-            }
-        }
+const existingRemoteTickets = (globalRegistry[currentEpicNum] && globalRegistry[currentEpicNum].tickets) || {};
+const localKeySet = new Set(targetTickets.map(t => t.key));
+const orphanedRemoteTickets = []; // tickets present on remote PRD table but deleted/split in local
+
+for (const [rKey, rTicket] of Object.entries(existingRemoteTickets)) {
+    if (!localKeySet.has(rKey) && rTicket.issueId) {
+        orphanedRemoteTickets.push(rTicket);
     }
 }
 
-// Step 4: Publish Tickets in Sequence with Dynamic Rewriting
-console.log(`\n=== 4. Publishing Tickets & Dynamically Resolving Keys ===`);
+// Close orphaned/split tickets
+if (orphanedRemoteTickets.length > 0) {
+    console.log(`Found ${orphanedRemoteTickets.length} orphaned/split remote tickets to close:`);
+    for (const orphan of orphanedRemoteTickets) {
+        console.log(`  - Closing stale Issue #${orphan.issueId} [${orphan.key} — ${orphan.title}]...`);
+        if (!isDryRun) {
+            try {
+                const commentArgs = [
+                    'issue', 'comment', String(orphan.issueId),
+                    '--body', `Superseded or split into refined tickets under Parent PRD #${finalParentId}. Closing.`
+                ];
+                if (repo) commentArgs.push('--repo', repo);
+                runGh(commentArgs);
+
+                const closeArgs = ['issue', 'close', String(orphan.issueId)];
+                if (repo) closeArgs.push('--repo', repo);
+                runGh(closeArgs);
+            } catch (err) {
+                console.warn(`    Warning: Could not close #${orphan.issueId}: ${err.message}`);
+            }
+        }
+    }
+} else {
+    console.log(`Zero orphaned tickets. Clean state.`);
+}
+
+// Step 4: Publish/Update Tickets in Topological Sequence (Labels: ${ticketLabels})
+console.log(`\n=== 4. Publishing & Updating Tickets (Labels: ${ticketLabels}) ===`);
 const dynamicLocalMap = {};
-let simulatedIssueCounter = 300;
+let simulatedCounter = 400;
 
 for (const t of targetTickets) {
     // 1. Rewrite content with all currently known keys
@@ -275,29 +296,55 @@ for (const t of targetTickets) {
         transformedBody = transformedBody.replace(/## Epic\n[^\n]+/m, `## Parent\n#${finalParentId} (${prdTitle})\n\n## Epic\n${prdTitle}`);
     }
 
-    let createdId = null;
+    // Check if ticket already exists on remote with the SAME semantic key (In-place update)
+    const existingEntry = existingRemoteTickets[t.key];
+    const existingIssueId = existingEntry && existingEntry.issueId;
 
-    if (isDryRun) {
-        createdId = simulatedIssueCounter++;
-        dynamicLocalMap[t.key] = createdId;
-        console.log(`  [DRY-RUN] Published [${t.key}] -> #${createdId}: "${t.title}"`);
+    let targetIssueId = null;
+
+    if (existingIssueId) {
+        // CASE 2: In-place edit of existing ticket (NO duplicate)
+        targetIssueId = existingIssueId;
+        dynamicLocalMap[t.key] = targetIssueId;
+
+        if (isDryRun) {
+            console.log(`  [DRY-RUN EDIT] [${t.key}] In-Place Update Issue #${targetIssueId}: "${t.title}"`);
+        } else {
+            const tempFilePath = path.join(__dirname, `__temp_${t.fileName}`);
+            fs.writeFileSync(tempFilePath, transformedBody, 'utf8');
+
+            console.log(`Updating existing Issue #${targetIssueId} [${t.key}]: "${t.title}"...`);
+            const ghArgs = ['issue', 'edit', String(targetIssueId), '--title', t.title, '--body-file', tempFilePath, '--add-label', ticketLabels];
+            if (repo) ghArgs.push('--repo', repo);
+            runGh(ghArgs);
+            console.log(`  -> Updated #${targetIssueId}`);
+
+            fs.writeFileSync(t.filePath, transformedBody, 'utf8');
+            try { fs.unlinkSync(tempFilePath); } catch (_) {}
+        }
     } else {
-        const tempFilePath = path.join(__dirname, `__temp_${t.fileName}`);
-        fs.writeFileSync(tempFilePath, transformedBody, 'utf8');
+        // CASE 1 & 3: New ticket or split child -> CREATE
+        if (isDryRun) {
+            targetIssueId = simulatedCounter++;
+            dynamicLocalMap[t.key] = targetIssueId;
+            console.log(`  [DRY-RUN CREATE] [${t.key}] New Issue #${targetIssueId}: "${t.title}"`);
+        } else {
+            const tempFilePath = path.join(__dirname, `__temp_${t.fileName}`);
+            fs.writeFileSync(tempFilePath, transformedBody, 'utf8');
 
-        console.log(`Publishing [${t.key}]: "${t.title}"...`);
-        const ghArgs = ['issue', 'create', '--title', t.title, '--body-file', tempFilePath, '--label', labels];
-        if (repo) ghArgs.push('--repo', repo);
-        const issueUrl = runGh(ghArgs);
-        const idMatch = issueUrl.match(/\/issues\/(\d+)$/);
-        createdId = idMatch ? parseInt(idMatch[1], 10) : null;
-        dynamicLocalMap[t.key] = createdId;
+            console.log(`Creating new Issue [${t.key}]: "${t.title}"...`);
+            const ghArgs = ['issue', 'create', '--title', t.title, '--body-file', tempFilePath, '--label', ticketLabels];
+            if (repo) ghArgs.push('--repo', repo);
+            const issueUrl = runGh(ghArgs);
+            const idMatch = issueUrl.match(/\/issues\/(\d+)$/);
+            targetIssueId = idMatch ? parseInt(idMatch[1], 10) : null;
+            dynamicLocalMap[t.key] = targetIssueId;
 
-        console.log(`  -> Created #${createdId}: ${issueUrl}`);
+            console.log(`  -> Created #${targetIssueId}: ${issueUrl}`);
 
-        // Update local file with parent & resolved links
-        fs.writeFileSync(t.filePath, transformedBody, 'utf8');
-        try { fs.unlinkSync(tempFilePath); } catch (_) {}
+            fs.writeFileSync(t.filePath, transformedBody, 'utf8');
+            try { fs.unlinkSync(tempFilePath); } catch (_) {}
+        }
     }
 }
 
@@ -312,7 +359,6 @@ for (const t of targetTickets) {
 }
 
 updatedPrd = updatedPrd.replace(/## Tickets\n\n[\s\S]*?(?=\n## |$)/, `## Tickets\n\n${ticketListMarkdown}`);
-// Also replace keys inside PRD body
 updatedPrd = replaceSemanticKeys(updatedPrd, currentEpicNum, globalRegistry, dynamicLocalMap);
 
 if (isDryRun) {
@@ -325,5 +371,5 @@ if (isDryRun) {
     console.log(`Successfully updated Parent Issue #${finalParentId} on GitHub.`);
 }
 
-console.log(`\n=== Publish Complete! ===`);
+console.log(`\n=== Reconcile & Publish Complete! ===`);
 console.log(JSON.stringify(dynamicLocalMap, null, 2));
