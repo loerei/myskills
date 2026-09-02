@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 const fs = require('node:fs');
 const path = require('node:path');
+const os = require('node:os');
 const { execFile } = require('node:child_process');
 const { promisify } = require('node:util');
 
@@ -102,7 +103,15 @@ function extractSemanticKey(fileName) {
     return match ? match[1] : null;
 }
 
-function replaceSemanticKeys(content, currentEpicNo, registry, dynamicLocalMap) {
+function cleanTitle(rawTitle) {
+    return rawTitle
+        .replace(/^#+\s+/, '')
+        .replace(/^#\d+\s+[—–-]\s+/, '')
+        .replace(/^#\d+\s*\([0-9\.]+\)\s+[—–-]\s+/, '')
+        .trim();
+}
+
+function replaceSemanticKeysInBody(content, currentEpicNo, registry, dynamicLocalMap) {
     let transformed = content;
 
     // 1. Cross-PRD replacement: "Epic XX: YY.YY" or "[Epic XX] YY.YY"
@@ -120,6 +129,7 @@ function replaceSemanticKeys(content, currentEpicNo, registry, dynamicLocalMap) 
     for (const key of sortedKeys) {
         const id = dynamicLocalMap[key];
         if (!id) continue;
+        // Avoid replacing in headers or already formatted #ID (key)
         const keyRegex = new RegExp(`(?<![#\\w\\.\\/])${key.replace(/\\./g, '\\.')}(?![\\w\\.\\/])`, 'g');
         transformed = transformed.replace(keyRegex, `#${id} (${key})`);
     }
@@ -127,7 +137,7 @@ function replaceSemanticKeys(content, currentEpicNo, registry, dynamicLocalMap) 
     return transformed;
 }
 
-// Build Global Specs Index across all sibling PRDs
+// Build Global Specs Index across all sibling PRDs without mutating disk
 function buildGlobalRegistry(specsRootDir) {
     const globalRegistry = {};
     if (!fs.existsSync(specsRootDir)) return globalRegistry;
@@ -176,7 +186,7 @@ function buildGlobalRegistry(specsRootDir) {
                     globalRegistry[epicNum].tickets[key] = {
                         key,
                         fileName,
-                        title: line.replace(/^-\s+/, '').trim(),
+                        title: cleanTitle(line.replace(/^-\s+/, '')),
                         issueId
                     };
                 }
@@ -205,7 +215,7 @@ function buildGlobalRegistry(specsRootDir) {
     return globalRegistry;
 }
 
-// Publish or Reconcile a single Epic
+// Publish or Reconcile a single Epic (PURE COMPILATION — ZERO DISK MUTATION OF TICKETS)
 async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
     const targetEpicDir = path.dirname(prdFilePath);
     const ticketsDirPath = path.join(targetEpicDir, 'tickets');
@@ -218,7 +228,7 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
     console.log(`Processing Epic ${currentEpicNum}: ${path.basename(targetEpicDir)}`);
     console.log(`======================================================`);
 
-    // Ensure labels
+    // Ensure labels exist
     const requiredLabels = [
         { name: 'epic', color: '5319e7', description: 'Epic PRD specification' },
         { name: 'ticket', color: '0e8a16', description: 'Actionable task ticket' },
@@ -237,6 +247,7 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
         }
     }
 
+    // Read Pure Local Tickets (READ-ONLY)
     const targetTickets = [];
     if (fs.existsSync(ticketsDirPath)) {
         const rawFiles = fs.readdirSync(ticketsDirPath).filter(f => f.endsWith('.md')).sort();
@@ -246,24 +257,26 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
             const filePath = path.join(ticketsDirPath, f);
             const rawContent = fs.readFileSync(filePath, 'utf8');
             const titleMatch = rawContent.match(/^#\s+(.+)$/m);
-            const title = titleMatch ? titleMatch[1].trim() : f.replace('.md', '');
+            const rawTitle = titleMatch ? titleMatch[1].trim() : f.replace('.md', '');
+            const title = cleanTitle(rawTitle);
+
             targetTickets.push({
                 key: k,
                 fileName: f,
                 filePath,
                 title,
-                content: rawContent
+                rawContent
             });
         }
     }
 
-    console.log(`Found ${targetTickets.length} local tickets.`);
+    console.log(`Found ${targetTickets.length} local tickets (Read-only source).`);
 
-    // Parent Issue
+    // Parent PRD Resolution
     let finalParentId = parentIdOverride;
-    let prdRawContent = fs.readFileSync(prdFilePath, 'utf8');
+    const prdRawContent = fs.readFileSync(prdFilePath, 'utf8');
     const prdTitleMatch = prdRawContent.match(/^#\s+(.+)$/m);
-    const prdTitle = prdTitleMatch ? prdTitleMatch[1].trim() : `Epic ${currentEpicNum}: ${path.basename(targetEpicDir)}`;
+    const prdTitle = prdTitleMatch ? cleanTitle(prdTitleMatch[1]) : `Epic ${currentEpicNum}: ${path.basename(targetEpicDir)}`;
 
     if (!finalParentId) {
         const existingParentMatch = prdRawContent.match(/## Parent\n#(\d+)/m);
@@ -272,13 +285,18 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
         }
     }
 
+    const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'yumeshelf-publish-'));
+
     if (!finalParentId) {
         if (isDryRun) {
             finalParentId = 999;
             console.log(`[DRY-RUN] Create Parent Issue "${prdTitle}" -> #${finalParentId}`);
         } else {
             console.log(`Creating Parent Issue "${prdTitle}"...`);
-            const ghArgs = ['issue', 'create', '--title', prdTitle, '--body-file', prdFilePath, '--label', prdLabels];
+            const tempPrdPath = path.join(tempDir, 'PRD.md');
+            fs.writeFileSync(tempPrdPath, prdRawContent, 'utf8');
+
+            const ghArgs = ['issue', 'create', '--title', prdTitle, '--body-file', tempPrdPath, '--label', prdLabels];
             if (repo) ghArgs.push('--repo', repo);
             const outUrl = await runGh(ghArgs);
             const idMatch = outUrl.match(/\/issues\/(\d+)$/);
@@ -286,10 +304,7 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
             console.log(`Created Parent Issue #${finalParentId}: ${outUrl}`);
         }
     } else {
-        console.log(`Updating Parent Issue #${finalParentId} (labels: ${prdLabels})...`);
-        const ghArgs = ['issue', 'edit', String(finalParentId), '--body-file', prdFilePath, '--add-label', prdLabels];
-        if (repo) ghArgs.push('--repo', repo);
-        await runGh(ghArgs);
+        console.log(`Using existing Parent Issue #${finalParentId} (labels: ${prdLabels}).`);
     }
 
     // Reconcile
@@ -325,7 +340,7 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
         });
     }
 
-    // Separate Tickets into In-Place Updates vs New Tickets
+    // Separate into In-Place Updates vs New Tickets
     const inPlaceTickets = [];
     const newTickets = [];
 
@@ -343,40 +358,37 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
         dynamicLocalMap[t.key] = t.existingIssueId;
     }
 
-    // 1. Concurrent In-Place Updates (Speed!)
+    // 1. Concurrent In-Place Updates (Ephemeral Compile -> gh issue edit -> Zero Disk Mutation)
     if (inPlaceTickets.length > 0) {
         console.log(`\nExecuting ${inPlaceTickets.length} In-Place Updates concurrently (Pool size: ${concurrency})...`);
         await runConcurrent(inPlaceTickets, concurrency, async (t) => {
-            let transformedBody = replaceSemanticKeys(t.content, currentEpicNum, globalRegistry, dynamicLocalMap);
-            if (!transformedBody.includes(`## Parent\n#${finalParentId}`) && !transformedBody.includes(`## Parent\nhttps://github.com/`)) {
-                transformedBody = transformedBody.replace(/## Epic\n[^\n]+/m, `## Parent\n#${finalParentId} (${prdTitle})\n\n## Epic\n${prdTitle}`);
+            let compiledBody = replaceSemanticKeysInBody(t.rawContent, currentEpicNum, globalRegistry, dynamicLocalMap);
+            if (!compiledBody.includes(`## Parent\n#${finalParentId}`) && !compiledBody.includes(`## Parent\nhttps://github.com/`)) {
+                compiledBody = compiledBody.replace(/## Epic\n[^\n]+/m, `## Parent\n#${finalParentId} (${prdTitle})\n\n## Epic\n${prdTitle}`);
             }
 
             if (isDryRun) {
                 console.log(`  [DRY-RUN EDIT] [${t.key}] In-Place Update #${t.existingIssueId}: "${t.title}"`);
             } else {
-                const tempFilePath = path.join(__dirname, `__temp_${t.fileName}`);
-                fs.writeFileSync(tempFilePath, transformedBody, 'utf8');
+                const tempFilePath = path.join(tempDir, t.fileName);
+                fs.writeFileSync(tempFilePath, compiledBody, 'utf8');
 
                 const ghArgs = ['issue', 'edit', String(t.existingIssueId), '--title', t.title, '--body-file', tempFilePath, '--add-label', ticketLabels];
                 if (repo) ghArgs.push('--repo', repo);
                 await runGh(ghArgs);
                 console.log(`  [UPDATED] #${t.existingIssueId} [${t.key}]: "${t.title}"`);
-
-                fs.writeFileSync(t.filePath, transformedBody, 'utf8');
-                try { fs.unlinkSync(tempFilePath); } catch (_) {}
             }
         });
     }
 
-    // 2. Sequential / Level-based New Tickets creation
+    // 2. Sequential Creation of New Tickets (Ephemeral Compile -> gh issue create -> Zero Disk Mutation)
     if (newTickets.length > 0) {
         console.log(`\nCreating ${newTickets.length} New Tickets in topological order...`);
         let simCounter = 500;
         for (const t of newTickets) {
-            let transformedBody = replaceSemanticKeys(t.content, currentEpicNum, globalRegistry, dynamicLocalMap);
-            if (!transformedBody.includes(`## Parent\n#${finalParentId}`) && !transformedBody.includes(`## Parent\nhttps://github.com/`)) {
-                transformedBody = transformedBody.replace(/## Epic\n[^\n]+/m, `## Parent\n#${finalParentId} (${prdTitle})\n\n## Epic\n${prdTitle}`);
+            let compiledBody = replaceSemanticKeysInBody(t.rawContent, currentEpicNum, globalRegistry, dynamicLocalMap);
+            if (!compiledBody.includes(`## Parent\n#${finalParentId}`) && !compiledBody.includes(`## Parent\nhttps://github.com/`)) {
+                compiledBody = compiledBody.replace(/## Epic\n[^\n]+/m, `## Parent\n#${finalParentId} (${prdTitle})\n\n## Epic\n${prdTitle}`);
             }
 
             let createdId = null;
@@ -385,8 +397,8 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
                 dynamicLocalMap[t.key] = createdId;
                 console.log(`  [DRY-RUN CREATE] [${t.key}] New Issue #${createdId}: "${t.title}"`);
             } else {
-                const tempFilePath = path.join(__dirname, `__temp_${t.fileName}`);
-                fs.writeFileSync(tempFilePath, transformedBody, 'utf8');
+                const tempFilePath = path.join(tempDir, t.fileName);
+                fs.writeFileSync(tempFilePath, compiledBody, 'utf8');
 
                 const ghArgs = ['issue', 'create', '--title', t.title, '--body-file', tempFilePath, '--label', ticketLabels];
                 if (repo) ghArgs.push('--repo', repo);
@@ -395,35 +407,39 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
                 createdId = idMatch ? parseInt(idMatch[1], 10) : null;
                 dynamicLocalMap[t.key] = createdId;
                 console.log(`  [CREATED] #${createdId} [${t.key}]: "${t.title}"`);
-
-                fs.writeFileSync(t.filePath, transformedBody, 'utf8');
-                try { fs.unlinkSync(tempFilePath); } catch (_) {}
             }
         }
     }
 
-    // Update Parent PRD Table
-    console.log(`\nUpdating Parent PRD #${finalParentId} Ticket Table...`);
-    let updatedPrd = fs.readFileSync(prdFilePath, 'utf8');
+    // Compile and Upload Parent PRD Body (Ephemeral compile, updates GitHub)
+    console.log(`\nCompiling and Updating Parent PRD #${finalParentId} on GitHub...`);
+    let compiledPrd = prdRawContent;
     let ticketListMarkdown = '';
 
     for (const t of targetTickets) {
         const issueNum = dynamicLocalMap[t.key];
-        ticketListMarkdown += `- #${issueNum} — ${t.key} — ${t.title.replace(/^[0-9\.]+\s*[—–-]\s*/, '')} (\`tickets/${t.fileName}\`)\n`;
+        ticketListMarkdown += `- #${issueNum} — ${t.title} (\`tickets/${t.fileName}\`)\n`;
     }
 
-    updatedPrd = updatedPrd.replace(/## Tickets\n\n[\s\S]*?(?=\n## |$)/, `## Tickets\n\n${ticketListMarkdown}`);
-    updatedPrd = replaceSemanticKeys(updatedPrd, currentEpicNum, globalRegistry, dynamicLocalMap);
+    compiledPrd = compiledPrd.replace(/## Tickets\n\n[\s\S]*?(?=\n## |$)/, `## Tickets\n\n${ticketListMarkdown}`);
+    compiledPrd = replaceSemanticKeysInBody(compiledPrd, currentEpicNum, globalRegistry, dynamicLocalMap);
 
     if (isDryRun) {
-        console.log(`[DRY-RUN] Update PRD #${finalParentId} with ${targetTickets.length} child tickets.`);
+        console.log(`[DRY-RUN] Update PRD #${finalParentId} on GitHub.`);
     } else {
-        fs.writeFileSync(prdFilePath, updatedPrd, 'utf8');
-        const ghArgs = ['issue', 'edit', String(finalParentId), '--body-file', prdFilePath];
+        const tempPrdPath = path.join(tempDir, 'PRD_final.md');
+        fs.writeFileSync(tempPrdPath, compiledPrd, 'utf8');
+
+        const ghArgs = ['issue', 'edit', String(finalParentId), '--body-file', tempPrdPath, '--add-label', prdLabels];
         if (repo) ghArgs.push('--repo', repo);
         await runGh(ghArgs);
         console.log(`Successfully updated Parent Issue #${finalParentId} on GitHub.`);
     }
+
+    // Cleanup temp directory
+    try {
+        fs.rmSync(tempDir, { recursive: true, force: true });
+    } catch (_) {}
 
     return dynamicLocalMap;
 }
@@ -454,7 +470,7 @@ async function main() {
     }
 
     console.log(`\n======================================================`);
-    console.log(`All Epic Operations Completed Successfully!`);
+    console.log(`All Epic Operations Completed Successfully! (Local files untouched)`);
     console.log(`======================================================\n`);
 }
 
