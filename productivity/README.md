@@ -32,6 +32,7 @@ Model- or user-reachable (equipped with rich trigger phrasing so agents can auto
 
 - **[brave-browsing](./brave-browsing/SKILL.md)** — Configure and execute Chrome DevTools MCP server using Brave browser. Subdocs: [SETUP.md](./brave-browsing/SETUP.md) | [EXTENSION-POPUP.md](./brave-browsing/EXTENSION-POPUP.md).
 - **[caveman](./caveman/SKILL.md)** — Ultra-compressed communication mode cutting token usage while preserving technical accuracy.
+- **[conduct-deep-reviewing-loop](./conduct-deep-reviewing-loop/SKILL.md)** — Multi-agent hierarchical review loop with 11 specialist roles, zero-leak air-gap, Reviewer-level Targeted DAG routing, and Snapshot Delta Backfill.
 - **[conduct-reviewing-loop](./conduct-reviewing-loop/SKILL.md)** — Conduct an iterative, multi-turn review loop using independent subagents to stress-test plans (Mode A) or validate code implementation `.diff` artifacts (Mode B) until `PASS` status. Subdocs: [MODE-A-DESIGN-AUDIT.md](./conduct-reviewing-loop/MODE-A-DESIGN-AUDIT.md) | [MODE-B-CODE-VALIDATION.md](./conduct-reviewing-loop/MODE-B-CODE-VALIDATION.md).
 - **[create-and-update-pr](./create-and-update-pr/SKILL.md)** — Create GitHub Pull Requests and dynamically update their descriptions to match recent commit changes.
 - **[design-an-interface](./design-an-interface/SKILL.md)** — Generate multiple radically different interface designs for a module using parallel sub-agents.
