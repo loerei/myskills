@@ -13,7 +13,8 @@ Instructions for Layer 2 Critical Gate Agent to evaluate, filter, and reject Lay
    - **ACCEPT** findings where the target DA contradicts or drifts from an `Upstream` DA schema/seam (*Spec Drift*), or where the target DA duplicates responsibilities belonging to an `Upstream` DA (*Spec Bloat*).
    - **REJECT** findings where a reviewer claims unreadiness or missing files on disk that are explicitly declared to be implemented in an un-implemented `Upstream` DA (*False-Positive Upstream Unreadiness*).
    - **REJECT** findings where a reviewer demands tightly coupling the target DA to future `Downstream` epics (*Premature Downstream Coupling*).
-7. **Reviewer-Driven Fix Sanitization & Gating**: When a reported defect contains ungrounded code snippets, non-existent APIs, lacks Ground-Truth/Macro Flow proof, or represents an invalid defect, Host does not rewrite the snippet or unilaterally sanitize/reject it into Changelog.md. Instead, Host gates the issue in `.scratch/deep-review/reports/<Role>_Gated_Issues.md`, requiring the reviewer to either sanitize the fix, remove the defect, or provide deeper proof.
+7. **Reviewer-Driven Fix Refinement & Gating**: When a reported defect contains ungrounded code snippets, non-existent APIs, lacks Ground-Truth/Macro Flow proof, breaks boundary contract symmetry, introduces intra-DA contradictions, or represents an invalid defect, Host does not rewrite the snippet, unilaterally invent boundary counterparts, or unilaterally sanitize/reject it into Changelog.md. Instead, Host gates the issue in `.scratch/deep-review/reports/<Role>_Gated_Issues.md`, requiring the reviewer to either refine/complete the fix, remove the defect, or provide deeper proof.
+
 
 ## Triage Matrix
 
@@ -30,7 +31,9 @@ Instructions for Layer 2 Critical Gate Agent to evaluate, filter, and reject Lay
 | **Performance & Resource Leaks** | O(N^2) complexity in hot-path, N+1 queries, unclosed handles or unbounded memory cache. | **ACCEPT**: Add optimization/resource cleanup requirement to `host/Changelog.md`. |
 | **Unobservable Operational Path** | Missing contextual telemetry in catch blocks, unredacted secrets/PII, missing kill-switch. | **ACCEPT**: Add telemetry/flag requirement to `host/Changelog.md`. |
 | **UX/UI Redundancy** | UI element adds user friction, duplicates existing component, or breaks consistency. | **ACCEPT**: Instruct removal or simplification in `host/Changelog.md`. |
-| **Ungrounded Fix Proposal** | Primary defect is valid and accepted under a domain category, but proposed remediation cites non-existent APIs, creates ordering/scoping defects, or lacks Ground-Truth/Macro Flow proof. | **GATE**: Demand reviewer sanitization in `<Role>_Gated_Issues.md`. Reviewer sanitizes `<Role>.md` in-place or explains in `<Role>_Explain.md` (updating `<Role>.md`). |
+| **Ungrounded Fix Proposal** | Primary defect is valid and accepted under a domain category, but proposed remediation cites non-existent APIs, creates ordering/scoping defects, or lacks Ground-Truth/Macro Flow proof. | **GATE**: Demand reviewer refinement in `<Role>_Gated_Issues.md`. Reviewer refines `<Role>.md` in-place or explains in `<Role>_Explain.md` (updating `<Role>.md`). |
+| **Asymmetric Boundary Contract** | Primary defect is valid, but proposed remediation modifies an internal communication boundary (IPC, RPC, Event, API route, Message queue) while omitting the synchronized update for the corresponding caller, listener, or shared constants/types file. | **GATE**: Demand reviewer completion in `<Role>_Gated_Issues.md`. Reviewer updates `<Role>.md` in-place to include all internal boundary endpoints or shared constants. |
+| **Cross-Section Contradiction** | Primary defect is valid, but proposed remediation modifies component behavior or data types in a way that directly contradicts existing assertions in the DA's `Verification Plan` or architectural specifications without including synchronized updates for those sections. | **GATE**: Demand reviewer alignment in `<Role>_Gated_Issues.md`. Reviewer updates `<Role>.md` in-place to harmonize dependent sections and test assertions. |
 | **False-Positive Upstream Unreadiness** | Reviewer fails readiness for missing codebase files/methods that are explicitly assigned to an `Upstream` (Unimplemented) DA. | **GATE FOR REMOVAL**: Demand reviewer removal in `<Role>_Gated_Issues.md` citing upstream DA ownership. Reviewer removes from `<Role>.md` or explains (updating `<Role>.md`). |
 | **Premature Downstream Coupling** | Reviewer demands implementing features or specialized data types belonging to a `Downstream` DA inside the target DA. | **GATE FOR REMOVAL**: Demand reviewer removal in `<Role>_Gated_Issues.md` citing downstream boundary. Reviewer removes from `<Role>.md` or explains (updating `<Role>.md`). |
 | **Speculative Over-Engineering** | Demands premature optimization, unnecessary abstractions, or unrequested features. | **GATE FOR REMOVAL**: Demand reviewer removal in `<Role>_Gated_Issues.md` citing lack of empirical evidence. Reviewer removes from `<Role>.md` or explains (updating `<Role>.md`). |
@@ -54,16 +57,16 @@ Host evaluates Layer 3 reviewer reports strictly in **tier batches** (after all 
 
 3. **Reviewer Response Actions**:
    Upon receiving a notification, each gated reviewer inspects `<Role>_Gated_Issues.md` and chooses one of three actions:
-   - **Action 1: Sanitize as Requested**: When the defect is real but the fix was ungrounded, reviewer edits `<Role>.md` in-place via native `write_to_file`, stripping invalid snippets and converting to an abstract specification with verified proofs. If `.scratch/deep-review/reports/<Role>_Explain.md` was authored in a prior turn of the active tier batch, reviewer MUST invalidate it (either by deleting it, or by overwriting it with empty content via `write_to_file(CodeContent="")` if native file deletion tools are unavailable) to eliminate stale defense artifacts; Host handles authoritative physical file removal upon accepting the updated report.
+   - **Action 1: Refine / Complete as Requested**: When the defect is real but the fix was ungrounded, asymmetric across boundaries, or introduces intra-DA contradictions, reviewer edits `<Role>.md` in-place via native `write_to_file`, resolving the gate failure (e.g. converting ungrounded code into an abstract specification, supplying missing caller/callee boundary endpoints, or harmonizing contradicting assertions in `Verification Plan`) with verified proofs. If `.scratch/deep-review/reports/<Role>_Explain.md` was authored in a prior turn of the active tier batch, reviewer MUST invalidate it (either by deleting it, or by overwriting it with empty content via `write_to_file(CodeContent="")` if native file deletion tools are unavailable) to eliminate stale defense artifacts; Host handles authoritative physical file removal upon accepting the updated report.
    - **Action 2: Remove**: When the defect is invalid or false-positive, reviewer removes the issue from `<Role>.md` in-place. If all blocking defects are removed, reviewer changes status to `- **Status**: STATUS: PASS`. If `.scratch/deep-review/reports/<Role>_Explain.md` was authored in a prior turn of the active tier batch, reviewer MUST invalidate it (either by deleting it, or by overwriting it with empty content via `write_to_file(CodeContent="")` if native file deletion tools are unavailable) to eliminate stale defense artifacts; Host handles authoritative physical file removal upon accepting the updated report.
-   - **Action 3: Reject Sanitization/Removal and Explain**: When reviewer maintains the defect/fix is strictly valid, reviewer authors `.scratch/deep-review/reports/<Role>_Explain.md` via native `write_to_file`, providing deeper, differing codebase evidence. The reviewer MUST ALSO update `.scratch/deep-review/reports/<Role>.md` in-place to integrate the substantiated `Ground-Truth Proof`, `Macro Flow Proof`, and clean remediation text, ensuring `<Role>.md` remains the clean single source of truth for Host aggregation. Reviewer MUST NOT repeat stale arguments already addressed in `<Role>_Gated_Issues.md`.
+   - **Action 3: Reject Gating/Removal and Explain**: When reviewer maintains the defect/fix is strictly valid and already complete, reviewer authors `.scratch/deep-review/reports/<Role>_Explain.md` via native `write_to_file`, providing deeper, differing codebase evidence. The reviewer MUST ALSO update `.scratch/deep-review/reports/<Role>.md` in-place to integrate the substantiated `Ground-Truth Proof`, `Macro Flow Proof`, and clean remediation text, ensuring `<Role>.md` remains the clean single source of truth for Host aggregation. Reviewer MUST NOT repeat stale arguments already addressed in `<Role>_Gated_Issues.md`.
    - After updating, reviewer sends a completion message back to Host.
 
 4. **Host Re-Evaluation**:
    - Host waits for all gated reviewers in the tier batch to complete their responses.
    - Host inspects the updated `<Role>.md` and any `<Role>_Explain.md`.
    - If Host agrees with the update or explanation, Host accepts the role. Host does NOT send a confirmation message back to the reviewer once agreed.
-   - If an issue remains ungrounded or explanation in `<Role>_Explain.md` is stale without differing/deeper ground-truth evidence, reviewer MUST either accept removal or sanitize the issue into an abstract specification; reviewer MUST NOT re-assert stale arguments. Host gates again until resolved.
+   - If an issue remains ungrounded or explanation in `<Role>_Explain.md` is stale without differing/deeper ground-truth evidence, reviewer MUST either accept removal or refine the issue into an abstract specification or symmetrical contract; reviewer MUST NOT re-assert stale arguments. Host gates again until resolved.
 
 ## Specialist Trade-Off & Conflict Resolution
 
@@ -93,16 +96,16 @@ Format template:
 
 ## Required Reviewer Action
 Read the gated issues below. For each issue, choose ONE action:
-1. **Sanitize as Requested**: Update `<Role>.md` in-place, removing invalid code and stating an abstract requirement with verified proofs. Invalidate `<Role>_Explain.md` (delete or overwrite with empty content via `write_to_file(CodeContent="")`) if previously authored.
+1. **Refine / Complete as Requested**: Update `<Role>.md` in-place, resolving the gate failure (e.g. converting ungrounded snippets into an abstract specification, supplying missing symmetrical boundary endpoints, or harmonizing contradicting assertions in dependent sections) with verified proofs. Invalidate `<Role>_Explain.md` (delete or overwrite with empty content via `write_to_file(CodeContent="")`) if previously authored.
 2. **Remove**: Remove the issue from `<Role>.md` in-place (set status to PASS if zero blocking issues remain). Invalidate `<Role>_Explain.md` (delete or overwrite with empty content via `write_to_file(CodeContent="")`) if previously authored.
-3. **Reject Sanitization/Removal and Explain**: Author `<Role>_Explain.md` with differing/deeper codebase proof AND update `<Role>.md` in-place with verified proofs and clean remediation text.
+3. **Reject Gating/Removal and Explain**: Author `<Role>_Explain.md` with differing/deeper codebase proof AND update `<Role>.md` in-place with verified proofs and clean remediation text.
 Notify Host via message when done.
 
 ## Gated Issues
 
 1. **[Issue Title]**:
    - **Target Section**: `<Section_Name>`
-   - **Gate Failure Classification**: `Ungrounded Fix Proposal` | `False-Positive Upstream Unreadiness` | `Premature Downstream Coupling` | `Speculative Over-Engineering` | `Spec-Induced Regression`
+   - **Gate Failure Classification**: `Ungrounded Fix Proposal` | `Asymmetric Boundary Contract` | `Cross-Section Contradiction` | `False-Positive Upstream Unreadiness` | `Premature Downstream Coupling` | `Speculative Over-Engineering` | `Spec-Induced Regression`
    - **Gate Rationale**: <Exact technical reason why issue failed the gate without proposing fix code>
 ```
 
@@ -118,7 +121,7 @@ When authoring `.scratch/deep-review/host/Analyzation.md`:
    ## Accepted Issues
    *(None - All active roles cleared with zero blocking defects)*
    ```
-3. **Zero Rejected / Sanitized Tables**: Do NOT include tables of rejected or sanitized issues in `Analyzation.md`. All rejection, removal, and sanitization actions are resolved directly with reviewers in `reports/<Role>_Gated_Issues.md` and reflected in-place in clean `<Role>.md` files.
+3. **Zero Rejected / Gated Tables**: Do NOT include tables of rejected or gated issues in `Analyzation.md`. All rejection, removal, and refinement actions are resolved directly with reviewers in `reports/<Role>_Gated_Issues.md` and reflected in-place in clean `<Role>.md` files.
 
 ## Changelog.md Authoring Standards
 
@@ -128,8 +131,8 @@ When authoring `.scratch/deep-review/host/Changelog.md` for `ROUND_REVISION_NEED
 3. **Mandatory Context DA Tree Synchronization**: If accepted feedback splits, merges, creates, deletes, or moves Directive Artifact files (e.g. Progress Reviewer WBS actions), include a dedicated section:
    - `## Target Directive Artifacts Synchronization (Context.md)`: Instruct Layer 1 to update `## Target Directive Artifacts` in `.scratch/deep-review/Context.md` with the updated list of active DA paths.
 4. **Verified Code Snippets**: When providing code snippets in `Changelog.md`, verify that all referenced pre-existing symbols exist and compile against the active codebase, or align with planned declarations in the target DA or upstream specs, and that newly proposed symbols do not collide with active exports.
-5. **Boundary Contract Symmetry**: When a remediation modifies the identifier, endpoint, payload, or signature of an internal communication boundary (e.g. IPC channels, RPC endpoints, internal events, message queues), `Changelog.md` MUST specify synchronized updates for both the caller/producer endpoint and all internal consumption/handler endpoints, or the shared constant/types definition. (Exempt external third-party boundaries outside codebase control).
-6. **DA Cross-Section Coherence**: When a remediation changes contracts, behavioral invariants, or data shapes in the component specification section of a Directive Artifact, Host MUST verify and include synchronized updates for any affected assertions or expectations in dependent sections (e.g. `Verification Plan` or `Architecture Overview`) to eliminate intra-document contradictions.
+5. **Boundary Contract Symmetry Validation**: `Changelog.md` MUST verify that any boundary interface modification already includes symmetrical updates for both producer/caller and all internal consumer/handler endpoints (or shared constants/types) directly from the accepted `<Role>.md` reports; Host MUST NOT emit 1-sided boundary modifications, and MUST NOT unilaterally author missing endpoints (gating them to reviewers instead).
+6. **DA Cross-Section Coherence Validation**: `Changelog.md` MUST verify that any modification altering component contracts already includes synchronized updates for dependent sections (e.g. `Verification Plan` assertions) directly from accepted `<Role>.md` reports; Host MUST NOT emit self-contradicting DA diffs, and MUST NOT unilaterally author missing verification assertions (gating them to reviewers instead).
 
 ## Untouched_Reviewers.md Authoring Standards
 

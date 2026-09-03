@@ -80,14 +80,14 @@ Once your report is written, send a notification message back to Host via `send_
 
 ## Gate Response Protocol (Host Interaction)
 
-If Host determines that any issue in your report lacks Ground-Truth Proof, lacks Macro Flow Proof, cites non-existent codebase APIs, or violates scope boundaries, Host will file `.scratch/deep-review/reports/Testability_Gated_Issues.md` and notify you via message.
+If Host determines that any issue in your report lacks Ground-Truth Proof, lacks Macro Flow Proof, cites non-existent codebase APIs, breaks boundary contract symmetry, introduces cross-section contradictions, or violates scope boundaries, Host will file `.scratch/deep-review/reports/Testability_Gated_Issues.md` and notify you via message.
 
 Upon receiving a gating notification from Host, you MUST read `.scratch/deep-review/reports/Testability_Gated_Issues.md` via `view_file` and choose one of three actions:
 
-1. **Sanitize as Requested**:
-   - If the defect is real but your proposed fix contained ungrounded snippets or missing proofs:
+1. **Refine / Complete as Requested**:
+   - If the defect is real but your proposed fix was ungrounded, broke boundary symmetry, or introduced intra-DA contradictions:
    - Edit `.scratch/deep-review/reports/Testability.md` in-place via native `write_to_file`.
-   - Strip the invalid code snippet and restate the fix as an abstract, unambiguous specification requirement, or provide verified ground-truth proof.
+   - Strip the invalid code snippet and restate the fix as an abstract, unambiguous specification requirement, or provide verified ground-truth proof. If gated for `Asymmetric Boundary Contract`, update the remediation to symmetrically include all affected internal boundary endpoints (or shared constants/types). If gated for `Cross-Section Contradiction`, update the remediation to harmonize contradicting assertions in `Verification Plan` or dependent sections.
    - If `.scratch/deep-review/reports/Testability_Explain.md` was authored in a prior turn of the active tier batch, reviewer MUST invalidate it (either by deleting it, or by overwriting it with empty content via `write_to_file(CodeContent="")` if native file deletion tools are unavailable) to eliminate stale defense artifacts; Host handles authoritative physical file removal upon accepting the updated report.
 
 2. **Remove**:
@@ -96,10 +96,10 @@ Upon receiving a gating notification from Host, you MUST read `.scratch/deep-rev
    - If all blocking issues are removed from your report, update your status to `- **Status**: STATUS: PASS`.
    - If `.scratch/deep-review/reports/Testability_Explain.md` was authored in a prior turn of the active tier batch, reviewer MUST invalidate it (either by deleting it, or by overwriting it with empty content via `write_to_file(CodeContent="")` if native file deletion tools are unavailable) to eliminate stale defense artifacts; Host handles authoritative physical file removal upon accepting the updated report.
 
-3. **Reject Sanitization/Removal and Explain**:
-   - If you have concrete, differing codebase evidence proving the defect and proposed fix are correct:
+3. **Reject Gating/Removal and Explain**:
+   - If you have concrete, differing codebase evidence proving the defect and proposed fix are correct and complete:
    - Author `.scratch/deep-review/reports/Testability_Explain.md` via native `write_to_file`, detailing the exact file paths, line numbers, and runtime data flow that prove validity.
    - You MUST ALSO update `.scratch/deep-review/reports/Testability.md` in-place to integrate the substantiated `Ground-Truth Proof`, `Macro Flow Proof`, and clean remediation text, ensuring `Testability.md` remains the clean single source of truth for Host aggregation.
-   - If your explanation is gated by Host as stale (lacking differing or deeper evidence), you MUST either accept removal or sanitize the issue into an abstract specification; do NOT re-assert stale arguments.
+   - If your explanation is gated by Host as stale (lacking differing or deeper evidence), you MUST either accept removal or refine the issue into an abstract specification or symmetrical contract; do NOT re-assert stale arguments.
 
 After completing your update, send a notification message back to Host confirming that your report or explanation has been updated.
