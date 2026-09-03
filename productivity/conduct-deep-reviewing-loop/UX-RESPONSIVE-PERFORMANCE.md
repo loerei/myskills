@@ -2,9 +2,9 @@
 
 ## Domain Audit Checklist
 
-### 1. Layout Shift Protections (CLS)
-- [ ] Dimension Reservations: Verify dynamic images, ad placements, and async lazy-loaded elements set dynamic intrinsic aspect ratio boxes to prevent visual layout jumps.
-- [ ] Skeleton Layout Placeholders: Confirm data fetching views display visual structural skeleton placeholders that mirror final element dimensions.
+### 1. Visual Stability & Layout Shift Protections (CLS)
+- [ ] Dimension Reservations: Verify dynamic images, ad placements, embeds, and async lazy-loaded elements set explicit dimensional width/height attributes or dynamic intrinsic aspect ratio boxes (`aspect-ratio: auto`) to guarantee visual layout stability.
+- [ ] Skeleton Layout Placeholders: Confirm data fetching views display visual structural skeleton placeholders that mirror final element dimensions to prevent visual layout jumps.
 
 ### 2. Micro-Interaction Responsiveness
 - [ ] Immediate Touch Feedback: Ensure interactive elements supply immediate visual active state feedback within $<100\text{ms}$ of user touch or click events.
