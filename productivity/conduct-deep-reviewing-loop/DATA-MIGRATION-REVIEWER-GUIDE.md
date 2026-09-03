@@ -21,8 +21,8 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 ## Empirical Verification: Shadow Sandbox (.scratch/deep-review/sandbox/)
 
 When auditing schema migrations or payload contracts, verify empirically against in-memory test stores:
-1. **Inline Shadow Schema**: Author `.scratch/deep-review/sandbox/dryrun_datamigration_<name>.*` via `write_to_file` setting up an in-memory SQLite database or mock schema store with current schema, applying proposed migrations inline (or in `.scratch/deep-review/sandbox/shadow_datamigration_<name>.*` with adjusted relative imports), and closing all store connections in a `finally` block upon exit.
-2. **Probe Execution**: Run migration routines against legacy payload fixtures using the appropriate runtime under a 15s execution timeout, testing idempotency (running twice) and mid-flight crash recovery.
+1. **Inline Shadow Schema**: Author `.scratch/deep-review/sandbox/dryrun_datamigration_<name>.*` via `write_to_file` setting up an in-memory SQLite database or mock schema store with current schema, applying proposed migrations inline (or in `.scratch/deep-review/sandbox/shadow_datamigration_<name>.*` with adjusted relative imports), and closing all store connections in a `finally` block upon exit. For long-running migrations, scripts MUST emit fine-grained progress markers to stdout (e.g. processed batch counters) so progression is observable.
+2. **Probe Execution**: Run migration routines against legacy payload fixtures using the appropriate runtime under a 15s execution timeout, testing idempotency (running twice) and mid-flight crash recovery. If probe execution runs as a background task, reviewer MUST NOT remain idle indefinitely. Periodically monitor task status via `manage_task(Action="status")`; if stdout stops advancing across checks indicating a hang or frozen loop, terminate the task via `manage_task(Action="kill")` and record the blocker.
 3. **Cite Proof**: Write evaluation to `.scratch/deep-review/reports/DataMigration.md` via `write_to_file`, including SQL execution errors, constraint violation logs, data loss diffs, or execution timeouts.
 
 > [!CAUTION]
