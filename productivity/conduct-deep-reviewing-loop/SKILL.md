@@ -41,7 +41,7 @@ flowchart TD
 
 ### Step 1: Initialize Workspace
 
-Create `<repo-root>/.scratch/deep-review/host/` and `<repo-root>/.scratch/deep-review/reports/`. Initialize `.scratch/deep-review/Context.md` with target DA path, cross-referenced DAs with dependency lineage (`Upstream` / `Downstream` and `Implemented` / `Unimplemented`), codebase rules (`AGENTS.md`), task domain skills, criteria, and static `SP` threshold.
+Create `<repo-root>/.scratch/deep-review/host/`, `<repo-root>/.scratch/deep-review/reports/`, and `<repo-root>/.scratch/deep-review/sandbox/`. Initialize `.scratch/deep-review/Context.md` with target DA path, cross-referenced DAs with dependency lineage (`Upstream` / `Downstream` and `Implemented` / `Unimplemented`), codebase rules (`AGENTS.md`), task domain skills, criteria, and static `SP` threshold.
 
 ### Step 2: Spawn Review Host & Critical Gate (Layer 2)
 

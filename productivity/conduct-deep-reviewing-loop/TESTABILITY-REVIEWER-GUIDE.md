@@ -15,19 +15,19 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 - Follow Postel's Law: Ensure proposed test verification tolerates existing synthetic test buffers and mock fixtures.
 
 **Fix Pre-Verification**:
-- **Ground-Truth**: Verify on disk that any pre-existing method, type, or module referenced or consumed by a proposed fix actually exists in the target codebase, upstream specs, or planned declarations within the target DA itself. If introducing new methods, types, or interfaces, verify that their target landing locations exist (or are scheduled for creation in the DA), names do not collide with active exports, and all consumed external dependencies are verified on disk or in upstream specs. Create simulation scripts in `.scratch/` where applicable to verify test harness execution.
+- **Ground-Truth**: Verify on disk that any pre-existing method, type, or module referenced or consumed by a proposed fix actually exists in the target codebase, upstream specs, or planned declarations within the target DA itself. If introducing new methods, types, or interfaces, verify that their target landing locations exist (or are scheduled for creation in the DA), names do not collide with active exports, and all consumed external dependencies are verified on disk or in upstream specs. Create simulation scripts in `.scratch/deep-review/sandbox/` where applicable to verify test harness execution.
 - **Macro Flow**: Verify that the proposed fix does not break initialization order, variable scoping, or lifecycle contracts across the enclosing module (or specification consistency across sections for document/policy DAs).
 
-## Empirical Verification: Shadow Sandbox (.scratch/)
+## Empirical Verification: Shadow Sandbox (.scratch/deep-review/sandbox/)
 
-When auditing verification strategies and test seams, author a self-contained harness script in `<repo-root>/.scratch/`:
+When auditing verification strategies and test seams, author a self-contained harness script in `<repo-root>/.scratch/deep-review/sandbox/`:
 1. **Existing Baseline**: Execute existing project test suites in non-interactive/CI mode (`npx vitest run`, `npm test -- --watchAll=false`, `pytest -q`) under a 30s execution timeout to establish runner baseline.
-2. **Inline Mock Harness**: Author `.scratch/harness_testability_<name>.*` via `write_to_file` implementing proposed mocks, dependency injection seams, or test assertions against target module interfaces inline (or using `.scratch/shadow_testability_<name>.*` with adjusted relative imports).
-3. **Probe Execution**: Execute `.scratch/harness_testability_<name>.*` using the appropriate runner (`node`, `npx tsx`, `npx vitest run`, `pytest`) under a 15s execution timeout to verify type safety, unmockable global leaks, or lingering asynchronous timers/handles.
+2. **Inline Mock Harness**: Author `.scratch/deep-review/sandbox/harness_testability_<name>.*` via `write_to_file` implementing proposed mocks, dependency injection seams, or test assertions against target module interfaces inline (or using `.scratch/deep-review/sandbox/shadow_testability_<name>.*` with adjusted relative imports).
+3. **Probe Execution**: Execute `.scratch/deep-review/sandbox/harness_testability_<name>.*` using the appropriate runner (`node`, `npx tsx`, `npx vitest run`, `pytest`) under a 15s execution timeout to verify type safety, unmockable global leaks, or lingering asynchronous timers/handles.
 4. **Cite Proof**: Write evaluation to `.scratch/deep-review/reports/Testability.md` via `write_to_file`, including test runner errors, mock drift failures, unreleased handle warnings, or execution timeouts.
 
 > [!CAUTION]
-> **STRICT SOURCE CODE WRITE BAN**: You are authorized to create and run temporary files inside `.scratch/` ONLY. You MUST NOT modify or delete project source files. Write all findings to `.scratch/deep-review/reports/Testability.md`.
+> **STRICT SOURCE CODE WRITE BAN**: You are authorized to create and run temporary files inside `.scratch/deep-review/sandbox/` ONLY. You MUST NOT modify or delete project source files. Write all findings to `.scratch/deep-review/reports/Testability.md`.
 
 ## Mandatory Audit Checklist
 
@@ -65,13 +65,13 @@ Save evaluation to `.scratch/deep-review/reports/Testability.md` via `write_to_f
 1. **[Issue Title 1]**:
    - **Target Section**: `<Section_Name>`
    - **Required Fix**: <Exact fix required>
-   - **Ground-Truth Proof**: <Path and symbol in codebase or upstream spec proving existence of referenced APIs/types, or verified target landing location and non-collision confirmation for newly proposed symbols, or .scratch/ simulation script proving correctness>
+   - **Ground-Truth Proof**: <Path and symbol in codebase or upstream spec proving existence of referenced APIs/types, or verified target landing location and non-collision confirmation for newly proposed symbols, or .scratch/deep-review/sandbox/ simulation script proving correctness>
    - **Macro Flow Proof**: <Verification that declaration order, initialization sequence, and lifecycle remain valid in the enclosing module (or specification consistency across sections for document/policy DAs)>
 
 2. **[Issue Title 2]**:
    - **Target Section**: `<Section_Name>`
    - **Required Fix**: <Exact fix required>
-   - **Ground-Truth Proof**: <Path and symbol in codebase or upstream spec proving existence of referenced APIs/types, or verified target landing location and non-collision confirmation for newly proposed symbols, or .scratch/ simulation script proving correctness>
+   - **Ground-Truth Proof**: <Path and symbol in codebase or upstream spec proving existence of referenced APIs/types, or verified target landing location and non-collision confirmation for newly proposed symbols, or .scratch/deep-review/sandbox/ simulation script proving correctness>
    - **Macro Flow Proof**: <Verification that declaration order, initialization sequence, and lifecycle remain valid in the enclosing module (or specification consistency across sections for document/policy DAs)>
 
 ### Suggestions for Improvement (Non-blocking):

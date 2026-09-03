@@ -15,18 +15,18 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 - Follow Postel's Law: Handle edge-case input malformations gracefully on read paths with fallback values.
 
 **Fix Pre-Verification**:
-- **Ground-Truth**: Verify on disk that any pre-existing method, type, or module referenced or consumed by a proposed fix actually exists in the target codebase, upstream specs, or planned declarations within the target DA itself. If introducing new methods, types, or interfaces, verify that their target landing locations exist (or are scheduled for creation in the DA), names do not collide with active exports, and all consumed external dependencies are verified on disk or in upstream specs. Create simulation scripts in `.scratch/` where applicable to verify execution correctness.
+- **Ground-Truth**: Verify on disk that any pre-existing method, type, or module referenced or consumed by a proposed fix actually exists in the target codebase, upstream specs, or planned declarations within the target DA itself. If introducing new methods, types, or interfaces, verify that their target landing locations exist (or are scheduled for creation in the DA), names do not collide with active exports, and all consumed external dependencies are verified on disk or in upstream specs. Create simulation scripts in `.scratch/deep-review/sandbox/` where applicable to verify execution correctness.
 - **Macro Flow**: Verify that the proposed fix does not break initialization order, variable scoping, or lifecycle contracts across the enclosing module (or specification consistency across sections for document/policy DAs).
 
-## Empirical Verification: Shadow Sandbox (.scratch/)
+## Empirical Verification: Shadow Sandbox (.scratch/deep-review/sandbox/)
 
-When auditing boundary conditions or failure paths, author a self-contained inline probe script in `<repo-root>/.scratch/`:
-1. **Inline Probe**: Author `.scratch/repro_edgecase_<name>.*` via `write_to_file` directly importing unmodified project dependencies and defining or wrapping the uncommitted proposed logic inline (or clone the target file into `.scratch/shadow_edgecase_<name>.*` with adjusted relative imports if full-module replacement is required).
-2. **Probe Execution**: Execute the probe using the appropriate runtime (`node .scratch/...`, `npx tsx .scratch/...`, `python .scratch/...`) with boundary payloads (null, 0, empty collection, overflow, concurrent bursts) under a 15s execution timeout.
+When auditing boundary conditions or failure paths, author a self-contained inline probe script in `<repo-root>/.scratch/deep-review/sandbox/`:
+1. **Inline Probe**: Author `.scratch/deep-review/sandbox/repro_edgecase_<name>.*` via `write_to_file` directly importing unmodified project dependencies and defining or wrapping the uncommitted proposed logic inline (or clone the target file into `.scratch/deep-review/sandbox/shadow_edgecase_<name>.*` with adjusted relative imports if full-module replacement is required).
+2. **Probe Execution**: Execute the probe using the appropriate runtime (`node .scratch/deep-review/sandbox/...`, `npx tsx .scratch/deep-review/sandbox/...`, `python .scratch/deep-review/sandbox/...`) with boundary payloads (null, 0, empty collection, overflow, concurrent bursts) under a 15s execution timeout.
 3. **Cite Proof**: Write evaluation to `.scratch/deep-review/reports/Edgecase.md` via `write_to_file`, including thrown stack traces, unexpected return values, unhandled promise rejections, or execution timeouts/process hangs.
 
 > [!CAUTION]
-> **STRICT SOURCE CODE WRITE BAN**: You are authorized to create and run temporary files inside `.scratch/` ONLY. You MUST NOT modify or delete project source files. Write all findings to `.scratch/deep-review/reports/Edgecase.md`.
+> **STRICT SOURCE CODE WRITE BAN**: You are authorized to create and run temporary files inside `.scratch/deep-review/sandbox/` ONLY. You MUST NOT modify or delete project source files. Write all findings to `.scratch/deep-review/reports/Edgecase.md`.
 
 ## Mandatory Audit Checklist
 
@@ -63,13 +63,13 @@ Save evaluation to `.scratch/deep-review/reports/Edgecase.md` via `write_to_file
 1. **[Issue Title 1]**:
    - **Target Section**: `<Section_Name>`
    - **Required Fix**: <Exact fix required>
-   - **Ground-Truth Proof**: <Path and symbol in codebase or upstream spec proving existence of referenced APIs/types, or verified target landing location and non-collision confirmation for newly proposed symbols, or .scratch/ simulation script proving correctness>
+   - **Ground-Truth Proof**: <Path and symbol in codebase or upstream spec proving existence of referenced APIs/types, or verified target landing location and non-collision confirmation for newly proposed symbols, or .scratch/deep-review/sandbox/ simulation script proving correctness>
    - **Macro Flow Proof**: <Verification that declaration order, initialization sequence, and lifecycle remain valid in the enclosing module (or specification consistency across sections for document/policy DAs)>
 
 2. **[Issue Title 2]**:
    - **Target Section**: `<Section_Name>`
    - **Required Fix**: <Exact fix required>
-   - **Ground-Truth Proof**: <Path and symbol in codebase or upstream spec proving existence of referenced APIs/types, or verified target landing location and non-collision confirmation for newly proposed symbols, or .scratch/ simulation script proving correctness>
+   - **Ground-Truth Proof**: <Path and symbol in codebase or upstream spec proving existence of referenced APIs/types, or verified target landing location and non-collision confirmation for newly proposed symbols, or .scratch/deep-review/sandbox/ simulation script proving correctness>
    - **Macro Flow Proof**: <Verification that declaration order, initialization sequence, and lifecycle remain valid in the enclosing module (or specification consistency across sections for document/policy DAs)>
 
 ### Suggestions for Improvement (Non-blocking):

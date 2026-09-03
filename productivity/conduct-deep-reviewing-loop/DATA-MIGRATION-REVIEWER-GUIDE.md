@@ -15,18 +15,18 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 - Follow Postel's Law: Be liberal in reading legacy/mock records (allow field omissions), conservative in writing canonical schemas. Do NOT introduce deserialization validation that breaks mock databases.
 
 **Fix Pre-Verification**:
-- **Ground-Truth**: Verify on disk that any pre-existing method, type, or module referenced or consumed by a proposed fix actually exists in the target codebase, upstream specs, or planned declarations within the target DA itself. If introducing new methods, types, or interfaces, verify that their target landing locations exist (or are scheduled for creation in the DA), names do not collide with active exports, and all consumed external dependencies are verified on disk or in upstream specs. Create simulation scripts in `.scratch/` where applicable to verify migration scripts and rollback idempotency.
+- **Ground-Truth**: Verify on disk that any pre-existing method, type, or module referenced or consumed by a proposed fix actually exists in the target codebase, upstream specs, or planned declarations within the target DA itself. If introducing new methods, types, or interfaces, verify that their target landing locations exist (or are scheduled for creation in the DA), names do not collide with active exports, and all consumed external dependencies are verified on disk or in upstream specs. Create simulation scripts in `.scratch/deep-review/sandbox/` where applicable to verify migration scripts and rollback idempotency.
 - **Macro Flow**: Verify that the proposed fix does not break initialization order, variable scoping, or lifecycle contracts across the enclosing module (or specification consistency across sections for document/policy DAs).
 
-## Empirical Verification: Shadow Sandbox (.scratch/)
+## Empirical Verification: Shadow Sandbox (.scratch/deep-review/sandbox/)
 
 When auditing schema migrations or payload contracts, verify empirically against in-memory test stores:
-1. **Inline Shadow Schema**: Author `.scratch/dryrun_datamigration_<name>.*` via `write_to_file` setting up an in-memory SQLite database or mock schema store with current schema, applying proposed migrations inline (or in `.scratch/shadow_datamigration_<name>.*` with adjusted relative imports), and closing all store connections in a `finally` block upon exit.
+1. **Inline Shadow Schema**: Author `.scratch/deep-review/sandbox/dryrun_datamigration_<name>.*` via `write_to_file` setting up an in-memory SQLite database or mock schema store with current schema, applying proposed migrations inline (or in `.scratch/deep-review/sandbox/shadow_datamigration_<name>.*` with adjusted relative imports), and closing all store connections in a `finally` block upon exit.
 2. **Probe Execution**: Run migration routines against legacy payload fixtures using the appropriate runtime under a 15s execution timeout, testing idempotency (running twice) and mid-flight crash recovery.
 3. **Cite Proof**: Write evaluation to `.scratch/deep-review/reports/DataMigration.md` via `write_to_file`, including SQL execution errors, constraint violation logs, data loss diffs, or execution timeouts.
 
 > [!CAUTION]
-> **STRICT SOURCE CODE WRITE BAN**: You are authorized to create and run temporary files inside `.scratch/` ONLY. You MUST NOT modify or delete project source files. Write all findings to `.scratch/deep-review/reports/DataMigration.md`.
+> **STRICT SOURCE CODE WRITE BAN**: You are authorized to create and run temporary files inside `.scratch/deep-review/sandbox/` ONLY. You MUST NOT modify or delete project source files. Write all findings to `.scratch/deep-review/reports/DataMigration.md`.
 
 ## Mandatory Audit Checklist
 
@@ -64,13 +64,13 @@ Save evaluation to `.scratch/deep-review/reports/DataMigration.md` via `write_to
 1. **[Issue Title 1]**:
    - **Target Section**: `<Section_Name>`
    - **Required Fix**: <Exact fix required>
-   - **Ground-Truth Proof**: <Path and symbol in codebase or upstream spec proving existence of referenced APIs/types, or verified target landing location and non-collision confirmation for newly proposed symbols, or .scratch/ simulation script proving correctness>
+   - **Ground-Truth Proof**: <Path and symbol in codebase or upstream spec proving existence of referenced APIs/types, or verified target landing location and non-collision confirmation for newly proposed symbols, or .scratch/deep-review/sandbox/ simulation script proving correctness>
    - **Macro Flow Proof**: <Verification that declaration order, initialization sequence, and lifecycle remain valid in the enclosing module (or specification consistency across sections for document/policy DAs)>
 
 2. **[Issue Title 2]**:
    - **Target Section**: `<Section_Name>`
    - **Required Fix**: <Exact fix required>
-   - **Ground-Truth Proof**: <Path and symbol in codebase or upstream spec proving existence of referenced APIs/types, or verified target landing location and non-collision confirmation for newly proposed symbols, or .scratch/ simulation script proving correctness>
+   - **Ground-Truth Proof**: <Path and symbol in codebase or upstream spec proving existence of referenced APIs/types, or verified target landing location and non-collision confirmation for newly proposed symbols, or .scratch/deep-review/sandbox/ simulation script proving correctness>
    - **Macro Flow Proof**: <Verification that declaration order, initialization sequence, and lifecycle remain valid in the enclosing module (or specification consistency across sections for document/policy DAs)>
 
 ### Suggestions for Improvement (Non-blocking):

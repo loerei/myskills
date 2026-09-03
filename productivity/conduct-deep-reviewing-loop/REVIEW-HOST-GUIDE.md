@@ -11,7 +11,7 @@ Instructions for Review Host to route Layer 3 reviewers, filter feedback, and en
      | Role Identifier | Selection Status (INCLUDED / EXCLUDED) | Technical Rationale |
      ```
      Ensure `Architect` and `Logic` are `INCLUDED`, and explicitly mark remaining 9 roles as `INCLUDED` or `EXCLUDED` (`Progress` MUST be `INCLUDED` for multi-phase/multi-ticket epics, roadmaps, or work-breakdown structures; `EXCLUDED` for single-ticket/simple plans).
-1. **Workspace Preparation**: Purge all files in `.scratch/deep-review/reports/` (preserving intra-tier reports within an active pass). Validate `.scratch/deep-review/Context.md` (verifying presence of target DA, dependency lineage table, and criteria) without overwriting criteria or `SP`.
+1. **Workspace Preparation**: Purge all files in `.scratch/deep-review/reports/` (preserving intra-tier reports within an active pass). Ensure `.scratch/deep-review/sandbox/` is prepared for empirical reviewer simulations. Validate `.scratch/deep-review/Context.md` (verifying presence of target DA, dependency lineage table, and criteria) without overwriting criteria or `SP`.
 2. **DAG Routing & Targeted Execution**:
    - If `.scratch/deep-review/host/Changelog.md` exists: Reset `PassCount = 0`, load `.scratch/deep-review/host/Untouched_Reviewers.md` (if present), determine affected roles per `PROTOCOL.md` Section 6, then delete `.scratch/deep-review/host/Changelog.md` and `.scratch/deep-review/host/Untouched_Reviewers.md` before invoking reviewers.
    - If `.scratch/deep-review/host/Changelog.md` is absent:

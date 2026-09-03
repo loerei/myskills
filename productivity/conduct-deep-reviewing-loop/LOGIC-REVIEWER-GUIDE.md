@@ -15,18 +15,18 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 - Follow Postel's Law: Differentiate Ingress (reading/decoding legacy or mock inputs) vs. Egress (writing/encoding canonical outputs). Do NOT mandate throwing exceptions on read paths if existing regression tests rely on lenient decoding.
 
 **Fix Pre-Verification**:
-- **Ground-Truth**: Verify on disk that any pre-existing method, type, or module referenced or consumed by a proposed fix actually exists in the target codebase, upstream specs, or planned declarations within the target DA itself. If introducing new methods, types, or interfaces, verify that their target landing locations exist (or are scheduled for creation in the DA), names do not collide with active exports, and all consumed external dependencies are verified on disk or in upstream specs. Create simulation scripts in `.scratch/` where applicable to verify execution correctness.
+- **Ground-Truth**: Verify on disk that any pre-existing method, type, or module referenced or consumed by a proposed fix actually exists in the target codebase, upstream specs, or planned declarations within the target DA itself. If introducing new methods, types, or interfaces, verify that their target landing locations exist (or are scheduled for creation in the DA), names do not collide with active exports, and all consumed external dependencies are verified on disk or in upstream specs. Create simulation scripts in `.scratch/deep-review/sandbox/` where applicable to verify execution correctness.
 - **Macro Flow**: Verify that the proposed fix does not break initialization order, variable scoping, or lifecycle contracts across the enclosing module (or specification consistency across sections for document/policy DAs).
 
-## Empirical Verification: Shadow Sandbox (.scratch/)
+## Empirical Verification: Shadow Sandbox (.scratch/deep-review/sandbox/)
 
-When auditing workflows, state machines, or algorithmic transforms, author a self-contained simulation script in `<repo-root>/.scratch/`:
-1. **Inline Simulator**: Author `.scratch/simulate_logic_<name>.*` via `write_to_file` recreating the proposed state machine, reducer, or data transformation inline (or in `.scratch/shadow_logic_<name>.*` with adjusted relative imports).
-2. **Probe Execution**: Execute the simulation using the appropriate runtime (`node .scratch/...`, `npx tsx .scratch/...`, `python .scratch/...`) stepping through sequential states, branch combinations, or data pipelines under a 15s execution timeout to test invariant preservation and uncover unreachable states or deadlocks.
+When auditing workflows, state machines, or algorithmic transforms, author a self-contained simulation script in `<repo-root>/.scratch/deep-review/sandbox/`:
+1. **Inline Simulator**: Author `.scratch/deep-review/sandbox/simulate_logic_<name>.*` via `write_to_file` recreating the proposed state machine, reducer, or data transformation inline (or in `.scratch/deep-review/sandbox/shadow_logic_<name>.*` with adjusted relative imports).
+2. **Probe Execution**: Execute the simulation using the appropriate runtime (`node .scratch/deep-review/sandbox/...`, `npx tsx .scratch/deep-review/sandbox/...`, `python .scratch/deep-review/sandbox/...`) stepping through sequential states, branch combinations, or data pipelines under a 15s execution timeout to test invariant preservation and uncover unreachable states or deadlocks.
 3. **Cite Proof**: Write evaluation to `.scratch/deep-review/reports/Logic.md` via `write_to_file`, including state progression logs, counter-example inputs, broken invariant assertions, or execution timeouts/deadlocks.
 
 > [!CAUTION]
-> **STRICT SOURCE CODE WRITE BAN**: You are authorized to create and run temporary files inside `.scratch/` ONLY. You MUST NOT modify or delete project source files. Write all findings to `.scratch/deep-review/reports/Logic.md`.
+> **STRICT SOURCE CODE WRITE BAN**: You are authorized to create and run temporary files inside `.scratch/deep-review/sandbox/` ONLY. You MUST NOT modify or delete project source files. Write all findings to `.scratch/deep-review/reports/Logic.md`.
 
 ## Mandatory Audit Questions
 
@@ -63,13 +63,13 @@ Save evaluation to `.scratch/deep-review/reports/Logic.md` via `write_to_file` u
 1. **[Issue Title 1]**:
    - **Target Section**: `<Section_Name>`
    - **Required Fix**: <Exact fix required>
-   - **Ground-Truth Proof**: <Path and symbol in codebase or upstream spec proving existence of referenced APIs/types, or verified target landing location and non-collision confirmation for newly proposed symbols, or .scratch/ simulation script proving correctness>
+   - **Ground-Truth Proof**: <Path and symbol in codebase or upstream spec proving existence of referenced APIs/types, or verified target landing location and non-collision confirmation for newly proposed symbols, or .scratch/deep-review/sandbox/ simulation script proving correctness>
    - **Macro Flow Proof**: <Verification that declaration order, initialization sequence, and lifecycle remain valid in the enclosing module (or specification consistency across sections for document/policy DAs)>
 
 2. **[Issue Title 2]**:
    - **Target Section**: `<Section_Name>`
    - **Required Fix**: <Exact fix required>
-   - **Ground-Truth Proof**: <Path and symbol in codebase or upstream spec proving existence of referenced APIs/types, or verified target landing location and non-collision confirmation for newly proposed symbols, or .scratch/ simulation script proving correctness>
+   - **Ground-Truth Proof**: <Path and symbol in codebase or upstream spec proving existence of referenced APIs/types, or verified target landing location and non-collision confirmation for newly proposed symbols, or .scratch/deep-review/sandbox/ simulation script proving correctness>
    - **Macro Flow Proof**: <Verification that declaration order, initialization sequence, and lifecycle remain valid in the enclosing module (or specification consistency across sections for document/policy DAs)>
 
 ### Suggestions for Improvement (Non-blocking):

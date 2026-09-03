@@ -22,18 +22,17 @@ When updating draft artifacts between iterations, integrate fixes directly into 
 │   ├── Reviewer_Choice_Rationale.md
 │   └── Untouched_Reviewers.md
 ├── Context.md               # [PUBLIC] Initialized by Layer 1 (DA path, rules, criteria, static SP)
-└── reports/                 # [REVIEWER OUTPUTS & GATING] Purged at pass starts; in-place sanitized
-    ├── <Role>.md            # Initial reviewer report & in-place sanitized report
-    ├── <Role>_Gated_Issues.md # Host gated issues (demands sanitization/removal without suggestions)
-    └── <Role>_Explain.md    # Reviewer explanation with deeper/differing proof (if rejecting gate)
-
-<repo-root>/.scratch/        # [DIAGNOSTIC SANDBOX] Inline probes & shadow modules (.scratch/<action>_<role>_*, .scratch/shadow_*)
+├── reports/                 # [REVIEWER OUTPUTS & GATING] Purged at pass starts; in-place sanitized
+│   ├── <Role>.md            # Initial reviewer report & in-place sanitized report
+│   ├── <Role>_Gated_Issues.md # Host gated issues (demands sanitization/removal without suggestions)
+│   └── <Role>_Explain.md    # Reviewer explanation with deeper/differing proof (if rejecting gate)
+└── sandbox/                 # [DIAGNOSTIC SANDBOX] Inline probes & shadow modules (.scratch/deep-review/sandbox/<action>_<role>_*, shadow_*)
 ```
 
 Reviewers MUST read only their assigned target DA and `.scratch/deep-review/Context.md`. Reviewers MUST NOT inspect `.scratch/deep-review/host/` or reports of other reviewers.
 
 ### File Authoring Protocol
-Reviewers and Host MUST use native `write_to_file` directly (without `ArtifactMetadata`) for all file creations (`.scratch/` probe scripts, `.scratch/deep-review/reports/<Role>.md`, `.scratch/deep-review/host/*.md`). Creating intermediate helper scripts (e.g. `write_report.cjs`, `.js`, `.ps1`) or embedding multi-line code inside `run_command` inline strings (`node -e`, `python -c`, `echo`, `pwsh`) to author text files is strictly prohibited.
+Reviewers and Host MUST use native `write_to_file` directly (without `ArtifactMetadata`) for all file creations (`.scratch/deep-review/sandbox/` probe scripts, `.scratch/deep-review/reports/<Role>.md`, `.scratch/deep-review/host/*.md`). Creating intermediate helper scripts (e.g. `write_report.cjs`, `.js`, `.ps1`) or embedding multi-line code inside `run_command` inline strings (`node -e`, `python -c`, `echo`, `pwsh`) to author text files is strictly prohibited.
 
 Layer 1 initializes `.scratch/deep-review/Context.md` at workflow start. Context files MUST remain frozen during active reviewer execution.
 
