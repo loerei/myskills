@@ -15,7 +15,7 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 - Follow Postel's Law: Preserve backward-compatible decoding during transitional milestone phases.
 
 **Fix Pre-Verification**:
-- **Ground-Truth**: Verify on disk that referenced modules, files, or tickets exist before prescribing relocation, splitting, or phase sequencing.
+- **Ground-Truth**: Verify on disk that referenced modules, files, or tickets exist before prescribing relocation, splitting, or phase sequencing, and verify boundary contracts are updated symmetrically.
 - **Macro Flow**: Verify that the proposed breakdown maintains dependency order and does not create deadlocks across phases.
 
 ## Mandatory Audit Questions

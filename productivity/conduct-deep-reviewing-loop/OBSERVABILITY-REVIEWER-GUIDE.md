@@ -15,7 +15,7 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 - Follow Postel's Law: Capture diagnostics without failing business logic or crashing on missing telemetry endpoints.
 
 **Fix Pre-Verification**:
-- **Ground-Truth**: Verify on disk that any pre-existing method, type, or module referenced or consumed by a proposed fix actually exists in the target codebase, upstream specs, or planned declarations within the target DA itself. If introducing new methods, types, or interfaces, verify that their target landing locations exist (or are scheduled for creation in the DA), names do not collide with active exports, and all consumed external dependencies are verified on disk or in upstream specs.
+- **Ground-Truth**: Verify on disk that any pre-existing method, type, or module referenced or consumed by a proposed fix actually exists in the target codebase, upstream specs, or planned declarations within the target DA itself. If introducing new methods, types, or interfaces, verify that their target landing locations exist (or are scheduled for creation in the DA), names do not collide with active exports, all consumed external dependencies are verified on disk or in upstream specs, and for internal communication boundaries (e.g. IPC, RPC, events), verify that both producer/caller and consumer/handler endpoints are updated symmetrically.
 - **Macro Flow**: Verify that trace context propagation, structured error logging, and telemetry lifecycle remain uninterrupted across asynchronous execution and service boundaries.
 
 ## Mandatory Audit Checklist

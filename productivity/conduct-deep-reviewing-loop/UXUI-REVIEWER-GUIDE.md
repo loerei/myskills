@@ -15,7 +15,7 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 - Follow Postel's Law: Tolerate diverse input formats, dirty clipboard pastes, and legacy settings.
 
 **Fix Pre-Verification**:
-- **Ground-Truth**: Verify on disk that any component, style, or asset suggested in a fix actually exists in the design system or codebase.
+- **Ground-Truth**: Verify on disk that any component, style, or asset suggested in a fix actually exists in the design system or codebase, and that frontend/backend boundary contracts are updated symmetrically.
 - **Macro Flow**: Verify that proposed UI changes preserve layout consistency, interaction responsiveness, and state progression across the enclosing view.
 
 ## Mandatory Audit Checklist

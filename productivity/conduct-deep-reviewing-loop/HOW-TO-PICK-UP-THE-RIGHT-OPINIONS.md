@@ -128,6 +128,8 @@ When authoring `.scratch/deep-review/host/Changelog.md` for `ROUND_REVISION_NEED
 3. **Mandatory Context DA Tree Synchronization**: If accepted feedback splits, merges, creates, deletes, or moves Directive Artifact files (e.g. Progress Reviewer WBS actions), include a dedicated section:
    - `## Target Directive Artifacts Synchronization (Context.md)`: Instruct Layer 1 to update `## Target Directive Artifacts` in `.scratch/deep-review/Context.md` with the updated list of active DA paths.
 4. **Verified Code Snippets**: When providing code snippets in `Changelog.md`, verify that all referenced pre-existing symbols exist and compile against the active codebase, or align with planned declarations in the target DA or upstream specs, and that newly proposed symbols do not collide with active exports.
+5. **Boundary Contract Symmetry**: When a remediation modifies the identifier, endpoint, payload, or signature of an internal communication boundary (e.g. IPC channels, RPC endpoints, internal events, message queues), `Changelog.md` MUST specify synchronized updates for both the caller/producer endpoint and all internal consumption/handler endpoints, or the shared constant/types definition. (Exempt external third-party boundaries outside codebase control).
+6. **DA Cross-Section Coherence**: When a remediation changes contracts, behavioral invariants, or data shapes in the component specification section of a Directive Artifact, Host MUST verify and include synchronized updates for any affected assertions or expectations in dependent sections (e.g. `Verification Plan` or `Architecture Overview`) to eliminate intra-document contradictions.
 
 ## Untouched_Reviewers.md Authoring Standards
 
