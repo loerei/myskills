@@ -5,6 +5,7 @@
 ### 1. Visual Stability & Layout Shift Protections (CLS)
 - [ ] Dimension Reservations: Verify dynamic images, ad placements, embeds, and async lazy-loaded elements set explicit dimensional width/height attributes or dynamic intrinsic aspect ratio boxes (`aspect-ratio: auto`) to guarantee visual layout stability.
 - [ ] Skeleton Layout Placeholders: Confirm data fetching views display visual structural skeleton placeholders that mirror final element dimensions to prevent visual layout jumps.
+- [ ] Empty In-Flow Container Hierarchy: When containers dynamically appear or clear their contents (e.g. empty toolbars, contextual action bars), follow the 3-tier precedence: (1) `Context.md` directives, (2) existing codebase conventions, (3) Default: smooth animated accordion transitions (e.g. CSS grid `grid-template-rows: 0fr -> 1fr` with opacity and easing) rather than abrupt non-animated display toggles, strictly preserving error recovery paths in `catch` blocks.
 
 ### 2. Micro-Interaction Responsiveness
 - [ ] Immediate Touch Feedback: Ensure interactive elements supply immediate visual active state feedback within $<100\text{ms}$ of user touch or click events.
@@ -80,8 +81,23 @@ await processLargePayload(file, {
 clearInterval(watchdog);
 ```
 
+### Anti-Pattern 3: Abrupt Non-Animated In-Flow Container Toggling
+
+```javascript
+// BAD: Abruptly toggling display: none / flex causes severe 48-70px layout jumps and destroys recovery buttons in catch
+if (overrideMissing) {
+  toolbar.style.display = 'none'; // Jumps layout, hides recovery path!
+}
+
+// GOOD: Smooth hardware-accelerated grid accordion transition with persistent recovery capability
+// CSS:
+// .toolbar-wrapper { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows 0.3s ease, opacity 0.25s ease; }
+// .toolbar-wrapper.expanded { grid-template-rows: 1fr; opacity: 1; }
+// JS: Always maintain error recovery triggers in catch blocks regardless of collapse state
+```
+
 ## Failure Modes & Mitigations
 
-- Cumulative Layout Shifts Disrupting User Interaction: Enforce CSS `contain-intrinsic-size` properties on off-screen dynamic components.
+- Cumulative Layout Shifts Disrupting User Interaction: Enforce CSS `contain-intrinsic-size` properties on off-screen dynamic components and smooth animated accordion transitions (or dimensional reservations) on dynamic in-flow containers.
 - Unhandled Optimistic Mutation Desynchronization: Enforce periodic background re-validation fetches (SWR patterns) after optimistic state mutations complete.
 - Wall-Clock Timeout Aborting Near-Complete Operations: Replace rigid total execution timers with rolling inactivity watchdogs that trigger only when no forward delta occurs for $>10\text{s}$.
