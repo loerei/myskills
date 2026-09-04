@@ -14,8 +14,12 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
   - Cross-reference UI component mount points, navigation hierarchies, modal flows, and design tokens against `Upstream` DAs to guarantee harmonious UI integration without designing detached or clashing interaction patterns.
 - Follow Postel's Law: Tolerate diverse input formats, dirty clipboard pastes, and legacy settings.
 
-**Fix Pre-Verification**:
-- **Ground-Truth**: Verify on disk that any component, style, or asset suggested in a fix actually exists in the design system or codebase, and that frontend/backend boundary contracts are updated symmetrically.
+**Fix Pre-Verification (Universal GUI Ground-Truth Invariants)**:
+- **Design Tokens & Styles**: You MUST verify on disk and cite the exact token or variable definition from the design system/theme catalog (`theme.css`, `colors.xml`, asset catalog). Strictly BAN hallucinating or inventing token names (e.g. `--danger-color`, `--text-primary`) without verifying their declaration on disk.
+- **View Lifecycle & State Anchor**: When demanding focus or state restoration across async boundaries (e.g. after data fetch, save, or reload), you MUST verify that the target element is not detached, destroyed, or re-rendered during the pipeline (e.g. via `innerHTML = ''`, list recreation). If re-rendered, you MUST prescribe anchoring focus to a stable parent container or re-querying post-render, NOT calling `.focus()` on a detached node.
+- **Layering & Z-Order (Stacking Context)**: When prescribing overlays, toasts, modals, tooltips, or popovers, you MUST verify their stacking context, window level, and `z-index` relative to all active containers and backdrops to prevent occlusion behind parent overlays.
+- **Visual Layout Stability (CLS)**: You MUST NOT prescribe toggling visibility/display (`display: none` <-> `display: flex/block`) on dynamic in-flow containers. Require dimensional reservations (`min-height`, skeleton placeholders, or `aspect-ratio`) to prevent mid-render layout shifts.
+- **Mandatory Fallback to Abstract Specification**: If you cannot verify the complete lifecycle, token declaration, or stacking context on disk, you **MUST NOT** prescribe speculative concrete code or CSS snippets. You MUST state the remediation as an abstract behavioral requirement (e.g. *"Ensure focus is restored without dropping to body after list reload"*, *"Ensure toast notifications visually overlay active modal backdrops"*).
 - **Macro Flow**: Verify that proposed UI changes preserve layout consistency, interaction responsiveness, and state progression across the enclosing view.
 
 ## Mandatory Audit Checklist
@@ -54,14 +58,14 @@ Save evaluation to `.scratch/deep-review/reports/UXUI.md` via `write_to_file` us
 1. **[Issue Title 1]**:
    - **Target Section**: `<Section_Name>`
    - **Required Fix**: <Exact UI/UX simplification or fix required>
-   - **Ground-Truth Proof**: <Path and symbol in design system or codebase proving existence of referenced components/styles/tokens, or verified layout container location for newly proposed elements>
-   - **Macro Flow Proof**: <Verification that proposed UI changes preserve layout consistency, interaction responsiveness, and state progression across the enclosing view>
+   - **Ground-Truth Proof**: <Exact file path and line number proving: (1) token declaration in theme/design system, (2) attached view lifecycle for focus restoration, or (3) z-index stacking hierarchy for overlays. If unverified on disk, state remediation as Abstract Behavioral Requirement>
+   - **Macro Flow Proof**: <Verification that proposed UI changes preserve layout consistency, interaction responsiveness, and state progression across the enclosing view without introducing CLS>
 
 2. **[Issue Title 2]**:
    - **Target Section**: `<Section_Name>`
    - **Required Fix**: <Exact UI/UX simplification or fix required>
-   - **Ground-Truth Proof**: <Path and symbol in design system or codebase proving existence of referenced components/styles/tokens, or verified layout container location for newly proposed elements>
-   - **Macro Flow Proof**: <Verification that proposed UI changes preserve layout consistency, interaction responsiveness, and state progression across the enclosing view>
+   - **Ground-Truth Proof**: <Exact file path and line number proving: (1) token declaration in theme/design system, (2) attached view lifecycle for focus restoration, or (3) z-index stacking hierarchy for overlays. If unverified on disk, state remediation as Abstract Behavioral Requirement>
+   - **Macro Flow Proof**: <Verification that proposed UI changes preserve layout consistency, interaction responsiveness, and state progression across the enclosing view without introducing CLS>
 
 ### Suggestions for Improvement (Non-blocking):
 
