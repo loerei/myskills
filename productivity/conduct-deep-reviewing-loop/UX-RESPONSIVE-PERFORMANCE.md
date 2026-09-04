@@ -9,13 +9,16 @@
 
 ### 2. Micro-Interaction Responsiveness
 - [ ] Immediate Touch Feedback: Ensure interactive elements supply immediate visual active state feedback within $<100\text{ms}$ of user touch or click events.
-- [ ] Optimistic Updates with Graceful Rollback: Confirm optimistic UI mutations update state immediately and provide safe automatic rollback with notification toasts if backend processing fails.
+- [ ] Optimistic Updates with Graceful Rollback: Confirm optimistic UI mutations update state immediately and provide safe automatic rollback with notification toasts if backend processing fails. Scope Boundary: Strictly limited to non-destructive, idempotently reversible actions (e.g. toggles, likes, local filtering). Strictly BAN demanding optimistic UI for destructive operations (e.g. file deletions, binary overwrites, schema migrations, or irreversible database writes) where rollback cannot guarantee data integrity.
 
 ### 3. Long-Running Progress & Staleness Timeouts
 - [ ] Quantitative Progress Revealing: Verify operations taking $>2\text{s}$ provide deterministic quantitative progress (`processed / total`, percentage, bytes/items) and user cancellation agency instead of an opaque indeterminate spinner.
 - [ ] Staleness-Based Timeout (Inactivity vs Wall-Clock): Confirm timeouts abort strictly on progress staleness (e.g. 10s of zero delta/activity) rather than arbitrary total elapsed wall-clock duration that penalizes healthy, active progress.
 
 ## Concrete Anti-Patterns
+
+> [!IMPORTANT]
+> **Conceptual Reference Notice**: Code snippets in this subdocument are for conceptual reference and illustrative purposes only. UX/UI Reviewers are strictly prohibited from copying concrete CSS or DOM code into review reports. All report findings must use Abstract Behavioral Specifications with Acceptance Criteria.
 
 ### Anti-Pattern 1: Un-Optimistic Async Mutate Delay
 

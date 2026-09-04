@@ -13,6 +13,9 @@
 
 ## Concrete Anti-Patterns
 
+> [!IMPORTANT]
+> **Conceptual Reference Notice**: Code snippets in this subdocument are for conceptual reference and illustrative purposes only. UX/UI Reviewers are strictly prohibited from copying concrete code into review reports. All report findings must use Abstract Behavioral Specifications with Acceptance Criteria.
+
 ### Anti-Pattern 1: Uninformative Silent Form Failure
 
 ```jsx

@@ -22,6 +22,7 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
   1. Priority 1 (Highest): Explicit user directive in `.scratch/deep-review/Context.md`.
   2. Priority 2: Established codebase conventions and existing patterns (reviewer MUST inspect codebase first).
   3. Priority 3 (Default): Smooth animated accordion transitions (e.g. CSS grid `grid-template-rows: 0fr -> 1fr`, `opacity`, and easing curves) rather than static persistent slots or sudden non-animated collapse, strictly preserving error recovery controls in `catch` blocks.
+- **Optimistic UI Scope Boundary**: Optimistic UI updates MUST be strictly bounded to non-destructive, idempotently reversible actions (e.g. toggles, likes, bookmarks, local view filtering). You MUST NOT demand optimistic UI for destructive operations (e.g. file deletions, binary overwrites, schema migrations, or unrecoverable database writes) where rollback cannot guarantee transactional consistency.
 - **Progress Revealing & Staleness Timeout**: When prescribing timeouts on long-running operations, you MUST NOT mandate arbitrary wall-clock timers that kill in-progress jobs. You MUST specify staleness-based inactivity detection (zero delta over an inactivity window) coupled with quantitative progress feedback and user cancellation agency.
 - **Mandatory Abstract Behavioral Specification (Strict Code Ban)**: Because UXUI is an analytical role without a browser runtime sandbox to verify CSS cascade, specificity, or DOM side effects, you **MUST NOT** prescribe concrete CSS or DOM code snippets in your reports. You MUST state all remediations as Abstract Behavioral Specifications describing expected visual and interaction behavior alongside explicit Acceptance Criteria, enabling the authoring agent to implement verified code cleanly.
 - **Macro Flow**: Verify that proposed UI changes preserve layout consistency, interaction responsiveness, and state progression across the enclosing view.
@@ -29,7 +30,7 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 ## Mandatory Audit Checklist
 
 1. **Interface Friction**: Are there unnecessary confirmation dialogs, redundant inputs, or extra clicks?
-2. **Clarity & Micro-Copy**: Are labels, error messages, and state indicators clear and unambiguous?
+2. **Clarity & Micro-Copy**: Are labels, error messages, and state indicators clear and unambiguous? *Micro-Copy Rule: Phrasing, terminology, and wording suggestions MUST default to `### Suggestions for Improvement (Non-blocking)`. Do NOT report micro-copy as a blocking defect unless the phrasing is factually misleading or induces dangerous actions/destructive data loss.*
 3. **Redundancy Elimination**: Are there visual elements or layouts that add zero value to the user?
 4. **Feedback Consistency & Progress Revealing**:
    - Are loading, success, error, and empty states explicitly specified?
@@ -48,7 +49,7 @@ When the target Directive Artifact touches specific subsystem archetypes below, 
 
 ## Verdict Rules
 
-- Return `STATUS: REVISIONS NEEDED` if UI/UX specifications contain redundant elements, confusing interaction flows, or missing state indicators.
+- Return `STATUS: REVISIONS NEEDED` if UI/UX specifications contain redundant elements, confusing interaction flows, or missing state indicators. Do NOT return `STATUS: REVISIONS NEEDED` solely for stylistic micro-copy or phrasing preferences unless phrasing induces destructive data loss or factually contradicts system operations.
 - Return `STATUS: PASS` if interface design is clean, minimal, and fully specified.
 
 ## Standard Output Protocol
@@ -78,7 +79,7 @@ Save evaluation to `.scratch/deep-review/reports/UXUI.md` via `write_to_file` us
 
 Once your report is written, send a notification message back to Host via `send_message` confirming completion.
 
-- <Optional UX polish or future micro-copy consideration that does NOT block PASS status>
+- <Optional UX polish, stylistic localization, or micro-copy phrasing suggestions that do NOT block PASS status>
 
 ## Gate Response Protocol (Host Interaction)
 
