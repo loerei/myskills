@@ -19,6 +19,7 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 - **View Lifecycle & State Anchor**: When demanding focus or state restoration across async boundaries (e.g. after data fetch, save, or reload), you MUST verify that the target element is not detached, destroyed, or re-rendered during the pipeline (e.g. via `innerHTML = ''`, list recreation). If re-rendered, you MUST prescribe anchoring focus to a stable parent container or re-querying post-render, NOT calling `.focus()` on a detached node.
 - **Layering & Z-Order (Stacking Context)**: When prescribing overlays, toasts, modals, tooltips, or popovers, you MUST verify their stacking context, window level, and `z-index` relative to all active containers and backdrops to prevent occlusion behind parent overlays.
 - **Visual Layout Stability (CLS)**: You MUST NOT prescribe toggling visibility/display (`display: none` <-> `display: flex/block`) on dynamic in-flow containers. Require dimensional reservations (`min-height`, skeleton placeholders, or `aspect-ratio`) to prevent mid-render layout shifts.
+- **Progress Revealing & Staleness Timeout**: When prescribing timeouts on long-running operations, you MUST NOT mandate arbitrary wall-clock timers that kill in-progress jobs. You MUST specify staleness-based inactivity detection (zero delta over an inactivity window) coupled with quantitative progress feedback and user cancellation agency.
 - **Mandatory Fallback to Abstract Specification**: If you cannot verify the complete lifecycle, token declaration, or stacking context on disk, you **MUST NOT** prescribe speculative concrete code or CSS snippets. You MUST state the remediation as an abstract behavioral requirement (e.g. *"Ensure focus is restored without dropping to body after list reload"*, *"Ensure toast notifications visually overlay active modal backdrops"*).
 - **Macro Flow**: Verify that proposed UI changes preserve layout consistency, interaction responsiveness, and state progression across the enclosing view.
 
@@ -27,7 +28,10 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 1. **Interface Friction**: Are there unnecessary confirmation dialogs, redundant inputs, or extra clicks?
 2. **Clarity & Micro-Copy**: Are labels, error messages, and state indicators clear and unambiguous?
 3. **Redundancy Elimination**: Are there visual elements or layouts that add zero value to the user?
-4. **Feedback Consistency**: Are loading, success, error, and empty states explicitly specified?
+4. **Feedback Consistency & Progress Revealing**:
+   - Are loading, success, error, and empty states explicitly specified?
+   - For operations taking $>2\text{s}$, is quantitative progress (`processed / total`, percentage, item steps) and a user cancellation/abort action provided instead of an opaque, indefinite spinner?
+   - Are timeouts designed around progress staleness (inactivity over a threshold window) rather than arbitrary total elapsed wall-clock duration that penalizes active, healthy progression?
 5. **High-Volume Interaction Responsiveness**: Are complex interactions (e.g. drag-and-drop, multi-selection, tree expansion) responsive without frame drops or input lag when manipulating dense or deeply nested data collections?
 
 ## Domain Subdocuments Routing Table
