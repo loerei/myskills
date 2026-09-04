@@ -154,6 +154,13 @@ Host executes Layer 3 reviewers in dependency order across the active selected r
      - `ProbeCount[role] == 1`: Host sends Probe 2 via `send_message` (`"Status probe (please confirm your active status IMMEDIATELY via send_message): Detected idle state. This probe is not an urge to rush, take your time and proceed thoroughly. If you have a running background script, check its status via manage_task. Once your audit is completely finished, write your report to .scratch/deep-review/reports/<Role>.md and notify Host."`), and sets `ProbeCount[role] = 2`.
      - `ProbeCount[role] >= 2` and reviewer remained idle with no confirmation: Host concludes reviewer is unrecoverable, inspects transcript/task logs, terminates it via `manage_subagents(Action="kill")`, and respawns that specific reviewer.
   5. If `PendingTierRoles` remains non-empty, re-arm 180s timer and end turn.
+- **Quota Interruption & Mid-Flight Resume**:
+  When Host resumes execution following a quota interruption, server restart, or resume signal from Layer 1:
+  1. Host inspects existing subagents via `manage_subagents(Action="list")`.
+  2. For any role in `PendingTierRoles` without a report on disk:
+     - **MANDATORY REVIVE**: If the reviewer's conversation ID exists, Host **MUST revive it** by sending a resume message via `send_message` (`"System resumed from interruption. Please continue your audit and write your report to .scratch/deep-review/reports/<Role>.md, then notify Host via send_message."`). Host **MUST NOT** call `manage_subagents(Action="kill")` and re-summon that role.
+     - **Kill/Respawn Exception**: Only if the subagent conversation is completely missing from `manage_subagents(Action="list")` may Host summon a new subagent for that role. If after revival the subagent remains unrecoverable (exceeding Probe 2 liveness escalation), Host terminates it via `manage_subagents(Action="kill")` and respawns that specific reviewer.
+  3. Re-arm 180s liveness check timer via `schedule(DurationSeconds=180, Prompt="Check on reviewers liveness", TimerCondition="any")` and end turn to await reactive wakeups.
 - Only when `PendingTierRoles` is empty does Host proceed to Step 4.
 
 ### Step 4: Tier Batch Gate & Reviewer Negotiation
@@ -175,8 +182,15 @@ Host executes Layer 3 reviewers in dependency order across the active selected r
      - If `idle`:
        - `ProbeCount == 0`: Send Probe 1 (`"Status probe (do not respond via send_message): Detected idle state. This probe is not an urge to rush, take your time and proceed thoroughly. If you have a running background script, check its status via manage_task. Once your gate response is completely finished, update .scratch/deep-review/reports/<Role>.md and notify Host."`), set `ProbeCount = 1`.
        - `ProbeCount == 1`: Send Probe 2 (`"Status probe (please confirm your active status IMMEDIATELY via send_message): Detected idle state. This probe is not an urge to rush, take your time and proceed thoroughly. If you have a running background script, check its status via manage_task. Once your gate response is completely finished, update .scratch/deep-review/reports/<Role>.md and notify Host."`), set `ProbeCount = 2`.
-       - `ProbeCount >= 2` and idle with no confirmation: Terminate via `manage_subagents(Action="kill")`, respawn that specific reviewer, and immediately dispatch the gating notification message via `send_message` to the newly spawned subagent conversation ID (directing it to `.scratch/deep-review/reports/<Role>_Gated_Issues.md` and instructing it to apply the Gate Response Protocol per `HOW-TO-GATE.md`).
+        - `ProbeCount >= 2` and idle with no confirmation: Terminate via `manage_subagents(Action="kill")`, respawn that specific reviewer, and immediately dispatch the gating notification message via `send_message` to the newly spawned subagent conversation ID (directing it to `.scratch/deep-review/reports/<Role>_Gated_Issues.md` and instructing it to apply the Gate Response Protocol per `HOW-TO-GATE.md`).
      - If `PendingGatedRoles` non-empty: Re-arm timer and end turn.
+  - **Quota Interruption & Mid-Flight Resume**:
+    When Host resumes execution following a quota interruption, server restart, or resume signal from Layer 1 during tier batch negotiation:
+    1. Host inspects existing subagents via `manage_subagents(Action="list")`.
+    2. For any role in `PendingGatedRoles` without updated reports on disk:
+       - **MANDATORY REVIVE**: If the reviewer's conversation ID exists, Host **MUST revive it** by sending a resume message via `send_message` (`"System resumed from interruption. Please continue your gate response per .scratch/deep-review/reports/<Role>_Gated_Issues.md, update your report, and notify Host via send_message."`). Host **MUST NOT** call `manage_subagents(Action="kill")` and re-summon that role.
+       - **Kill/Respawn Exception**: Only if the subagent conversation is completely missing from `manage_subagents(Action="list")` may Host respawn that specific reviewer. If after revival the subagent remains unrecoverable (exceeding Probe 2 liveness escalation), Host terminates it via `manage_subagents(Action="kill")` and respawns.
+    3. Re-arm 180s liveness check timer via `schedule(DurationSeconds=180, Prompt="Check on gated reviewers liveness", TimerCondition="any")` and end turn to await reactive wakeups.
   - Only when `PendingGatedRoles` is empty does Host proceed to re-evaluate updated `<Role>.md` and `<Role>_Explain.md` reports.
   6. **Reviewer Response Actions (per `HOW-TO-GATE.md`)**:
      - **Refining / Completing as Requested**: In-place edit of `<Role>.md` (converting ungrounded code into abstract specs, supplying missing boundary endpoints symmetrically, or harmonizing contradicting assertions in `Verification Plan`). Invalidate `<Role>_Explain.md` if previously authored (delete or overwrite with empty content via `write_to_file(CodeContent="")`).
