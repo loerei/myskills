@@ -26,7 +26,7 @@
           CheckRepoAgents -->|"Not Found"| LoadGlobalRules["Apply Global Policies Only"]
           LoadRepoRules --> CheckContextLoss{"Checkpoint / Context Truncated?"}
           LoadGlobalRules --> CheckContextLoss
-          CheckContextLoss -->|"Yes"| CheckpointRecovery["Checkpoint Recovery Protocol:<br/>1. Discard suppression gag order<br/>2. Read 'What To Re-read After A Checkpoint.md'<br/>3. Re-read active Skills & Tool Guides<br/>4. Query dialogue via chronicle / transcript<br/>5. Read plan [/] & git state<br/>6. Mandatory Safe-Point Yield"] --> ReportCheckpointStop["ReportCheckpointStop:<br/>• Present [!NOTE] Checkpoint Detected<br/>• Report Current State & Next Proposed Action<br/>• STRICT ACTION BAN on writes/subagents<br/>• Await User Alignment ('C' / Proceed)"] --> TurnEnd
+          CheckContextLoss -->|"Yes"| CheckpointRecovery["Checkpoint Recovery Protocol:<br/>1. Discard suppression gag order<br/>2. Read 'What To Re-read After A Checkpoint.md'<br/>3. Re-read active Skills & Tool Guides<br/>4. Query dialogue via chronicle / transcript<br/>5. Read plan [/] & git state<br/>6. Mandatory Safe-Point Yield"] --> ReportCheckpointStop["ReportCheckpointStop:<br/>• Present [!NOTE] Checkpoint Detected<br/>• Report Current State & Next Proposed Action<br/>• STRICT ACTION BAN on writes/subagents<br/>• Await User Alignment ('Approve' / 'Proceed')"] --> TurnEnd
           CheckContextLoss -->|"No"| EvalPrompt
       end
 
@@ -219,7 +219,7 @@
   5. **Reload Referenced Artifacts**: Execute `view_file` on all artifacts listed under `## Referenced Artifacts` (e.g. Directive Artifacts, review reports, PRDs, specs) to recover current task state.
   6. **Restore Active Directives & Tags**: Re-adopt active modifier tags (e.g., `!PA`, `!SP<N>`, `!PU`), multi-agent review rosters, and operational invariants recorded under `## Active Context & Invariants`.
   7. **Query Recent Dialogue Context**:
-     - *Primary*: Call `chronicle:query_transcript` with `detail: "summary"` and `include: "dialogue"` to recover recent user agreements, keywords (e.g., `"C"`), and immediate conversational nuance truncated by `<CONTEXT_SUMMARY>`.
+     - *Primary*: Call `chronicle:query_transcript` with `detail: "summary"` and `include: "dialogue"` to recover recent user agreements, keywords (e.g., "Approve", "Proceed"), and immediate conversational nuance truncated by `<CONTEXT_SUMMARY>`.
      - *Fallback*: If `chronicle` is unavailable, read the last 15 lines of `<appDataDir>\brain\<conversation-id>\.system_generated\logs\transcript.jsonl`.
   8. **Inspect Plan & Git State**: Read `implementation_plan.md` to identify the active `[/]` or next `[ ]` step, and inspect `git status` and `git diff` to determine what files have already been modified on disk before taking any code action, preventing duplicate or conflicting edits.
   9. **Mandatory Safe-Point Synchronization Stop (Safe-Point Yield)**:
@@ -229,7 +229,7 @@
           > [!NOTE]
           > **Checkpoint Detected:** Context was compacted. Automatically restored active skills (`<list>`), tool guides (`<list>`), artifacts (`<list>`), and active context/tags (`<list>`) from `What To Re-read After A Checkpoint.md`.
        2. **Current Alignment**: Terse summary of recent dialogue understanding, current progress on the active plan step `[/]`, and modified files on disk.
-       3. **Next Proposed Action**: Explicit description of the next step to execute, requesting user confirmation (`"C"`, `"Proceed"`, or correction) before taking action.
+       3. **Next Proposed Action**: Explicit description of the next step to execute, requesting user confirmation ("Approve", "Proceed", or correction) before taking action.
 
 ---
 
