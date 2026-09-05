@@ -224,6 +224,7 @@
   8. **Inspect Plan & Git State**: Read `implementation_plan.md` to identify the active `[/]` or next `[ ]` step, and inspect `git status` and `git diff` to determine what files have already been modified on disk before taking any code action, preventing duplicate or conflicting edits.
   9. **Mandatory Safe-Point Synchronization Stop (Safe-Point Yield)**:
      - **STRICT ACTION BAN**: The agent **MUST NOT** execute code modifications, run terminal commands, spawn subagents, send messages to existing subagents, or trigger review loops in the recovery turn, even if an operation was in-flight before the checkpoint.
+     - **Permitted Interactive Alignment Tools**: The agent **IS PERMITTED** to call `ask_question` alongside the alignment report if context recovery reveals genuine technical ambiguities or discrete alternative choices for the next step. If the next step is straightforward with an active plan, prefer standard response text asking for user confirmation.
      - **Standardized Checkpoint Report Format**: The agent MUST yield the turn immediately and output a structured 3-part alignment report:
        1. **Alert Banner**:
           > [!NOTE]
