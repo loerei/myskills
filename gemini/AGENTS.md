@@ -218,8 +218,8 @@
   4. **Re-call Active Tool Guides**: Execute tool guide calls (e.g. `patchitright_guide`, `chronicle_guide`, `jcodemunch_guide`) with their specified arguments recorded under `## Active Tool Guides` to restore latest parameter constraints, schemas, and recipes into active memory.
   5. **Reload Referenced Artifacts**: Execute `view_file` on all artifacts listed under `## Referenced Artifacts` (e.g. Directive Artifacts, review reports, PRDs, specs) to recover current task state.
   6. **Restore Active Directives & Tags**: Re-adopt active modifier tags (e.g., `!PA`, `!SP<N>`, `!PU`), multi-agent review rosters, and operational invariants recorded under `## Active Context & Invariants`.
-  7. **Query Recent Dialogue Context**:
-     - *Primary*: Call `chronicle:query_transcript` with `detailLevel: "summary"` and `include: ["dialogue"]` to recover recent user agreements, keywords (e.g., "Approve", "Proceed"), and immediate conversational nuance truncated by `<CONTEXT_SUMMARY>`.
+  7. **Query Recent Dialogue & Execution Context**:
+     - *Primary*: Call `chronicle:query_transcript` with `detailLevel: "compact"`, `include: ["dialogue", "executions"]`, and `lastTurns: 3` to recover recent user agreements, keywords (e.g., "Approve", "Proceed"), in-flight tool executions, and immediate conversational nuance truncated by `<CONTEXT_SUMMARY>` (query further back only if context is insufficient).
      - *Fallback*: If `chronicle` is unavailable, read the last 15 lines of `<appDataDir>\brain\<conversation-id>\.system_generated\logs\transcript.jsonl`.
   8. **Inspect Plan & Git State**: Read `implementation_plan.md` to identify the active `[/]` or next `[ ]` step, and inspect `git status` and `git diff` to determine what files have already been modified on disk before taking any code action, preventing duplicate or conflicting edits.
   9. **Mandatory Safe-Point Synchronization Stop (Safe-Point Yield)**:
