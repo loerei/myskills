@@ -10,9 +10,9 @@ Unified operational instructions for Layer 2 Review Host to manage workspace iso
 ```text
 <repo-root>/.scratch/deep-review/
 ├── host/                    # [HOST ONLY] Coordination artifacts (hidden from reviewers)
-│   ├── Analyzation.md
-│   ├── Reviewer_Choice_Rationale.md
-│   └── Untouched_Reviewers.md
+│   ├── State.md             # Machine-readable routing state (Verdict, Highest Modified Tier, PassCount, Untouched Reviewers)
+│   ├── Analyzation.md       # Human/L1 analysis report (accepted issues & rationale)
+│   └── Reviewer_Choice_Rationale.md
 ├── Context.md               # [PUBLIC] Initialized by Layer 1 (DA path, rules, criteria, static SP)
 ├── reports/                 # [REVIEWER OUTPUTS & GATING] Purged at pass starts; in-place sanitized
 │   ├── <Role>.md            # Initial reviewer report & in-place sanitized report
@@ -31,7 +31,7 @@ Unified operational instructions for Layer 2 Review Host to manage workspace iso
       ## Cross-Referenced DAs & Dependency Lineage
       | DA Path | Lineage Direction | Codebase Status | Domain Boundary & Contract Responsibility |
       | :--- | :---: | :---: | :--- |
-      | `<path-to-da>` | `Upstream` \| `Downstream` | `Implemented` \| `Unimplemented` | <Explicit responsibility boundary> |
+      | `<path-to-da>` | `Upstream` | `Downstream` | `Implemented` | `Unimplemented` | <Explicit responsibility boundary> |
       ```
     - `## Active Modifiers` (e.g. `!PA`, `!WA`, `!SP<N>`).
     - Codebase rules path (`AGENTS.md`).
@@ -93,7 +93,7 @@ Host executes Layer 3 reviewers in dependency order across the active selected r
 | **Layer 3.3** | `Logic` *(Mandatory Core)*, `Edgecase`, `Performance`, `Observability` | Layer 3.2 PASS |
 | **Layer 3.4** | `UXUI` | Layer 3.3 PASS |
 
-- **Vacuous Tier Transition**: If all roles in a DAG tier are `EXCLUDED`, or if all active roles in the tier are skipped during an initial targeted pass (as upstream of `Highest Modified Tier` or listed in `host/Untouched_Reviewers.md`), Host treats that tier as vacuously passed for the active targeted pass and immediately advances to the next tier.
+- **Vacuous Tier Transition**: If all roles in a DAG tier are `EXCLUDED`, or if all active roles in the tier are skipped during an initial targeted pass (as upstream of `Highest Modified Tier` or listed under Untouched Reviewers in `host/State.md`), Host treats that tier as vacuously passed for the active targeted pass and immediately advances to the next tier.
 
 ### 3.2 Role Summoning Table
 
@@ -132,16 +132,15 @@ Host executes Layer 3 reviewers in dependency order across the active selected r
 - Validate `.scratch/deep-review/Context.md` (verifying target DA, dependency lineage table, active modifiers, and criteria) without overwriting criteria or `SP`.
 
 ### Step 2: DAG Routing & Targeted Execution
-- **Targeted Round (Round N+1)**: If previous `host/Analyzation.md` recorded `Gate Verdict: ROUND_REVISION_NEEDED`:
+- **Targeted Round (Round N+1)**: If previous `host/State.md` recorded `Gate Verdict: ROUND_REVISION_NEEDED`:
   - Reset `PassCount = 0`.
-  - Read `Highest Modified Tier` from previous `host/Analyzation.md`. If the header is missing, unparseable, or malformed, gracefully fallback to `Layer 3.1`.
-  - Load `.scratch/deep-review/host/Untouched_Reviewers.md`. If missing on disk, unparseable, or containing `*(None)*`, whitespace, or an empty table, gracefully fallback to an empty set ($\emptyset$), treating all active roles in affected tiers as targeted.
+  - Read `Highest Modified Tier` from previous `host/State.md`. If the line is missing, unparseable, or malformed, gracefully fallback to `Layer 3.1`.
+  - Load `Untouched Reviewers` from `.scratch/deep-review/host/State.md`. If the section is missing, unparseable, or containing `*(None)*`, whitespace, or an empty table, gracefully fallback to an empty set ($\emptyset$), treating all active roles in affected tiers as targeted.
   - Determine affected roles per Section 5 Invalidation Matrix.
-  - Preserve `host/Untouched_Reviewers.md` across Steps 2–6.
   - Summon affected roles on the updated static snapshot $S_N$.
-- **Full Sweep Round (Round N+1)**: If previous `host/Analyzation.md` recorded `Gate Verdict: ROUND_PASS`:
-  - Set `PassCount` to the parsed integer from `Current PassCount` in `host/Analyzation.md` (falling back to `PassCount = 1` if missing or unparseable), and run Full Sweep on the static DA across all active roles.
-- **Initial Round (Round 1, when `host/Analyzation.md` is absent)**:
+- **Full Sweep Round (Round N+1)**: If previous `host/State.md` recorded `Gate Verdict: ROUND_PASS`:
+  - Set `PassCount` to the parsed integer from `Current PassCount` in `host/State.md` (falling back to `PassCount = 1` if missing or unparseable), and run Full Sweep on the static DA across all active roles.
+- **Initial Round (Round 1, when `host/State.md` is absent)**:
   - Initialize `PassCount = 0` and run Full DAG across all active roles (Tier 3.1 -> 3.2 -> 3.3 -> 3.4).
 
 ### Step 3: Subagent Execution & Single-Wave Summoning
@@ -213,7 +212,7 @@ If a tier returns `REVISION NEEDED` after tier batch gate resolution (i.e. if an
 
 ### Step 6: Snapshot Delta Backfill & Full Sweep Clearance Gate
 - When all active roles in the current pass clear with zero blocking defects (either via Full DAG execution or Targeted pass on snapshot $S_N$):
-  - **Snapshot Delta Backfill**: If un-evaluated active roles exist on snapshot $S_N$ (skipped upstream roles or untouched reviewers from `host/Untouched_Reviewers.md`), summon ONLY those skipped roles in topological DAG sequence on snapshot $S_N$, preserving intra-round reports in `reports/` and enforcing early tier suspension if any role returns `REVISION NEEDED`.
+  - **Snapshot Delta Backfill**: If un-evaluated active roles exist on snapshot $S_N$ (skipped upstream roles or untouched reviewers from `host/State.md`), summon ONLY those skipped roles in topological DAG sequence on snapshot $S_N$, preserving intra-round reports in `reports/` and enforcing early tier suspension if any role returns `REVISION NEEDED`.
   - **Full Sweep Clearance Check**: Once 100% of active roles in the frozen roster have audited and passed snapshot $S_N$ with zero blocking defects:
     - Increment `PassCount += 1`.
     - If `PassCount < SP`: Transition directly to Step 7 with `Gate Verdict: ROUND_PASS`.
@@ -234,14 +233,14 @@ When terminating or concluding a round, execute this transactional sequence:
      2. For every target DA listed in restored `Context.md`: restore from its sibling `<da_stem>.bak.md` file (if present) and delete the backup file.
      3. Delete any remaining orphaned sibling `<da_stem>.bak.md` backup files.
      4. Terminate active reviewer subagents via `manage_subagents(Action="kill")`.
-     5. Author `host/Analyzation.md` with `- **Gate Verdict**: ABORTED_MUTATION_FAILURE` detailing the error and affected paths, notify Layer 1 via `send_message`, and halt execution without issuing `ROUND_REVISION_NEEDED`.
+     5. Author `host/State.md` with `- **Gate Verdict**: ABORTED_MUTATION_FAILURE` and author `host/Analyzation.md` detailing the error and affected paths, notify Layer 1 via `send_message`, and halt execution without issuing `ROUND_REVISION_NEEDED`.
    - **Verification Success**:
      - If `!PA` / `!WA` is active: Retain `<da_stem>.bak.md` and `Context.bak.md` for Layer 1 quota pause, diff review, and user rollback.
      - If `!PA` / `!WA` is NOT active: Host immediately purges the temporary `<da_stem>.bak.md` and `Context.bak.md` backup files before concluding the round.
 
 #### Coordination Artifacts & Process Teardown (All Verdicts):
 4. **Author Coordination Artifacts**:
-   - Record `Current PassCount: <N> / <SP>` in `.scratch/deep-review/host/Analyzation.md` (enforcing `Current PassCount: 0 / <SP>` whenever verdict is `ROUND_REVISION_NEEDED`).
+   - **`State.md`**: Author `.scratch/deep-review/host/State.md` containing Executive Summary state and `## Untouched Reviewers` table per `HOW-TO-GATE.md` (enforcing `Current PassCount: 0 / <SP>` whenever verdict is `ROUND_REVISION_NEEDED`).
    - **`Analyzation.md`**: Author `.scratch/deep-review/host/Analyzation.md` containing:
      - Executive Summary header:
        - `- **Gate Verdict**: ROUND_REVISION_NEEDED | ROUND_PASS | FINAL_PASS | ABORTED_MUTATION_FAILURE`
@@ -249,29 +248,28 @@ When terminating or concluding a round, execute this transactional sequence:
        - `- **Active Roster**: <List of active roles>`
        - `- **Highest Modified Tier**: Layer 3.X` (Mandatory when verdict is `ROUND_REVISION_NEEDED`)
      - **Accepted Issues Only**: List of accepted blocking defects across active roles with technical acceptance rationale. Zero rejected/gated tables. If all active roles cleared with zero defects, record `*(None - All active roles cleared with zero blocking defects)*`.
-   - **`Untouched_Reviewers.md`**: When verdict is `ROUND_REVISION_NEEDED`, author `.scratch/deep-review/host/Untouched_Reviewers.md` listing active roles whose domain checklists were completely untouched by the applied mutations per `HOW-TO-GATE.md` (applying Conservative Fallback).
 5. **Process Teardown & Workspace State Preservation**:
-   Host terminates active reviewer subagents via process control (`manage_subagents(Action="kill")`), sends a completion message to Layer 1 (parent agent) via `send_message` reporting the Gate Verdict and referencing `.scratch/deep-review/host/Analyzation.md`, and concludes execution:
-   - **Intermediate Revision Teardown (`ROUND_REVISION_NEEDED`)**: Preserve `host/Analyzation.md` and `host/Untouched_Reviewers.md` for Layer 1 handoff, and conclude execution.
-   - **Round Pass Teardown (`ROUND_PASS`)**: Purge `reports/` and transient gating artifacts. Purge `host/Untouched_Reviewers.md`. Preserve `host/Analyzation.md` intact for Layer 1 handoff, and conclude execution.
-   - **Final Pass Teardown (`FINAL_PASS`)**: Purge `reports/` and transient gating artifacts, purge `host/Untouched_Reviewers.md`, preserve `host/Analyzation.md` for Layer 1 handoff. Layer 1 executes final purge of `.scratch/deep-review/*` after presenting verified DA.
-   - **Abort Recovery Teardown (`ABORTED_MUTATION_FAILURE`)**: Preserve `host/Analyzation.md` for Layer 1 handoff, and conclude execution.
+   Host terminates active reviewer subagents via process control (`manage_subagents(Action="kill")`), sends a completion message to Layer 1 (parent agent) via `send_message` reporting the Gate Verdict and referencing `.scratch/deep-review/host/State.md` and `Analyzation.md`, and concludes execution:
+   - **Intermediate Revision Teardown (`ROUND_REVISION_NEEDED`)**: Preserve `host/State.md` (and `host/Analyzation.md` for Layer 1 inspection). Note that Layer 1 deletes `host/Analyzation.md` prior to launching Round N+1 to eliminate cognitive anchoring.
+   - **Round Pass Teardown (`ROUND_PASS`)**: Purge `reports/` and transient gating artifacts. Preserve `host/State.md` (and `host/Analyzation.md` for Layer 1 inspection). Layer 1 deletes `host/Analyzation.md` prior to launching next round.
+   - **Final Pass Teardown (`FINAL_PASS`)**: Purge `reports/` and transient gating artifacts, preserve `host/State.md` and `host/Analyzation.md` for Layer 1 final presentation. Layer 1 executes final purge of `.scratch/deep-review/*` after presenting verified DA.
+   - **Abort Recovery Teardown (`ABORTED_MUTATION_FAILURE`)**: Preserve `host/State.md` and `host/Analyzation.md` for Layer 1 handoff, and conclude execution.
 
 ---
 
 ## 5. Invalidation Matrix & Targeted Re-Review
 
 When Host applies verified mutations to the Directive Artifact, the DA transitions to a new static snapshot $S_N$. The smallest scheduling unit is the **individual Reviewer**:
-1. Host identifies the `Highest Modified Tier` recorded in `host/Analyzation.md` (falling back to `Layer 3.1` if missing or malformed) and its downstream tiers.
-2. Host loads `.scratch/deep-review/host/Untouched_Reviewers.md` and filters out all untouched reviewers from the immediate pass (treating `*(None)*` as empty set $\emptyset$).
+1. Host identifies the `Highest Modified Tier` recorded in `host/State.md` (falling back to `Layer 3.1` if missing or malformed) and its downstream tiers.
+2. Host loads `Untouched Reviewers` from `.scratch/deep-review/host/State.md` and filters out all untouched reviewers from the immediate pass (treating `*(None)*` as empty set $\emptyset$).
 3. Host summons only the affected reviewers in topological DAG sequence, while registering untouched reviewers into the pending backfill queue for snapshot $S_N$:
 
 | Highest Modified Tier | Targeted Roles Run on Snapshot $S_N$ | Skipped Roles Pending Backfill (Upstream + Untouched) |
 | :--- | :--- | :--- |
-| **Layer 3.1 (Architectural & Phasing)** | Active 3.1 to 3.4 Roles $\setminus$ `Untouched_Reviewers` | Untouched 3.1 to 3.4 Roles |
-| **Layer 3.2 (Readiness / Security / DataMigration / Testability)** | Active 3.2 to 3.4 Roles $\setminus$ `Untouched_Reviewers` | Active Layer 3.1 Roles + Untouched 3.2-3.4 Roles |
-| **Layer 3.3 (Logic / Edgecase / Performance / Observability)** | Active 3.3 to 3.4 Roles $\setminus$ `Untouched_Reviewers` | Active Layer 3.1 & 3.2 Roles + Untouched 3.3-3.4 Roles |
-| **Layer 3.4 (UX/UI)** | Active 3.4 Roles $\setminus$ `Untouched_Reviewers` | Active Layer 3.1 to 3.3 Roles + Untouched 3.4 Roles |
+| **Layer 3.1 (Architectural & Phasing)** | Active 3.1 to 3.4 Roles $\setminus$ Untouched Roles | Untouched 3.1 to 3.4 Roles |
+| **Layer 3.2 (Readiness / Security / DataMigration / Testability)** | Active 3.2 to 3.4 Roles $\setminus$ Untouched Roles | Active Layer 3.1 Roles + Untouched 3.2-3.4 Roles |
+| **Layer 3.3 (Logic / Edgecase / Performance / Observability)** | Active 3.3 to 3.4 Roles $\setminus$ Untouched Roles | Active Layer 3.1 & 3.2 Roles + Untouched 3.3-3.4 Roles |
+| **Layer 3.4 (UX/UI)** | Active 3.4 Roles $\setminus$ Untouched Roles | Active Layer 3.1 to 3.3 Roles + Untouched 3.4 Roles |
 
 ---
 
@@ -280,5 +278,5 @@ When Host applies verified mutations to the Directive Artifact, the DA transitio
 | Tag | Parameter | Timing | System Behavior |
 | :--- | :--- | :--- | :--- |
 | `!SP<N>` | N (Integer >= 1) | Start-time | Sets required continuous Full Sweep PASS threshold `SP = N`. |
-| `!PA` / `!WA` | None | Start-time / Mid-flight | Pre-review pause gate: When Host issues `ROUND_REVISION_NEEDED`, Host retains sibling `<da_stem>.bak.md` copies and applies verified mutations directly to DA files. Main Agent stops execution before triggering Round N+1, prompts user to verify API quota or review diff against `<da_stem>.bak.md`, and awaits keyword `"C"` to clean backup files and proceed to Round N+1 (or executes rollback per `SKILL.md` if user requests revert). If invoked mid-flight, Layer 1 updates `## Active Modifiers` in `Context.md`. Remains persistent across all rounds until `FINAL_PASS`. |
+| `!PA` / `!WA` | None | Start-time / Mid-flight | Pre-review pause gate: When Host issues `ROUND_REVISION_NEEDED`, Host retains sibling `<da_stem>.bak.md` copies and applies verified mutations directly to DA files. Main Agent stops execution before triggering Round N+1, prompts user to verify API quota or review diff against `<da_stem>.bak.md`, and awaits keyword `"C"` to clean backup files, delete `host/Analyzation.md`, and proceed to Round N+1 (or executes rollback per `SKILL.md` if user requests revert). If invoked mid-flight, Layer 1 updates `## Active Modifiers` in `Context.md`. Remains persistent across all rounds until `FINAL_PASS`. |
 | `!FPA` | None | Mid-flight | Instantly kills running subagent via process control, discards outputs, pauses loop. |

@@ -82,10 +82,10 @@ When specialist reviewer opinions conflict (e.g. `Performance` requesting aggres
 
 | Condition | Gate Verdict | Output Artifacts |
 | :--- | :--- | :--- |
-| 1+ Accepted Blocking Defects | `ROUND_REVISION_NEEDED` | Host mutates target DA(s) directly using Clean & Neutral Artifact Protocol (creating temporary sibling `<da_stem>.bak.md` copies), writes `host/Analyzation.md` (accepted issues only with rationale), and writes `host/Untouched_Reviewers.md`. Intermediate round teardown terminates reviewer subagents via process control, but preserves `host/Analyzation.md` and `host/Untouched_Reviewers.md` for Layer 1. |
-| Write Verification / Filesystem Failure | `ABORTED_MUTATION_FAILURE` | Host restores modified and deleted target DAs from backups where present, restores `Context.md` from `Context.bak.md`, deletes newly created DAs, terminates reviewer subagents, writes `host/Analyzation.md` detailing the failure, notifies Layer 1 via `send_message`, and halts without issuing `ROUND_REVISION_NEEDED`. |
+| 1+ Accepted Blocking Defects | `ROUND_REVISION_NEEDED` | Host mutates target DA(s) directly using Clean & Neutral Artifact Protocol (creating temporary sibling `<da_stem>.bak.md` copies), writes `host/State.md` (including Untouched Reviewers section), and writes `host/Analyzation.md` (accepted issues only with rationale). Intermediate round teardown terminates reviewer subagents via process control, preserving `host/State.md` and `host/Analyzation.md` for Layer 1. Layer 1 deletes `host/Analyzation.md` prior to Round N+1. |
+| Write Verification / Filesystem Failure | `ABORTED_MUTATION_FAILURE` | Host restores modified and deleted target DAs from backups where present, restores `Context.md` from `Context.bak.md`, deletes newly created DAs, terminates reviewer subagents, writes `host/State.md` and `host/Analyzation.md` detailing the failure, notifies Layer 1 via `send_message`, and halts without issuing `ROUND_REVISION_NEEDED`. |
 | 0 Accepted Blocking Defects (Targeted Pass with Pending Skipped Roles) | `TARGETED_PASS` *(Ephemeral Internal Host State)* | Trigger Snapshot Delta Backfill for skipped roles (upstream + untouched) in topological DAG sequence (preserving intra-round reports). |
-| 0 Accepted Blocking Defects (100% Roster Passed on Snapshot) | `ROUND_PASS` (Increment `PassCount`) or `FINAL_PASS` (if `PassCount >= SP`) | Write `host/Analyzation.md`. Terminate reviewer subagents via process control, purge `reports/`, transient gating artifacts, and `host/Untouched_Reviewers.md`, preserving `host/Analyzation.md` for Layer 1 handoff. On `FINAL_PASS`, Layer 1 executes directory teardown after presenting the verified DA. |
+| 0 Accepted Blocking Defects (100% Roster Passed on Snapshot) | `ROUND_PASS` (Increment `PassCount`) or `FINAL_PASS` (if `PassCount >= SP`) | Write `host/State.md` and `host/Analyzation.md`. Terminate reviewer subagents via process control, purge `reports/` and transient gating artifacts, preserving `host/State.md` and `host/Analyzation.md` for Layer 1 handoff. Layer 1 deletes `host/Analyzation.md` prior to launching next round. On `FINAL_PASS`, Layer 1 executes directory teardown after presenting the verified DA. |
 
 ## <Role>_Gated_Issues.md Authoring Standards
 
@@ -113,6 +113,46 @@ Notify Host via message when done.
    - **Gate Rationale**: <Exact technical reason why issue failed the gate without proposing fix code>
 ```
 
+## State.md Authoring Standards
+
+When authoring `.scratch/deep-review/host/State.md`:
+1. **Purpose**: Machine-readable routing state consumed exclusively by Host N+1 for DAG calculation, completely decoupled from `Analyzation.md` to eliminate cognitive anchoring.
+2. **Standard Markdown Layout**:
+   - **When verdict is `ROUND_REVISION_NEEDED`**:
+     ```markdown
+     # Gate State
+     - Gate Verdict: ROUND_REVISION_NEEDED
+     - Highest Modified Tier: Layer 3.X
+     - Current PassCount: 0 / <SP>
+
+     ## Untouched Reviewers
+     | Role Identifier | Technical Rationale |
+     | :--- | :--- |
+     | `<Role>` | <Explanation why applied DA mutations do not touch this role's contracts or domain> |
+     ```
+     If ALL active roles were touched by applied mutations, record:
+     ```markdown
+     ## Untouched Reviewers
+     *(None)*
+     ```
+   - **When verdict is `ROUND_PASS` or `FINAL_PASS`**:
+     ```markdown
+     # Gate State
+     - Gate Verdict: ROUND_PASS | FINAL_PASS
+     - Highest Modified Tier: None
+     - Current PassCount: <N> / <SP>
+     ```
+   - **When verdict is `ABORTED_MUTATION_FAILURE`**:
+     ```markdown
+     # Gate State
+     - Gate Verdict: ABORTED_MUTATION_FAILURE
+     - Highest Modified Tier: None
+     - Current PassCount: 0 / <SP>
+     ```
+3. **Untouched Reviewers Criteria & Fallback**:
+   - **Strict Untouched Criteria**: A reviewer is listed under `## Untouched Reviewers` ONLY IF the applied DA mutations introduce zero modifications, additions, or regressions relevant to that reviewer's domain checklist. If a role's domain is affected by the applied changes, it MUST NOT be listed in this section.
+   - **Conservative Fallback**: If there is any ambiguity on whether a mutation might affect a role, omit it from `Untouched Reviewers` to ensure immediate re-audit in Round N+1.
+
 ## Analyzation.md Authoring Standards
 
 When authoring `.scratch/deep-review/host/Analyzation.md`:
@@ -136,27 +176,4 @@ When applying accepted remediations directly to target DA(s) for `ROUND_REVISION
 3. **Boundary Contract Symmetry Validation**: Host MUST verify that any boundary interface modification includes symmetrical updates for both producer/caller and all internal consumer/handler endpoints (or shared constants/types) directly from the accepted `<Role>.md` reports; Host MUST NOT apply 1-sided boundary modifications.
 4. **DA Cross-Section Coherence Validation**: Host MUST verify that any modification altering component contracts includes synchronized updates for dependent sections (e.g. `Verification Plan` assertions) directly from accepted `<Role>.md` reports; Host MUST NOT introduce self-contradicting DA diffs.
 5. **Mandatory Context DA Tree Synchronization**: If accepted feedback splits, merges, creates, or deletes Directive Artifact files (e.g. Progress Reviewer WBS actions), Host MUST copy deleted DA files to `<da_stem>.bak.md` before deletion, create `.scratch/deep-review/Context.bak.md` first, directly create/restructure the files on disk, and update `## Target Directive Artifacts` in `.scratch/deep-review/Context.md`.
-6. **Write Verification & Abort Recovery**: Host verifies on disk that all DA mutations and restructured files were successfully written and are non-empty. If write verification fails (file missing, write error, or 0 bytes): Host executes abort recovery (deleting newly created DAs, restoring `Context.md` from `Context.bak.md`, restoring target DAs from existing sibling `<da_stem>.bak.md` backups where present, and cleaning backup files), terminates active reviewer subagents via `manage_subagents(Action="kill")`, aborts round conclusion without issuing `ROUND_REVISION_NEEDED`, writes `.scratch/deep-review/host/Analyzation.md` with `- **Gate Verdict**: ABORTED_MUTATION_FAILURE` detailing the exact filesystem error, affected paths, and recovery status, and notifies Layer 1 via `send_message`.
-
-## Untouched_Reviewers.md Authoring Standards
-
-When authoring `.scratch/deep-review/host/Untouched_Reviewers.md` for `ROUND_REVISION_NEEDED`:
-1. **Mandatory Artifact Creation**: Host MUST author this artifact whenever verdict is `ROUND_REVISION_NEEDED`.
-2. **Strict Untouched Criteria**: A reviewer is listed ONLY IF the applied DA mutations introduce zero modifications, additions, or regressions relevant to that reviewer's domain checklist. If a role's domain is affected by the applied changes, it MUST NOT be listed in this file.
-3. **Standardized Markdown Layout**:
-   ```markdown
-   # Untouched Reviewers
-
-   | Role Identifier | Technical Rationale |
-   | :--- | :--- |
-   | `<Role>` | <Explanation why applied DA mutations do not touch this role's contracts or domain> |
-   ```
-   If ALL active roles were touched by the applied mutations, record:
-   ```markdown
-   # Untouched Reviewers
-
-   | Role Identifier | Technical Rationale |
-   | :--- | :--- |
-   | *(None)* | Applied DA mutations touch shared core abstractions and data models, invalidating all active roles. |
-   ```
-4. **Conservative Fallback**: If there is any ambiguity on whether a mutation might affect a role, omit it from `Untouched_Reviewers.md` to ensure immediate re-audit in Round N+1.
+6. **Write Verification & Abort Recovery**: Host verifies on disk that all DA mutations and restructured files were successfully written and are non-empty. If write verification fails (file missing, write error, or 0 bytes): Host executes abort recovery (deleting newly created DAs, restoring `Context.md` from `Context.bak.md`, restoring target DAs from existing sibling `<da_stem>.bak.md` backups where present, and cleaning backup files), terminates active reviewer subagents via `manage_subagents(Action="kill")`, aborts round conclusion without issuing `ROUND_REVISION_NEEDED`, writes `.scratch/deep-review/host/State.md` and `.scratch/deep-review/host/Analyzation.md` with `- **Gate Verdict**: ABORTED_MUTATION_FAILURE` detailing the exact filesystem error, affected paths, and recovery status, and notifies Layer 1 via `send_message`.
