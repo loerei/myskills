@@ -14,6 +14,7 @@ Instructions for Layer 2 Critical Gate Agent to evaluate, filter, and reject Lay
    - **REJECT** findings where a reviewer claims unreadiness or missing files on disk that are explicitly declared to be implemented in an un-implemented `Upstream` DA (*False-Positive Upstream Unreadiness*).
    - **REJECT** findings where a reviewer demands tightly coupling the target DA to future `Downstream` epics (*Premature Downstream Coupling*).
 7. **Reviewer-Driven Fix Refinement & Gating**: When a reported defect contains ungrounded code snippets, non-existent APIs, lacks Ground-Truth/Macro Flow proof, breaks boundary contract symmetry, introduces intra-DA contradictions, or represents an invalid defect, Host does not rewrite the snippet, unilaterally invent boundary counterparts, or unilaterally apply it directly into the DA. Instead, Host gates the issue in `.scratch/deep-review/reports/<Role>_Gated_Issues.md`, requiring the reviewer to either refine/complete the fix, remove the defect, or provide deeper proof.
+8. **System Invariants over Implementation Mechanics**: Gate against findings on internal code snippet mechanics (e.g. syntax, types, barrel exports, regex flags). If a behavioral requirement is valid, enforce it via Acceptance Criteria test assertions without rewriting code snippets or resetting PassCount.
 
 ## Triage Matrix
 
@@ -38,6 +39,7 @@ Instructions for Layer 2 Critical Gate Agent to evaluate, filter, and reject Lay
 | **Speculative Over-Engineering** | Demands premature optimization, unnecessary abstractions, or unrequested features. *Protection Exception: Parameter Seams, Governance Decoupling, and Scale Invariance MUST be accepted.* | **GATE FOR REMOVAL**: Demand reviewer removal in `<Role>_Gated_Issues.md`. |
 | **Pedantic / Stylistic Preference** | Requests rephrasing, renaming, or cosmetic adjustments without functional impact. Micro-copy and wording critiques MUST default to non-blocking suggestions unless phrasing is factually misleading or induces dangerous actions/destructive data loss. | **GATE FOR REMOVAL**: Demand reviewer removal or mark as non-blocking. |
 | **Spec-Induced Regression** | Demands strict exceptions or error classes on ingress/decode paths that contradict active codebase behavior or break existing unit tests without explicit user request. | **GATE FOR REMOVAL**: Demand reviewer removal in `<Role>_Gated_Issues.md`. |
+| **Internal Implementation Mechanics** | Finding critiques syntax, types, barrel exports, regex flags, or local mechanics in illustrative code snippets that standard TDD catches during implementation. | **GATE FOR CONVERSION / REMOVAL**: Demand reviewer remove the blocking defect or convert it to a discrete `Acceptance Criterion` without code snippets. |
 
 ## Tier Batch Gate & Reviewer Negotiation Protocol
 
