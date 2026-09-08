@@ -325,7 +325,7 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
 
 ### Phase 2A Reference: Implementation Plan Protocol
 
-> *Overrides `<planning_mode>` ad-hoc task tracking and unifies plan proposals with step-by-step execution tracking into a single authoritative document.*
+> *Overrides `<planning_mode_artifacts>` plan structure and `<planning_mode>` ad-hoc task tracking. The checklist state machine defined below supersedes the default template, embedding progress tracking directly onto file headers and verification commands instead of standalone task or execution step sections.*
 
 #### Implementation Plan Directives
 1. **Plan Review Gate:** When submitting `implementation_plan.md` to the User for the first time, ask the user to review the plan and provide explicit approval before proceeding to execution.
@@ -333,7 +333,7 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
    - `#### [ ] [ACTION]` / `- [ ] <test>`: **Pending.** Planned work awaiting execution.
    - `#### [/] [ACTION]` / `- [/] <test>`: **In-Progress.** Actively being executed (**STRICT LIMIT:** Exactly **ONE** item active at a time).
    - `#### [x] [ACTION]` / `- [x] <test>`: **Completed.** Fully executed AND verified by empirical runtime evidence (test output, build logs).
-3. **No Separate `## Tasks` Section:** MUST NOT create a separate `## Tasks` section. All actionable tasks are tracked directly on file headers (`#### [ ] [MODIFY|NEW|DELETE]`) and automated test commands (`- [ ] <cmd>`). Sub-bullets under each file header describe modifications without nested checkboxes.
+3. **No Standalone Task or Execution Sections:** MUST NOT create standalone progress lists under any name (such as `## Execution Steps`, `## Steps`, or `## Tasks`). All actionable tasks are tracked directly on file headers (`#### [ ] [MODIFY|NEW|DELETE]`) and automated test commands (`- [ ] <cmd>`). Sub-bullets under each file header describe modifications without nested checkboxes.
 4. **Post-Implementation Verification & Cumulative Walkthrough:** Upon completing all checklist items (`[x]`), generate or incrementally update `walkthrough.md` summarizing changes and verification results.
 5. **Living Cumulative Artifacts & Plan Lifecycle:**  
    Artifacts (`implementation_plan.md`, `walkthrough.md`) are living, cumulative session documents.

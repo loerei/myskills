@@ -241,6 +241,23 @@ Cross-reference of the 11 severity-ranked conflicts and 7 harmful practices (A�
 
 ---
 
+### #12 — `<planning_mode_artifacts>` Plan Template vs. Phase 2A Checklist State Machine
+
+> **System says:** Template uses static headers (`#### [MODIFY] [file basename](...)`) and bullet points (`- The commands of any automated tests you'll run`) without checkboxes.
+> **user_global says:** MUST embed checklist state machine directly onto file headers (`#### [ ] [MODIFY|NEW|DELETE]`) and automated test commands (`- [ ] <cmd>`). MUST NOT create standalone progress lists under any name (`## Execution Steps`, `## Steps`, or `## Tasks`).
+
+| Dimension | Assessment |
+|:---|:---|
+| **user_global rule exists?** | Yes — Phase 2A Implementation Plan Protocol. |
+| **Layer 2 (Micro-Anchor)?** | Yes — Phase 2A opens with _"Overrides `<planning_mode_artifacts>` plan structure and `<planning_mode>` ad-hoc task tracking. The checklist state machine defined below supersedes the default template, embedding progress tracking directly onto file headers and verification commands instead of standalone task or execution step sections."_ |
+| **Conflict type?** | **Direct Contradiction & Behavioral Leak** — model copies system template without `[ ]`, then scrambles to create `## Execution Steps` to track `[/]`. |
+
+**Status: RESOLVED**
+
+**Rationale:** Micro-anchor in `gemini/AGENTS.md` directly names `<planning_mode_artifacts>` and specifies the replacement mechanism. Rule wording in both `AGENTS.md` and `gemini/AGENTS.md` explicitly prohibits standalone lists under all known aliases (`## Execution Steps`, `## Steps`, `## Tasks`).
+
+---
+
 ## Part 2: The 7 Harmful Practices (A–G)
 
 ### A — Autonomous Execution Without Approval
@@ -321,6 +338,7 @@ Cross-reference of the 11 severity-ranked conflicts and 7 harmful practices (A�
 | **#9** | `<planning_mode>` soft verify vs. Evidence-Based | **RESOLVED** | Micro-anchor added to gemini/AGENTS.md §4 |
 | **#10** | `<web_app_dev>` prescriptive fonts/styles | **RESOLVED** | Covered by #3's Design Quality policy |
 | **#11** | `<communication_style>` vague tone | **RESOLVED** | None |
+| **#12** | `<planning_mode_artifacts>` plan template vs. checklist state machine | **RESOLVED** | Micro-anchor added to gemini/AGENTS.md §Phase 2A; section ban wording hardened in both AGENTS.md |
 | **A** | Autonomous execution bias | **RESOLVED** | (= #1 + #4) |
 | **B** | Native tool descriptions | **STRUCTURALLY MITIGATED** | No policy change needed (= #2) |
 | **C** | Claim-without-evidence | **RESOLVED** | Inherits #9's resolution |
@@ -343,5 +361,6 @@ All identified conflicts have been assessed and resolved where needed:
 6. **§7 renumbered (both AGENTS.md):** Old §6 Core Operating Policies renumbered, Writing Tone row removed.
 
 7. **§5 Git Workflow (both AGENTS.md):** Upgraded from flat declarative to procedural Mermaid flowchart with lifecycle stages (Pre-Task, Branch Ops, Committing, Pre-Push, Hard Bans). Added two rebase points (start + pre-push) and early rebase conflict handling.
+8. **Phase 2A Checklist State Machine & Section Bans (both AGENTS.md):** Added micro-anchor for `<planning_mode_artifacts>` in `gemini/AGENTS.md` and hardened ban against standalone step lists under any alias (`## Execution Steps`, `## Steps`, `## Tasks`) in both policy files.
 
 ### No Remaining Deferred Items
