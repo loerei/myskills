@@ -11,7 +11,7 @@ Unified operational instructions for Layer 2 Review Host to manage workspace iso
 <repo-root>/.scratch/deep-review/
 ├── host/                    # [HOST ONLY] Coordination artifacts (hidden from reviewers)
 │   ├── State.md             # Machine-readable routing state (Verdict, Highest Modified Tier, PassCount, Untouched Reviewers)
-│   ├── Analyzation.md       # Human/L1 analysis report (accepted issues & rationale)
+│   ├── Analyzation.md       # Human/L1 analysis report (accepted issues & rationale, or technical impasse diagnostics & alternatives)
 │   └── Reviewer_Choice_Rationale.md
 ├── Context.md               # [PUBLIC] Initialized by Layer 1 (DA path, rules, criteria, static SP)
 ├── reports/                 # [REVIEWER OUTPUTS & GATING] Purged at pass starts; in-place sanitized
@@ -175,13 +175,15 @@ Host executes Layer 3 reviewers in dependency order across the active selected r
 - **Subagent Lifecycle Preservation & Process Teardown**: Host MUST NOT terminate reviewer subagents upon receiving initial reports. Reviewer subagents remain alive in the `idle` state throughout active tier batch negotiation so that `send_message` reaches existing subagents. Once a tier batch is fully resolved (all roles accepted as PASS, accepted as blocking REVISIONS NEEDED, or removed/sanitized), Host MUST terminate that tier's reviewer subagents via process control (`manage_subagents` with Action: `kill`) before advancing to the next tier (or triggering early suspension).
 - **Triage Protocol per `HOW-TO-GATE.md`**:
   - **Fully Accepted**: All reported issues satisfy Ground-Truth and Macro Flow proofs with verified codebase citations. Host accepts report without messaging reviewer.
-  - **Gated Issues**: Issues lacking proofs, citing non-existent APIs, breaking macro flow, violating boundary symmetry, or introducing intra-DA contradictions are marked GATED.
+  - **Gated Issues**: Issues lacking proofs, citing non-existent APIs, breaking macro flow, asserting ungrounded platform constraints without empirical evidence, violating boundary symmetry, or introducing intra-DA contradictions are marked GATED.
+  - **Technical Impasse Evaluation**: When an active reviewer submits `STATUS: INFEASIBLE` with an `Infeasibility Proof`, Host evaluates the proof per `HOW-TO-GATE.md` Principle 9. If the proof is speculative or ungrounded, Host gates the report in `<Role>_Gated_Issues.md` under `Ungrounded Infeasibility Claim`. If the impasse is verified as an insurmountable platform or technical barrier, Host accepts the finding as a verified impasse, immediately terminates all active reviewer subagents for the current tier batch via process control (`manage_subagents` with `Action: "kill"`), cancels downstream tiers for that round, sets `Gate Verdict: PLAN_INFEASIBLE`, resets `PassCount = 0`, and transitions directly to Step 7.
 - **Gated Negotiation Loop**:
   1. Host records `GatingIssuedTimestamp = current_time`, invalidates any stale `.scratch/deep-review/reports/<Role>_Explain.md` on disk (via deletion or overwriting with empty content), and authors `.scratch/deep-review/reports/<Role>_Gated_Issues.md` for each affected role simultaneously per `HOW-TO-GATE.md`. Single top-level `## Required Reviewer Action` block at top of file, followed by `## Gated Issues`. Host MUST NOT suggest fix solutions or code snippets, and MUST NOT repeat action choices per individual issue.
   2. Host initializes `PendingGatedRoles` containing all gated roles in the tier batch, and initializes `ProbeCount[role] = 0`.
   3. Host notifies gated reviewers in a single wave via `send_message`, and arms a 180s liveness check timer via `schedule(DurationSeconds=180, Prompt="Check on gated reviewers liveness", TimerCondition="any")`.
   4. **Asynchronous Reactive Wakeup Handling**:
      - To de-queue a role from `PendingGatedRoles` during reactive wakeups, Host MUST verify that: (1) A newly authored `<Role>_Explain.md` exists on disk with modification timestamp strictly greater than gating issue (`mtime > GatingIssuedTimestamp`), OR (2) The file modification timestamp (`mtime`) of `<Role>.md` is strictly greater than `GatingIssuedTimestamp` (`mtime > GatingIssuedTimestamp`), OR (3) An explicit completion message confirming the update has been received from that reviewer's conversation ID via `send_message` subsequent to `GatingIssuedTimestamp`. Host MUST NOT check mere file existence of `<Role>.md`.
+     - **Impasse Early-Exit Exception**: If a de-queued role updates `<Role>.md` with `STATUS: INFEASIBLE` or authors `<Role>_Explain.md` defending an impasse, Host MUST NOT wait for `PendingGatedRoles` to become empty; Host immediately inspects the impasse proof. If verified per Principle 9, Host terminates all active reviewer subagents for the current tier batch via process control (`manage_subagents` with `Action: "kill"`), cancels downstream tiers for that round, sets `Gate Verdict: PLAN_INFEASIBLE`, resets `PassCount = 0`, and transitions directly to Step 7. If the impasse proof is NOT verified (remains speculative or ungrounded), Host MUST NOT re-gate prematurely or message the reviewer while `PendingGatedRoles` is non-empty; Host keeps the role de-queued, re-arms the timer, and continues waiting until `PendingGatedRoles` is empty to perform standard batch re-evaluation under Item 7.
      - If reports not updated but message is active confirmation: Host resets `ProbeCount[role] = 0`, re-arms timer, and continues waiting.
      - If `PendingGatedRoles` is non-empty: Re-arm timer, do NOT inspect reports or trigger re-gating, and end turn to continue waiting.
   5. **Liveness Timer Expiry Escalation**:
@@ -202,17 +204,18 @@ Host executes Layer 3 reviewers in dependency order across the active selected r
   - Only when `PendingGatedRoles` is empty does Host proceed to re-evaluate updated `<Role>.md` and `<Role>_Explain.md` reports.
   6. **Reviewer Response Actions**: Reviewers apply one of three actions per `HOW-TO-GATE.md` (Refine/Complete as Requested, Remove, or Reject Gating/Removal and Explain).
   7. **Re-Evaluation & Stale Defense Loop**:
-     - If Host agrees: Stop ping-pong (no confirmation message needed).
+     - If Host agrees with a reviewer's explanation in `<Role>_Explain.md` and updated `<Role>.md` substantiating a verified technical impasse (`STATUS: INFEASIBLE`), Host MUST NOT continue waiting for other sibling roles in that tier batch; Host immediately terminates all remaining active reviewer subagents for the tier batch via process control (`manage_subagents` with `Action: "kill"`), cancels downstream tiers for that round, sets `Gate Verdict: PLAN_INFEASIBLE`, resets `PassCount = 0`, and transitions directly to Step 7.
+     - If Host agrees with a fixable defect update or removal: Stop ping-pong (no confirmation message needed).
      - If issue remains ungrounded or explanation in `<Role>_Explain.md` is stale without differing/deeper proof: Reviewer must accept removal or refine into abstract spec; reviewer MUST NOT re-assert stale arguments. Host updates `.scratch/deep-review/reports/<Role>_Gated_Issues.md` via `write_to_file` detailing why previous explanation was rejected as stale, refreshes `GatingIssuedTimestamp = current_time`, invalidates stale `<Role>_Explain.md`, re-populates `PendingGatedRoles` with re-gated roles, resets `ProbeCount[role] = 0` for each re-gated role, sends notifications via `send_message`, re-arms 180s timer, and awaits response.
   8. **Gating Artifact Cleanup**: When Host accepts an updated role report, Host deletes `<Role>_Gated_Issues.md` and any `<Role>_Explain.md` for that role (idempotently handling missing files).
-- Once all roles in the tier batch are resolved, Host terminates that tier's reviewer subagents via process control (`manage_subagents` with Action: `kill`) and advances to the next tier (or triggers early suspension if any role retains accepted blocking defects).
+- Once all roles in the tier batch are resolved, Host terminates that tier's reviewer subagents via process control (`manage_subagents` with Action: `kill`) and advances to the next tier (or transitions to Step 7 under `PLAN_INFEASIBLE` if a verified impasse was established, or triggers early suspension under `ROUND_REVISION_NEEDED` if any role retains accepted blocking defects).
 
 ### Step 5: Early Suspension
-If a tier returns `REVISION NEEDED` after tier batch gate resolution (i.e. if any active role in the resolved tier retains accepted blocking defects), reset `PassCount = 0`, terminate all remaining active reviewer subagents via process control (`manage_subagents` with Action: `kill`), cancel downstream tiers for that round, and transition directly to Step 7.
+- If a tier returns `REVISION NEEDED` after tier batch gate resolution (i.e. if any active role in the resolved tier retains accepted blocking defects): reset `PassCount = 0`, terminate all remaining active reviewer subagents via process control (`manage_subagents` with Action: `kill`), cancel downstream tiers for that round, and transition directly to Step 7. Note: A verified `STATUS: INFEASIBLE` terminates active tiers immediately during Step 4 without waiting for tier batch resolution of fixable siblings.
 
 ### Step 6: Snapshot Delta Backfill & Full Sweep Clearance Gate
 - When all active roles in the current pass clear with zero blocking defects (either via Full DAG execution or Targeted pass on snapshot $S_N$):
-  - **Snapshot Delta Backfill**: If un-evaluated active roles exist on snapshot $S_N$ (skipped upstream roles or untouched reviewers from `host/State.md`), summon ONLY those skipped roles in topological DAG sequence on snapshot $S_N$, preserving intra-round reports in `reports/` and enforcing early tier suspension if any role returns `REVISION NEEDED`.
+  - **Snapshot Delta Backfill**: If un-evaluated active roles exist on snapshot $S_N$ (skipped upstream roles or untouched reviewers from `host/State.md`), summon ONLY those skipped roles in topological DAG sequence on snapshot $S_N$, preserving intra-round reports in `reports/` and enforcing early tier suspension and transition to Step 7 under `Gate Verdict: PLAN_INFEASIBLE` if any backfilled role returns a verified `STATUS: INFEASIBLE`, or under `ROUND_REVISION_NEEDED` if any backfilled role returns `REVISION NEEDED`.
   - **Full Sweep Clearance Check**: Once 100% of active roles in the frozen roster have audited and passed snapshot $S_N$ with zero blocking defects:
     - Increment `PassCount += 1`.
     - If `PassCount < SP`: Transition directly to Step 7 with `Gate Verdict: ROUND_PASS`.
@@ -220,6 +223,7 @@ If a tier returns `REVISION NEEDED` after tier batch gate resolution (i.e. if an
 
 ### Step 7: Reporting, Direct DA Mutation & Teardown
 When terminating or concluding a round, execute this transactional sequence:
+When the verdict is `PLAN_INFEASIBLE`, Host MUST NOT mutate target Directive Artifact(s) and MUST NOT invent or apply an architectural pivot. Host skips the `Direct DA Mutation Transaction` entirely (Steps 1, 2, and 3), generates zero `.bak.md` backup files, and routes execution directly to `#### Coordination Artifacts & Process Teardown (All Verdicts):`.
 
 #### Direct DA Mutation Transaction (When verdict is ROUND_REVISION_NEEDED):
 1. **Pre-Mutation Backups**: Host creates temporary sibling `<da_stem>.bak.md` copies (replacing trailing `.md` with `.bak.md` in its parent directory, e.g. `<dirname>/<stem>.bak.md`, matching `Context.md` -> `Context.bak.md`) before mutating any target DA. If WBS restructuring deletes a DA file, Host copies it to `<da_stem>.bak.md` before physical deletion. If WBS restructuring alters `## Target Directive Artifacts` in `Context.md`, Host creates `.scratch/deep-review/Context.bak.md`.
@@ -240,16 +244,22 @@ When terminating or concluding a round, execute this transactional sequence:
 
 #### Coordination Artifacts & Process Teardown (All Verdicts):
 4. **Author Coordination Artifacts**:
-   - **`State.md`**: Author `.scratch/deep-review/host/State.md` containing Executive Summary state and `## Untouched Reviewers` table per `HOW-TO-GATE.md` (enforcing `Current PassCount: 0 / <SP>` whenever verdict is `ROUND_REVISION_NEEDED`).
+   - **`State.md`**: Author `.scratch/deep-review/host/State.md` per `HOW-TO-GATE.md`:
+     - When verdict is `PLAN_INFEASIBLE`: write `- Gate Verdict: PLAN_INFEASIBLE`, `- Highest Modified Tier: None`, and `- Current PassCount: 0 / <SP>`.
+     - When verdict is `ROUND_REVISION_NEEDED`: write Executive Summary state and `## Untouched Reviewers` table (enforcing `Current PassCount: 0 / <SP>`).
+     - When verdict is `ROUND_PASS` or `FINAL_PASS`: write `- Gate Verdict: ROUND_PASS | FINAL_PASS`, `- Highest Modified Tier: None`, and `- Current PassCount: <N> / <SP>`.
+     - When verdict is `ABORTED_MUTATION_FAILURE`: write `- Gate Verdict: ABORTED_MUTATION_FAILURE`, `- Highest Modified Tier: None`, and `- Current PassCount: 0 / <SP>`.
    - **`Analyzation.md`**: Author `.scratch/deep-review/host/Analyzation.md` containing:
      - Executive Summary header:
-       - `- **Gate Verdict**: ROUND_REVISION_NEEDED | ROUND_PASS | FINAL_PASS | ABORTED_MUTATION_FAILURE`
+       - `- **Gate Verdict**: ROUND_REVISION_NEEDED | ROUND_PASS | FINAL_PASS | ABORTED_MUTATION_FAILURE | PLAN_INFEASIBLE`
        - `- **Current PassCount**: <N> / <SP>`
        - `- **Active Roster**: <List of active roles>`
-       - `- **Highest Modified Tier**: Layer 3.X` (Mandatory when verdict is `ROUND_REVISION_NEEDED`)
-     - **Accepted Issues Only**: List of accepted blocking defects across active roles with technical acceptance rationale. Zero rejected/gated tables. If all active roles cleared with zero defects, record `*(None - All active roles cleared with zero blocking defects)*`.
+       - `- **Highest Modified Tier**: Layer 3.X` (Mandatory when verdict is `ROUND_REVISION_NEEDED`; record `None` for `ROUND_PASS`, `FINAL_PASS`, `ABORTED_MUTATION_FAILURE`, or `PLAN_INFEASIBLE`)
+     - For `PLAN_INFEASIBLE`: Strictly preserve the canonical 4-key header, followed by `## Technical Impasse Analysis` documenting: (1) The insurmountable technical barrier(s) (synthesizing all verified impasses if multiple active roles reported impasses), (2) Grounded empirical proof, and (3) Documented trade-offs and `Alternative Architectural Paths` for user decision.
+     - For other verdicts: **Accepted Issues Only** listing accepted blocking defects across active roles with technical acceptance rationale. Zero rejected/gated tables. If all active roles cleared with zero defects, record `*(None - All active roles cleared with zero blocking defects)*`.
 5. **Process Teardown & Workspace State Preservation**:
    Host terminates active reviewer subagents via process control (`manage_subagents(Action="kill")`), sends a completion message to Layer 1 (parent agent) via `send_message` reporting the Gate Verdict and referencing `.scratch/deep-review/host/State.md` and `Analyzation.md`, and concludes execution:
+   - **Technical Impasse Teardown (`PLAN_INFEASIBLE`)**: Terminate all active reviewer subagents via process control (`manage_subagents` with `Action: "kill"`), gracefully handling completed or idle subagents idempotently. Preserve `host/State.md`, `host/Analyzation.md`, `reports/`, and `sandbox/` for user and Layer 1 inspection, notify Layer 1 via `send_message`, and conclude execution.
    - **Intermediate Revision Teardown (`ROUND_REVISION_NEEDED`)**: Preserve `host/State.md` (and `host/Analyzation.md` for Layer 1 inspection). Note that Layer 1 deletes `host/Analyzation.md` prior to launching Round N+1 to eliminate cognitive anchoring.
    - **Round Pass Teardown (`ROUND_PASS`)**: Purge `reports/` and transient gating artifacts. Preserve `host/State.md` (and `host/Analyzation.md` for Layer 1 inspection). Layer 1 deletes `host/Analyzation.md` prior to launching next round.
    - **Final Pass Teardown (`FINAL_PASS`)**: Purge `reports/` and transient gating artifacts, preserve `host/State.md` and `host/Analyzation.md` for Layer 1 final presentation. Layer 1 executes final purge of `.scratch/deep-review/*` after presenting verified DA.
@@ -278,5 +288,5 @@ When Host applies verified mutations to the Directive Artifact, the DA transitio
 | Tag | Parameter | Timing | System Behavior |
 | :--- | :--- | :--- | :--- |
 | `!SP<N>` | N (Integer >= 1) | Start-time | Sets required continuous Full Sweep PASS threshold `SP = N`. |
-| `!PA` / `!WA` | None | Start-time / Mid-flight | Pre-review pause gate: When Host issues `ROUND_REVISION_NEEDED`, Host retains sibling `<da_stem>.bak.md` copies and applies verified mutations directly to DA files. Main Agent stops execution before triggering Round N+1, prompts user to verify API quota or review diff against `<da_stem>.bak.md`, and awaits keyword `"C"` to clean backup files, delete `host/Analyzation.md`, and proceed to Round N+1 (or executes rollback per `SKILL.md` if user requests revert). If invoked mid-flight, Layer 1 updates `## Active Modifiers` in `Context.md`. Remains persistent across all rounds until `FINAL_PASS`. |
+| `!PA` / `!WA` | None | Start-time / Mid-flight | Pre-review pause gate: When Host issues `ROUND_REVISION_NEEDED`, Host retains sibling `<da_stem>.bak.md` copies and applies verified mutations directly to DA files. Main Agent stops execution before triggering Round N+1, prompts user to verify API quota or review diff against `<da_stem>.bak.md`, and awaits keyword `"C"` to clean backup files, delete `host/Analyzation.md`, and proceed to Round N+1 (or executes rollback per `SKILL.md` if user requests revert). If invoked mid-flight, Layer 1 updates `## Active Modifiers` in `Context.md`. Remains persistent across all rounds until `FINAL_PASS` or permanent halt (`PLAN_INFEASIBLE` / `ABORTED_MUTATION_FAILURE`). |
 | `!FPA` | None | Mid-flight | Instantly kills running subagent via process control, discards outputs, pauses loop. |

@@ -15,6 +15,7 @@ Instructions for Layer 2 Critical Gate Agent to evaluate, filter, and reject Lay
    - **REJECT** findings where a reviewer demands tightly coupling the target DA to future `Downstream` epics (*Premature Downstream Coupling*).
 7. **Reviewer-Driven Fix Refinement & Gating**: When a reported defect contains ungrounded code snippets, non-existent APIs, lacks Ground-Truth/Macro Flow proof, breaks boundary contract symmetry, introduces intra-DA contradictions, or represents an invalid defect, Host does not rewrite the snippet, unilaterally invent boundary counterparts, or unilaterally apply it directly into the DA. Instead, Host gates the issue in `.scratch/deep-review/reports/<Role>_Gated_Issues.md`, requiring the reviewer to either refine/complete the fix, remove the defect, or provide deeper proof.
 8. **System Invariants over Implementation Mechanics**: Gate against findings on internal code snippet mechanics (e.g. syntax, types, barrel exports, regex flags) or Acceptance Criteria that dictate internal call signatures and local null-checks. If an underlying behavioral requirement or system invariant is valid, demand the reviewer refine the Acceptance Criterion to enforce the system invariant (e.g. cache persistence, fallback continuity) without dictating internal mechanics. If no underlying invariant exists, demand removal.
+9. **Technical Impasse & Grounded Infeasibility Verification**: When a reviewer reports `STATUS: INFEASIBLE` or an unfixable defect with `Infeasibility Proof`, Host verifies that the impasse is grounded in concrete technical evidence (e.g. sandbox restriction, protocol header, deprecated/missing external API, hardware bound). Host gates against speculative refusal or laziness where a standard architectural seam or configuration resolves the issue. If the impasse is verified, Host halts loop execution with verdict `PLAN_INFEASIBLE` and MUST NOT unilaterally mutate the DA to force an architectural pivot.
 
 ## Triage Matrix
 
@@ -40,17 +41,19 @@ Instructions for Layer 2 Critical Gate Agent to evaluate, filter, and reject Lay
 | **Pedantic / Stylistic Preference** | Requests rephrasing, renaming, or cosmetic adjustments without functional impact. Micro-copy and wording critiques MUST default to non-blocking suggestions unless phrasing is factually misleading or induces dangerous actions/destructive data loss. | **GATE FOR REMOVAL**: Demand reviewer removal or mark as non-blocking. |
 | **Spec-Induced Regression** | Demands strict exceptions or error classes on ingress/decode paths that contradict active codebase behavior or break existing unit tests without explicit user request. | **GATE FOR REMOVAL**: Demand reviewer removal in `<Role>_Gated_Issues.md`. |
 | **Internal Implementation Mechanics** | Finding critiques syntax, types, barrel exports, regex flags, or packages internal call signatures / local null-checks into Acceptance Criteria that standard compiler or TDD catches. | **GATE FOR REFINEMENT / REMOVAL**: Demand reviewer strip internal call mechanics and refine the Acceptance Criterion to enforce the underlying System Invariant (if one exists), or remove the defect if it is purely compiler/local trivia. |
+| **Technical Impasse / Platform Infeasibility** | Reviewer proves a ticket requirement is technically impossible (e.g. sandbox restrictions, protocol blocks, physical bounds) with no viable in-scope fix. | **ACCEPT AS IMPASSE**: Escalate to `PLAN_INFEASIBLE`. Do NOT mutate DA or force local patching. Cancel downstream tiers and halt round. |
+| **Ungrounded Infeasibility Claim** | Reviewer reports `STATUS: INFEASIBLE` or asserts a technical impasse without concrete proof, where a viable in-scope structural seam or standard configuration resolves the issue. | **GATE**: Demand reviewer refinement in `<Role>_Gated_Issues.md` to either convert to `STATUS: REVISIONS NEEDED` with verified fix or substantiate with empirical proof, or remove. |
 
 ## Tier Batch Gate & Reviewer Negotiation Protocol
 
 Host evaluates Layer 3 reviewer reports strictly in **tier batches** (after all active roles in the current tier produce initial reports):
 
 1. **Fully Accepted Reports**:
-   - If all reported issues in a reviewer's report satisfy Ground-Truth and Macro Flow proofs and cite verified codebase/spec symbols: Host **ACCEPTS** the report.
+   - If all reported issues in a reviewer's report satisfy Ground-Truth and Macro Flow proofs and cite verified codebase/spec symbols (for fixable defects), OR if the reviewer report contains a verified technical impasse (`STATUS: INFEASIBLE`) providing verified empirical proof of an insurmountable platform constraint and alternative architectural paths per Principle 9: Host **ACCEPTS** the report immediately regardless of whether fixable defects are present or ungrounded.
    - Host does NOT author `<Role>_Gated_Issues.md` and does NOT send a message to that reviewer.
 
 2. **Gated Reports & Action Demands**:
-   - If any reported issue in a reviewer's report lacks proof, cites non-existent APIs, breaks macro flow, or constitutes an invalid defect: Host marks the issue as GATED.
+   - If any reported issue in a reviewer's report lacks proof, cites non-existent APIs, breaks macro flow, asserts ungrounded platform constraints without empirical evidence, or constitutes an invalid defect: Host marks the issue as GATED, *unless* the report contains a verified technical impasse per Principle 9 (which takes absolute precedence, immediately escalating to `PLAN_INFEASIBLE` and halting the round per Decision Rules without negotiating fixable defects).
    - Host authors `.scratch/deep-review/reports/<Role>_Gated_Issues.md` for each affected role simultaneously via native `write_to_file`.
    - In `<Role>_Gated_Issues.md`, Host explains why each issue failed the gate. Host places a single top-level `## Required Reviewer Action` section at the top of the file (defining the 3 Gate Response Protocol choices), followed by `## Gated Issues` listing each failure with its `Gate Failure Classification` and `Rationale`. Host MUST NOT suggest fix solutions or code snippets, and MUST NOT repeat the 3 action choices per individual issue.
    - **Host Suggestion Ban**: Host MUST NOT suggest alternative fix implementations, code snippets, or workarounds in `<Role>_Gated_Issues.md`. Remediation design is the sole specialist domain of the reviewer.
@@ -58,9 +61,9 @@ Host evaluates Layer 3 reviewer reports strictly in **tier batches** (after all 
 
 3. **Reviewer Response Actions**:
    Upon receiving a notification, each gated reviewer inspects `<Role>_Gated_Issues.md` and chooses one of three actions:
-   - **Action 1: Refine / Complete as Requested**: When the defect is real but the fix was ungrounded, asymmetric across boundaries, or introduces intra-DA contradictions, reviewer edits `<Role>.md` in-place via native `write_to_file`, resolving the gate failure (e.g. converting ungrounded code into an abstract specification, supplying missing caller/callee boundary endpoints, or harmonizing contradicting assertions in `Verification Plan`) with verified proofs. If `.scratch/deep-review/reports/<Role>_Explain.md` was authored in a prior turn of the active tier batch, reviewer MUST invalidate it (either by deleting it, or by overwriting it with empty content via `write_to_file(CodeContent="")` if native file deletion tools are unavailable) to eliminate stale defense artifacts; Host handles authoritative physical file removal upon accepting the updated report.
-   - **Action 2: Remove**: When the defect is invalid or false-positive, reviewer removes the issue from `<Role>.md` in-place. If all blocking defects are removed, reviewer changes status to `- **Status**: STATUS: PASS`. If `.scratch/deep-review/reports/<Role>_Explain.md` was authored in a prior turn of the active tier batch, reviewer MUST invalidate it (either by deleting it, or by overwriting it with empty content via `write_to_file(CodeContent="")` if native file deletion tools are unavailable) to eliminate stale defense artifacts; Host handles authoritative physical file removal upon accepting the updated report.
-   - **Action 3: Reject Gating/Removal and Explain**: When reviewer maintains the defect/fix is strictly valid and already complete, reviewer authors `.scratch/deep-review/reports/<Role>_Explain.md` via native `write_to_file`, providing deeper, differing codebase evidence. The reviewer MUST ALSO update `.scratch/deep-review/reports/<Role>.md` in-place to integrate the substantiated `Ground-Truth Proof`, `Macro Flow Proof`, and clean remediation text, ensuring `<Role>.md` remains the clean single source of truth for Host aggregation. Reviewer MUST NOT repeat stale arguments already addressed in `<Role>_Gated_Issues.md`.
+   - **Action 1: Refine / Complete as Requested**: When the defect is real but the fix was ungrounded, asymmetric across boundaries, introduces intra-DA contradictions, or asserts a speculative impasse where standard configuration or structural seams exist, reviewer edits `<Role>.md` in-place via native `write_to_file`, resolving the gate failure (e.g. converting ungrounded code into an abstract specification, converting speculative impasse claims into fixable defects with concrete remediation and updating report header from `- **Status**: STATUS: INFEASIBLE` to `- **Status**: STATUS: REVISIONS NEEDED`, supplying missing caller/callee boundary endpoints, or harmonizing contradicting assertions in `Verification Plan`) with verified proofs. If `.scratch/deep-review/reports/<Role>_Explain.md` was authored in a prior turn of the active tier batch, reviewer MUST invalidate it (either by deleting it, or by overwriting it with empty content via `write_to_file(CodeContent="")` if native file deletion tools are unavailable) to eliminate stale defense artifacts; Host handles authoritative physical file removal upon accepting the updated report.
+   - **Action 2: Remove**: When the defect or platform barrier claim is invalid, speculative, or false-positive, reviewer removes the issue from `<Role>.md` in-place. If all blocking defects are removed, reviewer changes status to `- **Status**: STATUS: PASS`; if other fixable defects remain, reviewer updates status to `- **Status**: STATUS: REVISIONS NEEDED`. If `.scratch/deep-review/reports/<Role>_Explain.md` was authored in a prior turn of the active tier batch, reviewer MUST invalidate it (either by deleting it, or by overwriting it with empty content via `write_to_file(CodeContent="")` if native file deletion tools are unavailable) to eliminate stale defense artifacts; Host handles authoritative physical file removal upon accepting the updated report.
+   - **Action 3: Reject Gating/Removal and Explain**: When reviewer maintains the defect, fix, or technical impasse is strictly valid and already complete, reviewer authors `.scratch/deep-review/reports/<Role>_Explain.md` via native `write_to_file`, providing deeper, differing codebase evidence (or empirical probe traces and environment logs proving platform impossibility). The reviewer MUST ALSO update `.scratch/deep-review/reports/<Role>.md` in-place to integrate the substantiated `Ground-Truth Proof`, `Macro Flow Proof`, and clean remediation text (or verified `Infeasibility Proof` and `Alternative Architectural Paths`), ensuring `<Role>.md` remains the clean single source of truth for Host aggregation. Reviewer MUST NOT repeat stale arguments already addressed in `<Role>_Gated_Issues.md`.
    - After updating, reviewer sends a completion message back to Host.
 
 4. **Host Re-Evaluation**:
@@ -84,7 +87,8 @@ When specialist reviewer opinions conflict (e.g. `Performance` requesting aggres
 
 | Condition | Gate Verdict | Output Artifacts |
 | :--- | :--- | :--- |
-| 1+ Accepted Blocking Defects | `ROUND_REVISION_NEEDED` | Host mutates target DA(s) directly using Clean & Neutral Artifact Protocol (creating temporary sibling `<da_stem>.bak.md` copies), writes `host/State.md` (including Untouched Reviewers section), and writes `host/Analyzation.md` (accepted issues only with rationale). Intermediate round teardown terminates reviewer subagents via process control, preserving `host/State.md` and `host/Analyzation.md` for Layer 1. Layer 1 deletes `host/Analyzation.md` prior to Round N+1. |
+| 1+ Verified Technical Impasse (`STATUS: INFEASIBLE`) | `PLAN_INFEASIBLE` | Absolute Precedence: Overrides fixable blocking defects; immediately halts round with zero DA mutations. Host MUST NOT mutate DA. Writes `host/State.md` (`Gate Verdict: PLAN_INFEASIBLE`) and `host/Analyzation.md` (detailing the hard blocker, empirical proof, and architectural alternatives). Terminate reviewer subagents via process control, notify Layer 1 via `send_message`, and halt loop. |
+| 1+ Accepted Blocking Defects (with 0 Verified Technical Impasses) | `ROUND_REVISION_NEEDED` | Host mutates target DA(s) directly using Clean & Neutral Artifact Protocol (creating temporary sibling `<da_stem>.bak.md` copies), writes `host/State.md` (including Untouched Reviewers section), and writes `host/Analyzation.md` (accepted issues only with rationale). Intermediate round teardown terminates reviewer subagents via process control, preserving `host/State.md` and `host/Analyzation.md` for Layer 1. Layer 1 deletes `host/Analyzation.md` prior to Round N+1. |
 | Write Verification / Filesystem Failure | `ABORTED_MUTATION_FAILURE` | Host restores modified and deleted target DAs from backups where present, restores `Context.md` from `Context.bak.md`, deletes newly created DAs, terminates reviewer subagents, writes `host/State.md` and `host/Analyzation.md` detailing the failure, notifies Layer 1 via `send_message`, and halts without issuing `ROUND_REVISION_NEEDED`. |
 | 0 Accepted Blocking Defects (Targeted Pass with Pending Skipped Roles) | `TARGETED_PASS` *(Ephemeral Internal Host State)* | Trigger Snapshot Delta Backfill for skipped roles (upstream + untouched) in topological DAG sequence (preserving intra-round reports). |
 | 0 Accepted Blocking Defects (100% Roster Passed on Snapshot) | `ROUND_PASS` (Increment `PassCount`) or `FINAL_PASS` (if `PassCount >= SP`) | Write `host/State.md` and `host/Analyzation.md`. Terminate reviewer subagents via process control, purge `reports/` and transient gating artifacts, preserving `host/State.md` and `host/Analyzation.md` for Layer 1 handoff. Layer 1 deletes `host/Analyzation.md` prior to launching next round. On `FINAL_PASS`, Layer 1 executes directory teardown after presenting the verified DA. |
@@ -102,16 +106,16 @@ Format template:
 
 ## Required Reviewer Action
 Read the gated issues below. For each issue, choose ONE action:
-1. **Refine / Complete as Requested**: Update `<Role>.md` in-place, resolving the gate failure (e.g. converting ungrounded snippets into an abstract specification, supplying missing symmetrical boundary endpoints, or harmonizing contradicting assertions in dependent sections) with verified proofs. Invalidate `<Role>_Explain.md` (delete or overwrite with empty content via `write_to_file(CodeContent="")`) if previously authored.
-2. **Remove**: Remove the issue from `<Role>.md` in-place (set status to PASS if zero blocking issues remain). Invalidate `<Role>_Explain.md` (delete or overwrite with empty content via `write_to_file(CodeContent="")`) if previously authored.
-3. **Reject Gating/Removal and Explain**: Author `<Role>_Explain.md` with differing/deeper codebase proof AND update `<Role>.md` in-place with verified proofs and clean remediation text.
+1. **Refine / Complete as Requested**: Update `<Role>.md` in-place, resolving the gate failure (e.g. converting ungrounded snippets into an abstract specification, converting speculative impasse claims into fixable defects with concrete remediation and updating report header to `STATUS: REVISIONS NEEDED`, supplying missing symmetrical boundary endpoints, or harmonizing contradicting assertions in dependent sections) with verified proofs. Invalidate `<Role>_Explain.md` (delete or overwrite with empty content via `write_to_file(CodeContent="")`) if previously authored.
+2. **Remove**: Remove the issue from `<Role>.md` in-place (set status to PASS if zero blocking issues remain, or `STATUS: REVISIONS NEEDED` if other fixable defects remain). Invalidate `<Role>_Explain.md` (delete or overwrite with empty content via `write_to_file(CodeContent="")`) if previously authored.
+3. **Reject Gating/Removal and Explain**: Author `<Role>_Explain.md` with differing/deeper codebase proof (or empirical probe logs / sandbox traces) AND update `<Role>.md` in-place with verified proofs and clean remediation text (or verified `Infeasibility Proof` and `Alternative Architectural Paths`).
 Notify Host via message when done.
 
 ## Gated Issues
 
 1. **[Issue Title]**:
    - **Target Section**: `<Section_Name>`
-   - **Gate Failure Classification**: `Ungrounded Fix Proposal` | `Asymmetric Boundary Contract` | `Cross-Section Contradiction` | `False-Positive Upstream Unreadiness` | `Premature Downstream Coupling` | `Speculative Over-Engineering` | `Spec-Induced Regression`
+   - **Gate Failure Classification**: `Ungrounded Fix Proposal` | `Asymmetric Boundary Contract` | `Cross-Section Contradiction` | `False-Positive Upstream Unreadiness` | `Premature Downstream Coupling` | `Speculative Over-Engineering` | `Spec-Induced Regression` | `Ungrounded Infeasibility Claim`
    - **Gate Rationale**: <Exact technical reason why issue failed the gate without proposing fix code>
 ```
 
@@ -137,6 +141,13 @@ When authoring `.scratch/deep-review/host/State.md`:
      ## Untouched Reviewers
      *(None)*
      ```
+   - **When verdict is `PLAN_INFEASIBLE`**:
+     ```markdown
+     # Gate State
+     - Gate Verdict: PLAN_INFEASIBLE
+     - Highest Modified Tier: None
+     - Current PassCount: 0 / <SP>
+     ```
    - **When verdict is `ROUND_PASS` or `FINAL_PASS`**:
      ```markdown
      # Gate State
@@ -159,10 +170,18 @@ When authoring `.scratch/deep-review/host/State.md`:
 
 When authoring `.scratch/deep-review/host/Analyzation.md`:
 1. **Mandatory Header & Gate Verdict**: Record the Executive Summary header containing:
-   - `- **Gate Verdict**: ROUND_REVISION_NEEDED | ROUND_PASS | FINAL_PASS | ABORTED_MUTATION_FAILURE`
+   - `- **Gate Verdict**: ROUND_REVISION_NEEDED | ROUND_PASS | FINAL_PASS | ABORTED_MUTATION_FAILURE | PLAN_INFEASIBLE`
    - `- **Current PassCount**: <N> / <SP>`
    - `- **Active Roster**: <List of active roles>`
-   - `- **Highest Modified Tier**: Layer 3.X` (Mandatory when verdict is `ROUND_REVISION_NEEDED`: identifies highest tier containing accepted blocking defects)
+   - `- **Highest Modified Tier**: Layer 3.X` (Mandatory when verdict is `ROUND_REVISION_NEEDED`: identifies highest tier containing accepted blocking defects; record `None` for `ROUND_PASS`, `FINAL_PASS`, `ABORTED_MUTATION_FAILURE`, or `PLAN_INFEASIBLE`)
+   When verdict is `PLAN_INFEASIBLE`, the header strictly preserves the canonical 4-key layout:
+   ```markdown
+   - **Gate Verdict**: PLAN_INFEASIBLE
+   - **Current PassCount**: 0 / <SP>
+   - **Active Roster**: <List of active roles>
+   - **Highest Modified Tier**: None
+   ```
+   followed by `## Technical Impasse Analysis` documenting: (1) The insurmountable technical barrier(s) (synthesizing all verified impasses if multiple active roles reported impasses), (2) Grounded empirical proof, and (3) Documented trade-offs and `Alternative Architectural Paths` for user decision.
 2. **Accepted Issues Only**: Record ONLY the blocking issues that successfully cleared the gate across active roles, along with their technical acceptance rationale. When the gate verdict is `ROUND_PASS` or `FINAL_PASS` (zero blocking defects across the active roster), record under Accepted Issues:
    ```markdown
    ## Accepted Issues

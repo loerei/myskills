@@ -11,17 +11,18 @@ Multi-agent review loop using isolated domain reviewers, topological dependency 
 
 | Layer | Agent | Primary Responsibility |
 | :--- | :--- | :--- |
-| **Layer 1** | Main Agent | Spawns Layer 2 Host, handles Host verdict, manages `!PA` pause gate, rollback handling, path-anchored `<da_stem>.bak.md` cleanup, deletes `host/Analyzation.md` prior to Round N+1, terminates Host subagents, presents final output. |
-| **Layer 2** | Review Host & Critical Gate | Dynamically selects active reviewers in `Reviewer_Choice_Rationale.md`, summons active reviewers using invariant prompts, purges `reports/` before passes, isolates host artifacts in `host/`, executes Reviewer-level DAG routing (consuming `State.md`), enforces Tier Batch Gate negotiation and in-place fix pre-verification, terminates subagent processes upon tier batch resolution, executes Snapshot Delta Backfill for skipped roles (upstream and untouched), applies verified DA mutations directly (creating `<da_stem>.bak.md` for modified DAs), writes `State.md` and `Analyzation.md`. |
+| **Layer 1** | Main Agent | Spawns Layer 2 Host, handles Host verdict (including user escalation on `PLAN_INFEASIBLE`), manages `!PA` pause gate, rollback handling, path-anchored `<da_stem>.bak.md` cleanup, deletes `host/Analyzation.md` prior to Round N+1, terminates Host subagents, presents final output. |
+| **Layer 2** | Review Host & Critical Gate | Dynamically selects active reviewers in `Reviewer_Choice_Rationale.md`, summons active reviewers using invariant prompts, purges `reports/` before passes, isolates host artifacts in `host/`, executes Reviewer-level DAG routing (consuming `State.md`), enforces Tier Batch Gate negotiation and in-place fix pre-verification, terminates subagent processes upon tier batch resolution, executes Snapshot Delta Backfill for skipped roles (upstream and untouched), applies verified DA mutations directly (creating `<da_stem>.bak.md` for modified DAs), writes `State.md` and `Analyzation.md` (halting without DA mutation on `PLAN_INFEASIBLE`). |
 | **Layer 3** | Domain Reviewers | Independent specialist subagents (up to 11 roles across 4 Tiers) executing domain audits per `<Role>-REVIEWER-GUIDE.md`. |
 
 ## Workflow
 
 ```mermaid
 flowchart TD
-    Start["Round 1: Full DAG Sweep"] --> Eval{"All Roles PASS?"}
-    Eval -->|"No"| Apply["Layer 2 Host: Mutate DA directly<br/>(Write State.md & Analyzation.md, create <da_stem>.bak.md)"]
-    Eval -->|"Yes"| Accumulate["PassCount += 1<br/>(Write State.md & Analyzation.md)"]
+    Start["Round 1: Full DAG Sweep"] --> Eval{"Host Gate Verdict?"}
+    Eval -->|"ROUND_REVISION_NEEDED"| Apply["Layer 2 Host: Mutate DA directly<br/>(Write State.md & Analyzation.md, create <da_stem>.bak.md)"]
+    Eval -->|"ROUND_PASS"| Accumulate["PassCount += 1<br/>(Write State.md & Analyzation.md)"]
+    Eval -->|"PLAN_INFEASIBLE"| HaltInfeasible["Layer 1: Present Technical Impasse & Alternatives.<br/>Halt review loop immediately"]
     Apply --> CheckPA{"!PA Active?"}
     CheckPA -->|"Yes"| PAPause["Layer 1: Report diff, halt turn.<br/>Await 'C' or rollback"]
     PAPause -->|"Receives 'C'"| Handoff["Layer 1: Delete Analyzation.md,<br/>re-spawn Host"] --> TargetRun["Round N+1: Targeted Re-Review<br/>(Host reads State.md)"]
@@ -30,15 +31,18 @@ flowchart TD
     CheckTarget{"Targeted Roles PASS?"}
     TargetRun --> CheckTarget
     CheckTarget -->|"No"| Apply
+    CheckTarget -->|"PLAN_INFEASIBLE"| HaltInfeasible
     CheckTarget -->|"Yes (Pending Skipped Roles)"| Backfill["Snapshot Delta Backfill<br/>(Topologically summon skipped roles on SN)"]
     Backfill --> BackfillCheck{"Skipped Roles PASS?"}
     BackfillCheck -->|"No"| Apply
+    BackfillCheck -->|"PLAN_INFEASIBLE"| HaltInfeasible
     BackfillCheck -->|"Yes"| Accumulate
     CheckTarget -->|"Yes (100% Roster Audited)"| Accumulate
     Accumulate --> SPCheck{"PassCount >= SP?"}
     SPCheck -->|"No"| HandoffSweep["Layer 1: Delete Analyzation.md,<br/>re-spawn Host"] --> FullSweep["Next Full Sweep Round<br/>(Host reads State.md, runs static DA)"]
     FullSweep --> SweepCheck{"All Active Roles PASS?"}
     SweepCheck -->|"No"| Apply
+    SweepCheck -->|"PLAN_INFEASIBLE"| HaltInfeasible
     SweepCheck -->|"Yes"| Accumulate
     SPCheck -->|"Yes"| FinalPass["Issue FINAL_PASS & Conclude"]
 ```
@@ -75,6 +79,7 @@ Read `.scratch/deep-review/host/Analyzation.md` and `.scratch/deep-review/host/S
 | Verdict in `State.md` | Action |
 | :--- | :--- |
 | `ROUND_REVISION_NEEDED` | Host applied verified mutations directly to DA(s) and generated `host/State.md` and `host/Analyzation.md`.<br>• **DA Path Verification**: If Host updated `Context.md` for WBS restructuring, Layer 1 re-reads `Context.md` and verifies active paths.<br>• **If `!PA` / `!WA` active**: Host retained `<da_stem>.bak.md` backups. Layer 1 outputs quota pause message, halts turn, and awaits user command (`"C"` or rollback). See **Pause Gate Protocol** below.<br>• **If no pause tag**: Layer 1 deletes `host/Analyzation.md` (preserving `host/State.md`), terminates prior `review_host` via `manage_subagents(Action="kill")`, and immediately re-spawns Layer 2 Host for Round N+1. |
+| `PLAN_INFEASIBLE` | Host verified an insurmountable technical impasse or platform impossibility with zero in-scope fixes. Host preserved target DA(s) without mutation and generated `host/State.md` and `host/Analyzation.md`. Layer 1 terminates `review_host` via `manage_subagents(Action="kill")`, extracts the impasse analysis and `Alternative Architectural Paths` from `host/Analyzation.md`, presents them directly to the user, and immediately halts the review loop. |
 | `ABORTED_MUTATION_FAILURE` | Host experienced a write verification failure or filesystem error during DA mutation and restored DAs from backups. Layer 1 terminates `review_host` via `manage_subagents(Action="kill")`, reports failure details from `Analyzation.md` to user, and halts review loop. |
 | `ROUND_PASS` | Layer 1 deletes `host/Analyzation.md` (preserving `host/State.md`), terminates prior `review_host` via `manage_subagents(Action="kill")`, and re-spawns Layer 2 Host for next Full Sweep round on unchanged DA. |
 | `FINAL_PASS` | Conclude review loop (`PassCount >= SP`). Layer 1 terminates `review_host` via `manage_subagents(Action="kill")`. Read `.scratch/deep-review/host/Analyzation.md` to confirm verified clearance, present verified DA to user, and execute final directory purge of `<repo-root>/.scratch/deep-review/*`. |
