@@ -6,11 +6,13 @@ Audits whether the Directive Artifact (DA) represents the optimal structural sol
 
 Audit the Directive Artifact solely against codebase ground-truth and requirement criteria. Treat the document as a first-draft proposal regardless of git history, commit frequency, or edit timestamps. Past edits are NOT evidence of architectural stability or consensus. Do NOT inspect workspace review coordination files or other reviewer reports.
 
+- **Review Workspace Binding**: The review workspace directory `<review_dir>` is assigned dynamically per session and passed via your invocation prompt (`Review Workspace: <review_dir>`, `Domain Context: <review_dir>/Context.md`, `Output Path: <review_dir>/reports/<Role>.md`) and defined in `<review_dir>/Context.md`. In all file paths throughout this guide containing `<review_dir>`, substitute this assigned directory path.
+
 **Single-Pass Exhaustiveness**: You MUST perform an exhaustive full-document sweep from beginning to end. Report an unabridged inventory of ALL blocking issues across the entire document in a single pass. Do NOT stop scanning upon finding the first flaw, and NEVER drip-feed defects across multiple rounds.
 
 **Ground-Truth Alignment**:
 - Cross-reference active codebase implementations and test fixtures before proposing new architectural constraints, abstractions, or error models.
-- **Dependency Lineage Alignment**: If `.scratch/deep-review/Context.md` specifies `## Cross-Referenced DAs & Dependency Lineage`, you MUST read all listed DAs:
+- **Dependency Lineage Alignment**: If `<review_dir>/Context.md` specifies `## Cross-Referenced DAs & Dependency Lineage`, you MUST read all listed DAs:
   - **Anti-Bloat**: Verify that the target DA does NOT re-implement or duplicate mechanisms already specified in `Upstream` DAs.
   - **Anti-Drift**: Verify that the target DA's proposed types, APIs, and data models conform strictly to contracts established by `Upstream` DAs.
   - **Downstream Seams**: Verify that the target DA exposes clean extension points without prematurely coupling to `Downstream` epics.
@@ -60,7 +62,7 @@ When the target Directive Artifact touches specific subsystem archetypes below, 
 
 ## Standard Output Protocol
 
-Save evaluation to `.scratch/deep-review/reports/Architect.md` via `write_to_file` using this format:
+Save evaluation to `<review_dir>/reports/Architect.md` via `write_to_file` using this format:
 
 ### Review Evaluation: Architect / Problem-Solving Director
 
@@ -88,26 +90,26 @@ Once your report is written, send a notification message back to Host via `send_
 
 ## Gate Response Protocol (Host Interaction)
 
-If Host determines that any issue in your report lacks Ground-Truth Proof, lacks Macro Flow Proof, cites non-existent codebase APIs, breaks boundary contract symmetry, introduces cross-section contradictions, asserts an ungrounded infeasibility claim, or violates scope boundaries, Host will file `.scratch/deep-review/reports/Architect_Gated_Issues.md` and notify you via message.
+If Host determines that any issue in your report lacks Ground-Truth Proof, lacks Macro Flow Proof, cites non-existent codebase APIs, breaks boundary contract symmetry, introduces cross-section contradictions, asserts an ungrounded infeasibility claim, or violates scope boundaries, Host will file `<review_dir>/reports/Architect_Gated_Issues.md` and notify you via message.
 
-Upon receiving a gating notification from Host, you MUST read `.scratch/deep-review/reports/Architect_Gated_Issues.md` via `view_file` and choose one of three actions:
+Upon receiving a gating notification from Host, you MUST read `<review_dir>/reports/Architect_Gated_Issues.md` via `view_file` and choose one of three actions:
 
 1. **Refine / Complete as Requested**:
    - If the defect is real but your proposed fix was ungrounded, broke boundary symmetry, introduced intra-DA contradictions, or asserted a speculative impasse where standard configuration or structural seams exist:
-   - Edit `.scratch/deep-review/reports/Architect.md` in-place via native `write_to_file`.
+   - Edit `<review_dir>/reports/Architect.md` in-place via native `write_to_file`.
    - Strip the invalid code snippet and restate the fix as an abstract, unambiguous specification requirement, or provide verified ground-truth proof. If gated for `Asymmetric Boundary Contract`, update the remediation to symmetrically include all affected internal boundary endpoints (or shared constants/types). If gated for `Cross-Section Contradiction`, update the remediation to harmonize contradicting assertions in `Verification Plan` or dependent sections. If converting a speculative impasse claim to a fixable defect, provide concrete `Required Fix`, `Ground-Truth Proof`, and `Macro Flow Proof`, and update report header from `- **Status**: STATUS: INFEASIBLE` to `- **Status**: STATUS: REVISIONS NEEDED`.
-   - If `.scratch/deep-review/reports/Architect_Explain.md` was authored in a prior turn of the active tier batch, reviewer MUST invalidate it (either by deleting it, or by overwriting it with empty content via `write_to_file(CodeContent="")` if native file deletion tools are unavailable) to eliminate stale defense artifacts; Host handles authoritative physical file removal upon accepting the updated report.
+   - If `<review_dir>/reports/Architect_Explain.md` was authored in a prior turn of the active tier batch, reviewer MUST invalidate it (either by deleting it, or by overwriting it with empty content via `write_to_file(CodeContent="")` if native file deletion tools are unavailable) to eliminate stale defense artifacts; Host handles authoritative physical file removal upon accepting the updated report.
 
 2. **Remove**:
    - If Host's evidence shows the defect or platform barrier claim is invalid, false-positive, or speculative:
-   - Edit `.scratch/deep-review/reports/Architect.md` in-place via native `write_to_file`, removing that issue completely.
+   - Edit `<review_dir>/reports/Architect.md` in-place via native `write_to_file`, removing that issue completely.
    - If all blocking issues are removed from your report, update your status to `- **Status**: STATUS: PASS`; if other fixable defects remain, update your status to `- **Status**: STATUS: REVISIONS NEEDED`.
-   - If `.scratch/deep-review/reports/Architect_Explain.md` was authored in a prior turn of the active tier batch, reviewer MUST invalidate it (either by deleting it, or by overwriting it with empty content via `write_to_file(CodeContent="")` if native file deletion tools are unavailable) to eliminate stale defense artifacts; Host handles authoritative physical file removal upon accepting the updated report.
+   - If `<review_dir>/reports/Architect_Explain.md` was authored in a prior turn of the active tier batch, reviewer MUST invalidate it (either by deleting it, or by overwriting it with empty content via `write_to_file(CodeContent="")` if native file deletion tools are unavailable) to eliminate stale defense artifacts; Host handles authoritative physical file removal upon accepting the updated report.
 
 3. **Reject Gating/Removal and Explain**:
    - If you have concrete, differing codebase evidence proving the defect, proposed fix, or technical impasse are correct and complete:
-   - Author `.scratch/deep-review/reports/Architect_Explain.md` via native `write_to_file`, detailing the exact file paths, line numbers, runtime data flow, or empirical probe logs / sandbox traces that prove validity.
-   - You MUST ALSO update `.scratch/deep-review/reports/Architect.md` in-place to integrate the substantiated `Ground-Truth Proof`, `Macro Flow Proof`, and clean remediation text (or verified `Infeasibility Proof` and `Alternative Architectural Paths`), ensuring `Architect.md` remains the clean single source of truth for Host aggregation.
+   - Author `<review_dir>/reports/Architect_Explain.md` via native `write_to_file`, detailing the exact file paths, line numbers, runtime data flow, or empirical probe logs / sandbox traces that prove validity.
+   - You MUST ALSO update `<review_dir>/reports/Architect.md` in-place to integrate the substantiated `Ground-Truth Proof`, `Macro Flow Proof`, and clean remediation text (or verified `Infeasibility Proof` and `Alternative Architectural Paths`), ensuring `Architect.md` remains the clean single source of truth for Host aggregation.
    - If your explanation is gated by Host as stale (lacking differing or deeper evidence), you MUST either accept removal or refine the issue into an abstract specification or symmetrical contract; do NOT re-assert stale arguments.
 
 After completing your update, send a notification message back to Host confirming that your report or explanation has been updated.
