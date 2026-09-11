@@ -41,7 +41,7 @@ When auditing algorithmic complexity or throughput, author a self-contained inli
 4. **Stream Backpressure & Buffer Bounds**: Are fast producers throttled when writing to slow consumers? Are buffers bounded to prevent out-of-memory crashes under load?
 5. **Resource & Memory Management**: Are file descriptors, database connections, and sockets explicitly released? Are connection pools protected against exhaustion with acquisition timeouts? Are in-memory caches bounded with eviction policies and protected against thundering-herd stampedes?
 6. **Client & Viewport Rendering Scale**: Are large collections ($N \gg 1$) virtualized (windowed/culled) to prevent unbounded view-tree allocation, DOM node bloat, and main-thread render stalls?
-7. **Throughput Latency & Staleness Timeouts**: Are timeouts on streams, chunked decoders, and background pipelines designed around rolling inactivity/idle detection (zero delta over an inactivity window) rather than rigid total wall-clock caps that penalize healthy, high-volume processing?
+7. **Throughput Latency vs Staleness Timeouts**: Reviewer **MUST report as a blocking defect** whenever the DA enforces rigid total wall-clock timeouts on data streams, chunked decoders, downloads, or background pipelines without rolling inactivity detection (penalizing healthy, active throughput instead of detecting stalls or deadlocks).
 
 ## Domain Subdocuments Routing Table
 
@@ -54,7 +54,7 @@ When the target Directive Artifact touches specific subsystem archetypes below, 
 
 ## Verdict Rules
 
-- Return `STATUS: REVISIONS NEEDED` if the design introduces avoidable complexity bottlenecks, N+1 queries, unmanaged resource leaks, or unbounded memory growth.
+- Return `STATUS: REVISIONS NEEDED` if the design introduces avoidable complexity bottlenecks, N+1 queries, unmanaged resource leaks, unbounded memory growth, or rigid wall-clock timeouts aborting active, forward-progressing pipelines.
 - Return `STATUS: PASS` if performance and resource management are optimal and bounded.
 - Return `STATUS: INFEASIBLE` if a core requirement or ticket premise violates hard platform or technical constraints with no viable in-scope fix. When both infeasible and fixable defects are present, `STATUS: INFEASIBLE` takes strict precedence as the overall report status.
 - NEVER return `STATUS: REVISIONS NEEDED` for internal implementation mechanics (e.g. syntax, types, exports, regex flags) in illustrative code snippets; demand an Acceptance Criterion instead.
