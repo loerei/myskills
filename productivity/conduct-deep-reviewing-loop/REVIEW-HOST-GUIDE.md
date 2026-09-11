@@ -10,7 +10,7 @@ Unified operational instructions for Layer 2 Review Host to manage workspace iso
 ```text
 <repo-root>/<review_dir>/    # Dynamic review workspace (.scratch/deep-review-<short_title>/)
 ├── host/                    # [HOST ONLY] Coordination artifacts (hidden from reviewers)
-│   ├── State.md             # Machine-readable routing state (Verdict, Highest Modified Tier, PassCount, Untouched Reviewers)
+│   ├── State.md             # Machine-readable routing state (Verdict, Highest Modified Tier, PassCount, Reviewer Accounting)
 │   ├── Analyzation.md       # Human/L1 analysis report (accepted issues & rationale, or technical impasse diagnostics & alternatives)
 │   └── Reviewer_Choice_Rationale.md
 ├── Context.md               # [PUBLIC] Initialized by Layer 1 (Review Workspace, DA path, rules, criteria, static SP)
@@ -95,7 +95,7 @@ Host executes Layer 3 reviewers in dependency order across the active selected r
 | **Layer 3.3** | `Logic` *(Mandatory Core)*, `Edgecase`, `Performance`, `Observability` | Layer 3.2 PASS |
 | **Layer 3.4** | `UXUI` | Layer 3.3 PASS |
 
-- **Vacuous Tier Transition**: If all roles in a DAG tier are `EXCLUDED`, or if all active roles in the tier are skipped during an initial targeted pass (as upstream of `Highest Modified Tier` or listed under Untouched Reviewers in `host/State.md`), Host treats that tier as vacuously passed for the active targeted pass and immediately advances to the next tier.
+- **Vacuous Tier Transition**: If all roles in a DAG tier are `EXCLUDED`, or if all active roles in the tier are skipped during an initial targeted pass (as upstream of `Highest Modified Tier` or marked UNTOUCHED under Reviewer Accounting in `host/State.md`), Host treats that tier as vacuously passed for the active targeted pass and immediately advances to the next tier.
 
 ### 3.2 Role Summoning Table
 
@@ -137,7 +137,7 @@ Host executes Layer 3 reviewers in dependency order across the active selected r
 - **Targeted Round (Round N+1)**: If previous `host/State.md` recorded `Gate Verdict: ROUND_REVISION_NEEDED`:
   - Reset `PassCount = 0`.
   - Read `Highest Modified Tier` from previous `host/State.md`. If the line is missing, unparseable, or malformed, gracefully fallback to `Layer 3.1`.
-  - Load `Untouched Reviewers` from `<review_dir>/host/State.md`. If the section is missing, unparseable, or containing `*(None)*`, whitespace, or an empty table, gracefully fallback to an empty set ($\emptyset$), treating all active roles in affected tiers as targeted.
+  - Parse the `Reviewer Accounting` table in `<review_dir>/host/State.md` and extract all roles with `Status == UNTOUCHED` as the `Untouched Reviewers` set. If the section is missing, unparseable, contains `*(None)*`, or is malformed, gracefully fallback to an empty set ($\emptyset$), treating all active roles in the tier as targeted (`TOUCHED`).
   - Determine affected roles per Section 5 Invalidation Matrix.
   - Summon affected roles on the updated static snapshot $S_N$.
 - **Full Sweep Round (Round N+1)**: If previous `host/State.md` recorded `Gate Verdict: ROUND_PASS`:
@@ -248,7 +248,7 @@ When the verdict is `PLAN_INFEASIBLE`, Host MUST NOT mutate target Directive Art
 4. **Author Coordination Artifacts**:
    - **`State.md`**: Author `<review_dir>/host/State.md` per `HOW-TO-GATE.md`:
      - When verdict is `PLAN_INFEASIBLE`: write `- Gate Verdict: PLAN_INFEASIBLE`, `- Highest Modified Tier: None`, and `- Current PassCount: 0 / <SP>`.
-     - When verdict is `ROUND_REVISION_NEEDED`: write Executive Summary state and `## Untouched Reviewers` table (enforcing `Current PassCount: 0 / <SP>`).
+     - When verdict is `ROUND_REVISION_NEEDED`: write Executive Summary state and `## Reviewer Accounting` table for `Highest Modified Tier` per `HOW-TO-GATE.md` (enforcing `Current PassCount: 0 / <SP>`).
      - When verdict is `ROUND_PASS` or `FINAL_PASS`: write `- Gate Verdict: ROUND_PASS | FINAL_PASS`, `- Highest Modified Tier: None`, and `- Current PassCount: <N> / <SP>`.
      - When verdict is `ABORTED_MUTATION_FAILURE`: write `- Gate Verdict: ABORTED_MUTATION_FAILURE`, `- Highest Modified Tier: None`, and `- Current PassCount: 0 / <SP>`.
    - **`Analyzation.md`**: Author `<review_dir>/host/Analyzation.md` containing:
@@ -273,7 +273,7 @@ When the verdict is `PLAN_INFEASIBLE`, Host MUST NOT mutate target Directive Art
 
 When Host applies verified mutations to the Directive Artifact, the DA transitions to a new static snapshot $S_N$. The smallest scheduling unit is the **individual Reviewer**:
 1. Host identifies the `Highest Modified Tier` recorded in `host/State.md` (falling back to `Layer 3.1` if missing or malformed) and its downstream tiers.
-2. Host loads `Untouched Reviewers` from `<review_dir>/host/State.md` and filters out all untouched reviewers from the immediate pass (treating `*(None)*` as empty set $\emptyset$).
+2. Host loads `Untouched Reviewers` (roles marked `UNTOUCHED` in the `Reviewer Accounting` table in `<review_dir>/host/State.md`) and filters out all untouched reviewers from the immediate pass (treating missing/malformed entries as empty set $\emptyset$).
 3. Host summons only the affected reviewers in topological DAG sequence, while registering untouched reviewers into the pending backfill queue for snapshot $S_N$:
 
 | Highest Modified Tier | Targeted Roles Run on Snapshot $S_N$ | Skipped Roles Pending Backfill (Upstream + Untouched) |

@@ -88,7 +88,7 @@ When specialist reviewer opinions conflict (e.g. `Performance` requesting aggres
 | Condition | Gate Verdict | Output Artifacts |
 | :--- | :--- | :--- |
 | 1+ Verified Technical Impasse (`STATUS: INFEASIBLE`) | `PLAN_INFEASIBLE` | Absolute Precedence: Overrides fixable blocking defects; immediately halts round with zero DA mutations. Host MUST NOT mutate DA. Writes `<review_dir>/host/State.md` (`Gate Verdict: PLAN_INFEASIBLE`) and `<review_dir>/host/Analyzation.md` (detailing the hard blocker, empirical proof, and architectural alternatives). Terminate reviewer subagents via process control, notify Layer 1 via `send_message`, and halt loop. |
-| 1+ Accepted Blocking Defects (with 0 Verified Technical Impasses) | `ROUND_REVISION_NEEDED` | Host mutates target DA(s) directly using Clean & Neutral Artifact Protocol (creating temporary sibling `<da_stem>.bak.md` copies), writes `<review_dir>/host/State.md` (including Untouched Reviewers section), and writes `<review_dir>/host/Analyzation.md` (accepted issues only with rationale). Intermediate round teardown terminates reviewer subagents via process control, preserving `<review_dir>/host/State.md` and `<review_dir>/host/Analyzation.md` for Layer 1. Layer 1 deletes `<review_dir>/host/Analyzation.md` prior to Round N+1. |
+| 1+ Accepted Blocking Defects (with 0 Verified Technical Impasses) | `ROUND_REVISION_NEEDED` | Host mutates target DA(s) directly using Clean & Neutral Artifact Protocol (creating temporary sibling `<da_stem>.bak.md` copies), writes `<review_dir>/host/State.md` (including Reviewer Accounting table for Highest Modified Tier), and writes `<review_dir>/host/Analyzation.md` (accepted issues only with rationale). Intermediate round teardown terminates reviewer subagents via process control, preserving `<review_dir>/host/State.md` and `<review_dir>/host/Analyzation.md` for Layer 1. Layer 1 deletes `<review_dir>/host/Analyzation.md` prior to Round N+1. |
 | Write Verification / Filesystem Failure | `ABORTED_MUTATION_FAILURE` | Host restores modified and deleted target DAs from backups where present, restores `<review_dir>/Context.md` from `<review_dir>/Context.bak.md`, deletes newly created DAs, terminates reviewer subagents, writes `<review_dir>/host/State.md` and `<review_dir>/host/Analyzation.md` detailing the failure, notifies Layer 1 via `send_message`, and halts without issuing `ROUND_REVISION_NEEDED`. |
 | 0 Accepted Blocking Defects (Targeted Pass with Pending Skipped Roles) | `TARGETED_PASS` *(Ephemeral Internal Host State)* | Trigger Snapshot Delta Backfill for skipped roles (upstream + untouched) in topological DAG sequence (preserving intra-round reports). |
 | 0 Accepted Blocking Defects (100% Roster Passed on Snapshot) | `ROUND_PASS` (Increment `PassCount`) or `FINAL_PASS` (if `PassCount >= SP`) | Write `<review_dir>/host/State.md` and `<review_dir>/host/Analyzation.md`. Terminate reviewer subagents via process control, purge `<review_dir>/reports/` and transient gating artifacts, preserving `<review_dir>/host/State.md` and `<review_dir>/host/Analyzation.md` for Layer 1 handoff. Layer 1 deletes `<review_dir>/host/Analyzation.md` prior to launching next round. On `FINAL_PASS`, Layer 1 executes final directory purge of `<repo-root>/<review_dir>/*` after presenting verified DA. |
@@ -131,16 +131,13 @@ When authoring `<review_dir>/host/State.md`:
      - Highest Modified Tier: Layer 3.X
      - Current PassCount: 0 / <SP>
 
-     ## Untouched Reviewers
-     | Role Identifier | Technical Rationale |
-     | :--- | :--- |
-     | `<Role>` | <Explanation why applied DA mutations do not touch this role's contracts or domain> |
+     ## Reviewer Accounting (Layer 3.X)
+     | Role Identifier | Status | Technical Rationale |
+     | :--- | :---: | :--- |
+     | `<Role_1>` | TOUCHED | <Explanation how applied DA mutations touch this role's contracts, seams, or domain> |
+     | `<Role_2>` | UNTOUCHED | <Technical justification proving applied DA mutations introduce zero modifications, additions, or regressions relevant to this role's domain> |
      ```
-     If ALL active roles were touched by applied mutations, record:
-     ```markdown
-     ## Untouched Reviewers
-     *(None)*
-     ```
+     Host MUST list 100% of active roles belonging to `Highest Modified Tier`. Absolute ban on `*(None)*`, empty tables, or omitting active roles.
    - **When verdict is `PLAN_INFEASIBLE`**:
      ```markdown
      # Gate State
@@ -162,9 +159,11 @@ When authoring `<review_dir>/host/State.md`:
      - Highest Modified Tier: None
      - Current PassCount: 0 / <SP>
      ```
-3. **Untouched Reviewers Criteria & Fallback**:
-   - **Strict Untouched Criteria**: A reviewer is listed under `## Untouched Reviewers` ONLY IF the applied DA mutations introduce zero modifications, additions, or regressions relevant to that reviewer's domain checklist. If a role's domain is affected by the applied changes, it MUST NOT be listed in this section.
-   - **Conservative Fallback**: If there is any ambiguity on whether a mutation might affect a role, omit it from `Untouched Reviewers` to ensure immediate re-audit in Round N+1.
+3. **Reviewer Accounting Standards & Criteria**:
+   - **Mandatory 100% Tier Coverage**: Host MUST list 100% of active roles belonging to `Highest Modified Tier` in the `## Reviewer Accounting (Layer 3.X)` table. Absolute ban on `*(None)*`, empty tables, or omitting active roles.
+   - **TOUCHED Status Criteria**: An active role in `Highest Modified Tier` MUST be marked `TOUCHED` if it raised an accepted blocking defect in the round, or if applied DA mutations touch, alter, or introduce contracts, seams, requirements, or dependencies relevant to that role's domain checklist.
+   - **UNTOUCHED Status Criteria**: An active role in `Highest Modified Tier` is marked `UNTOUCHED` ONLY IF applied DA mutations introduce zero modifications, additions, or regressions relevant to that role's domain checklist, with concrete technical justification documented in `Technical Rationale`.
+   - **Conservative Fallback**: If there is any ambiguity on whether a mutation affects a role, mark `TOUCHED` to ensure immediate re-audit in Round N+1.
 
 ## Analyzation.md Authoring Standards
 
