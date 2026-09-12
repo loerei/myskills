@@ -22,12 +22,23 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 - **System Invariants vs. Implementation Mechanics**: Audit ONLY for **System Invariants** (e.g. structural seams, threat models, lifecycle bounds, cross-boundary contracts) that standard TDD misses without explicit specification. Ticket code snippets are illustrative examples, not production code; NEVER report internal implementation mechanics (e.g. syntax, types, exports, regex flags) as blocking defects. If a required behavior or edge case is missing, demand an **Acceptance Criterion**; NEVER rewrite or patch code snippets.
 - **Technical Impasse & Infeasibility Reporting**: If an audited requirement, ticket premise, or dependency is technically impossible or blocked by hard platform constraints (e.g. OS sandbox, CORS/same-origin, missing third-party capability, physical resource ceiling) with no viable in-scope fix: NEVER invent hallucinated workarounds and NEVER conceal the issue. Return `STATUS: INFEASIBLE` with an `Infeasibility Proof` demonstrating the hard constraint, and outline `Alternative Architectural Paths` if known.
 
+> **Anti-Flag-Bloat & Telemetry Lifecycle Directive (The Dual Optimization Invariant)**:
+> Satisfy Zero Flag Debt and Minimal Telemetry Overhead simultaneously. Feature flags are liabilities, not assets.
+> Reviewers MUST evaluate feature flags by archetype:
+> - **Release / Experiment Toggles**: Ephemeral by definition. MUST declare an explicit owner, an ISO-8601 retirement death-clock (TTL <= 30 days), and a mandatory Deletion Acceptance Criterion. If a proposal introduces a release flag without a retirement date or deletion plan, reject it.
+> - **Ops / Kill-Switches**: Permanent toggles reserved strictly for high-blast-radius external 3rd-party integrations, batch processors, or circuit breakers. Must be isolated via strategy interfaces outside core domain logic.
+> Telemetry in hot paths (>1,000 ops/sec) MUST NOT allocate memory or execute string formatting unless the target log level is enabled (`logger.isDebugEnabled()`).
+
 ## Mandatory Audit Checklist
 
 1. **Structured Telemetry & Context**: Does error handling log sufficient structured context (operation ID, timestamp, resource identifiers, error stack)? Are secrets, tokens, and PII strictly redacted? Are telemetry logs guaranteed to flush synchronously on unhandled process exit?
 2. **Silent Error Swallowing Prevention**: Are empty catch blocks (`catch {}`), discarded promise rejections, or dropped error stacks eliminated?
 3. **Trace Context Propagation**: Are distributed trace identifiers (such as W3C traceparent headers) and request correlation IDs explicitly propagated across asynchronous boundaries and worker processes?
-4. **Degradation & Feature Flags**: Can new capabilities or high-risk paths be disabled via feature flags or kill-switches during incidents? Are graceful degradation paths defined?
+4. **Degradation & Feature Flag Governance**:
+   - Toggle Archetype Classification: Are flags strictly categorized as ephemeral (Release/Experiment) or permanent (Ops/Permission)?
+   - Lifecycle Bounds & Death-Clock: Do ephemeral toggles declare an owner and an ISO-8601 death-clock (TTL <= 30 days)?
+   - Deletion Testability: Does the DA include an explicit Acceptance Criterion and test plan for flag removal and toggle router deletion?
+   - Kill-Switch Confinement: Are permanent kill-switches restricted to external 3rd-party dependencies, asynchronous batch jobs, or circuit breakers, rather than scattered across core domain logic?
 5. **Health Checks & Metric Cardinality**: Are liveness/readiness probes updated to reflect critical dependencies? Are metric tag labels constrained to prevent high-cardinality crashes in metric stores?
 
 ## Domain Subdocuments Routing Table
@@ -41,7 +52,7 @@ When the target Directive Artifact touches specific subsystem archetypes below, 
 
 ## Verdict Rules
 
-- Return `STATUS: REVISIONS NEEDED` if error paths swallow context, leak sensitive data, lack operational kill-switches for high-risk changes, or cause unobservable silent failures.
+- Return `STATUS: REVISIONS NEEDED` if error paths swallow context, leak sensitive data, introduce ad-hoc feature flags lacking death-clocks or deletion plans, place un-guarded telemetry in hot paths (>1,000 ops/sec), or lack operational kill-switches for high-risk external integrations.
 - Return `STATUS: PASS` if telemetry, diagnostics, and operational controls are comprehensive.
 - Return `STATUS: INFEASIBLE` if a core requirement or ticket premise violates hard platform or technical constraints with no viable in-scope fix. When both infeasible and fixable defects are present, `STATUS: INFEASIBLE` takes strict precedence as the overall report status.
 - NEVER return `STATUS: REVISIONS NEEDED` for internal implementation mechanics (e.g. syntax, types, exports, regex flags) in illustrative code snippets; demand an Acceptance Criterion instead.

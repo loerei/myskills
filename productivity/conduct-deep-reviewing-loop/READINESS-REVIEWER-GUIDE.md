@@ -15,13 +15,16 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 - **Dependency Lineage Alignment**: If `<review_dir>/Context.md` specifies `## Cross-Referenced DAs & Dependency Lineage`, you MUST read all listed DAs:
   - For `Upstream` (`Unimplemented`) DAs: Treat their declared interfaces, types, and planned files as the *authoritative future baseline*. Do NOT fail readiness for files/methods scheduled to be created by an upstream DA. Verify that the target DA's imports and contract assumptions match the upstream spec.
   - For `Upstream` (`Implemented`) DAs: Codebase on disk is the ground-truth. Verify that target DA uses active exported symbols.
-- Follow Postel's Law: Tolerate legacy configs and relaxed schemas where existing tests rely on them.
+- Follow Postel's Law strictly for external API/network ingress only. For internal configuration, environment variables, and schemas, enforce strict schema validation and fail-fast boundaries ("Parse, Don't Validate"). Reject runtime dual-format loaders, backward-compatibility shims, and permissive schema fallbacks on internal paths. When existing tests or configs rely on legacy structures, mandate preparatory structural modernization ($S$) as a prerequisite step within the Directive Artifact.
 
 **Fix Pre-Verification**:
 - **Ground-Truth**: Verify on disk that any pre-existing method, type, or module referenced or consumed by a proposed fix actually exists in the target codebase, upstream specs, or planned declarations within the target DA itself. If introducing new methods, types, or interfaces, verify that their target landing locations exist (or are scheduled for creation in the DA), names do not collide with active exports, all consumed external dependencies are verified on disk or in upstream specs, and for internal communication boundaries (e.g. IPC, RPC, events), verify that both producer/caller and consumer/handler endpoints are updated symmetrically. Create simulation scripts in `<review_dir>/sandbox/` where applicable to verify package availability, importability, and version compatibility without running mutating package installations.
 - **Macro Flow**: Verify that the proposed fix does not break initialization order, variable scoping, or lifecycle contracts across the enclosing module (or specification consistency across sections for document/policy DAs).
 - **System Invariants vs. Implementation Mechanics**: Audit ONLY for **System Invariants** (e.g. structural seams, threat models, lifecycle bounds, cross-boundary contracts) that standard TDD misses without explicit specification. Ticket code snippets are illustrative examples, not production code; NEVER report internal implementation mechanics (e.g. syntax, types, exports, regex flags) as blocking defects. If a required behavior or edge case is missing, demand an **Acceptance Criterion**; NEVER rewrite or patch code snippets.
 - **Technical Impasse & Infeasibility Reporting**: If an audited requirement, ticket premise, or dependency is technically impossible or blocked by hard platform constraints (e.g. OS sandbox, CORS/same-origin, missing third-party capability, physical resource ceiling) with no viable in-scope fix: NEVER invent hallucinated workarounds and NEVER conceal the issue. Return `STATUS: INFEASIBLE` with an `Infeasibility Proof` demonstrating the hard constraint, and outline `Alternative Architectural Paths` if known.
+
+> **Configuration-Modernization-First & Anti-Shim Directive**:
+> Application configurations, environment bindings, and runtime dependencies must declare explicit, strict canonical schemas. Evolution of configuration contracts must execute via discrete, boot-time modernization sequences, NOT ambient runtime fallbacks or key-sniffing loaders. Reviewers must evaluate DAs with zero regard for historical effort invested in ad-hoc runtime shims: if a proposal introduces heuristic property checks (`if ('legacyKey' in raw)`), permissive schemas (e.g. Zod `.passthrough()`), or constructor compatibility wrappers to satisfy stale test fixtures, you MUST unconditionally reject the shim and mandate a preparatory structural modernization ($S$). Existing test suites and configuration files must be upgraded to canonical schemas as Step $S$ within the DA before feature behavior ($B$) is introduced.
 
 ## Empirical Verification: Shadow Sandbox (<review_dir>/sandbox/)
 
@@ -36,11 +39,12 @@ If probe execution runs as a background task, reviewer MUST NOT remain idle inde
 
 ## Mandatory Audit Checklist
 
-1. **Dependency Availability**: Are all required libraries, packages, and services present and compatible?
-2. **Target File Integrity**: Do specified target files exist in the codebase without pending deprecations?
-3. **Contract Compatibility**: Do proposed changes break existing public API contracts or database schemas?
-4. **Migration & Rollback**: Is there a safe path to deploy and rollback the change without downtime?
-5. **Platform & Environment Portability**: Are serialized data formats, path separators, file access modes, and encodings portable across all target runtime platforms, containers, or emulation layers?
+1. **Dependency Availability & Lockfile Integrity**: Are all required libraries, packages, and services pinned to exact versions in lockfiles, free of peer dependency conflicts, and verified via non-mutating inspections (`npm ls`, `pip check`)?
+2. **Target File Integrity & Compiler Zero-Emit Baseline**: Do specified target files exist in the codebase? Does the plan maintain zero compiler emit errors (`tsc --noEmit`, linters) without introducing relaxed bypasses (`@ts-ignore`, `any`, `--skipLibCheck`)?
+3. **Contract & Schema Integrity**: Do proposed changes break public API contracts or database schemas? Are internal configuration changes strictly validated without introducing runtime dual-format branching or permissive legacy shims?
+4. **Preparatory Sequencing ($S \to B$) for Configurations**: If the feature modifies configuration shapes or environment requirements, does the DA stage the migration of configuration files and test fixtures as a prerequisite structural step ($S$) rather than introducing dual-format loaders?
+5. **Migration & Rollback**: Is there a safe path to deploy and rollback the change without downtime?
+6. **Platform & Environment Portability**: Are serialized data formats, path separators, file access modes, and encodings portable across all target runtime platforms, containers, or emulation layers?
 
 ## Domain Subdocuments Routing Table
 
@@ -53,7 +57,7 @@ When the target Directive Artifact touches specific subsystem archetypes below, 
 
 ## Verdict Rules
 
-- Return `STATUS: REVISIONS NEEDED` if the plan assumes non-existent codebase structures, missing dependencies, or breaking API changes without migration steps.
+- Return `STATUS: REVISIONS NEEDED` if the plan assumes non-existent codebase structures, missing dependencies, breaking API changes without migration steps, or proposes runtime backward-compatibility shims / dual-format loaders instead of staging a prerequisite modernization step ($S$) for legacy configurations and test baselines.
 - Return `STATUS: PASS` if codebase prerequisites are verified and readiness is confirmed.
 - Return `STATUS: INFEASIBLE` if a core requirement or ticket premise violates hard platform or technical constraints with no viable in-scope fix. When both infeasible and fixable defects are present, `STATUS: INFEASIBLE` takes strict precedence as the overall report status.
 - NEVER return `STATUS: REVISIONS NEEDED` for internal implementation mechanics (e.g. syntax, types, exports, regex flags) in illustrative code snippets; demand an Acceptance Criterion instead.

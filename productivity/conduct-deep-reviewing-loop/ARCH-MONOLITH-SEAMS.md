@@ -22,9 +22,14 @@
 - [ ] End-to-End Parameter Seams: Verify that operational constraints (timeouts, deadlines, cancellation signals, buffer limits, early-exit flags) are injected via parameters (`options` / constructor) across the entire call chain. Reject leaf primitives that hardcode internal constants (preventing fast unit testing) and intermediary layers that choke or override caller policies.
 - [ ] Orthogonal Governance Decoupling & Placement: Verify that operational governance mechanisms (stagnation watchdogs, retry engines, rate limiters) are extracted from domain logic and placed at the common ancestor scope (`src/utils/`, `src/common/`), authorizing the creation of new shared infrastructure directories when none exist on disk. Domain components emit raw progress events (`{ current, total, unit }`); governance utilities handle timing and interruption.
 - [ ] Scale Invariance: Reject arbitrary hardcoded iteration ceilings derived from small sample test fixtures (Fixture Bias); require designs that accommodate streaming, incremental yielding, or dynamic progress measurement.
+- [ ] Inversion of Decision (Toggle Seam Isolation): Feature flags and operational toggles MUST NOT be scattered across core domain logic. Toggles must be evaluated at the outer application layer or wrapped behind strategy seams, passing concrete behavioral strategies into domain modules.
 
-### 6. Storage Migration Boundary Isolation
-- [ ] Storage Migration Lifecycle Isolation: Verify that data schema migrations execute exclusively within an isolated storage initialization phase at application bootstrap. Reject directive artifacts where UI views, renderers, application loaders, or domain handlers contain transient migration flags, schema-sniffing conditionals, or ad-hoc backfill logic.
+### 6. Storage & Configuration Lifecycle Isolation
+- [ ] Storage & Configuration Lifecycle Isolation: Verify that data schema migrations and configuration parsing execute exclusively within an isolated bootstrap phase at application startup. Reject directive artifacts where UI views, renderers, application loaders, or domain handlers contain transient migration flags, schema-sniffing conditionals, ad-hoc backfill logic, or dual-format configuration loaders.
+
+### 7. Data Trust Membranes & Contract Integrity
+- [ ] Ingress Parsing Membranes ("Parse, Don't Validate"): Untrusted external data (network payloads, user inputs, file imports) must be parsed into strongly typed, immutable domain models at the boundary. Once inside the trust membrane, downstream domain logic must assume valid state and must NOT execute defensive property sniffing or cascading null fallbacks.
+- [ ] Error Model Cleavage: Explicitly separate recoverable operational errors (network timeouts, transient I/O faults) from unrecoverable programming bugs / contract breaches (assertion failures, invariant breaches, null reference bugs). Operational errors use explicit domain error returns or typed exceptions; programming bugs fail fast.
 
 ## Concrete Anti-Patterns
 
@@ -159,6 +164,53 @@ import { StreamWatchdog } from "../codecs/stream-watchdog"; // Cross-domain coup
 // GOOD: Domain-agnostic utilities are elevated to the common ancestor scope.
 // When `src/utils/` does not yet exist, schedule its creation as a shared directory.
 import { StreamWatchdog } from "../utils/stream-watchdog"; // Clean shared infrastructure
+```
+
+### Anti-Pattern 6: Scattering Feature Toggle Conditionals Across Domain Core
+
+```typescript
+// BAD: Feature flag evaluated directly inside core business logic
+class OrderProcessor {
+  process(order: Order) {
+    if (featureFlags.isEnabled("new_discount_engine")) {
+      return this.newDiscount(order);
+    }
+    return this.legacyDiscount(order);
+  }
+}
+
+// GOOD: Inversion of Decision - Toggle resolved at bootstrap/boundary and injected via strategy interface
+interface DiscountEngine {
+  calculate(order: Order): Discount;
+}
+
+class OrderProcessor {
+  constructor(private readonly discountEngine: DiscountEngine) {}
+  process(order: Order) {
+    return this.discountEngine.calculate(order);
+  }
+}
+```
+
+### Anti-Pattern 7: Heuristic Fallback Sniffing Inside Domain Logic vs. Boundary Parsing
+
+```typescript
+// BAD: Defensive property sniffing and cascading fallbacks inside domain logic
+function processUserProfile(raw: Record<string, any>) {
+  const email = raw.email ?? raw.user_email ?? raw.contact?.email ?? "unknown@domain.com";
+  return { email };
+}
+
+// GOOD: Untrusted ingress parsed into immutable schema at boundary; domain consumes valid type
+const UserProfileSchema = z.object({
+  email: z.string().email(),
+}).strict();
+
+type UserProfile = z.infer<typeof UserProfileSchema>;
+
+function processUserProfile(profile: UserProfile) {
+  return { email: profile.email };
+}
 ```
 
 ## Failure Modes & Mitigations

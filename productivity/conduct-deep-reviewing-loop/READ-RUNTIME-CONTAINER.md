@@ -13,6 +13,7 @@
 ### 3. Resource Allocations & Signals
 - [ ] Explicit Resource Limits: Verify CPU and Memory requests and limits are declared in deployment manifests to prevent Node OOM conditions.
 - [ ] Process Signal Forwarding: Ensure container entrypoints execute application binaries directly or use init wrappers (`tini`, `dumb-init`) to correctly forward `SIGTERM` and `SIGINT` signals.
+- [ ] Hermetic Environment Invariance: Verify container specifications do not rely on implicit host environment variables or ambient fallbacks; all required runtime environment variables must be declared with strict validation at entrypoint startup.
 
 ## Concrete Anti-Patterns
 

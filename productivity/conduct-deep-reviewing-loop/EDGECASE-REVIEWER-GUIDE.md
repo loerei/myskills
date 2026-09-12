@@ -14,13 +14,16 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 - Cross-reference edge cases against active codebase handlers. Do NOT demand fail-fast exception boundaries on ingress/decode paths that cause regressions for synthetic mock data or lenient user files.
 - **Dependency Lineage Alignment**: If `<review_dir>/Context.md` specifies `## Cross-Referenced DAs & Dependency Lineage`, you MUST read all listed DAs:
   - Cross-reference failure recovery, lockfile lifecycles, and edge-case handling against `Upstream` DAs to ensure failure paths are handled cohesively without resource contention or conflicting recovery logic across epics.
-- Follow Postel's Law: Handle edge-case input malformations gracefully on read paths with fallback values.
+- Follow Postel's Law strictly for external untrusted ingress boundaries (deserializers, network payloads, user inputs, file imports). For internal domain pipelines, internal function calls, and persistent schemas, strictly ban cascading fallbacks (`?? default ?? backup`), heuristic property sniffing, and synthetic default values. Internal invariant violations MUST fail fast (`throw`, panic, explicit error return).
 
 **Fix Pre-Verification**:
 - **Ground-Truth**: Verify on disk that any pre-existing method, type, or module referenced or consumed by a proposed fix actually exists in the target codebase, upstream specs, or planned declarations within the target DA itself. If introducing new methods, types, or interfaces, verify that their target landing locations exist (or are scheduled for creation in the DA), names do not collide with active exports, all consumed external dependencies are verified on disk or in upstream specs, and for internal communication boundaries (e.g. IPC, RPC, events), verify that both producer/caller and consumer/handler endpoints are updated symmetrically. Create simulation scripts in `<review_dir>/sandbox/` where applicable to verify execution correctness.
 - **Macro Flow**: Verify that the proposed fix does not break initialization order, variable scoping, or lifecycle contracts across the enclosing module (or specification consistency across sections for document/policy DAs).
 - **System Invariants vs. Implementation Mechanics**: Audit ONLY for **System Invariants** (e.g. structural seams, threat models, lifecycle bounds, cross-boundary contracts) that standard TDD misses without explicit specification. Ticket code snippets are illustrative examples, not production code; NEVER report internal implementation mechanics (e.g. syntax, types, exports, regex flags) as blocking defects. If a required behavior or edge case is missing, demand an **Acceptance Criterion**; NEVER rewrite or patch code snippets.
 - **Technical Impasse & Infeasibility Reporting**: If an audited requirement, ticket premise, or dependency is technically impossible or blocked by hard platform constraints (e.g. OS sandbox, CORS/same-origin, missing third-party capability, physical resource ceiling) with no viable in-scope fix: NEVER invent hallucinated workarounds and NEVER conceal the issue. Return `STATUS: INFEASIBLE` with an `Infeasibility Proof` demonstrating the hard constraint, and outline `Alternative Architectural Paths` if known.
+
+> **Anti-Defensive-Bloat & Boundary Invariant Directive**:
+> Confine defensive handling to external boundaries. Do NOT allow internal core logic to swallow exceptions, synthesize missing state, or cascade fallbacks. If an internal invariant is breached, fail fast. Reviewers must evaluate proposals with zero regard for defensive coding habits: if a proposal introduces cascading fallbacks or ambient error swallowing on internal paths, you MUST unconditionally demand removal of the fallback and enforcement of fail-fast contracts.
 
 ## Empirical Verification: Shadow Sandbox (<review_dir>/sandbox/)
 
@@ -37,7 +40,12 @@ When auditing boundary conditions or failure paths, author a self-contained inli
 1. **Boundary Values**: Empty collections, zero values, max string lengths, numeric overflows.
 2. **Resource Contention & Teardown Failures**: Network timeouts, disk exhaustion, API rate limits, filesystem/database lock contentions (e.g. external process locks, unreleased handles), and recovery from aborted cleanups.
 3. **Concurrency & Race Conditions**: Simultaneous requests, stale cache hits, re-entrancy risks.
-4. **Malformed Payload Handling**: Missing JSON keys, invalid data types, unescaped special characters.
+4. **Malformed Ingress & Contract Invariants**: Missing payload fields, invalid data types, unescaped special characters at ingress boundaries; rejection of heuristic fallback sniffing and synthetic defaults in internal pipelines.
+5. **Boundary Fail-Fast & Invariant Integrity**:
+   - Ingress boundary isolation: Are untrusted inputs parsed into strictly typed models before entering domain logic?
+   - Ban on internal fallback sniffing: Does internal domain logic avoid heuristic sniffing (`if ('x' in obj)`) or cascading fallbacks (`a ?? b ?? c`)?
+   - Anti-swallowing invariant: Are exceptions logged and propagated rather than silently swallowed (`catch {}` without rethrow or handling)?
+   - Deterministic resource cleanup under failure (defer / RAII / try-finally).
 
 ## Domain Subdocuments Routing Table
 
@@ -50,7 +58,7 @@ When the target Directive Artifact touches specific subsystem archetypes below, 
 
 ## Verdict Rules
 
-- Return `STATUS: REVISIONS NEEDED` if an unhandled edge case could cause crashes, unhandled exceptions, or silent data corruption.
+- Return `STATUS: REVISIONS NEEDED` if an unhandled edge case could cause crashes, unhandled exceptions, silent data corruption, defensive fallback bloat on internal paths, or silent error swallowing that masks invariant breaches.
 - Return `STATUS: PASS` if all failure paths have explicit mitigation specifications.
 - Return `STATUS: INFEASIBLE` if a core requirement or ticket premise violates hard platform or technical constraints with no viable in-scope fix. When both infeasible and fixable defects are present, `STATUS: INFEASIBLE` takes strict precedence as the overall report status.
 - NEVER return `STATUS: REVISIONS NEEDED` for internal implementation mechanics (e.g. syntax, types, exports, regex flags) in illustrative code snippets; demand an Acceptance Criterion instead.

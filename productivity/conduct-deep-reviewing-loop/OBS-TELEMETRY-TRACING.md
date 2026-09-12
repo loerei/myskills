@@ -10,6 +10,10 @@
 - [ ] Structured JSON Format: Verify application logs output key-value JSON constructs. Reject raw, unstructured string logging.
 - [ ] Sensitive Data Scrubbing: Confirm log interceptors redact sensitive user information (PII, tokens, authorization headers, passwords).
 
+### 3. Hot-Path Telemetry & Sampling Governance
+- [ ] Hot-Path Overhead Bounds: In high-frequency execution loops (>1,000 ops/sec), telemetry logging MUST be wrapped in log-level guards (`if (logger.isDebugEnabled())`) or use structured lazy evaluators to avoid zero-allocation heap penalties and string concatenations.
+- [ ] Trace Sampling & Span Amortization: For high-throughput stream processing or batched iterations, spans MUST be amortized over batches or filtered via tail-based sampling rather than instantiating individual OpenTelemetry spans per item.
+
 ## Concrete Anti-Patterns
 
 ### Anti-Pattern 1: Unstructured Un-Contextualized Logging
@@ -24,6 +28,29 @@ logger.ErrorContext(ctx, "user authentication failed",
     slog.String("error", err.Error()),
     slog.String("component", "auth_service"),
 )
+```
+
+### Anti-Pattern 2: Un-Guarded Logging & Per-Item Spans in High-Frequency Loops
+
+```typescript
+// BAD: Allocates memory and span objects inside high-frequency loop (>1,000 ops/sec)
+for (const item of items) {
+  const span = tracer.startSpan("process_item");
+  logger.debug(`Processing item ${item.id} with status ${item.status}`);
+  process(item);
+  span.end();
+}
+
+// GOOD: Batch-level span amortization and level-guarded structured logging
+const span = tracer.startSpan("process_batch");
+span.setAttribute("batch.size", items.length);
+for (const item of items) {
+  if (logger.isDebugEnabled()) {
+    logger.debug("Processing item", { id: item.id, status: item.status });
+  }
+  process(item);
+}
+span.end();
 ```
 
 ## Failure Modes & Mitigations

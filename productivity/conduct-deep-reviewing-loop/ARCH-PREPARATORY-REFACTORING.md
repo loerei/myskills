@@ -28,7 +28,8 @@ Audit target files and landing zones across 4 distinct quality axes:
    - *Interface Testability*: Incoming behavior is testable entirely through the public module interface.
    - *Mock Fragility Elimination*: Tests do not bypass seams to mock internal private methods or internal state variables.
 4. **Updatability (Shallowness & Deletion Test)**:
-   - *Deletion Test*: Future removal of the feature can be accomplished cleanly by deleting a self-contained module without auditing conditional flags across callers.
+   - *Deletion Test*: Future removal of the feature or temporary toggle can be accomplished cleanly by deleting a self-contained module or strategy without auditing conditional flags across callers.
+   - *Tidy First Toggle Sequencing ($S \to B$)*: When introducing feature flags, Step $S$ extracts the strategy interface/seam; Step $B$ introduces the toggled behavior cleanly behind the seam.
    - *Pass-Through Overhead*: Eliminates shallow pass-through wrapper methods that forward parameters without adding value.
 
 ### 3. Landing Zone State Classification & Gate
@@ -41,6 +42,7 @@ Audit target files and landing zones across 4 distinct quality axes:
     3. **Architectural Transition Mapping**: Current Tangled Landing Zone $\rightarrow$ Proposed Paved Landing Zone.
     4. **Tidy First Execution Order ($S \to B$)**: Structuring implementation into explicit prerequisite structural steps ($S_1 \to S_2$) followed by behavioral change ($B$).
     5. **Storage Readiness Invariant**: If a proposed feature modifies persistent data schemas, but the target landing zone lacks a centralized schema version runner, classify the landing zone as Bad State. Mandate establishing a minimal isolated schema version runner as Step $S$ directly in the DA before implementing feature behavior $B$.
+    6. **Configuration & Environment Readiness Invariant**: If a proposed feature modifies application configuration schemas, environment variable bindings, or runtime dependency interfaces, but the target landing zone lacks a centralized, strictly validated configuration boot boundary (or relies on ad-hoc runtime branching between legacy and new formats), classify the landing zone as Bad State. Mandate establishing a canonical configuration schema parser and migrating legacy configuration files, environment definitions, and test fixtures as a prerequisite structural step ($S$) directly in the DA before implementing feature behavior ($B$).
 
 ### 4. Kent Beck's 15 Tidying Patterns Taxonomy
 Verify that preparatory structural changes ($S$) employ pre-approved tidying patterns before behavior changes ($B$):

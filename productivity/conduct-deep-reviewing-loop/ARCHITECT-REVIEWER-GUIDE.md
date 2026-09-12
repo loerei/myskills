@@ -16,7 +16,7 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
   - **Anti-Bloat**: Verify that the target DA does NOT re-implement or duplicate mechanisms already specified in `Upstream` DAs.
   - **Anti-Drift**: Verify that the target DA's proposed types, APIs, and data models conform strictly to contracts established by `Upstream` DAs.
   - **Downstream Seams**: Verify that the target DA exposes clean extension points without prematurely coupling to `Downstream` epics.
-- Follow Postel's Law: Be liberal in what you accept on deserialization/ingress paths, conservative in what you produce on encode/egress paths. Do NOT demand fail-fast rejection on read paths if active code or tests tolerate uncalculated checksums, synthetic mocks, or lenient headers, unless the user explicitly requested a breaking change.
+- Follow Postel's Law strictly on untrusted external deserialization/ingress paths; be conservative in what you produce on encode/egress paths. For internal domain calls, configuration loading, and inter-module contracts, enforce strict validation and fail-fast invariants ("Parse, Don't Validate"). Do NOT allow internal pipelines to absorb defects via heuristic fallback branching.
 
 **Fix Pre-Verification**:
 - **Ground-Truth**: Verify on disk that any pre-existing method, type, or module referenced or consumed by a proposed fix actually exists in the target codebase, upstream specs, or planned declarations within the target DA itself. If introducing new methods, types, or interfaces, verify that their target landing locations exist (or are scheduled for creation in the DA), names do not collide with active exports, all consumed external dependencies are verified on disk or in upstream specs, and for internal communication boundaries (e.g. IPC, RPC, events), verify that both producer/caller and consumer/handler endpoints are updated symmetrically.
@@ -36,12 +36,12 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 2. **Solution Optimality**: Is there a simpler, lower-complexity architectural approach that achieves the same goals?
 3. **Lineage Alignment & Single Source of Truth**: Does the DA respect `Upstream` contracts without spec bloat or architectural drift?
 4. **Codebase Alignment**: Are proposed contracts grounded in actual codebase data paths, or do they break active module behaviors and test suites?
-5. **Domain Boundaries**: Are module responsibilities, domain models, and data boundaries correctly isolated?
+5. **Domain Boundaries & State Purity**: Are module responsibilities, domain models, and data boundaries correctly isolated? Are ingress parsing membranes enforced at boundaries ("Parse, Don't Validate") while internal domain pipelines remain free of speculative defensive checks, heuristic property sniffing, and fallback branching?
 6. **Trade-Off Transparency**: Are performance, memory, and maintainability trade-offs explicitly identified?
 7. **End-to-End Context Flow & Parameter Seams**: Do any components across the call chain hardcode operational policies (e.g. leaf utilities hardcoding internal thresholds, or intermediary layers choking and failing to propagate caller options) instead of exposing parameter seams?
 8. **Orthogonal Governance Decoupling & Placement Altitude**: Are operational governance mechanisms (watchdogs, retries, rate limiters) entangled directly inside domain logic or buried in domain subfolders (Path-Proximity Bias), instead of being decoupled into shared infrastructure directories (`src/utils/`, `src/common/`)?
 9. **Scale Invariance & Fixture Independence**: Is the design artificially constrained by hardcoded iteration ceilings derived from small sample test fixtures (Fixture Bias), rather than scaling gracefully to real-world data volumes?
-10. **Storage Lifecycle Isolation**: Does the proposal confine data schema migration plumbing strictly to the infrastructure/storage bootstrap layer, or does migration logic leak into presentation, UI renderers, domain services, or IPC/HTTP transport endpoints?
+10. **Storage & Configuration Lifecycle Isolation**: Does the proposal confine data schema migration and configuration bootstrap strictly to the infrastructure initialization phase, or do schema-sniffing conditionals, dual-format loaders, and legacy fallback shims leak into domain services, presentation layers, or transport endpoints?
 
 ## Domain Subdocuments Routing Table
 
