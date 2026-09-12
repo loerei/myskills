@@ -23,6 +23,9 @@
 - [ ] Orthogonal Governance Decoupling & Placement: Verify that operational governance mechanisms (stagnation watchdogs, retry engines, rate limiters) are extracted from domain logic and placed at the common ancestor scope (`src/utils/`, `src/common/`), authorizing the creation of new shared infrastructure directories when none exist on disk. Domain components emit raw progress events (`{ current, total, unit }`); governance utilities handle timing and interruption.
 - [ ] Scale Invariance: Reject arbitrary hardcoded iteration ceilings derived from small sample test fixtures (Fixture Bias); require designs that accommodate streaming, incremental yielding, or dynamic progress measurement.
 
+### 6. Storage Migration Boundary Isolation
+- [ ] Storage Migration Lifecycle Isolation: Verify that data schema migrations execute exclusively within an isolated storage initialization phase at application bootstrap. Reject directive artifacts where UI views, renderers, application loaders, or domain handlers contain transient migration flags, schema-sniffing conditionals, or ad-hoc backfill logic.
+
 ## Concrete Anti-Patterns
 
 ### Anti-Pattern 1: Cross-Domain Database Model Entanglement

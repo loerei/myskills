@@ -40,6 +40,7 @@ Audit target files and landing zones across 4 distinct quality axes:
     2. **Tidying Selection**: Choosing pre-approved structural patterns ($S$) from the 15 Tidying Patterns Taxonomy.
     3. **Architectural Transition Mapping**: Current Tangled Landing Zone $\rightarrow$ Proposed Paved Landing Zone.
     4. **Tidy First Execution Order ($S \to B$)**: Structuring implementation into explicit prerequisite structural steps ($S_1 \to S_2$) followed by behavioral change ($B$).
+    5. **Storage Readiness Invariant**: If a proposed feature modifies persistent data schemas, but the target landing zone lacks a centralized schema version runner, classify the landing zone as Bad State. Mandate establishing a minimal isolated schema version runner as Step $S$ directly in the DA before implementing feature behavior $B$.
 
 ### 4. Kent Beck's 15 Tidying Patterns Taxonomy
 Verify that preparatory structural changes ($S$) employ pre-approved tidying patterns before behavior changes ($B$):

@@ -3,7 +3,7 @@
 ## Domain Audit Checklist
 
 ### 1. Document Schema Flexibility & Upgrades
-- [ ] Lazy Migration Wrappers: Verify that document store schema reads implement lazy schema adaptation (e.g., handling missing fields by assigning defaults in application models).
+- [ ] Isolated Document Upgrades via Migration Adapter: Verify that document schema evolution executes through discrete migration adapters at storage retrieval barriers or batch runners, NOT ambient defaults or version branching in domain models.
 - [ ] Version Discriminators: Confirm all document payloads contain an explicit `schema_version` integer field.
 
 ### 2. Event Store Append Safety
@@ -24,14 +24,21 @@
 def process_user(doc):
     name = doc['full_name'] # CRASHES on legacy records!
 
-# GOOD: Version discriminator with dynamic adapter fallback.
-def process_user(doc):
+# GOOD: Document adapter normalizes to canonical schema before calling domain logic.
+def upgrade_user_doc(doc: dict) -> dict:
     version = doc.get('schema_version', 1)
     if version == 1:
-        full_name = f"{doc['first_name']} {doc['last_name']}"
-    else:
-        full_name = doc['full_name']
-    return full_name
+        return {
+            'id': doc['id'],
+            'full_name': f"{doc.get('first_name', '')} {doc.get('last_name', '')}".strip(),
+            'schema_version': 2
+        }
+    return doc
+
+# Business logic consumes exclusively canonical schema
+def process_user(doc: dict):
+    clean_doc = upgrade_user_doc(doc)
+    return clean_doc['full_name']
 ```
 
 ## Failure Modes & Mitigations

@@ -14,12 +14,13 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 - Cross-reference legacy schema contracts, disk fixtures, and migration tests before demanding schema constraints.
 - **Dependency Lineage Alignment**: If `<review_dir>/Context.md` specifies `## Cross-Referenced DAs & Dependency Lineage`, you MUST read all listed DAs:
   - Cross-reference the target DA's schema mutations against `Upstream` DAs to ensure that the target DA does NOT clobber, overwrite, or mutate fields owned by upstream epics without transactional merge semantics.
-- Follow Postel's Law: Be liberal in reading legacy/mock records (allow field omissions), conservative in writing canonical schemas. Do NOT introduce deserialization validation that breaks mock databases.
+- Follow Postel's Law for external API ingress only. For internal persistent storage, enforce strict schema conformance via isolated migration runners. Ban runtime field omissions, defensive fallback sniffing, or shape guessing on canonical domain read paths.
 
 **Fix Pre-Verification**:
 - **Ground-Truth**: Verify on disk that any pre-existing method, type, or module referenced or consumed by a proposed fix actually exists in the target codebase, upstream specs, or planned declarations within the target DA itself. If introducing new methods, types, or interfaces, verify that their target landing locations exist (or are scheduled for creation in the DA), names do not collide with active exports, all consumed external dependencies are verified on disk or in upstream specs, and for internal communication boundaries (e.g. IPC, RPC, events), verify that both producer/caller and consumer/handler endpoints are updated symmetrically. Create simulation scripts in `<review_dir>/sandbox/` where applicable to verify migration scripts and rollback idempotency.
 - **Macro Flow**: Verify that the proposed fix does not break initialization order, variable scoping, or lifecycle contracts across the enclosing module (or specification consistency across sections for document/policy DAs).
 - **System Invariants vs. Implementation Mechanics**: Audit ONLY for **System Invariants** (e.g. structural seams, threat models, lifecycle bounds, cross-boundary contracts) that standard TDD misses without explicit specification. Ticket code snippets are illustrative examples, not production code; NEVER report internal implementation mechanics (e.g. syntax, types, exports, regex flags) as blocking defects. If a required behavior or edge case is missing, demand an **Acceptance Criterion**; NEVER rewrite or patch code snippets.
+- **Schema-Versioning-First & Anti-Sunk-Cost Directive**: Persistent data stores MUST declare an explicit monotonic integer schema version. Schema evolution MUST execute through discrete, one-way sequential migration units at storage initialization, NOT ambient runtime fallbacks. Reviewers MUST evaluate DAs with zero regard for historical effort invested in ad-hoc runtime migration networks: if a proposal contains elaborate loader heuristics, transient config flags (e.g. `migratedFromV1: true`), or UI seeding cascades, you MUST unconditionally reject the hack and mandate an isolated migration runner. If the codebase lacks centralized schema versioning, demand establishing a minimal isolated version runner as a prerequisite structural step ($S$) directly in the DA before implementing feature logic ($B$).
 - **Technical Impasse & Infeasibility Reporting**: If an audited requirement, ticket premise, or dependency is technically impossible or blocked by hard platform constraints (e.g. OS sandbox, CORS/same-origin, missing third-party capability, physical resource ceiling) with no viable in-scope fix: NEVER invent hallucinated workarounds and NEVER conceal the issue. Return `STATUS: INFEASIBLE` with an `Infeasibility Proof` demonstrating the hard constraint, and outline `Alternative Architectural Paths` if known.
 
 ## Empirical Verification: Shadow Sandbox (<review_dir>/sandbox/)
@@ -39,6 +40,8 @@ When auditing schema migrations or payload contracts, verify empirically against
 3. **Migration Idempotency & Re-Run**: Can migration scripts re-run following a mid-flight failure without corruption, duplicate records, primary key collisions, or orphaned foreign keys?
 4. **Transactional Boundaries & ACID**: Are write mutations properly grouped within transactional boundaries to prevent partial state corruption upon crashes?
 5. **Rollback & Reversibility**: Is there an explicit rollback/down-migration path that does not drop columns with live data or destroy user state?
+6. **Schema Versioning & Storage Lifecycle Isolation**: Does persistent storage declare an explicit monotonic integer version? Are migrations executed exclusively at storage boot before domain/UI initialization? Are heuristic property checks, transient migration flags in app config, and lazy model branching strictly banned?
+7. **Unversioned Codebase Preparatory Sequencing (S -> B)**: If the target codebase lacks centralized schema versioning, does the DA sequence establishing an isolated migration runner as a prerequisite structural step ($S$) before feature logic ($B$), rather than injecting runtime fallback branches into domain loaders?
 
 ## Domain Subdocuments Routing Table
 
@@ -48,10 +51,11 @@ When the target Directive Artifact touches specific subsystem archetypes below, 
 | :--- | :--- | :--- |
 | **Relational Schema Migrations** | SQL DDL execution safety, non-blocking index creation, foreign key lock hazards, rollback scripts | [`DATA-RELATIONAL-SCHEMA.md`](DATA-RELATIONAL-SCHEMA.md) |
 | **NoSQL & Event Stores** | Schema-less data evolution, eventual consistency backfills, partition key hot-spotting, stream replaying | [`DATA-NOSQL-EVENTSTORE.md`](DATA-NOSQL-EVENTSTORE.md) |
+| **Local JSON & Embedded Stores** | Desktop file-based storage, JSON state, SQLite schema versioning, startup migration runners | [`DATA-SCHEMA-VERSIONING.md`](DATA-SCHEMA-VERSIONING.md) |
 
 ## Verdict Rules
 
-- Return `STATUS: REVISIONS NEEDED` if any schema change breaks compatibility, risks data loss/corruption, lacks transactional isolation, or causes blocking table locks.
+- Return `STATUS: REVISIONS NEEDED` if any schema change breaks compatibility, risks data loss/corruption, lacks transactional isolation, causes blocking table locks, or introduces ad-hoc runtime migration bloat (property sniffing, transient config flags, or unversioned fallback branching) instead of an isolated sequential migration runner.
 - Return `STATUS: PASS` if data contracts, migration strategy, and rollback safeguards are fully specified.
 - Return `STATUS: INFEASIBLE` if a core requirement or ticket premise violates hard platform or technical constraints with no viable in-scope fix. When both infeasible and fixable defects are present, `STATUS: INFEASIBLE` takes strict precedence as the overall report status.
 - NEVER return `STATUS: REVISIONS NEEDED` for internal implementation mechanics (e.g. syntax, types, exports, regex flags) in illustrative code snippets; demand an Acceptance Criterion instead.

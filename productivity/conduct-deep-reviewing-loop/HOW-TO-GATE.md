@@ -43,6 +43,8 @@ Instructions for Layer 2 Critical Gate Agent to evaluate, filter, and reject Lay
 | **Internal Implementation Mechanics** | Finding critiques syntax, types, barrel exports, regex flags, or packages internal call signatures / local null-checks into Acceptance Criteria that standard compiler or TDD catches. | **GATE FOR REFINEMENT / REMOVAL**: Demand reviewer strip internal call mechanics and refine the Acceptance Criterion to enforce the underlying System Invariant (if one exists), or remove the defect if it is purely compiler/local trivia. |
 | **Technical Impasse / Platform Infeasibility** | Reviewer proves a ticket requirement is technically impossible (e.g. sandbox restrictions, protocol blocks, physical bounds) with no viable in-scope fix. | **ACCEPT AS IMPASSE**: Escalate to `PLAN_INFEASIBLE`. Do NOT mutate DA or force local patching. Cancel downstream tiers and halt round. |
 | **Ungrounded Infeasibility Claim** | Reviewer reports `STATUS: INFEASIBLE` or asserts a technical impasse without concrete proof, where a viable in-scope structural seam or standard configuration resolves the issue. | **GATE**: Demand reviewer refinement in `<Role>_Gated_Issues.md` to either convert to `STATUS: REVISIONS NEEDED` with verified fix or substantiate with empirical proof, or remove. |
+| **Ad-Hoc Runtime Migration Bloat** | Reviewer proposes solving schema evolution by demanding heuristic property sniffing in loaders, transient flags in application config, or migration coordination inside UI/renderers. | **GATE FOR REFINEMENT**: Reject the runtime fallback hack under the Dual Optimization Invariant. Demand reviewer reframe remediation to require an isolated, sequential schema version runner established as a preparatory structural step ($S$) within the DA. |
+| **Invented Protocol Verdict / State Machine** | Reviewer returns a non-standard verdict (e.g. `STATUS: BLOCKED_*`) or demands halting workflow to spawn an external epic for basic schema runner scaffolding. | **GATE FOR REFINEMENT**: Reject non-protocol verdict. Instruct reviewer to return standard `STATUS: REVISIONS NEEDED` and specify schema version runner as a prerequisite structural step ($S$) directly inside target DA. |
 
 ## Tier Batch Gate & Reviewer Negotiation Protocol
 
@@ -82,6 +84,7 @@ When specialist reviewer opinions conflict (e.g. `Performance` requesting aggres
    - Enforce the Universal 3-tier precedence: (1) `Context.md` explicit user directives, (2) existing codebase conventions, (3) Default standards: accordion transitions for empty dynamic slots (preserving error recovery controls in `catch` blocks), top progress lines or inline spinners over skeleton blocks on fast desktop loads, and ephemeral Toast-based Undo rather than in-place layout-stalling slots.
    - For in-flight async actions, enforce `aria-disabled="true"` with interaction blocking over native HTML `disabled` to preserve continuous keyboard focus without eviction to `document.body`.
 5. **Resolve Optimistic UI vs Transactional Safety**: When UXUI demands optimistic UI on transactional or destructive operations (e.g. file deletions, binary overwrites, database schema migrations, irreversible disk writes), reject the finding under Speculative Over-Engineering; optimistic updates are strictly reserved for non-destructive, idempotently reversible interactions.
+6. **Resolve Zero Data Loss vs. Architecture Cleanliness (The Migration Invariant)**: When `DataMigration` demands multi-layered runtime fallbacks, heuristic property sniffing in loaders, or transient configuration flags in order to prevent data loss in an unversioned codebase, Host MUST NOT allow these mechanisms into the DA. Host enforces that Zero Data Loss MUST be achieved exclusively through an isolated, sequential schema version runner executed at storage boot. If no version runner exists, the requirement MUST be staged as a preparatory structural step ($S$) directly in the DA, rather than polluting domain loaders with defensive fallback code.
 
 ## Decision Rules for Round Verdict
 
@@ -115,7 +118,7 @@ Notify Host via message when done.
 
 1. **[Issue Title]**:
    - **Target Section**: `<Section_Name>`
-   - **Gate Failure Classification**: `Ungrounded Fix Proposal` | `Asymmetric Boundary Contract` | `Cross-Section Contradiction` | `False-Positive Upstream Unreadiness` | `Premature Downstream Coupling` | `Speculative Over-Engineering` | `Spec-Induced Regression` | `Ungrounded Infeasibility Claim`
+   - **Gate Failure Classification**: `Ungrounded Fix Proposal` | `Asymmetric Boundary Contract` | `Cross-Section Contradiction` | `False-Positive Upstream Unreadiness` | `Premature Downstream Coupling` | `Speculative Over-Engineering` | `Spec-Induced Regression` | `Ungrounded Infeasibility Claim` | `Ad-Hoc Runtime Migration Bloat` | `Invented Protocol Verdict`
    - **Gate Rationale**: <Exact technical reason why issue failed the gate without proposing fix code>
 ```
 

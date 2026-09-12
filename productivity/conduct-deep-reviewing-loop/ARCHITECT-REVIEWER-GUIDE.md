@@ -41,6 +41,7 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 7. **End-to-End Context Flow & Parameter Seams**: Do any components across the call chain hardcode operational policies (e.g. leaf utilities hardcoding internal thresholds, or intermediary layers choking and failing to propagate caller options) instead of exposing parameter seams?
 8. **Orthogonal Governance Decoupling & Placement Altitude**: Are operational governance mechanisms (watchdogs, retries, rate limiters) entangled directly inside domain logic or buried in domain subfolders (Path-Proximity Bias), instead of being decoupled into shared infrastructure directories (`src/utils/`, `src/common/`)?
 9. **Scale Invariance & Fixture Independence**: Is the design artificially constrained by hardcoded iteration ceilings derived from small sample test fixtures (Fixture Bias), rather than scaling gracefully to real-world data volumes?
+10. **Storage Lifecycle Isolation**: Does the proposal confine data schema migration plumbing strictly to the infrastructure/storage bootstrap layer, or does migration logic leak into presentation, UI renderers, domain services, or IPC/HTTP transport endpoints?
 
 ## Domain Subdocuments Routing Table
 
