@@ -63,7 +63,7 @@ When the target Directive Artifact touches specific subsystem archetypes below, 
 
 Save evaluation to `<review_dir>/reports/Performance.md` via `write_to_file` using this format:
 
-### Review Evaluation: Performance & Scalability Specialist
+### Review Evaluation: Performance
 
 - **Status**: `STATUS: PASS`, `STATUS: REVISIONS NEEDED`, or `STATUS: INFEASIBLE`
 

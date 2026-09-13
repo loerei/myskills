@@ -63,7 +63,7 @@ When the target Directive Artifact touches specific subsystem archetypes below, 
 
 Save evaluation to `<review_dir>/reports/Architect.md` via `write_to_file` using this format:
 
-### Review Evaluation: Architect / Problem-Solving Director
+### Review Evaluation: Architect
 
 - **Status**: `STATUS: PASS`, `STATUS: REVISIONS NEEDED`, or `STATUS: INFEASIBLE`
 

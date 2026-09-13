@@ -68,7 +68,7 @@ When the target Directive Artifact touches specific subsystem archetypes below, 
 
 | Target Subsystem Archetype | Triggers & Indicators | Subdocument |
 | :--- | :--- | :--- |
-| **Feature WBS & Slicing** | Feature breakdown structure, PR line-count thresholds, vertical tracer-bullet slicing, S -> B structural tidying isolation, Kent Beck 4 Decision Gates | [`PROG-FEATURE-BREAKDOWN.md`](PROG-FEATURE-BREAKDOWN.md) |
+| **Feature WBS & Slicing** | Feature breakdown structure, PR line-count thresholds, vertical tracer-bullet slicing, S -> B structural isolation, Refactoring Priority Gates | [`PROG-FEATURE-BREAKDOWN.md`](PROG-FEATURE-BREAKDOWN.md) |
 | **Migration Phasing & Rollout** | Multi-phase system migrations, legacy deprecations, blue/green rollout schedules | [`PROG-MIGRATION-PHASING.md`](PROG-MIGRATION-PHASING.md) |
 
 ## Verdict Rules
@@ -82,7 +82,7 @@ When the target Directive Artifact touches specific subsystem archetypes below, 
 
 Save evaluation to `<review_dir>/reports/Progress.md` via `write_to_file` using this format:
 
-### Review Evaluation: Progress & Work Breakdown Reviewer
+### Review Evaluation: Progress
 
 - **Status**: `STATUS: PASS`, `STATUS: REVISIONS NEEDED`, or `STATUS: INFEASIBLE`
 

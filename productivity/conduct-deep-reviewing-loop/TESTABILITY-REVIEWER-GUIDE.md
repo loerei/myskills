@@ -61,7 +61,7 @@ When the target Directive Artifact touches specific subsystem archetypes below, 
 
 Save evaluation to `<review_dir>/reports/Testability.md` via `write_to_file` using this format:
 
-### Review Evaluation: Testability & Verification Specialist
+### Review Evaluation: Testability
 
 - **Status**: `STATUS: PASS`, `STATUS: REVISIONS NEEDED`, or `STATUS: INFEASIBLE`
 

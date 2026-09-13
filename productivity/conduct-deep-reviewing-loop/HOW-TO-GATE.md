@@ -82,9 +82,9 @@ Host evaluates Layer 3 reviewer reports strictly in **tier batches** (after all 
    - If Host agrees with the update or explanation, Host accepts the role. Host does NOT send a confirmation message back to the reviewer once agreed.
    - If an issue remains ungrounded or explanation in `<Role>_Explain.md` is stale without differing/deeper ground-truth evidence, reviewer MUST either accept removal or refine the issue into an abstract specification or symmetrical contract; reviewer MUST NOT re-assert stale arguments. Host gates again until resolved.
 
-## Specialist Trade-Off & Conflict Resolution
+## Reviewer Trade-Off & Conflict Resolution
 
-When specialist reviewer opinions conflict (e.g. `Performance` requesting aggressive caching vs `Observability` requesting unbuffered logging, or `Testability` demanding seam indirection vs `Architect` enforcing minimum complexity):
+When reviewer opinions conflict (e.g. `Performance` requesting aggressive caching vs `Observability` requesting unbuffered logging, or `Testability` demanding seam indirection vs `Architect` enforcing minimum complexity):
 1. **Favor Correctness & Foundation over Optimization**: Structural seams and transactional safety take priority over premature caching.
 2. **Favor Observability over Opaque Concurrency**: Telemetry context propagation takes priority over micro-benchmarked CPU cycle savings.
 3. **Resolve Speculation**: If a requested abstraction or optimization does not solve an immediate requirement, reject it under Speculative Over-Engineering (preserving End-to-End Parameter Seams, Orthogonal Governance Decoupling, and Placement Altitude as valid structural requirements).

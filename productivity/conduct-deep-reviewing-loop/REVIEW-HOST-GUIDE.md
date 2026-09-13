@@ -95,7 +95,7 @@ Host executes Layer 3 reviewers in dependency order across the active selected r
 
 - **Skipped Tiers**: If all roles in a DAG tier are `EXCLUDED`, or if all active roles in the tier are skipped during an initial targeted pass (as upstream of `Highest Modified Tier` or marked UNTOUCHED under Reviewer Accounting in `host/State.md`), Host treats that tier as skipped for the active targeted pass and immediately advances to the next tier.
 
-### 3.2 Role Summoning Table
+### 3.2 Role Invocation Table
 
 | Role Identifier | Guide Reference Path | Output Artifact Path |
 | :--- | :--- | :--- |

@@ -60,7 +60,7 @@ When the target Directive Artifact touches specific subsystem archetypes below, 
 
 Save evaluation to `<review_dir>/reports/Observability.md` via `write_to_file` using this format:
 
-### Review Evaluation: Observability & Operability Specialist
+### Review Evaluation: Observability
 
 - **Status**: `STATUS: PASS`, `STATUS: REVISIONS NEEDED`, or `STATUS: INFEASIBLE`
 

@@ -64,7 +64,7 @@ When the target Directive Artifact touches specific subsystem archetypes below, 
 
 Save evaluation to `<review_dir>/reports/DataMigration.md` via `write_to_file` using this format:
 
-### Review Evaluation: Data & Migration Specialist
+### Review Evaluation: DataMigration
 
 - **Status**: `STATUS: PASS`, `STATUS: REVISIONS NEEDED`, or `STATUS: INFEASIBLE`
 
