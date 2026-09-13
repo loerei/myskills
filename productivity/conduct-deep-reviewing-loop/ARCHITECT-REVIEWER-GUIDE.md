@@ -42,6 +42,7 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 8. **Operational Governance Decoupling**: Are watchdogs, retries, or rate limiters entangled in domain logic instead of decoupled into shared infrastructure directories?
 9. **Scale Constraints**: Is the design constrained by hardcoded iteration ceilings derived from test fixtures rather than scaling to production data volumes?
 10. **Storage & Configuration Lifecycle Isolation**: Does the proposal confine data schema migration and configuration bootstrap strictly to the infrastructure initialization phase, or do schema-sniffing conditionals, dual-format loaders, and legacy fallback shims leak into domain services, presentation layers, or transport endpoints?
+11. **Frontend Presentation & Composition Seams**: For frontend UI proposals, are presentational components pure and decoupled from container/controller hooks and data fetching, are components designed with compound component seams or named slots rather than monolithic prop bags, and are global window/document listeners isolated in root provider layers?
 
 ## Domain Subdocuments Routing Table
 
