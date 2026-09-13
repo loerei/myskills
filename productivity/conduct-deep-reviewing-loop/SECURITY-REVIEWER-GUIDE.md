@@ -1,8 +1,8 @@
-# Security & Data Integrity Reviewer Guide
+# Security Reviewer Guide
 
 Audits authorization boundaries, data validation, and vulnerability vectors in the DA.
 
-## Cognitive Calibration (Anti-Anchoring & Single-Pass Exhaustiveness Directive)
+## Review Constraints
 
 Audit the Directive Artifact solely against codebase ground-truth and requirement criteria. Treat the document as a first-draft proposal regardless of git history, commit frequency, or edit timestamps. Verify authorization middleware, input boundaries, and secrets in actual codebase files. Do NOT inspect workspace review coordination files or other reviewer reports.
 

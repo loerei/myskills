@@ -1,8 +1,8 @@
-# System & Codebase Readiness Reviewer Guide
+# Readiness Reviewer Guide
 
 Audits whether the existing codebase and infrastructure are fully prepared to support the DA implementation.
 
-## Cognitive Calibration (Anti-Anchoring & Single-Pass Exhaustiveness Directive)
+## Review Constraints
 
 Audit the Directive Artifact solely against codebase ground-truth and requirement criteria. Treat the document as a first-draft proposal regardless of git history, commit frequency, or edit timestamps. Inspect actual source code files, dependencies, and git history directly to verify system ground-truth. Do NOT inspect workspace review coordination files or other reviewer reports.
 
@@ -23,8 +23,8 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 - **System Invariants vs. Implementation Mechanics**: Audit ONLY for **System Invariants** (e.g. structural seams, threat models, lifecycle bounds, cross-boundary contracts) that standard TDD misses without explicit specification. Ticket code snippets are illustrative examples, not production code; NEVER report internal implementation mechanics (e.g. syntax, types, exports, regex flags) as blocking defects. If a required behavior or edge case is missing, demand an **Acceptance Criterion**; NEVER rewrite or patch code snippets.
 - **Technical Impasse & Infeasibility Reporting**: If an audited requirement, ticket premise, or dependency is technically impossible or blocked by hard platform constraints (e.g. OS sandbox, CORS/same-origin, missing third-party capability, physical resource ceiling) with no viable in-scope fix: NEVER invent hallucinated workarounds and NEVER conceal the issue. Return `STATUS: INFEASIBLE` with an `Infeasibility Proof` demonstrating the hard constraint, and outline `Alternative Architectural Paths` if known.
 
-> **Configuration-Modernization-First & Anti-Shim Directive**:
-> Application configurations, environment bindings, and runtime dependencies must declare explicit, strict canonical schemas. Evolution of configuration contracts must execute via discrete, boot-time modernization sequences, NOT ambient runtime fallbacks or key-sniffing loaders. Reviewers must evaluate DAs with zero regard for historical effort invested in ad-hoc runtime shims: if a proposal introduces heuristic property checks (`if ('legacyKey' in raw)`), permissive schemas (e.g. Zod `.passthrough()`), or constructor compatibility wrappers to satisfy stale test fixtures, you MUST unconditionally reject the shim and mandate a preparatory structural modernization ($S$). Existing test suites and configuration files must be upgraded to canonical schemas as Step $S$ within the DA before feature behavior ($B$) is introduced.
+> **Configuration Modernization & Sequencing**:
+> Application configurations, environment bindings, and runtime dependencies must declare strict canonical schemas. Evolution of configuration contracts must execute via discrete, boot-time modernization sequences, NOT ambient runtime fallbacks or key-sniffing loaders. If a proposal introduces heuristic property checks (`if ('legacyKey' in raw)`), permissive schemas (e.g. Zod `.passthrough()`), or compatibility wrappers to satisfy stale test fixtures, reject the shim and mandate preparatory modernization ($S$). Existing test suites and configuration files must be upgraded to canonical schemas as a prerequisite task within the DA before feature logic ($B$) is introduced.
 
 ## Empirical Verification: Shadow Sandbox (<review_dir>/sandbox/)
 
@@ -40,7 +40,7 @@ If probe execution runs as a background task, reviewer MUST NOT remain idle inde
 ## Mandatory Audit Checklist
 
 1. **Dependency Availability & Lockfile Integrity**: Are all required libraries, packages, and services pinned to exact versions in lockfiles, free of peer dependency conflicts, and verified via non-mutating inspections (`npm ls`, `pip check`)?
-2. **Target File Integrity & Compiler Zero-Emit Baseline**: Do specified target files exist in the codebase? Does the plan maintain zero compiler emit errors (`tsc --noEmit`, linters) without introducing relaxed bypasses (`@ts-ignore`, `any`, `--skipLibCheck`)?
+2. **Target File Integrity & Compiler Clean Baseline**: Do specified target files exist in the codebase? Does the plan maintain zero compiler errors (`tsc --noEmit`, linters) without introducing bypasses (`@ts-ignore`, `any`, `--skipLibCheck`)?
 3. **Contract & Schema Integrity**: Do proposed changes break public API contracts or database schemas? Are internal configuration changes strictly validated without introducing runtime dual-format branching or permissive legacy shims?
 4. **Preparatory Sequencing ($S \to B$) for Configurations**: If the feature modifies configuration shapes or environment requirements, does the DA stage the migration of configuration files and test fixtures as a prerequisite structural step ($S$) rather than introducing dual-format loaders?
 5. **Migration & Rollback**: Is there a safe path to deploy and rollback the change without downtime?

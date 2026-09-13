@@ -1,4 +1,4 @@
-# UXUI Subdocument: Responsive Layout Shift & Optimistic UI Feedback
+# Layout Shift, Loading States, and Optimistic UI
 
 ## Domain Audit Checklist
 
@@ -9,16 +9,16 @@
 
 ### 2. Micro-Interaction Responsiveness
 - [ ] Immediate Touch Feedback: Ensure interactive elements supply immediate visual active state feedback within $<100\text{ms}$ of user touch or click events.
-- [ ] Optimistic Updates & Ephemeral Toast Undo: Confirm optimistic UI mutations update state immediately and provide safe automatic rollback with notification toasts if backend processing fails. For non-destructive list item removals, update the UI immediately (collapsing the list item) and provide an ephemeral floating Toast containing an "Undo" action (e.g. 5s window). Strictly BAN replacing the deleted item with an in-place "Undo" slot that stalls sidebar/list layout updates. Scope Boundary: Strictly limited to non-destructive, idempotently reversible actions (e.g. toggles, likes, local filtering). Strictly BAN demanding optimistic UI for destructive operations (e.g. file deletions, binary overwrites, schema migrations, or irreversible database writes) where rollback cannot guarantee data integrity.
+- [ ] Optimistic Updates & Ephemeral Toast Undo: Confirm optimistic UI mutations update state immediately and provide safe automatic rollback with notification toasts if backend processing fails. For non-destructive list item removals, collapse the item immediately and provide a floating undo toast; do not leave an in-place placeholder slot. Never use optimistic updates for destructive actions (file deletions, binary overwrites, schema migrations, irreversible database writes).
 
 ### 3. Long-Running Progress & Staleness Timeouts
-- [ ] Quantitative Progress Revealing: Verify operations taking $>2\text{s}$ provide deterministic quantitative progress (`processed / total`, percentage, bytes/items) and user cancellation agency instead of an opaque indeterminate spinner.
+- [ ] Quantitative Progress Revealing: Verify operations taking $>2\text{s}$ provide deterministic quantitative progress (`processed / total`, percentage, bytes/items) and an abort action instead of an opaque indeterminate spinner.
 - [ ] Staleness-Based Timeout (Inactivity vs Wall-Clock): Confirm timeouts abort strictly on progress staleness (e.g. 10s of zero delta/activity) rather than arbitrary total elapsed wall-clock duration that penalizes healthy, active progress.
 
 ## Concrete Anti-Patterns
 
 > [!IMPORTANT]
-> **Conceptual Reference Notice**: Code snippets in this subdocument are for conceptual reference and illustrative purposes only. UX/UI Reviewers are strictly prohibited from copying concrete CSS or DOM code into review reports. All report findings must use Abstract Behavioral Specifications with Acceptance Criteria.
+> Code snippets are illustrative only. Do not copy code into review reports; write Abstract Behavioral Specifications with Acceptance Criteria instead.
 
 ### Anti-Pattern 1: Un-Optimistic Async Mutate Delay
 
@@ -28,8 +28,8 @@ function LikeButton({ postId }) {
   const [liked, setLiked] = useState(false);
   
   const handleLike = async () => {
-    await api.post(`/posts/${postId}/like`); // 800ms delay!
-    setLiked(true); // UI feels sluggish and unresponsive!
+    await api.post(`/posts/${postId}/like`); // 800ms delay
+    setLiked(true); // UI feels sluggish and unresponsive
   };
   
   return <button onClick={handleLike}>{liked ? 'Liked' : 'Like'}</button>;
@@ -41,7 +41,7 @@ function LikeButton({ postId }) {
   
   const handleLike = async () => {
     const previousState = liked;
-    setLiked(!previousState); // Immediate UI Feedback!
+    setLiked(!previousState); // Immediate UI feedback
     
     try {
       await api.post(`/posts/${postId}/like`);
@@ -58,7 +58,7 @@ function LikeButton({ postId }) {
 ### Anti-Pattern 2: Arbitrary Wall-Clock Timeout Penalizing Active Progress (Slowness vs Staleness)
 
 ```javascript
-// BAD: Rigid 30s wall-clock timeout kills operation mid-flight even when progress reaches 98%!
+// BAD: Fixed 30s timeout aborts an operation actively making progress
 const controller = new AbortController();
 const timeoutId = setTimeout(() => controller.abort(new Error("Operation timed out")), 30000);
 await processLargePayload(file, { signal: controller.signal, onProgress: (pct) => updateUI(pct) });
@@ -77,7 +77,7 @@ const watchdog = setInterval(() => {
 await processLargePayload(file, {
   signal: controller.signal,
   onProgress: (processed, total) => {
-    lastProgressTime = Date.now(); // Active progress proves system health!
+    lastProgressTime = Date.now(); // Active progress proves system health
     updateProgressBar(processed, total);
   }
 });
@@ -87,9 +87,9 @@ clearInterval(watchdog);
 ### Anti-Pattern 3: Abrupt Non-Animated In-Flow Container Toggling
 
 ```javascript
-// BAD: Abruptly toggling display: none / flex causes severe 48-70px layout jumps and destroys recovery buttons in catch
+// BAD: Abruptly toggling display: none / flex causes layout jumps and destroys recovery buttons in catch
 if (overrideMissing) {
-  toolbar.style.display = 'none'; // Jumps layout, hides recovery path!
+  toolbar.style.display = 'none'; // Jumps layout, hides recovery path
 }
 
 // GOOD: Smooth hardware-accelerated grid accordion transition with persistent recovery capability

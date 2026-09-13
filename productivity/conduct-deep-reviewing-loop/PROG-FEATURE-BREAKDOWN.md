@@ -1,4 +1,4 @@
-# Progress Subdocument: Feature WBS & Granular Slicing
+# Feature WBS and Granular Slicing
 
 ## Domain Audit Checklist
 
@@ -9,17 +9,17 @@
 ### 2. Tracer-Bullet Granularity & Hierarchical Dot-Splitting
 - [ ] End-to-End Skeleton First: Confirm initial task phases deliver a fully connected end-to-end tracer bullet with minimal mock functionality before building complex edge cases.
 - [ ] Independent Value Delivery: Ensure each ticket delivers a testable unit of functionality that can be merged safely behind feature flags.
-- [ ] **Hierarchical Dot-Splitting (`X.1, X.2 ... X.n`)**: When splitting tickets, enforce symmetrical dot notation (`3.1, 3.2` rather than `3, 3b`). Deep nested splitting (`3.2.1, 3.2.2 ... 3.2.n`) is fully encouraged whenever sub-modules remain complex.
+- [ ] **Hierarchical Dot-Splitting (`X.1, X.2 ... X.n`)**: When splitting tickets, enforce symmetrical dot notation (`3.1, 3.2` rather than `3, 3b`). Deep nested splitting (`3.2.1, 3.2.2 ... 3.2.n`) is permitted whenever sub-modules remain complex.
 - [ ] **Anti-Cascading Renumbering**: BANS re-indexing downstream tickets (`04 -> 05`). Downstream dependencies converge to the terminal child node.
-- [ ] **No Splitting Immunity (Ticket Number/Depth is NOT a Metric)**: A ticket having a deeply nested number (e.g. `3.2.1.2`) does NOT grant it immunity from further splitting, nor does it make the work breakdown "clean". Audit tickets purely on technical scope, cyclomatic complexity, and tracer-bullet boundaries. If a deeply nested ticket still violates granularity criteria, SPLIT IT FURTHER without hesitation. Ticket numbering/depth must NEVER be used as an evaluation metric.
+- [ ] **Scope Evaluation**: Audit tickets purely on technical scope, cyclomatic complexity, and testability. Numbering depth does not exempt a ticket from splitting.
 
 ### 3. Dependency DAG Structure
 - [ ] Dependency Ordering: Verify that ticket dependency structures are explicitly specified as a Directed Acyclic Graph (DAG) with no blocking loops.
 - [ ] Critical Path Identification: Confirm the critical path is explicitly identified in the work plan to guide task prioritization.
 
-### 4. Prerequisite Structural Isolation ($S \to B$) & Kent Beck's 4 Decision Gates
-- [ ] **Prerequisite Structural Isolation ($S \to B$)**: Ensure that structural refactoring / tidying changes ($S$) are isolated into dedicated prerequisite tickets preceding behavioral feature changes ($B$). NEVER permit mixing refactorings and features in the same ticket or PR.
-- [ ] **Tidying Economics & Decision Gates**: Verify that task sequencing honors Kent Beck's 4 Decision Gates based on change frequency and urgency:
+### 4. Prerequisite Structural Isolation and Refactoring Priority Gates
+- [ ] **Prerequisite Structural Isolation**: Ensure that structural refactoring changes ($S$) are isolated into dedicated prerequisite tickets preceding behavioral feature changes ($B$). NEVER mix refactorings and features in the same ticket or PR.
+- [ ] **Refactoring Priority Gates**: Verify that task sequencing honors the 4 priority gates based on change frequency and urgency:
 
 | Trigger Condition | Decision Gate | Action Route |
 | :--- | :---: | :--- |

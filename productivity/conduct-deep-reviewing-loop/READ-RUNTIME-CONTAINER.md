@@ -1,4 +1,4 @@
-# Readiness Subdocument: Container Runtimes & Infrastructure Prerequisites
+# Container Runtimes and Infrastructure Prerequisites
 
 ## Domain Audit Checklist
 

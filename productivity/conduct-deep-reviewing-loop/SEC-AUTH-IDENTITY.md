@@ -1,4 +1,4 @@
-# Security Subdocument: Identity, Authentication & Session Integrity
+# Identity, Authentication, and Session Integrity
 
 ## Domain Audit Checklist (OWASP ASVS V2 & V3 Alignment)
 
@@ -23,7 +23,7 @@ const jwt = require('jsonwebtoken');
 
 function verifyToken(token) {
   const decodedHeader = jwt.decode(token, { complete: true }).header;
-  // VULNERABLE: Attacker can set header.alg = 'none' or 'HS256' using RSA public key!
+  // VULNERABLE: Attacker can set header.alg = 'none' or 'HS256' using RSA public key
   return jwt.verify(token, secretOrPublicKey, { algorithms: [decodedHeader.alg] });
 }
 

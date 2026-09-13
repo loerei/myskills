@@ -1,4 +1,4 @@
-# Performance Subdocument: Backend Database Query Efficiency & $O(N)$ Hazards
+# Database Queries, Indexing, and Connection Pooling
 
 ## Domain Audit Checklist
 
@@ -12,13 +12,13 @@
 
 ## Concrete Anti-Patterns
 
-### Anti-Pattern 1: ORM $N+1$ Query Execution Vector
+### Anti-Pattern 1: ORM N+1 Queries
 
 ```python
 # BAD: Iterating over N users executes 1 query for users, plus N queries for orders.
 users = UserModel.objects.all() # Query 1
 for user in users:
-    print(user.orders.all())   # Executes N separate queries!
+    print(user.orders.all())   # Executes N separate queries
 
 # GOOD: Enforce Single Join / Prefetch Execution
 users = UserModel.objects.prefetch_related('orders').all() # Executes 2 optimized queries total
@@ -26,7 +26,7 @@ for user in users:
     print(user.orders.all())
 ```
 
-### Anti-Pattern 2: Dynamic Offset Pagination Performance Collapse
+### Anti-Pattern 2: Large Offset Pagination
 
 ```sql
 -- BAD: Database must scan and throw away 500,000 rows before returning 20.
@@ -39,4 +39,4 @@ SELECT * FROM audit_logs WHERE id < 'last_seen_indexed_id' ORDER BY id DESC LIMI
 ## Failure Modes & Mitigations
 
 - Connection Pool Exhaustion: Configure application connection pools with lease lifetime recycling and strict acquire timeout caps.
-- Database Memory Spikes via Unbounded Sorting: Enforce memory limits on `work_mem` configuration parameters to prevent disk-based sorting operations.
+- Database Memory Spikes via Unbounded Sorting: Set explicit `work_mem` limits to bound sorting memory per connection.

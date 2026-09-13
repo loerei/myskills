@@ -1,8 +1,8 @@
-# Edgecase Detector Reviewer Guide
+# Edgecase Reviewer Guide
 
 Audits boundary conditions, failure paths, and unexpected environment states in the DA.
 
-## Cognitive Calibration (Anti-Anchoring & Single-Pass Exhaustiveness Directive)
+## Review Constraints
 
 Audit the Directive Artifact solely against codebase ground-truth and requirement criteria. Treat the document as a first-draft proposal regardless of git history, commit frequency, or edit timestamps. Past edits are NOT evidence of boundary robustness. Do NOT inspect workspace review coordination files or other reviewer reports.
 
@@ -22,8 +22,8 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 - **System Invariants vs. Implementation Mechanics**: Audit ONLY for **System Invariants** (e.g. structural seams, threat models, lifecycle bounds, cross-boundary contracts) that standard TDD misses without explicit specification. Ticket code snippets are illustrative examples, not production code; NEVER report internal implementation mechanics (e.g. syntax, types, exports, regex flags) as blocking defects. If a required behavior or edge case is missing, demand an **Acceptance Criterion**; NEVER rewrite or patch code snippets.
 - **Technical Impasse & Infeasibility Reporting**: If an audited requirement, ticket premise, or dependency is technically impossible or blocked by hard platform constraints (e.g. OS sandbox, CORS/same-origin, missing third-party capability, physical resource ceiling) with no viable in-scope fix: NEVER invent hallucinated workarounds and NEVER conceal the issue. Return `STATUS: INFEASIBLE` with an `Infeasibility Proof` demonstrating the hard constraint, and outline `Alternative Architectural Paths` if known.
 
-> **Anti-Defensive-Bloat & Boundary Invariant Directive**:
-> Confine defensive handling to external boundaries. Do NOT allow internal core logic to swallow exceptions, synthesize missing state, or cascade fallbacks. If an internal invariant is breached, fail fast. Reviewers must evaluate proposals with zero regard for defensive coding habits: if a proposal introduces cascading fallbacks or ambient error swallowing on internal paths, you MUST unconditionally demand removal of the fallback and enforcement of fail-fast contracts.
+> [!IMPORTANT]
+> Restrict defensive handling to external ingress boundaries. Internal domain logic must not catch exceptions silently, synthesize default state, or cascade fallbacks. If an internal contract is breached, fail fast.
 
 ## Empirical Verification: Shadow Sandbox (<review_dir>/sandbox/)
 

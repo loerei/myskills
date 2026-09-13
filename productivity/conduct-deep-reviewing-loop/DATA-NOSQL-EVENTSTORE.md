@@ -1,4 +1,4 @@
-# DataMigration Subdocument: NoSQL Schemas, Event Stores & Stream Evolution
+# NoSQL Schemas, Event Stores, and Stream Evolution
 
 ## Domain Audit Checklist
 
@@ -10,7 +10,7 @@
 - [ ] Optimistic Concurrency Control: Ensure event appends pass expected stream version tags to prevent concurrent overwrite race conditions.
 - [ ] Event Stream Immutability: Confirm existing historical events are never deleted or updated in place; field modifications require new compensative events.
 
-### 3. Backfill Pagination & Heat Controls
+### 3. Backfill Pagination & Throughput Controls
 - [ ] Partition Key Hot-Spotting: Verify key generation strategies prevent monotonically increasing keys (e.g., raw timestamps) that route writes to single database partitions.
 - [ ] Throttle-Aware Backfills: Ensure backfill workers respect database provisioned throughput constraints and use exponential backoff on HTTP 429 / write throttles.
 
@@ -22,7 +22,7 @@
 # BAD: Code assumes all MongoDB documents contain 'full_name' field.
 # Old documents with 'first_name' and 'last_name' throw NullPointer / KeyError exceptions.
 def process_user(doc):
-    name = doc['full_name'] # CRASHES on legacy records!
+    name = doc['full_name'] # CRASHES on legacy records
 
 # GOOD: Document adapter normalizes to canonical schema before calling domain logic.
 def upgrade_user_doc(doc: dict) -> dict:

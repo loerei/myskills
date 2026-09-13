@@ -1,4 +1,4 @@
-# Observability Subdocument: Distributed Telemetry, OpenTelemetry & Context Propagation
+# Distributed Telemetry, OpenTelemetry, and Context Propagation
 
 ## Domain Audit Checklist
 
@@ -11,8 +11,8 @@
 - [ ] Sensitive Data Scrubbing: Confirm log interceptors redact sensitive user information (PII, tokens, authorization headers, passwords).
 
 ### 3. Hot-Path Telemetry & Sampling Governance
-- [ ] Hot-Path Overhead Bounds: In high-frequency execution loops (>1,000 ops/sec), telemetry logging MUST be wrapped in log-level guards (`if (logger.isDebugEnabled())`) or use structured lazy evaluators to avoid zero-allocation heap penalties and string concatenations.
-- [ ] Trace Sampling & Span Amortization: For high-throughput stream processing or batched iterations, spans MUST be amortized over batches or filtered via tail-based sampling rather than instantiating individual OpenTelemetry spans per item.
+- [ ] Hot-Path Overhead Bounds: In high-frequency execution loops (>1,000 ops/sec), telemetry logging MUST be wrapped in log-level guards (`if (logger.isDebugEnabled())`) or use structured lazy evaluators to prevent heap allocations and string concatenation.
+- [ ] Trace Sampling: For high-throughput stream processing or batched iterations, create spans per batch or use tail-based sampling rather than instantiating individual OpenTelemetry spans per item.
 
 ## Concrete Anti-Patterns
 

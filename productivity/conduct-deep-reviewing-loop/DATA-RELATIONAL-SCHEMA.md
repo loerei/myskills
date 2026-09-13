@@ -1,4 +1,4 @@
-# DataMigration Subdocument: Relational Database Schema & DDL Lock Safety
+# Relational Database Schema and DDL Lock Safety
 
 ## Domain Audit Checklist
 
@@ -7,7 +7,7 @@
 - [ ] Default Value Column Additions: Ensure column additions with non-null constraints and default values do not trigger full table rewrites (PostgreSQL <11 check; verify engine capabilities).
 
 ### 2. Constraint & Alteration Locking
-- [ ] Foreign Key Validation: Confirm foreign key additions are added with `NOT VALID` syntax and subsequently validated via separate non-blocking transactions.
+- [ ] Foreign Key Validation: Confirm foreign keys are created with `NOT VALID` syntax and subsequently validated via separate non-blocking transactions.
 - [ ] Timeout Enforcements: Verify all migration scripts set explicit statement timeouts (`SET statement_timeout = '5s';`) and lock timeouts before executing DDL alterations.
 
 ### 3. Reversibility & Rollback Integrity

@@ -1,4 +1,4 @@
-# Architectural Subdocument: Event-Driven & Asynchronous Messaging
+# Event-Driven and Asynchronous Messaging
 
 ## Domain Audit Checklist
 
@@ -25,7 +25,7 @@
 ```typescript
 // BAD: Broker publish occurs inside local DB transaction.
 // If broker fails, DB rolls back, but message might have sent.
-// If DB commit fails after publish, downstream consumers process ghost data.
+// If DB commit fails after publish, downstream consumers process uncommitted data.
 await db.transaction(async (tx) => {
 const order = await tx.orders.create(orderData);
 await kafkaProducer.send({ topic: 'orders', message: JSON.stringify(order) });
@@ -47,9 +47,9 @@ status: 'PENDING'
 ```go
 // BAD: Acknowledging message before DB transaction commits.
 func processMessage(msg Message) error {
-    ack(msg) // Ack sent first!
+    ack(msg) // Acknowledged before database commit
     if err := db.Save(msg.Data); err != nil {
-        return err // Message lost forever if DB write fails!
+        return err // Message lost if DB write fails
     }
     return nil
 }

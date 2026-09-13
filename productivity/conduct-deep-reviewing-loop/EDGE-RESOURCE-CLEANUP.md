@@ -1,14 +1,14 @@
-# Edgecase Subdocument: OS Resource Handling & Process Termination Cleanup
+# OS Resource Handling and Process Termination Cleanup
 
 ## Domain Audit Checklist
 
 ### 1. Resource Allocations & RAII Wrappers
-- [ ] Immediate Resource Cleanup: Verify that every allocated OS handle (file descriptors, sockets, database connections, memory maps) utilizes strict cleanup blocks (`defer`, `try-with-resources`, RAII destructors).
+- [ ] Immediate Resource Cleanup: Verify that every allocated OS handle (file descriptors, sockets, database connections, memory maps) uses cleanup blocks (`defer`, `try-with-resources`, RAII destructors).
 - [ ] Unbounded Buffer Memory: Reject reading raw streams or file allocations into unbounded in-memory buffers without explicit length limits.
 
 ### 2. Signal Handling & Graceful Shutdown
 - [ ] Process Signal Handlers: Confirm applications catch `SIGTERM` and `SIGINT` signals to flush buffered log entries, stop accepting incoming requests, finish active tasks, and close open handles.
-- [ ] Child Process Termination: Ensure subprocess creation logic sets appropriate death signals or process group structures to prevent orphan child process leaks upon crash events.
+- [ ] Child Process Termination: Ensure subprocess creation configures death signals or process groups so subprocesses terminate if parent crashes.
 
 ## Concrete Anti-Patterns
 
@@ -22,7 +22,7 @@ func ReadConfig(path string) ([]byte, error) {
         return nil, err
     }
     data, err := io.ReadAll(file)
-    file.Close() // Skipped if io.ReadAll returns an error!
+    file.Close() // Skipped if io.ReadAll returns an error
     return data, err
 }
 

@@ -1,4 +1,4 @@
-# Progress Subdocument: Migration Phasing & Rollout DAGs
+# Migration Phasing and Rollout DAGs
 
 ## Domain Audit Checklist
 
@@ -15,7 +15,7 @@
 ### Anti-Pattern 1: Single-Step Atomic Cutover
 BAD:
 Phase 1: Deploy new application version that drops OldField and writes to NewField simultaneously.
-(Result: Immediate service outage if rollout stalls half-way; old running instances crash when OldField disappears.)
+// Flaw: Causes service outage if rollout stalls; running instances crash if OldField is removed prematurely.
 
 GOOD:
 Phase 1: Add NewField (nullable) to persistence layer. Deploy App v1.1 (writes OldField + NewField, reads OldField).
@@ -26,5 +26,5 @@ Phase 5: Drop OldField column.
 
 ## Failure Modes & Mitigations
 
-- Unrecoverable Schema Corruption: Enforce strict prohibition of immediate column/field drops; mandate 30-day deprecation holding periods.
+- Unrecoverable Schema Corruption: Do not drop columns or fields immediately. Enforce deprecation holding periods.
 - Dual-Write Inconsistency: Use asynchronous backfill reconciliation background jobs to resolve discrepancies between primary and secondary storage models.

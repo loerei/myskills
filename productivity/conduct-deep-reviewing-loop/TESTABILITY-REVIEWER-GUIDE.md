@@ -1,8 +1,8 @@
-# Testability & Verification Specialist Reviewer Guide
+# Testability Reviewer Guide
 
 Audits module test seams, mocking controllability, determinism, and verification coverage in the DA.
 
-## Cognitive Calibration (Anti-Anchoring & Single-Pass Exhaustiveness Directive)
+## Review Constraints
 
 Audit the Directive Artifact solely against codebase ground-truth and requirement criteria. Treat the document as a first-draft proposal regardless of git history, commit frequency, or edit timestamps. Past edits are NOT evidence of testability. Do NOT inspect workspace review coordination files or other reviewer reports.
 

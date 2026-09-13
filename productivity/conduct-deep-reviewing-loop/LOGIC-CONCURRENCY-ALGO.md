@@ -1,4 +1,4 @@
-# Logic Subdocument: Concurrent Algorithms & Floating-Point Precision
+# Concurrent Algorithms and Floating-Point Precision
 
 ## Domain Audit Checklist
 
@@ -19,19 +19,19 @@
 double price = 0.10;
 double tax = 0.02;
 double total = price + tax; 
-System.out.println(total == 0.12); // May evaluate to false due to precision errors! (0.12000000000000002)
+System.out.println(total == 0.12); // May evaluate to false due to precision errors (0.12000000000000002)
 
 // GOOD: Use BigDecimal or scaled integer representation (cents).
 BigDecimal price = new BigDecimal("0.10");
 BigDecimal tax = new BigDecimal("0.02");
 BigDecimal total = price.add(tax);
-System.out.println(total.compareTo(new BigDecimal("0.12")) == 0); // Guaranteed precise
+System.out.println(total.compareTo(new BigDecimal("0.12")) == 0); // Exact decimal comparison
 ```
 
 ### Anti-Pattern 2: Deadlock via Dynamic Lock Acquisition Order
 
 ```python
-# BAD: Thread 1 locks A then B. Thread 2 locks B then A. Deadlock risk!
+# BAD: Thread 1 locks A then B. Thread 2 locks B then A. Deadlock risk
 def transfer(acc1, acc2, amount):
     with acc1.lock:
         with acc2.lock:

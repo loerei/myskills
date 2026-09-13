@@ -1,8 +1,8 @@
-# Progress & Work Breakdown Reviewer Guide
+# Progress Reviewer Guide
 
-Audits whether the Directive Artifact (DA) establishes an optimal, incremental, and dependency-sound execution progression across phases, milestones, and tickets.
+Audits whether the Directive Artifact (DA) establishes an incremental, dependency-ordered execution progression across phases, milestones, and tickets.
 
-## Cognitive Calibration (Anti-Anchoring & Single-Pass Exhaustiveness Directive)
+## Review Constraints
 
 Audit the Directive Artifact solely against codebase ground-truth and requirement criteria. Treat all phase breakdowns, ticket boundaries, and sequencing as a first-draft proposal regardless of git history, commit frequency, or edit timestamps. Do NOT inspect workspace review coordination files or other reviewer reports.
 
@@ -24,7 +24,7 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 
 ## Mandatory Audit Questions
 
-1. **Tracer-Bullet Granularity**: Is each ticket a thin, independently testable, single-responsibility vertical slice that can be implemented and verified without waiting for the entire phase? Are monolithic tickets (> 300-500 LOC or multi-concern scopes) identified for splitting?
+1. **Ticket Granularity**: Is each ticket an independently testable slice that can be implemented and verified without waiting for the entire phase? Are monolithic tickets (> 300-500 LOC or multi-concern scopes) identified for splitting?
 2. **Dependency & Sequencing Soundness**: Is the execution order topologically sound? Are there forward-dependencies (e.g. Ticket N depending on unbuilt APIs from Ticket N+2) or circular dependencies across tickets and phases?
 3. **Phase & Milestone Boundaries**: Does Phase 0 / baseline milestones deliver an MVP / verifiable foundation without scope creep from subsequent phases? Are phase prerequisites explicitly specified?
 4. **Prerequisite & Seam Unlocking**: Does early ticket sequencing prioritize unblocking test seams, fixtures, and interfaces needed by subsequent tickets?
@@ -51,9 +51,9 @@ When restructuring multi-phase PRDs or tickets, reviewers MUST formulate finding
 - **`INJECT_SCAFFOLDING_TICKET`**: Author a new prerequisite ticket for missing test fixtures, mock data providers, or developer utilities.
 
 ### Hierarchical Dot-Splitting & Anti-Renumbering Directives
-1. **Hierarchical Dot Notation (`X.1, X.2 ... X.n`)**: When decomposing a ticket, MUST use symmetrical dot notation (`3.1, 3.2` rather than `3, 3b` or `3a, 3b`). Arbitrary nesting depth (`3.2.1, 3.2.2 ... 3.2.n`) is fully authorized and encouraged whenever sub-scopes require granular tracer bullets.
-2. **Anti-Cascading Renumbering**: NEVER shift/renumber downstream tickets (e.g. do NOT rename `04` to `05` when splitting `03`). Downstream dependencies that depended on `3` automatically converge to depend on the terminal child node (`3.2` or `3.2.n`).
-3. **No Splitting Immunity (Ticket Number/Depth is NOT a Metric)**: A ticket having a deeply nested number (e.g., `3.2.1.2`) does NOT grant it immunity from further splitting, nor does it make the work breakdown "clean". Audit tickets purely on technical scope, cyclomatic complexity, and tracer-bullet boundaries. If a deeply nested ticket still violates granularity criteria, SPLIT IT FURTHER without hesitation. Ticket numbering/depth must NEVER be used as an evaluation metric.
+1. **Hierarchical Dot Notation (`X.1, X.2 ... X.n`)**: When decomposing a ticket, MUST use symmetrical dot notation (`3.1, 3.2` rather than `3, 3b` or `3a, 3b`). Deep nesting (`3.2.1, 3.2.2 ... 3.2.n`) is permitted when sub-scopes require granular breakdown.
+2. **Anti-Cascading Renumbering**: NEVER renumber downstream tickets (e.g. do not rename `04` to `05` when splitting `03`). Downstream dependencies converge to the terminal child node (`3.2` or `3.2.n`).
+3. **Scope Evaluation**: Evaluate tickets solely on technical scope, cyclomatic complexity, and testability. Numbering depth does not exempt a ticket from splitting.
 
 ### 4. Nano & Step-Level Actions (Step ↔ Step / Checkbox Inside Ticket)
 - **`SPLIT_STEP`**: Decompose a multi-concern, overloaded checkbox (`- [ ]`) into atomic, single-turn executable steps.

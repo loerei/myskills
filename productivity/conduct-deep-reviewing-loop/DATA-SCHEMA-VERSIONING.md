@@ -1,4 +1,4 @@
-# DataMigration Subdocument: Local JSON & Embedded Schema Versioning
+# Local JSON and Embedded Schema Versioning
 
 ## Domain Audit Checklist
 
@@ -14,7 +14,7 @@
 ### 3. Atomic Mutation & Crash Invariance
 - [ ] Atomic File Replacement (JSON): Confirm file-based migrations write transformed content to a temporary sibling file, flush to physical disk (`fsync`), and atomically replace target file via OS rename (`renameSync`).
 - [ ] Transactional Atomic DDL (SQLite): Ensure schema alterations, backfills, and version increments execute inside a single `BEGIN IMMEDIATE` or `EXCLUSIVE` transaction block.
-- [ ] Crash Idempotency: Verify that an interrupted migration leaves original storage intact on disk, allowing safe recovery on subsequent startup attempts.
+- [ ] Crash Resilience: Verify that an interrupted migration leaves original storage intact on disk, allowing safe recovery on subsequent startup attempts.
 
 ---
 
@@ -63,7 +63,7 @@ export function loadItem(canonicalData: ItemV3): ItemV3 {
 if (!settings.customOrderMigrated) {
   await migrateCustomOrder();
   settings.customOrderMigrated = true;
-  await saveSettings(settings); // Partial crash desynchronizes db and settings!
+  await saveSettings(settings); // Partial crash desynchronizes db and settings
 }
 
 // GOOD: Storage version encapsulated within storage boundary.
@@ -82,4 +82,4 @@ db.exec(`
 
 - **Combinatorial Fallback Explosion**: If $K$ unversioned fields evolve independently, heuristic loaders require up to $2^K$ permutation branches. Enforce monotonic linear integer versioning ($N$ migrations).
 - **Ambiguity Hazards & Data Loss**: When partially written legacy records contain competing fields, heuristic loaders produce nondeterministic precedence bugs. Enforce discrete, one-way forward transformations at startup.
-- **Split-Brain Concurrent Writes**: Executing migration logic inside UI components or multiple renderer windows causes concurrent competing writes. Enforce storage lifecycle barriers in the main host process prior to window creation.
+- **Concurrent Write Hazards**: Executing migration logic inside UI components or multiple renderer windows causes concurrent competing writes. Enforce storage lifecycle barriers in the main host process prior to window creation.

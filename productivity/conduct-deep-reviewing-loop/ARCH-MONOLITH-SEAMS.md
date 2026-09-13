@@ -1,4 +1,4 @@
-# Architectural Subdocument: Modular Monolith Seams & Domain Boundaries
+# Modular Monolith Seams and Domain Boundaries
 
 ## Domain Audit Checklist
 
@@ -15,7 +15,7 @@
 - [ ] Inversion of Control: Confirm high-level policy modules depend on abstractions (interfaces), not low-level concrete infrastructure modules.
 
 ### 4. Architectural Decomposition & Seam Thresholds
-- [ ] Blast-Radius Scope Ceiling: If a proposed change touches 5+ existing architectural modules simultaneously, demand architectural decomposition into phased preparatory refactoring and isolated seam adapters before proceeding.
+- [ ] Module Scope Limit: If a proposed change touches 5+ existing architectural modules simultaneously, demand architectural decomposition into phased preparatory refactoring and isolated seam adapters before proceeding.
 - [ ] Redundant Endpoint Integration: Reject new API endpoints or seam routes that introduce redundant data representations; require integration into existing domain interface schemas.
 
 ### 5. Operational Context Flow & Governance Separation
@@ -27,9 +27,9 @@
 ### 6. Storage & Configuration Lifecycle Isolation
 - [ ] Storage & Configuration Lifecycle Isolation: Verify that data schema migrations and configuration parsing execute exclusively within an isolated bootstrap phase at application startup. Reject directive artifacts where UI views, renderers, application loaders, or domain handlers contain transient migration flags, schema-sniffing conditionals, ad-hoc backfill logic, or dual-format configuration loaders.
 
-### 7. Data Trust Membranes & Contract Integrity
-- [ ] Ingress Parsing Membranes ("Parse, Don't Validate"): Untrusted external data (network payloads, user inputs, file imports) must be parsed into strongly typed, immutable domain models at the boundary. Once inside the trust membrane, downstream domain logic must assume valid state and must NOT execute defensive property sniffing or cascading null fallbacks.
-- [ ] Error Model Cleavage: Explicitly separate recoverable operational errors (network timeouts, transient I/O faults) from unrecoverable programming bugs / contract breaches (assertion failures, invariant breaches, null reference bugs). Operational errors use explicit domain error returns or typed exceptions; programming bugs fail fast.
+### 7. Ingress Boundaries & Contract Integrity
+- [ ] Ingress Parsing: Untrusted external data (network payloads, user inputs, file imports) must be parsed into strongly typed, immutable domain models at the boundary. Internal domain logic must assume valid state and must NOT execute defensive property sniffing or cascading fallbacks.
+- [ ] Error Classification: Explicitly separate recoverable operational errors (network timeouts, transient I/O faults) from unrecoverable programming bugs / contract breaches (assertion failures, invariant breaches, null reference bugs). Operational errors use explicit domain error returns or typed exceptions; programming bugs fail fast.
 
 ## Concrete Anti-Patterns
 

@@ -1,4 +1,4 @@
-# Architectural Subdocument: Distributed State, Consensus & Sagas
+# Distributed State, Consensus, and Sagas
 
 ## Domain Audit Checklist
 
@@ -7,7 +7,7 @@
 - [ ] Leader Election Safety: Ensure lease timers for leader node heartbeats prevent split-brain conditions during transient network delays.
 
 ### 2. Distributed Transactions & Saga Pattern
-- [ ] Compensating Actions: Verify that every step in an orchestration or choreography saga defines an idempotent, deterministic compensating transaction for failure rollbacks.
+- [ ] Compensating Actions: Verify that every step in an orchestration or choreography saga defines an idempotent compensating transaction for rollbacks.
 - [ ] Forward Recovery vs. Backward Rollback: Ensure state machines explicitly handle partial execution states; verify saga state persistence across coordinator restarts.
 
 ### 3. Distributed Locking Mechanics
@@ -23,8 +23,8 @@
 # A second worker acquires the lock, leading to concurrent execution and data corruption.
 def process_work():
     if redis.set("lock:resource", "holder_1", px=5000, nx=True):
-        long_running_task() # May take 10 seconds!
-        redis.delete("lock:resource") # May delete lock acquired by worker 2!
+        long_running_task() # May take 10 seconds
+        redis.delete("lock:resource") # May delete lock acquired by worker 2
 
 # GOOD: Use monotonic fencing token and ownership validation script.
 def process_work():

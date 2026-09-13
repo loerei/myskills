@@ -1,4 +1,4 @@
-# Security Subdocument: Input Sanitization & Injection Vulnerability Protections
+# Input Sanitization and Injection Defenses
 
 ## Domain Audit Checklist (OWASP ASVS V5 Alignment)
 
@@ -9,7 +9,7 @@
 - [ ] Shell Invocation Isolation: Ensure external system calls execute native binaries via direct array arguments (`execFile`, `subprocess.run(["cmd", "arg"])`). Reject shell execution wrappers (`eval`, `system`, `sh -c`).
 
 ### 3. Cross-Site Scripting (XSS) & SSRF Protections
-- [ ] Output Encoding: Verify HTML, JavaScript, CSS, and URL contexts utilize context-aware output encoding (e.g., DOMPurify, React auto-escaping).
+- [ ] Output Encoding: Verify HTML, JavaScript, CSS, and URL contexts use context-aware output encoding (e.g., DOMPurify, React auto-escaping).
 - [ ] Server-Side Request Forgery (SSRF): Ensure all outbound HTTP client requests validate user-supplied URLs against strict domain allowlists and block internal IP ranges (e.g., `127.0.0.1`, `169.254.169.254`).
 
 ### 4. Filesystem Path Traversal & Normalization

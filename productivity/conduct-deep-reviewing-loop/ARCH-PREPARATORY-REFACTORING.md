@@ -1,19 +1,12 @@
-# Architectural Subdocument: Preparatory Refactoring & Landing Zone Readiness
+# Preparatory Refactoring and Codebase Readiness
 
 ## Domain Audit Checklist (Kent Beck's "Make The Change Easy" Framework)
 
-### 1. Domain Architectural Vocabulary Constraints
-Verify that the target Directive Artifact strictly adheres to precise domain terminology:
-
-| Term | Domain Definition | Forbidden Alternatives |
-| :--- | :--- | :--- |
-| **Module** | A logical unit of code exposing an interface and hiding implementation complexity. | Component, Service |
-| **Interface** | The public boundary through which callers interact with a module. | API, Endpoint, Signature |
-| **Depth** | The ratio of module implementation complexity relative to interface simplicity (Deep vs. Shallow). | Complexity ratio |
-| **Seam** | A place where behavior can be altered or injected without editing target code directly. | Boundary, Hook |
-| **Adapter** | A wrapper translating external dynamic interfaces into local deep module interfaces. | Bridge, Connector |
-| **Leverage** | The amount of underlying functionality encapsulated behind a single simple interface method. | Abstraction power |
-| **Locality** | The degree to which code that changes together resides physically together (Cohesion). | Proximity, Grouping |
+### 1. Structural Concepts
+- **Module**: Logical unit exposing an interface and encapsulating internal complexity.
+- **Interface**: Public boundary through which callers interact with a module.
+- **Seam**: Place where behavior can be altered or injected without modifying caller implementations directly.
+- **Adapter**: Component translating external interfaces into local module interfaces.
 
 ### 2. 4-Axis Codebase Readiness Audit
 Audit target files and landing zones across 4 distinct quality axes:
@@ -44,35 +37,18 @@ Audit target files and landing zones across 4 distinct quality axes:
     5. **Storage Readiness Invariant**: If a proposed feature modifies persistent data schemas, but the target landing zone lacks a centralized schema version runner, classify the landing zone as Bad State. Mandate establishing a minimal isolated schema version runner as Step $S$ directly in the DA before implementing feature behavior $B$.
     6. **Configuration & Environment Readiness Invariant**: If a proposed feature modifies application configuration schemas, environment variable bindings, or runtime dependency interfaces, but the target landing zone lacks a centralized, strictly validated configuration boot boundary (or relies on ad-hoc runtime branching between legacy and new formats), classify the landing zone as Bad State. Mandate establishing a canonical configuration schema parser and migrating legacy configuration files, environment definitions, and test fixtures as a prerequisite structural step ($S$) directly in the DA before implementing feature behavior ($B$).
 
-### 4. Kent Beck's 15 Tidying Patterns Taxonomy
-Verify that preparatory structural changes ($S$) employ pre-approved tidying patterns before behavior changes ($B$):
+### 4. Preparatory Structural Patterns
+Preparatory structural changes ($S$) must use standard refactoring patterns before introducing new behavior ($B$):
+- **Control Flow**: Guard clauses, dead code elimination, normalizing symmetries.
+- **Structure**: Reading order, grouping related declarations and statements into cohesive blocks.
+- **Abstraction**: Extracting explaining variables/constants, explicit parameters, helper functions.
+- **Interfaces**: Introducing an interface before changing implementation, inlining fragmented shallow wrappers.
 
-| Pattern Category | Tidying Name | Execution Action |
-| :--- | :--- | :--- |
-| **Control Flow** | **Guard Clauses** | Replace nested `if-else` blocks with early return/exit statements. |
-| | **Dead Code** | Delete unused functions, unreferenced parameters, and unreachable branches. |
-| | **Normalize Symmetries** | Standardize inconsistent implementations of identical logical operations. |
-| **Structure & Order** | **Reading Order** | Reorder methods in source files so execution flows logically top-to-bottom. |
-| | **Cohesion Order** | Group routines and data structures that change together into adjacent positions. |
-| | **Move Declaration/Init** | Relocate variable declarations directly adjacent to their first usage point. |
-| | **Chunk Statements** | Group cohesive lines of code into distinct chunks separated by blank lines to clarify logical sub-steps. |
-| **Abstraction & Naming** | **Explaining Variables** | Extract complex sub-expressions into well-named local constants/variables. |
-| | **Explaining Constants** | Replace magic numbers and inline strings with named symbolic constants. |
-| | **Explicit Parameters** | Pass explicit arguments to functions instead of passing wide context objects. |
-| | **Extract Helper** | Pull isolated sub-tasks out of large functions into dedicated helper routines. |
-| **Interface Realignment** | **New Interface, Old Impl** | Introduce ideal interface first, delegating call execution to legacy code. |
-| | **One Pile** | Inline overly fragmented shallow abstractions into a single pile before re-splitting. |
-| **Documentation** | **Explaining Comments** | Add comments explaining the *why* for non-obvious code mechanics. |
-| | **Delete Redundant Comments** | Remove comments that merely restate what the code clearly expresses. |
-
-### 5. Architectural Transition Mapping Requirements
-When evaluating a Bad State codebase, verify that the DA provides an Architectural Transition Mapping covering 3 dimensions:
-
-| Transition Dimension | Current Tangled Landing Zone | Proposed Paved Landing Zone |
-| :--- | :--- | :--- |
-| **Module Structure** | Shallow modules leaking internal state across callers. | Deep module encapsulating business rules behind clean interface. |
-| **Dependency Path** | Direct tight coupling between callers and external storage/transport. | Decoupled execution path isolated via Port Adapters and Seams. |
-| **Code Locations** | Scattered logic across disparate files and callers. | Concentrated locality inside dedicated deep module. |
+### 5. Transition Mapping Requirements
+When evaluating refactoring requirements, verify that the DA maps:
+- **Module Structure**: Current shallow/leaky state -> proposed deep module with clean interface.
+- **Dependency Path**: Current direct coupling -> decoupled path isolated via seams or adapters.
+- **Code Locations**: Current scattered logic -> concentrated locality inside dedicated modules.
 
 ## Concrete Anti-Patterns
 

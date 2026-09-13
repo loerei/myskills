@@ -1,8 +1,8 @@
-# General Logic Reviewer Guide
+# Logic Reviewer Guide
 
 Audits operational workflows, algorithmic correctness, and state consistency in the DA.
 
-## Cognitive Calibration (Anti-Anchoring & Single-Pass Exhaustiveness Directive)
+## Review Constraints
 
 Audit the Directive Artifact solely against codebase ground-truth and requirement criteria. Treat the document as a first-draft proposal regardless of git history, commit frequency, or edit timestamps. Past edits are NOT evidence of logical correctness. Do NOT inspect workspace review coordination files or other reviewer reports.
 
@@ -32,12 +32,12 @@ When auditing workflows, state machines, or algorithmic transforms, author a sel
 > [!CAUTION]
 > **STRICT SOURCE CODE WRITE BAN**: You are authorized to create and run temporary files inside `<review_dir>/sandbox/` ONLY. You MUST NOT modify or delete project source files. Write all findings to `<review_dir>/reports/Logic.md`.
 
-## Mandatory Audit Questions
+## Mandatory Audit Checklist
 
-1. **Workflow Correctness**: Are execution steps sequential, complete, and free of logical gaps?
-2. **State Machine Integrity**: Are all state transitions defined with explicit entry/exit conditions?
-3. **Data Flow Validation**: Do inputs correctly transform into expected outputs across processing boundaries?
-4. **Invariant Preservation**: Are core operational invariants maintained during error states?
+- [ ] **Workflow Correctness**: Verify execution steps are sequential, complete, and free of logical gaps.
+- [ ] **State Machine Integrity**: Verify all state transitions are defined with explicit entry and exit conditions.
+- [ ] **Data Flow Validation**: Confirm inputs correctly transform into expected outputs across processing boundaries.
+- [ ] **Invariant Preservation**: Ensure core operational invariants are maintained during error states.
 
 ## Domain Subdocuments Routing Table
 

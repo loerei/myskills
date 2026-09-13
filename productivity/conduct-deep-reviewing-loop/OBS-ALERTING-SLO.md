@@ -1,4 +1,4 @@
-# Observability Subdocument: Alerting Thresholds, Health Checks & SLO Alignment
+# Alerting Thresholds, Health Checks, and SLO Alignment
 
 ## Domain Audit Checklist
 
@@ -16,7 +16,7 @@
 
 ```yaml
 # BAD: Liveness probe checks external database dependency.
-# If DB lags, Kubernetes restarts application container, compounding system outage!
+# If DB lags, Kubernetes restarts application container, compounding system outage
 livenessProbe:
   httpGet:
     path: /health-check-with-db-query
@@ -35,5 +35,5 @@ readinessProbe:
 
 ## Failure Modes & Mitigations
 
-- Alert Fatigue via Flashing Threshold Probes: Enforce evaluation duration windows (`for: 5m`) before alerting channels fire.
+- Flapping Alerts: Enforce evaluation duration windows (`for: 5m`) before alerting channels fire.
 - Monitoring System Failure During Outages: Implement external synthetic heartbeat probes that verify core endpoint reachability out-of-band.

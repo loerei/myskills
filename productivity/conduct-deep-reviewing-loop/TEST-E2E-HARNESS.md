@@ -1,4 +1,4 @@
-# Testability Subdocument: End-to-End Test Harnesses & Environment Isolation
+# End-to-End Test Harnesses and Environment Isolation
 
 ## Domain Audit Checklist
 
@@ -18,7 +18,7 @@
 # BAD: Hardcoded sleep causes slow pipelines and flakiness on slow runners
 def test_submit_form(page):
     page.click("#submit-button")
-    time.sleep(5) # Arbitrary sleep!
+    time.sleep(5) # Arbitrary sleep
     assert page.is_visible("#success-message")
 
 # GOOD: Explicit state-based dynamic wait selector

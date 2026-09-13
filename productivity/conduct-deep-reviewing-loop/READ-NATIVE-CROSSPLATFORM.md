@@ -1,11 +1,11 @@
-# Readiness Subdocument: Native Toolchains & Cross-Platform Prerequisites
+# Native Toolchains and Cross-Platform Prerequisites
 
 ## Domain Audit Checklist
 
 ### 1. Dynamic Linking & Target ABIs
 - [ ] Target C-Library Compatibility: Verify binary compilation explicitly targets expected system C-libraries (`glibc` vs. `musl`). Reject static binaries built against `glibc` targeted for minimal Linux environments without explicit validation.
 - [ ] Architecture Flags: Ensure build flags explicitly account for target CPU architectures (`x86_64`, `aarch64`) and endianness.
-- [ ] Zero-Bypass ABI Baselines: Reject fallback shims that dynamically probe multiple incompatible C-library versions at runtime; demand deterministic cross-compilation flags targeting the canonical system ABI.
+- [ ] Deterministic Target ABI: Reject fallback shims probing multiple C-library versions at runtime; demand deterministic cross-compilation flags targeting the canonical system ABI.
 
 ### 2. Foreign Function Interface (FFI) Safety
 - [ ] Cgo/FFI Memory Boundaries: Confirm all memory allocations crossing FFI boundaries explicitly assign ownership and free allocation memory within the source runtime allocator.
@@ -26,7 +26,7 @@ import "C"
 func ConvertAndProcess(val string) {
     cStr := C.CString(val)
     C.process_string(cStr)
-    // Missing C.free(unsafe.Pointer(cStr))!
+    // Missing C.free(unsafe.Pointer(cStr))
 }
 
 // GOOD: Enforce defer C.free immediately following allocation.

@@ -1,4 +1,4 @@
-# UXUI Subdocument: Form State Feedback & Accessible Interaction Flows
+# Form State Feedback and Accessible Interaction Flows
 
 ## Domain Audit Checklist
 
@@ -16,7 +16,7 @@
 ## Concrete Anti-Patterns
 
 > [!IMPORTANT]
-> **Conceptual Reference Notice**: Code snippets in this subdocument are for conceptual reference and illustrative purposes only. UX/UI Reviewers are strictly prohibited from copying concrete code into review reports. All report findings must use Abstract Behavioral Specifications with Acceptance Criteria.
+> Code snippets are illustrative only. Do not copy code into review reports; write Abstract Behavioral Specifications with Acceptance Criteria instead.
 
 ### Anti-Pattern 1: Uninformative Silent Form Failure
 
@@ -47,16 +47,16 @@ function SubmitForm({ errors, onSubmit }) {
 // BAD: Native disabled on focused button instantly blurs focus to document.body
 async function handleAction(e) {
   const btn = e.currentTarget;
-  btn.disabled = true; // Browser immediately fires blur and dumps focus to body!
+  btn.disabled = true; // Browser fires blur and dumps focus to body
   await performAsyncOperation();
-  btn.disabled = false; // Focus is permanently lost from tab order!
+  btn.disabled = false; // Focus is lost from tab order
 }
 
 // GOOD: aria-disabled="true" maintains focus continuity in tab order
 async function handleAction(e) {
   const btn = e.currentTarget;
   if (btn.getAttribute('aria-disabled') === 'true') return; // Guard against double submission
-  btn.setAttribute('aria-disabled', 'true'); // Keeps activeElement on the button!
+  btn.setAttribute('aria-disabled', 'true'); // Keeps activeElement on the button
   try {
     await performAsyncOperation();
   } finally {

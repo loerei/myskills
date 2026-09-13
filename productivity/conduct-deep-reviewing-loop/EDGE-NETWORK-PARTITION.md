@@ -1,4 +1,4 @@
-# Edgecase Subdocument: Transient Network Partitions & Resiliency Controls
+# Transient Network Partitions and Resiliency Controls
 
 ## Domain Audit Checklist
 
@@ -8,20 +8,20 @@
 
 ### 2. Retry Loops & Circuit Breaking
 - [ ] Exponential Backoff with Jitter: Confirm retries on transient network calls implement full random jitter and exponential backoff timers. Reject static loop retries.
-- [ ] Circuit Breaker Protections: Ensure outbound external integrations utilize circuit breakers that trip open upon high error threshold spikes to prevent resource exhaustion.
+- [ ] Circuit Breaker Protections: Ensure outbound external integrations use circuit breakers that trip open upon high error threshold spikes to prevent resource exhaustion.
 
 ## Concrete Anti-Patterns
 
 ### Anti-Pattern 1: Infinite Retries without Backoff or Jitter
 
 ```python
-# BAD: Thundering herd problem! Retries immediately overwhelm struggling service.
+# BAD: Immediate retries without backoff cause thundering herds.
 def call_external_service():
     for i in range(10):
         try:
             return requests.get("https://api.service.internal/data")
         except Exception:
-            pass # Immediate retry loop!
+            pass # Immediate retry loop
 ```
 
 ```python

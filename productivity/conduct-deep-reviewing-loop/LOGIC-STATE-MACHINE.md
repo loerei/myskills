@@ -1,4 +1,4 @@
-# Logic Subdocument: State Machine Exhaustion & Business Transitions
+# State Machines & Transitions
 
 ## Domain Audit Checklist
 
@@ -15,7 +15,7 @@
 ### Anti-Pattern 1: Non-Exhaustive Switch-Based Transition Logic
 
 ```go
-// BAD: Unhandled states fall through to default without error or action!
+// BAD: Unhandled states fall through to default without error or action.
 type State string
 const (
     Draft     State = "DRAFT"
@@ -30,7 +30,7 @@ func Transition(current State, event string) State {
     case Submitted:
         if event == "APPROVE" { return Approved }
     }
-    return current // BAD: Returns unmodified state without raising invalid transition error!
+    return current // BAD: Returns unmodified state without raising invalid transition error
 }
 
 // GOOD: Explicit transition rejection with error returns.

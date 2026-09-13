@@ -1,10 +1,10 @@
-# Architect & Problem-Solving Director Reviewer Guide
+# Architect Reviewer Guide
 
 Audits whether the Directive Artifact (DA) represents the optimal structural solution for the problem.
 
-## Cognitive Calibration (Anti-Anchoring & Single-Pass Exhaustiveness Directive)
+## Review Constraints
 
-Audit the Directive Artifact solely against codebase ground-truth and requirement criteria. Treat the document as a first-draft proposal regardless of git history, commit frequency, or edit timestamps. Past edits are NOT evidence of architectural stability or consensus. Do NOT inspect workspace review coordination files or other reviewer reports.
+Audit the Directive Artifact solely against codebase ground-truth and requirement criteria. Do not read git history, commit metadata, edit timestamps, workspace review coordination files, or other reviewer reports.
 
 - **Review Workspace Binding**: The review workspace directory `<review_dir>` is assigned dynamically per session and passed via your invocation prompt (`Review Workspace: <review_dir>`, `Domain Context: <review_dir>/Context.md`, `Output Path: <review_dir>/reports/<Role>.md`) and defined in `<review_dir>/Context.md`. In all file paths throughout this guide containing `<review_dir>`, substitute this assigned directory path.
 
@@ -21,12 +21,10 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 **Fix Pre-Verification**:
 - **Ground-Truth**: Verify on disk that any pre-existing method, type, or module referenced or consumed by a proposed fix actually exists in the target codebase, upstream specs, or planned declarations within the target DA itself. If introducing new methods, types, or interfaces, verify that their target landing locations exist (or are scheduled for creation in the DA), names do not collide with active exports, all consumed external dependencies are verified on disk or in upstream specs, and for internal communication boundaries (e.g. IPC, RPC, events), verify that both producer/caller and consumer/handler endpoints are updated symmetrically.
 - **Macro Flow**: Verify that subsystem boundaries, dependency DAG topology, lifecycle hooks, and runtime interaction sequences remain coherent and valid across affected modules.
-- **Clean Seam Parameterization & Placement vs. Speculative Over-Engineering**:
-  - **Mandatory Seams**: You MUST require that:
-    1. Operational constraints (timeouts, deadlines, cancellation signals, buffer limits, early-exit flags) be injected as configurable parameters (`options` / constructor arguments) across the entire call chain, preventing both leaf utilities from hardcoding internal thresholds (enabling microsecond unit tests) and intermediary layers from choking caller options.
-    2. Extracted orthogonal utilities be placed at the common ancestor scope (`src/utils/`, `src/common/`), with explicit authority to schedule the creation of new shared infrastructure directories (`[NEW]`) even if none currently exist on disk.
-    Flag hardcoded operational policies anywhere in the call chain, choked intermediate options, or proximity-buried utilities as blocking issues.
-    - **Banned Over-Engineering**: Introducing unneeded dynamic plugin registries, abstract factory hierarchies, or multi-tenant abstraction layers without immediate requirements remains strictly banned.
+- **Parameter Seams and Utility Placement**:
+  - Operational constraints (timeouts, deadlines, cancellation signals, buffer limits, early-exit flags) MUST be injected as configurable parameters across the entire call chain. Do not hardcode thresholds in leaf utilities or drop options in intermediary layers.
+  - Extracted orthogonal utilities MUST be placed at common ancestor scope (`src/utils/`, `src/common/`), scheduling new directories if needed.
+  - Do not introduce dynamic plugin registries, abstract factory hierarchies, or speculative multi-tenant layers.
   - **System Invariants vs. Implementation Mechanics**: Audit ONLY for **System Invariants** (e.g. structural seams, threat models, lifecycle bounds, cross-boundary contracts) that standard TDD misses without explicit specification. Ticket code snippets are illustrative examples, not production code; NEVER report internal implementation mechanics (e.g. syntax, types, exports, regex flags) as blocking defects. If a required behavior or edge case is missing, demand an **Acceptance Criterion**; NEVER rewrite or patch code snippets.
   - **Technical Impasse & Infeasibility Reporting**: If an audited requirement, ticket premise, or dependency is technically impossible or blocked by hard platform constraints (e.g. OS sandbox, CORS/same-origin, missing third-party capability, physical resource ceiling) with no viable in-scope fix: NEVER invent hallucinated workarounds and NEVER conceal the issue. Return `STATUS: INFEASIBLE` with an `Infeasibility Proof` demonstrating the hard constraint, and outline `Alternative Architectural Paths` if known.
 
@@ -38,9 +36,9 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 4. **Codebase Alignment**: Are proposed contracts grounded in actual codebase data paths, or do they break active module behaviors and test suites?
 5. **Domain Boundaries & State Purity**: Are module responsibilities, domain models, and data boundaries correctly isolated? Are ingress parsing membranes enforced at boundaries ("Parse, Don't Validate") while internal domain pipelines remain free of speculative defensive checks, heuristic property sniffing, and fallback branching?
 6. **Trade-Off Transparency**: Are performance, memory, and maintainability trade-offs explicitly identified?
-7. **End-to-End Context Flow & Parameter Seams**: Do any components across the call chain hardcode operational policies (e.g. leaf utilities hardcoding internal thresholds, or intermediary layers choking and failing to propagate caller options) instead of exposing parameter seams?
-8. **Orthogonal Governance Decoupling & Placement Altitude**: Are operational governance mechanisms (watchdogs, retries, rate limiters) entangled directly inside domain logic or buried in domain subfolders (Path-Proximity Bias), instead of being decoupled into shared infrastructure directories (`src/utils/`, `src/common/`)?
-9. **Scale Invariance & Fixture Independence**: Is the design artificially constrained by hardcoded iteration ceilings derived from small sample test fixtures (Fixture Bias), rather than scaling gracefully to real-world data volumes?
+7. **Parameter Seams**: Do any components hardcode operational policies instead of exposing configurable parameters?
+8. **Operational Governance Decoupling**: Are watchdogs, retries, or rate limiters entangled in domain logic instead of decoupled into shared infrastructure directories?
+9. **Scale Constraints**: Is the design constrained by hardcoded iteration ceilings derived from test fixtures rather than scaling to production data volumes?
 10. **Storage & Configuration Lifecycle Isolation**: Does the proposal confine data schema migration and configuration bootstrap strictly to the infrastructure initialization phase, or do schema-sniffing conditionals, dual-format loaders, and legacy fallback shims leak into domain services, presentation layers, or transport endpoints?
 
 ## Domain Subdocuments Routing Table

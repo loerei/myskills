@@ -1,4 +1,4 @@
-# Testability Subdocument: Unit & Integration Test Determinism
+# Unit and Integration Test Determinism
 
 ## Domain Audit Checklist
 
@@ -18,10 +18,10 @@
 ### Anti-Pattern 1: Non-Deterministic Time Coupling
 
 ```typescript
-// BAD: Test fails depending on execution duration or system clock boundary!
+// BAD: Test fails depending on execution duration or system clock boundary.
 test('verifies subscription active status', () => {
   const user = createUser({ subExpires: new Date(Date.now() + 1000) });
-  // If garbage collection pauses execution for >1 second, this assertion fails!
+  // If garbage collection pauses execution for >1 second, this assertion fails.
   expect(user.isSubscriptionActive()).toBe(true);
 });
 
