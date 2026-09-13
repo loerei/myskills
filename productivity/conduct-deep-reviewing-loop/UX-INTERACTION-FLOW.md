@@ -10,6 +10,7 @@
 - [ ] Keyboard Navigation: Confirm all interactive visual controls (buttons, links, inputs) receive keyboard focus in logical sequential order.
 - [ ] ARIA Roles & Attributes: Verify screen-reader accessibility tags (`aria-expanded`, `aria-invalid`, `aria-describedby`) dynamically update to match component state changes.
 - [ ] In-Flight Focus Continuity: For buttons initiating async jobs, verify active controls use `aria-disabled="true"` with in-flight interaction blocking rather than native HTML `disabled` to prevent browser blur and focus eviction to `document.body`.
+- [ ] Vector Icon Accessibility & Parity: Verify icons are implemented as clean vector SVGs (with explicit dimensions and `aria-hidden="true"` for decorative icons or `aria-label` for icon-only buttons). Strictly reject raw emoji characters as interface icons.
 
 ## Concrete Anti-Patterns
 
@@ -63,7 +64,29 @@ async function handleAction(e) {
 }
 ```
 
+### Anti-Pattern 3: Raw Emoji Icons in UI Controls
+
+```jsx
+// BAD: Raw emoji icon lacks theme styling, scales poorly, renders inconsistently across platforms
+function OpenFolderButton() {
+  return <button className="icon-btn">📁 Open Folder</button>;
+}
+
+// GOOD: Accessible inline vector SVG inheriting theme tokens via currentColor
+function OpenFolderButton() {
+  return (
+    <button className="icon-btn">
+      <svg className="icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+      </svg>
+      <span>Open Folder</span>
+    </button>
+  );
+}
+```
+
 ## Failure Modes & Mitigations
 
 - Double Form Submission Race Conditions: Guard input action triggers immediately upon invocation via `aria-disabled="true"` and in-flight state flags rather than native HTML `disabled` on active focused elements.
 - Screen Reader Focus Traps: Enforce automated focus management returning user focus to parent triggers when closing modal windows.
+- Inconsistent Emoji Rendering Across Operating Systems: Strictly replace raw emoji glyphs with inline SVG vectors or icon library glyphs bound to `currentColor`.

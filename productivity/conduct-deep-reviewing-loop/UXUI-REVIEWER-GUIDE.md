@@ -18,6 +18,7 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 
 **Fix Pre-Verification (Universal GUI Ground-Truth Invariants)**:
 - **Design Tokens & Surface-Scoped Context**: You MUST verify on disk and cite the exact token or variable definition from the design system/theme catalog (`theme.css`, `colors.xml`, asset catalog). Strictly BAN hallucinating or inventing token names (e.g. `--danger-color`, `--text-primary`) without verifying their declaration on disk. For containers with fixed invariant backgrounds (e.g. dark modal panels `#121212` or fixed media overlays), surface-scoped theme tokens or contextual high-contrast colors are permitted; do NOT force binding to root Light Theme variables that invert and cause invisible zero-contrast text on dark surfaces.
+- **Vector SVG Icons vs. Raw Emoji Invariant**: You MUST strictly reject raw emojis (`📁`, `⚙️`, `🗑️`, `⭐`) in UI markup, labels, buttons, and specification mockups. Emojis render inconsistently across operating systems, break font-scale layout alignment, and cannot inherit dynamic theme colors via `currentColor`. Mandate clean inline SVG primitives or established icon library glyphs (Lucide, Radix, Phosphor) bound to theme tokens.
 - **View Lifecycle & State Anchor (Focus Preservation)**: When demanding focus or state restoration across async boundaries (e.g. after data fetch, save, or reload), you MUST verify that the target element is not detached, destroyed, or re-rendered during the pipeline (e.g. via `innerHTML = ''`, list recreation). If re-rendered, you MUST prescribe anchoring focus to a stable parent container or re-querying post-render, NOT calling `.focus()` on a detached node. For in-flight async actions, mandate `aria-disabled="true"` with interaction blocking (CSS `pointer-events: none` or in-flight state flags) rather than native HTML `disabled` on active focused controls, preventing Chromium from synchronously evicting focus to `document.body`.
 - **Layering & Z-Order (Stacking Context)**: When prescribing overlays, toasts, modals, tooltips, or popovers, you MUST verify their stacking context, window level, and `z-index` relative to all active containers and backdrops to prevent occlusion behind parent overlays.
 - **Universal 3-Tier Precedence Hierarchy**: When auditing interface patterns, loading states, layout transitions, and error handling, apply the 3-tier precedence:
@@ -45,6 +46,7 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
    - For operations taking $>2\text{s}$, is quantitative progress (`processed / total`, percentage, item steps) and a user cancellation/abort action provided instead of an opaque, indefinite spinner?
    - Are timeouts designed around progress staleness (inactivity over a threshold window) rather than arbitrary total elapsed wall-clock duration that penalizes active, healthy progression?
 5. **High-Volume Interaction Responsiveness**: Are complex interactions (e.g. drag-and-drop, multi-selection, tree expansion) responsive without frame drops or input lag when manipulating dense or deeply nested data collections?
+6. **Vector Icon Standardization (Anti-Emoji Invariant)**: Are all interface icons specified as clean SVG primitives or icon library glyphs? Are raw emojis strictly banned from UI controls, labels, and action slots to ensure cross-OS rendering consistency and theme token inheritance (`currentColor`)?
 
 ## Domain Subdocuments Routing Table
 
@@ -57,7 +59,7 @@ When the target Directive Artifact touches specific subsystem archetypes below, 
 
 ## Verdict Rules
 
-- Return `STATUS: REVISIONS NEEDED` if UI/UX specifications contain redundant elements, confusing interaction flows, or missing state indicators. Do NOT return `STATUS: REVISIONS NEEDED` solely for stylistic micro-copy or phrasing preferences unless phrasing induces destructive data loss or factually contradicts system operations.
+- Return `STATUS: REVISIONS NEEDED` if UI/UX specifications contain redundant elements, confusing interaction flows, raw emojis instead of vector SVG icons, or missing state indicators. Do NOT return `STATUS: REVISIONS NEEDED` solely for stylistic micro-copy or phrasing preferences unless phrasing induces destructive data loss or factually contradicts system operations.
 - Return `STATUS: PASS` if interface design is clean, minimal, and fully specified.
 - Return `STATUS: INFEASIBLE` if a core requirement or ticket premise violates hard platform or technical constraints with no viable in-scope fix. When both infeasible and fixable defects are present, `STATUS: INFEASIBLE` takes strict precedence as the overall report status.
 - NEVER return `STATUS: REVISIONS NEEDED` for internal implementation mechanics (e.g. syntax, types, exports, regex flags) in illustrative code snippets; demand an Acceptance Criterion instead.
