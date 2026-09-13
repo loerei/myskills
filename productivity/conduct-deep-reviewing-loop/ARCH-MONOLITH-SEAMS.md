@@ -31,6 +31,15 @@
 - [ ] Ingress Parsing: Untrusted external data (network payloads, user inputs, file imports) must be parsed into strongly typed, immutable domain models at the boundary. Internal domain logic must assume valid state and must NOT execute defensive property sniffing or cascading fallbacks.
 - [ ] Error Classification: Explicitly separate recoverable operational errors (network timeouts, transient I/O faults) from unrecoverable programming bugs / contract breaches (assertion failures, invariant breaches, null reference bugs). Operational errors use explicit domain error returns or typed exceptions; programming bugs fail fast.
 
+### 8. Frontend Presentation & Orchestration Seams
+- [ ] Presentation vs. Orchestration: Verify clean separation of UI presentation from business logic and data fetching. Presentational components must be pure, receiving data exclusively via typed immutable props or slot injection, without importing backend API clients or transport adapters. Domain mutations, API coordination, and business validation must be encapsulated within dedicated custom hooks or controller containers.
+
+### 9. Component Composition & Slot Seams
+- [ ] Composition over Prop Bloat: Reject UI components accumulating dozens of boolean or string configuration props to handle layout permutations. Require compound component architecture (`<Modal.Header>`, `<Modal.Body>`) or named slot-based composition (`slot="actions"`), allowing callers to inject content without altering component interface contracts.
+
+### 10. Global Listener Provider Isolation
+- [ ] Infrastructure Listener Isolation: Reject leaf UI components that attach un-encapsulated event listeners to global host interfaces (`window`, `document`, `navigator`). System-wide keyboard listeners, viewport resize trackers, and outside-dismiss handlers must be encapsulated within dedicated provider components or headless layout layers at the application root or common ancestor scope.
+
 ## Concrete Anti-Patterns
 
 ### Anti-Pattern 1: Cross-Domain Database Model Entanglement
@@ -213,6 +222,64 @@ function processUserProfile(profile: UserProfile) {
 }
 ```
 
+### Anti-Pattern 8: Monolithic Prop Bag Bloat in UI Containers
+
+```javascript
+// BAD: Accumulating boolean and string flags for every minor layout variation
+function ComplexModal({
+  isOpen, title, titleIcon, headerActionText, onHeaderAction,
+  bodyText, showFooter, primaryText, onPrimary, variant
+}) {
+  if (!isOpen) return null;
+  return (
+    <div className={`modal modal-${variant}`}>
+      <div className="header">{titleIcon}<h3>{title}</h3>{headerActionText && <button onClick={onHeaderAction}>{headerActionText}</button>}</div>
+      <div className="body">{bodyText}</div>
+      {showFooter && <div className="footer"><button onClick={onPrimary}>{primaryText}</button></div>}
+    </div>
+  );
+}
+
+// GOOD: Slot-based compound component composition
+function WorkspaceDialog({ isOpen, onOpenChange, children }) {
+  return (
+    <DialogTrigger isOpen={isOpen} onOpenChange={onOpenChange}>
+      <Modal className="modal-overlay">
+        <Dialog className="modal-dialog">{children}</Dialog>
+      </Modal>
+    </DialogTrigger>
+  );
+}
+WorkspaceDialog.Header = ({ children }) => <div className="dialog-header">{children}</div>;
+WorkspaceDialog.Body = ({ children }) => <div className="dialog-body">{children}</div>;
+WorkspaceDialog.Footer = ({ children }) => <div className="dialog-footer">{children}</div>;
+```
+
+### Anti-Pattern 9: Leaf Components Attaching Raw Global Listeners
+
+```javascript
+// BAD: Leaf component binds directly to window resize, causing listener leaks and hydration mismatches
+function DynamicCard() {
+  useEffect(() => {
+    const handleResize = () => { /* resize logic */ };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  return <div className="card">...</div>;
+}
+
+// GOOD: Global listeners isolated in root provider; leaf components consume scoped context
+function ViewportProvider({ children }) {
+  const [viewport, setViewport] = useState(getViewport);
+  useEffect(() => {
+    const handleResize = () => setViewport(getViewport());
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+  return <ViewportContext.Provider value={viewport}>{children}</ViewportContext.Provider>;
+}
+```
+
 ## Failure Modes & Mitigations
 
 - Cascading Module Refactoring: Enforce architectural fitness functions (e.g., ArchUnit, Go-check) in CI to block non-conforming cross-module imports.
@@ -221,3 +288,6 @@ function processUserProfile(profile: UserProfile) {
 - Monolithic Utility Bloat: When domain parsers embed time, networking, or retry loops, extract them into orthogonal utility helpers.
 - Test-Resistant Hardcoded Constants: When leaf primitives embed magic numbers for timeouts or retry limits, refactor them to accept injected constructor options so unit tests can execute with microsecond thresholds.
 - Domain Smuggling via Proximity Placement: When generic utilities are buried inside specific domain folders, elevate them to package-root shared directories (`src/utils/`, `src/common/`).
+- Presentation-Orchestration Coupling: Extract data fetching and domain state machines into custom hooks, keeping presentational components pure and testable.
+- Prop Contract Explosion: Convert monolithic container components to compound components or named slots when prop counts exceed 5 configuration flags.
+- Global Listener Leaks: Isolate window/document listeners in centralized provider components at the application root.

@@ -6,6 +6,9 @@
 - [ ] Dimension Reservations: Verify dynamic images, ad placements, embeds, and async lazy-loaded elements set explicit dimensional width/height attributes or dynamic intrinsic aspect ratio boxes (`aspect-ratio: auto`) to guarantee visual layout stability.
 - [ ] Data Fetching & Layout Stability (Top Progress Line / Spinner vs Skeleton): To prevent layout jumps without causing jarring skeleton shimmer flashes on fast local/desktop loads (<200ms), default to slim top progress lines (e.g. edge progress bar) or lightweight inline spinners over heavy skeleton blocks, unless explicit skeleton placeholders are established by codebase convention.
 - [ ] Empty In-Flow Container Hierarchy: When containers dynamically appear or clear their contents (e.g. empty toolbars, contextual action bars), follow the 3-tier precedence: (1) `Context.md` directives, (2) existing codebase conventions, (3) Default: smooth animated accordion transitions (e.g. CSS grid `grid-template-rows: 0fr -> 1fr` with opacity and easing) rather than abrupt non-animated display toggles, strictly preserving error recovery paths in `catch` blocks.
+- [ ] Scrollbar Layout Stability: Verify modal dialogs, popovers, and dynamic drawers mandate `scrollbar-gutter: stable` to eliminate visual layout shifts without custom JavaScript padding adjustments.
+- [ ] Declarative CSS Transitions: Verify dynamic elements transitioning to and from `display: none` use CSS `@starting-style` and `transition-behavior: allow-discrete` without imperative JavaScript timers.
+- [ ] Layout Thrashing Prevention: Verify dynamic geometry adaptations use CSS Container Queries (`@container`) or batch all DOM layout reads prior to scheduling writes in `requestAnimationFrame()`.
 
 ### 2. Micro-Interaction Responsiveness
 - [ ] Immediate Touch Feedback: Ensure interactive elements supply immediate visual active state feedback within $<100\text{ms}$ of user touch or click events.
@@ -99,8 +102,80 @@ if (overrideMissing) {
 // JS: Always maintain error recovery triggers in catch blocks regardless of collapse state
 ```
 
+### Anti-Pattern 4: Imperative JavaScript Animation Timers (setTimeout)
+
+```javascript
+// BAD: Imperative setTimeout chains to synchronize display with CSS animation duration
+function TransitionOverlay({ isOpen, children }) {
+  const [shouldRender, setShouldRender] = useState(isOpen);
+  const [isVisible, setIsVisible] = useState(false);
+
+  useEffect(() => {
+    if (isOpen) {
+      setShouldRender(true);
+      const t1 = setTimeout(() => setIsVisible(true), 20); // Brittle timer
+      return () => clearTimeout(t1);
+    } else {
+      setIsVisible(false);
+      const t2 = setTimeout(() => setShouldRender(false), 300); // Out of sync with CSS
+      return () => clearTimeout(t2);
+    }
+  }, [isOpen]);
+
+  if (!shouldRender) return null;
+  return <div className={`modal ${isVisible ? 'fade-in' : 'fade-out'}`}>{children}</div>;
+}
+
+// GOOD: Declarative CSS transitions with @starting-style and Popover API
+// HTML: <div id="panel" popover="auto" class="panel">...</div>
+// CSS:
+// .panel {
+//   opacity: 0; transform: translateY(-8px);
+//   transition: opacity 200ms ease, transform 200ms ease, display 200ms allow-discrete, overlay 200ms allow-discrete;
+// }
+// .panel:popover-open { opacity: 1; transform: translateY(0); }
+// @starting-style { .panel:popover-open { opacity: 0; transform: translateY(-8px); } }
+// @media (prefers-reduced-motion: reduce) { .panel { transition: none; transform: none; } }
+```
+
+### Anti-Pattern 5: Forced Synchronous Layout (Layout Thrashing)
+
+```javascript
+// BAD: Interleaving DOM reads and writes forces browser reflow on every loop iteration
+window.addEventListener('resize', () => {
+  const cards = document.querySelectorAll('.dynamic-card');
+  cards.forEach((card) => {
+    const parentHeight = card.parentElement.offsetHeight; // Forced reflow read
+    if (parentHeight > 400) {
+      card.style.height = `${parentHeight / 2}px`; // Style write invalidation
+    }
+  });
+});
+
+// GOOD: Pure CSS Container Queries without JavaScript measurement overhead
+// @container card-container (min-height: 400px) {
+//   .dynamic-card { height: 50cqh; contain: layout style; }
+// }
+
+// GOOD (when JS measurement is mandatory): Batch all reads first, schedule writes in RAF
+function synchronizeCardHeights(cards) {
+  const measurements = cards.map(card => ({
+    element: card,
+    targetHeight: card.parentElement.offsetHeight > 400 ? card.parentElement.offsetHeight / 2 : null
+  }));
+  requestAnimationFrame(() => {
+    measurements.forEach(({ element, targetHeight }) => {
+      if (targetHeight !== null) element.style.height = `${targetHeight}px`;
+    });
+  });
+}
+```
+
 ## Failure Modes & Mitigations
 
 - Cumulative Layout Shifts Disrupting User Interaction: Enforce CSS `contain-intrinsic-size` properties on off-screen dynamic components and smooth animated accordion transitions (or dimensional reservations) on dynamic in-flow containers.
 - Unhandled Optimistic Mutation Desynchronization: Enforce periodic background re-validation fetches (SWR patterns) after optimistic state mutations complete.
 - Wall-Clock Timeout Aborting Near-Complete Operations: Replace rigid total execution timers with rolling inactivity watchdogs that trigger only when no forward delta occurs for $>10\text{s}$.
+- Animation Timer Drift & Leakage: Replace imperative `setTimeout` chains with declarative CSS `@starting-style` and `transition-behavior: allow-discrete`.
+- Frame Drops from Layout Thrashing: Replace imperative window resize loops with CSS Container Queries (`@container`) or batch geometric reads before `requestAnimationFrame()` writes.
+- Layout Jumps on Modal Open: Mandate `scrollbar-gutter: stable` in root/dialog styles to eliminate scrollbar disappearance shifts.

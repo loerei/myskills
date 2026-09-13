@@ -12,6 +12,9 @@
 - [ ] In-Flight Focus Continuity: For buttons initiating async jobs, verify active controls use `aria-disabled="true"` with in-flight interaction blocking rather than native HTML `disabled` to prevent browser blur and focus eviction to `document.body`.
 - [ ] Vector Icon Accessibility & Parity: Verify icons are implemented as clean vector SVGs (with explicit dimensions and `aria-hidden="true"` for decorative icons or `aria-label` for icon-only buttons). Strictly reject raw emoji characters as interface icons.
 - [ ] Icon-Only Controls & Tooltips: In space-constrained toolbars or row action slots, verify canonical actions (e.g. settings gear, trash delete) using icon-only controls specify both an accessible name (`aria-label`) and a visual hover/focus tooltip. Verify non-canonical domain actions retain explicit text labels to avoid ambiguous actions.
+- [ ] Preventable Event Contracts: Verify nested interactive elements do not prescribe `stopPropagation()`, utilizing `event.preventDefault()` coordination with `event.defaultPrevented` validation instead.
+- [ ] Top Layer Dialogs & Popovers: Verify modal overlays leverage `<dialog>.showModal()` and non-modal popups declare the HTML `popover` attribute to paint in the browser Top Layer.
+- [ ] Native Inert Attribute: Verify background content outside active modal workflows declares the standard HTML `inert` attribute rather than manual tree-walking ARIA shims.
 
 ## Concrete Anti-Patterns
 
@@ -118,9 +121,106 @@ function DeleteItemButton({ onDelete }) {
 }
 ```
 
+### Anti-Pattern 5: Indiscriminate stopPropagation() Event Swallowing
+
+```javascript
+// BAD: stopPropagation breaks document dismiss listeners, global shortcuts, and telemetry
+function TableRowCard({ item, onSelectRow }) {
+  return (
+    <div className="row-card" onClick={() => onSelectRow(item.id)}>
+      <span>{item.title}</span>
+      <div className="row-actions">
+        <button 
+          onClick={(e) => {
+            e.stopPropagation(); // Swallows event from global/parent listeners
+            performItemDelete(item.id);
+          }}
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// GOOD: Preventable event handlers with defaultPrevented coordination
+function TableRowCard({ item, onSelectRow, onDeleteItem }) {
+  const handleRowClick = (event) => {
+    if (event.defaultPrevented) return; // Respects child cancellation
+    onSelectRow(item.id);
+  };
+
+  return (
+    <div className="row-card" onClick={handleRowClick}>
+      <span>{item.title}</span>
+      <div className="row-actions">
+        <button
+          type="button"
+          aria-label={`Delete ${item.title}`}
+          onClick={(event) => {
+            event.preventDefault(); // Signals parent without halting event bubbling
+            onDeleteItem(item.id);
+          }}
+        >
+          Delete
+        </button>
+      </div>
+    </div>
+  );
+}
+```
+
+### Anti-Pattern 6: Focus Loss from Destructive Re-renders
+
+```javascript
+// BAD: Volatile keys and post-render timeout querySelector focus hacks
+function UserList({ users }) {
+  const [userList, setUserList] = useState(users);
+
+  const handleDelete = (userId) => {
+    setUserList(prev => prev.filter(u => u.id !== userId));
+    setTimeout(() => {
+      const nextTarget = document.querySelector('.user-item-btn');
+      if (nextTarget) nextTarget.focus(); // Brittle post-render focus query
+    }, 150);
+  };
+
+  return (
+    <ul>
+      {userList.map((user, index) => (
+        <li key={index}> {/* Volatile index key destroys DOM nodes */}
+          <button className="user-item-btn" onClick={() => handleDelete(user.id)}>Remove</button>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+// GOOD: Stable entity keys and WAI-ARIA roving tabindex state machine
+function UserList({ users, onDelete }) {
+  return (
+    <ul role="toolbar" aria-label="User Directory">
+      {users.map((user) => (
+        <li key={user.id}> {/* Stable entity key preserves DOM node identity */}
+          <button
+            type="button"
+            tabIndex={user.isActive ? 0 : -1}
+            onClick={() => onDelete(user.id)}
+          >
+            Remove {user.name}
+          </button>
+        </li>
+      ))}
+    </ul>
+  );
+}
+```
+
 ## Failure Modes & Mitigations
 
 - Double Form Submission Race Conditions: Guard input action triggers immediately upon invocation via `aria-disabled="true"` and in-flight state flags rather than native HTML `disabled` on active focused elements.
 - Screen Reader Focus Traps: Enforce automated focus management returning user focus to parent triggers when closing modal windows.
 - Inconsistent Emoji Rendering Across Operating Systems: Strictly replace raw emoji glyphs with inline SVG vectors or icon library glyphs bound to `currentColor`.
 - Ambiguous Icon-Only Controls: Retain explicit text labels for domain-specific actions; restrict icon-only controls to canonical actions (e.g. settings gear, trash delete) equipped with accessible tooltips and `aria-label`s.
+- Swallowed Keyboard & Telemetry Events: Enforce preventable event contracts (`event.preventDefault()` with `event.defaultPrevented`) over `event.stopPropagation()`, preserving event bubbling to document listeners.
+- Focus Loss from List Mutations: Enforce immutable entity keys (`key={item.id}`) and roving tabindex state machines, strictly rejecting post-render DOM re-querying hacks.
