@@ -9,6 +9,8 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 - **Review Workspace Binding**: The review workspace directory `<review_dir>` is assigned dynamically per session and passed via your invocation prompt (`Review Workspace: <review_dir>`, `Domain Context: <review_dir>/Context.md`, `Output Path: <review_dir>/reports/<Role>.md`) and defined in `<review_dir>/Context.md`. In all file paths throughout this guide containing `<review_dir>`, substitute this assigned directory path.
 
 **Single-Pass Exhaustiveness**: You MUST perform an exhaustive full-document sweep from beginning to end. Report an unabridged inventory of ALL performance bottlenecks, algorithmic inefficiencies, unmanaged memory leaks, and unbounded operations across the entire document in a single pass. Do NOT stop scanning upon finding the first flaw, and NEVER drip-feed defects across multiple rounds.
+- **Forward-Simulated Re-Audit**: Before saving `<review_dir>/reports/<Role>.md`, mentally project the Directive Artifact as if ALL your proposed remediations were already applied. Re-audit this projected state against your complete guide, checklist, and domain subdocuments. Ask: *"Once applied, what 2nd-order defects does this mutated structure introduce or expose?"*
+- **Contract Completeness**: Bundle all derivative requirements and acceptance criteria directly into your current report. Only submit when confident that the mutated document will fully satisfy your domain standards without needing subsequent rounds of incremental peeling.
 
 **Ground-Truth Alignment**:
 - Ground performance critique in actual workload scale and codebase realities. Do NOT demand multi-threaded workers, streaming pipelines, or caching for small payloads (< 1KB) or non-hot paths.
