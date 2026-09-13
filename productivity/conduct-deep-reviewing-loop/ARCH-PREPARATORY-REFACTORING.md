@@ -5,6 +5,9 @@
 ### 1. Structural Concepts
 - **Module**: Logical unit exposing an interface and encapsulating internal complexity.
 - **Interface**: Public boundary through which callers interact with a module.
+- **Depth**: Ratio of internal module complexity to interface simplicity (deep vs shallow).
+- **Leverage**: Functional capability encapsulated behind a clean interface method.
+- **Locality**: Degree to which code that changes together resides physically together (cohesion).
 - **Seam**: Place where behavior can be altered or injected without modifying caller implementations directly.
 - **Adapter**: Component translating external interfaces into local module interfaces.
 
@@ -37,12 +40,26 @@ Audit target files and landing zones across 4 distinct quality axes:
     5. **Storage Readiness Invariant**: If a proposed feature modifies persistent data schemas, but the target landing zone lacks a centralized schema version runner, classify the landing zone as Bad State. Mandate establishing a minimal isolated schema version runner as Step $S$ directly in the DA before implementing feature behavior $B$.
     6. **Configuration & Environment Readiness Invariant**: If a proposed feature modifies application configuration schemas, environment variable bindings, or runtime dependency interfaces, but the target landing zone lacks a centralized, strictly validated configuration boot boundary (or relies on ad-hoc runtime branching between legacy and new formats), classify the landing zone as Bad State. Mandate establishing a canonical configuration schema parser and migrating legacy configuration files, environment definitions, and test fixtures as a prerequisite structural step ($S$) directly in the DA before implementing feature behavior ($B$).
 
-### 4. Preparatory Structural Patterns
+### 4. Preparatory Structural Patterns (15 Tidying Patterns)
 Preparatory structural changes ($S$) must use standard refactoring patterns before introducing new behavior ($B$):
-- **Control Flow**: Guard clauses, dead code elimination, normalizing symmetries.
-- **Structure**: Reading order, grouping related declarations and statements into cohesive blocks.
-- **Abstraction**: Extracting explaining variables/constants, explicit parameters, helper functions.
-- **Interfaces**: Introducing an interface before changing implementation, inlining fragmented shallow wrappers.
+
+| Category | Pattern | Execution Action |
+| :--- | :--- | :--- |
+| **Control Flow** | **Guard Clauses** | Replace nested conditionals with early return statements. |
+| | **Dead Code** | Delete unused functions, unreferenced parameters, and unreachable branches. |
+| | **Normalize Symmetries** | Standardize inconsistent implementations of identical logical operations. |
+| **Structure & Order** | **Reading Order** | Reorder methods in source files so execution flows logically top-to-bottom. |
+| | **Cohesion Order** | Group routines and data structures that change together into adjacent positions. |
+| | **Move Declaration/Init** | Relocate variable declarations adjacent to their first usage. |
+| | **Chunk Statements** | Group cohesive statements into distinct blocks separated by blank lines. |
+| **Abstraction & Naming** | **Explaining Variables** | Extract complex sub-expressions into well-named local constants or variables. |
+| | **Explaining Constants** | Replace magic numbers and inline strings with named constants. |
+| | **Explicit Parameters** | Pass explicit arguments to functions instead of wide context objects. |
+| | **Extract Helper** | Pull isolated sub-tasks into dedicated helper routines. |
+| **Interface Realignment** | **New Interface, Old Impl** | Introduce the target interface first, delegating execution to legacy code. |
+| | **One Pile** | Inline overly fragmented shallow abstractions into a single unit before re-splitting. |
+| **Documentation** | **Explaining Comments** | Add comments explaining the reason for non-obvious code mechanics. |
+| | **Delete Redundant Comments** | Remove comments that merely restate what the code expresses. |
 
 ### 5. Transition Mapping Requirements
 When evaluating refactoring requirements, verify that the DA maps:
