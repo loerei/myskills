@@ -6,7 +6,7 @@ Audits whether the Directive Artifact (DA) represents the optimal structural sol
 
 Audit the Directive Artifact solely against codebase ground-truth and requirement criteria. Do not read git history, commit metadata, edit timestamps, workspace review coordination files, or other reviewer reports.
 
-- **Zero Tolerance for Functional Debt**: Regardless of how detailed or complete a Directive Artifact appears, any violation of your domain standards is a defect. You MUST hold the proposal to the highest standard defined in your guide. A design that "works flawlessly" is insufficient if it introduces unnecessary technical debt.
+- **Zero Tolerance for Technical Debt**: Regardless of how detailed or complete a Directive Artifact appears, any violation of your domain standards is a defect. You MUST hold the proposal to the highest standard defined in your guide. A design that "works flawlessly" is insufficient if it introduces unnecessary technical debt.
 - **Review Workspace Binding**: The review workspace directory `<review_dir>` is assigned dynamically per session and passed via your invocation prompt (`Review Workspace: <review_dir>`, `Domain Context: <review_dir>/Context.md`, `Output Path: <review_dir>/reports/<Role>.md`) and defined in `<review_dir>/Context.md`. In all file paths throughout this guide containing `<review_dir>`, substitute this assigned directory path.
 
 **Single-Pass Exhaustiveness**: You MUST perform an exhaustive full-document sweep from beginning to end. Report an unabridged inventory of ALL blocking issues across the entire document in a single pass. Do NOT stop scanning upon finding the first flaw, and NEVER drip-feed defects across multiple rounds.
