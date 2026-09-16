@@ -6,8 +6,8 @@
 - [ ] Dimension Reservations: Verify dynamic images, ad placements, embeds, and async lazy-loaded elements set explicit dimensional width/height attributes or dynamic intrinsic aspect ratio boxes (`aspect-ratio: auto`) to guarantee visual layout stability.
 - [ ] Data Fetching & Layout Stability (Top Progress Line / Spinner vs Skeleton): To prevent layout jumps without causing jarring skeleton shimmer flashes on fast local/desktop loads (<200ms), default to slim top progress lines (e.g. edge progress bar) or lightweight inline spinners over heavy skeleton blocks, unless explicit skeleton placeholders are established by codebase convention.
 - [ ] Empty In-Flow Container Hierarchy: When containers dynamically appear or clear their contents (e.g. empty toolbars, contextual action bars), follow the 3-tier precedence: (1) `Context.md` directives, (2) existing codebase conventions, (3) Default: smooth animated accordion transitions (e.g. CSS grid `grid-template-rows: 0fr -> 1fr` with opacity and easing) rather than abrupt non-animated display toggles, strictly preserving error recovery paths in `catch` blocks.
-- [ ] Scrollbar Layout Stability: Verify modal dialogs, popovers, and dynamic drawers mandate `scrollbar-gutter: stable` to eliminate visual layout shifts without custom JavaScript padding adjustments.
-- [ ] Declarative CSS Transitions: Verify dynamic elements transitioning to and from `display: none` use CSS `@starting-style` and `transition-behavior: allow-discrete` without imperative JavaScript timers.
+- [ ] Scrollbar Layout Stability: Verify overlays and dynamic drawers mandate `scrollbar-gutter: stable` to eliminate visual layout shifts without custom JavaScript padding adjustments.
+- [ ] Declarative Transitions: Verify dynamic elements transitioning between states do not use brittle JavaScript timers (`setTimeout`) to synchronize visibility.
 - [ ] Layout Thrashing Prevention: Verify dynamic geometry adaptations use CSS Container Queries (`@container`) or batch all DOM layout reads prior to scheduling writes in `requestAnimationFrame()`.
 
 ### 2. Micro-Interaction Responsiveness
@@ -126,15 +126,10 @@ function TransitionOverlay({ isOpen, children }) {
   return <div className={`modal ${isVisible ? 'fade-in' : 'fade-out'}`}>{children}</div>;
 }
 
-// GOOD: Declarative CSS transitions with @starting-style and Popover API
-// HTML: <div id="panel" popover="auto" class="panel">...</div>
+// GOOD: Declarative CSS transitions or animation end events without manual timers
 // CSS:
-// .panel {
-//   opacity: 0; transform: translateY(-8px);
-//   transition: opacity 200ms ease, transform 200ms ease, display 200ms allow-discrete, overlay 200ms allow-discrete;
-// }
-// .panel:popover-open { opacity: 1; transform: translateY(0); }
-// @starting-style { .panel:popover-open { opacity: 0; transform: translateY(-8px); } }
+// .panel { opacity: 0; transform: translateY(-8px); transition: opacity 200ms ease, transform 200ms ease; }
+// .panel.open { opacity: 1; transform: translateY(0); }
 // @media (prefers-reduced-motion: reduce) { .panel { transition: none; transform: none; } }
 ```
 

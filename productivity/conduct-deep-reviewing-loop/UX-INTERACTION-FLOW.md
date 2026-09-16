@@ -13,8 +13,6 @@
 - [ ] Vector Icon Accessibility & Parity: Verify icons are implemented as clean vector SVGs (with explicit dimensions and `aria-hidden="true"` for decorative icons or `aria-label` for icon-only buttons). Strictly reject raw emoji characters as interface icons.
 - [ ] Icon-Only Controls & Tooltips: In space-constrained toolbars or row action slots, verify canonical actions (e.g. settings gear, trash delete) using icon-only controls specify both an accessible name (`aria-label`) and a visual hover/focus tooltip. Verify non-canonical domain actions retain explicit text labels to avoid ambiguous actions.
 - [ ] Preventable Event Contracts: Verify nested interactive elements do not prescribe `stopPropagation()`, utilizing `event.preventDefault()` coordination with `event.defaultPrevented` validation instead.
-- [ ] Top Layer Dialogs & Popovers: Verify modal overlays leverage `<dialog>.showModal()` and non-modal popups declare the HTML `popover` attribute to paint in the browser Top Layer.
-- [ ] Native Inert Attribute: Verify background content outside active modal workflows declares the standard HTML `inert` attribute rather than manual tree-walking ARIA shims.
 
 ## Concrete Anti-Patterns
 
