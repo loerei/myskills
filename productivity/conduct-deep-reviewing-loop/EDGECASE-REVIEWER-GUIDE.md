@@ -22,7 +22,22 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 **Fix Pre-Verification**:
 - **Ground-Truth**: Verify on disk that any pre-existing method, type, or module referenced or consumed by a proposed fix actually exists in the target codebase, upstream specs, or planned declarations within the target DA itself. If introducing new methods, types, or interfaces, verify that their target landing locations exist (or are scheduled for creation in the DA), names do not collide with active exports, all consumed external dependencies are verified on disk or in upstream specs, and for internal communication boundaries (e.g. IPC, RPC, events), verify that both producer/caller and consumer/handler endpoints are updated symmetrically. Create simulation scripts in `<review_dir>/sandbox/` where applicable to verify execution correctness.
 - **Macro Flow**: Verify that the proposed fix does not break initialization order, variable scoping, or lifecycle contracts across the enclosing module (or specification consistency across sections for document/policy DAs).
-- **Upstream Ingress Traversal over Callee Masking**: When an unhandled edge case or failure condition is detected within an internal function or leaf utility, you MUST trace the data flow upstream to understand WHY the invalid state or payload reached this point, not just WHERE it manifested. Do NOT propose defensive null-checks, conditional skips, or fallbacks inside internal leaf callees (masking workarounds). The required fix MUST be placed at the highest viable caller or ingress boundary (API controller, message deserializer, route handler, or boundary schema parser) to block the invalid state at the root source.
+- **Upstream Ingress Traversal over Callee Masking**: When an unhandled edge case or failure condition is detected within an internal function or leaf utility, you MUST trace the data flow upstream to understand WHY the invalid state or payload reached this point, not just WHERE it manifested. Do NOT propose defensive null-checks, conditional skips, or fallbacks inside internal leaf callees (masking workarounds). The required fix MUST be placed at the highest viable caller or ingress boundary (API controller, message deserializer, route handler, or boundary schema parser) to block the invalid state at the root source:
+  ```typescript
+  // BAD: Branch Fix / Callee Masking (masks upstream schema defect in leaf helper)
+  function calculateTax(item: Item): number {
+    if (!item || typeof item.price !== "number") return 0; // Downstream masking
+    return item.price * 0.1;
+  }
+
+  // GOOD: Root Fix / Ingress Validation (enforces contract at boundary)
+  const ItemPayloadSchema = z.object({ price: z.number().positive() });
+
+  // Internal domain helper remains pure and fail-fast:
+  function calculateTax(item: Item): number {
+    return item.price * 0.1;
+  }
+  ```
 - **System Invariants vs. Implementation Mechanics**: Audit ONLY for **System Invariants** (e.g. structural seams, threat models, lifecycle bounds, cross-boundary contracts) that standard TDD misses without explicit specification. Ticket code snippets are illustrative examples, not production code; NEVER report internal implementation mechanics (e.g. syntax, types, exports, regex flags) as blocking defects. If a required behavior or edge case is missing, demand an **Acceptance Criterion**; NEVER rewrite or patch code snippets.
 - **Technical Impasse & Infeasibility Reporting**: If an audited requirement, ticket premise, or dependency is technically impossible or blocked by hard platform constraints (e.g. OS sandbox, CORS/same-origin, missing third-party capability, physical resource ceiling) with no viable in-scope fix: NEVER invent hallucinated workarounds and NEVER conceal the issue. Return `STATUS: INFEASIBLE` with an `Infeasibility Proof` demonstrating the hard constraint, and outline `Alternative Architectural Paths` if known.
 
