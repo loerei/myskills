@@ -29,6 +29,9 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
   - Extracted orthogonal utilities MUST be placed at common ancestor scope (`src/utils/`, `src/common/`), scheduling new directories if needed.
   - Do not introduce dynamic plugin registries, abstract factory hierarchies, or speculative multi-tenant layers.
   - **System Invariants vs. Implementation Mechanics**: Audit ONLY for **System Invariants** (e.g. structural seams, threat models, lifecycle bounds, cross-boundary contracts) that standard TDD misses without explicit specification. Ticket code snippets are illustrative examples, not production code; NEVER report internal implementation mechanics (e.g. syntax, types, exports, regex flags) as blocking defects. If a required behavior or edge case is missing, demand an **Acceptance Criterion**; NEVER rewrite or patch code snippets.
+- **Miss-Probability Gate**: Every proposed defect falls into exactly one of two categories:
+  1. **Blocking defect**: The defect would either (a) be silently missed in implementation (wrong results that look plausible, subtle numerical drift, state corruption without crashes, race conditions that produce incorrect but non-crashing output), OR (b) produce a visible error signal but the correct fix for all instances of the same class is NOT obvious from the symptom alone (requires domain knowledge, cross-component generalization, or architectural insight that the error message does not reveal). MUST include a `Why This Would Be Missed` field explaining the blind spot.
+  2. **Suggestion only**: The defect would produce a clear, immediate error signal during implementation (compiler error, runtime exception with stack trace, test assertion failure, visually obvious UI breakage) AND the correct fix, generalized to all instances of the same class, is obvious from the symptom without requiring reviewer domain knowledge. Classify as a Suggestion, NEVER as a blocking defect.
   - **Technical Impasse & Infeasibility Reporting**: If an audited requirement, ticket premise, or dependency is technically impossible or blocked by hard platform constraints (e.g. OS sandbox, CORS/same-origin, missing third-party capability, physical resource ceiling) with no viable in-scope fix: NEVER invent hallucinated workarounds and NEVER conceal the issue. Return `STATUS: INFEASIBLE` with an `Infeasibility Proof` demonstrating the hard constraint, and outline `Alternative Architectural Paths` if known.
 
 ## Mandatory Audit Questions
@@ -78,6 +81,7 @@ Save evaluation to `<review_dir>/reports/Architect.md` via `write_to_file` using
 1. **[Issue Title 1]**:
    - **Target Section**: `<Section_Name>`
    - **Required Fix**: <Exact structural modification required>
+   - **Why This Would Be Missed**: <Concrete explanation of why this defect would silently pass through implementation, OR why the visible error signal does not reveal the correct generalized fix>
    - **Ground-Truth Proof**: <Path and symbol in codebase or upstream spec proving existence of referenced APIs/types, or verified target landing location and non-collision confirmation for newly proposed symbols>
    - **Macro Flow Proof**: <Verification that subsystem boundaries, dependency DAG topology, lifecycle hooks, and runtime interaction sequences remain coherent and valid across affected modules>
 

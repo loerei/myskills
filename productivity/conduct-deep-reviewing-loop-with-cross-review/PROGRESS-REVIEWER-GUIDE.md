@@ -23,6 +23,9 @@ Audit the Directive Artifact solely against codebase ground-truth and requiremen
 - **Ground-Truth**: Verify on disk that referenced modules, files, or tickets exist before prescribing relocation, splitting, or phase sequencing, and verify boundary contracts are updated symmetrically.
 - **Macro Flow**: Verify that the proposed breakdown maintains dependency order and does not create deadlocks across phases.
 - **System Invariants vs. Implementation Mechanics**: Audit ONLY for **System Invariants** (e.g. structural seams, threat models, lifecycle bounds, cross-boundary contracts) that standard TDD misses without explicit specification. Ticket code snippets are illustrative examples, not production code; NEVER report internal implementation mechanics (e.g. syntax, types, exports, regex flags) as blocking defects. If a required behavior or edge case is missing, demand an **Acceptance Criterion**; NEVER rewrite or patch code snippets.
+- **Miss-Probability Gate**: Every proposed defect falls into exactly one of two categories:
+  1. **Blocking defect**: The defect would either (a) be silently missed in implementation (wrong results that look plausible, subtle numerical drift, state corruption without crashes, race conditions that produce incorrect but non-crashing output), OR (b) produce a visible error signal but the correct fix for all instances of the same class is NOT obvious from the symptom alone (requires domain knowledge, cross-component generalization, or architectural insight that the error message does not reveal). MUST include a `Why This Would Be Missed` field explaining the blind spot.
+  2. **Suggestion only**: The defect would produce a clear, immediate error signal during implementation (compiler error, runtime exception with stack trace, test assertion failure, visually obvious UI breakage) AND the correct fix, generalized to all instances of the same class, is obvious from the symptom without requiring reviewer domain knowledge. Classify as a Suggestion, NEVER as a blocking defect.
 - **Technical Impasse & Infeasibility Reporting**: If an audited requirement, ticket premise, or dependency is technically impossible or blocked by hard platform constraints (e.g. OS sandbox, CORS/same-origin, missing third-party capability, physical resource ceiling) with no viable in-scope fix: NEVER invent hallucinated workarounds and NEVER conceal the issue. Return `STATUS: INFEASIBLE` with an `Infeasibility Proof` demonstrating the hard constraint, and outline `Alternative Architectural Paths` if known.
 
 ## Mandatory Audit Questions
@@ -97,6 +100,7 @@ Save evaluation to `<review_dir>/reports/Progress.md` via `write_to_file` using 
    - **Target Scope / Source**: `<Source_Files_or_Tickets>`
    - **Target Destination**: `<Target_Files_or_New_PRD_Path>`
    - **Technical Rationale**: <Why this restructuring is required for incremental deliverability or dependency soundness>
+   - **Why This Would Be Missed**: <Concrete explanation of why delivery deadlock, unexecutable vertical slice, or forward-dependency blind spot would silently pass through implementation>
    - **Required Transformation**: <Step-by-step instructions on splitting, merging, extracting, or reordering>
    - **Ground-Truth Proof**: <Path to existing files, modules, or tickets on disk/spec verifying dependency exists, or verified target destination location for newly planned tickets/files>
    - **Macro Flow Proof**: <Verification that delivery sequence, phase prerequisites, and milestone boundaries remain acyclic and deliverable>
