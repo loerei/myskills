@@ -291,6 +291,8 @@ When a tier batch is resolved with accepted blocking defects (at least one activ
 1. **Collect Remediations Requiring Cross-Review**: Host identifies all `<Role>.md` reports from the resolved tier with accepted blocking defects (status `REVISION NEEDED`).
 
 2. **Determine Touched Roles**: For each collected remediation, Host identifies active roles from the full roster whose domain standards are affected by the proposed changes. Host uses domain-impact analysis to determine touched roles, for example:
+   - Remediations touching public contracts, module boundaries, shared state, or cross-subsystem dependencies MUST touch `Architect`.
+   - Remediations introducing prerequisite tasks, altering ticket delivery order, or expanding ticket scope MUST touch `Progress`.
    - Remediations affecting API boundaries, network protocols, or payload contracts may touch `Security`, `Testability`, `Observability`.
    - Remediations affecting database schemas, configuration formats, or caching strategies may touch `DataMigration`, `Performance`.
    - Remediations affecting state machines, concurrency control, or algorithmic logic may touch `Logic`, `Edgecase`.
