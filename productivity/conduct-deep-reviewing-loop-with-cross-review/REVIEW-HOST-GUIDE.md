@@ -34,6 +34,7 @@
       | :--- | :---: | :---: | :--- |
       | `<path-to-da>` | `Upstream` | `Downstream` | `Implemented` | `Unimplemented` | <Explicit responsibility boundary> |
       ```
+    - `## Data Storage & Migration Scope`: Declared by Layer 1 (`TOUCHES_PERSISTENCE` with storage archetype and engine, or `NO_PERSISTENCE` with technical justification).
     - `## Active Modifiers` (e.g. `!PA`, `!WA`, `!SP<N>`).
     - Codebase rules path (`AGENTS.md`).
     - Task domain skill paths.
@@ -194,7 +195,8 @@ Host executes Layer 3 reviewers in dependency order across the active selected r
   ```
   - `Architect` and `Logic` MUST ALWAYS be `INCLUDED` for every DA and cannot be excluded.
   - `Progress` MUST be `INCLUDED` for multi-phase/multi-ticket epics, roadmaps, or work-breakdown structures; `EXCLUDED` for single-ticket/simple plans.
-  - Remaining 8 specialist roles are marked `INCLUDED` or `EXCLUDED` with concrete technical justification.
+  - `DataMigration` MUST be marked `EXCLUDED` if `## Data Storage & Migration Scope` in `Context.md` specifies `Persistence Status: NO_PERSISTENCE`. If `Persistence Status == TOUCHES_PERSISTENCE`, Host MUST mark `DataMigration` as `INCLUDED`, binding the identified archetype and engine.
+  - Remaining 7 specialist roles are marked `INCLUDED` or `EXCLUDED` with concrete technical justification.
 
 ### Step 1: Workspace Preparation
 - Purge all files in `<review_dir>/reports/` (preserving intra-tier reports within an active pass).
@@ -340,7 +342,7 @@ When the verdict is `PLAN_INFEASIBLE`, Host MUST NOT mutate target Directive Art
 #### Direct DA Mutation Transaction (When verdict is ROUND_REVISION_NEEDED):
 1. **Pre-Mutation Backups**: Host creates temporary sibling `<da_stem>.bak.md` copies (replacing trailing `.md` with `.bak.md` in its parent directory, e.g. `<dirname>/<stem>.bak.md`, matching `Context.md` -> `Context.bak.md`) before mutating any target DA. If WBS restructuring deletes a DA file, Host copies it to `<da_stem>.bak.md` before physical deletion. If WBS restructuring alters `## Target Directive Artifacts` in `Context.md`, Host creates `<review_dir>/Context.bak.md`.
 2. **In-Place DA Mutation**:
-   - Host directly applies verified remediations from accepted `<Role>.md` reports into target Directive Artifact(s) using Clean & Neutral Artifact Protocol (§1.3).
+   - Host directly applies verified remediations from accepted `<Role>.md` reports into target Directive Artifact(s) using Clean & Neutral Artifact Protocol (§1.3). If applying non-blocking suggestions into the target DA, Host MUST document every applied suggestion in `Analyzation.md`.
    - **Boundary Contract Symmetry & Coherence Verification**: Host verifies that boundary modifications include symmetrical updates across internal endpoints, and that dependent sections (e.g. `Verification Plan` test assertions) are synchronized per `HOW-TO-GATE.md`.
    - **DA File Tree Synchronization**: If accepted feedback splits, merges, creates, or deletes DA files (e.g. Progress Reviewer WBS actions), Host directly creates/restructures the files on disk and updates `## Target Directive Artifacts` in `<review_dir>/Context.md`.
 3. **Write Verification & Abort Recovery**: Host verifies on disk that all DA mutations and restructured files were successfully written and are non-empty.
@@ -367,7 +369,7 @@ When the verdict is `PLAN_INFEASIBLE`, Host MUST NOT mutate target Directive Art
        - `- **Active Roster**: <List of active roles>`
        - `- **Highest Modified Tier**: Layer 3.X` (Mandatory when verdict is `ROUND_REVISION_NEEDED`; record `None` for `ROUND_PASS`, `FINAL_PASS`, `ABORTED_MUTATION_FAILURE`, or `PLAN_INFEASIBLE`)
      - For `PLAN_INFEASIBLE`: Strictly preserve the canonical 4-key header, followed by `## Technical Impasse Analysis` documenting: (1) The insurmountable technical barrier(s) (synthesizing all verified impasses if multiple active roles reported impasses), (2) Grounded empirical proof, and (3) Documented trade-offs and `Alternative Architectural Paths` for user decision.
-     - For other verdicts: **Accepted Issues Only** listing accepted blocking defects across active roles with technical acceptance rationale. Zero rejected/gated tables. If all active roles cleared with zero defects, record `*(None - All active roles cleared with zero blocking defects)*`.
+     - For other verdicts: **Accepted Issues and Applied Suggestions** listing accepted blocking defects and any applied non-blocking suggestions grouped by role under `## Accepted Issues and Suggestions`, labeling each entry as `### N. [<Role> Issue:] <Title>` or `### N. [<Role> Suggestion:] <Title>`. Every suggestion applied to the DA MUST be documented here. Zero rejected/gated tables. If all active roles cleared with zero defects and zero applied suggestions, record `*(None - All active roles cleared with zero blocking defects)*`.
 5. **Process Teardown & Workspace State Preservation**:
    Host sends a completion message to Layer 1 (parent agent) via `send_message` reporting the Gate Verdict and referencing `<review_dir>/host/State.md` and `Analyzation.md`, and concludes execution. Host MUST NOT call `manage_subagents(Action="kill")`; Layer 1 handles all process termination by killing Layer 2, which cascades to all descendant subagents automatically:
    - **Technical Impasse Teardown (`PLAN_INFEASIBLE`)**: Preserve `host/State.md`, `host/Analyzation.md`, `reports/`, and `sandbox/` for user and Layer 1 inspection, notify Layer 1 via `send_message`, and conclude execution.

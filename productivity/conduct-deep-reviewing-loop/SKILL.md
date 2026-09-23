@@ -76,6 +76,9 @@ flowchart TD
      - `## Review Workspace: <review_dir>`
      - Target DA path(s).
      - Cross-referenced DAs with dependency lineage (`Upstream` / `Downstream` and `Implemented` / `Unimplemented`).
+     - `## Data Storage & Migration Scope`: Layer 1 inspects target DAs and codebase ground-truth for persistence markers (migration dirs `migrations/`, DDL `*.sql`, ORM models, storage drivers `sqlite3`, `IndexedDB`, `localStorage`, or sync libraries `powersync`, `yjs`).
+       - If persistence is touched: declare `Persistence Status: TOUCHES_PERSISTENCE`, `Storage Archetype` (`Local-Side Storage` | `Server-Side Storage` | `Hybrid / Sync-Driven`), `Underlying Technology / Engine`, and `Target Seams & Files`.
+       - If no persistence is touched: declare `Persistence Status: NO_PERSISTENCE` with concise technical justification.
      - Active modifier tags (e.g. `## Active Modifiers: !PA, !SP<N>`).
      - Codebase rules (`AGENTS.md`), task domain skills, criteria, and static `SP` threshold.
 

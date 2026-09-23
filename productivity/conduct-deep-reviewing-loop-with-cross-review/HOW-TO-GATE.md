@@ -209,9 +209,9 @@ When authoring `<review_dir>/host/Analyzation.md`:
    - **Highest Modified Tier**: None
    ```
    followed by `## Technical Impasse Analysis` documenting: (1) The insurmountable technical barrier(s) (synthesizing all verified impasses if multiple active roles reported impasses), (2) Grounded empirical proof, and (3) Documented trade-offs and `Alternative Architectural Paths` for user decision.
-2. **Accepted Issues Only**: Record ONLY the blocking issues that successfully cleared the gate across active roles, along with their technical acceptance rationale. When the gate verdict is `ROUND_PASS` or `FINAL_PASS` (zero blocking defects across the active roster), record under Accepted Issues:
+2. **Accepted Issues and Applied Suggestions**: Record all accepted blocking issues and any applied non-blocking suggestions grouped by role under `## Accepted Issues and Suggestions`, labeling each entry as `### N. [<Role> Issue:] <Title>` or `### N. [<Role> Suggestion:] <Title>`. Every suggestion applied to the DA MUST be documented here with its target section, applied remediation, and technical acceptance rationale. When the gate verdict is `ROUND_PASS` or `FINAL_PASS` (zero blocking defects and zero applied suggestions across the active roster), record:
    ```markdown
-   ## Accepted Issues
+   ## Accepted Issues and Suggestions
    *(None - All active roles cleared with zero blocking defects)*
    ```
 3. **Zero Rejected / Gated Tables**: Do NOT include tables of rejected or gated issues in `Analyzation.md`. All rejection, removal, and refinement actions are resolved directly with reviewers in `<review_dir>/reports/<Role>_Gated_Issues.md` and reflected in-place in clean `<Role>.md` files.
@@ -219,7 +219,7 @@ When authoring `<review_dir>/host/Analyzation.md`:
 ## Host DA Mutation & Verification Standards
 
 When applying accepted remediations directly to target DA(s) for `ROUND_REVISION_NEEDED`:
-1. **Clean & Neutral Spec Diffs**: Apply modifications directly to the specified target files and sections using the Clean & Neutral Artifact Protocol (no meta-tags, no reviewer references, no defensive diff markers).
+1. **Clean & Neutral Spec Diffs**: Apply modifications directly to the specified target files and sections using the Clean & Neutral Artifact Protocol (no meta-tags, no reviewer references, no defensive diff markers). If applying non-blocking suggestions into the target DA, Host MUST document every applied suggestion in `Analyzation.md`.
 2. **Verified Code Snippets**: When integrating code snippets into the DA, verify that all referenced pre-existing symbols exist and compile against the active codebase, or align with planned declarations in the target DA or upstream specs, and that newly proposed symbols do not collide with active exports.
 3. **Boundary Contract Symmetry Validation**: Host MUST verify that any boundary interface modification includes symmetrical updates for both producer/caller and all internal consumer/handler endpoints (or shared constants/types) directly from the accepted `<Role>.md` reports; Host MUST NOT apply 1-sided boundary modifications.
 4. **DA Cross-Section Coherence Validation**: Host MUST verify that any modification altering component contracts includes synchronized updates for dependent sections (e.g. `Verification Plan` assertions) directly from accepted `<Role>.md` reports; Host MUST NOT introduce self-contradicting DA diffs.
