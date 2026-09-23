@@ -130,6 +130,10 @@ When `ROUND_REVISION_NEEDED` occurs under `!PA` / `!WA`:
   2. For every target DA listed in `<review_dir>/Context.md` (restored from `Context.bak.md` if present): restore from its sibling `<da_stem>.bak.md` file (if present) and delete the backup file.
   3. Delete any remaining orphaned sibling `<da_stem>.bak.md` backup files.
   4. Delete `<review_dir>/host/State.md` and `<review_dir>/host/Analyzation.md`, terminate `review_host` via `manage_subagents(Action="kill")`, and halt the review loop, reporting that mutations were reverted.
+- **Upon removing `!PA` / request for continuous execution** (e.g. "remove !PA", "run continuously", "proceed unpaused"): Layer 1 executes ordered cleanup:
+  1. Removes `!PA` from `## Active Modifiers` in `<review_dir>/Context.md`.
+  2. Cleans up any existing `<da_stem>.bak.md` and `Context.bak.md` backup files (same as receiving "C").
+  3. Autonomously drives the round loop without prompting the user between rounds (deleting `<review_dir>/host/Analyzation.md`, terminating prior `review_host` via `manage_subagents(Action="kill")`, and re-spawning a fresh Host per Step 2B). Host prompt MUST remain the exact static template defined in Step 2B.
 
 ## Modifiers
 
