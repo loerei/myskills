@@ -314,7 +314,7 @@ When a tier batch is resolved with accepted blocking defects (at least one activ
      Cross-domain review identified requirements for your remediation. Read <review_dir>/reports/<AuthorRole>-Cross-Review-Requests.md. Incorporate all listed requirements into your report at <review_dir>/reports/<AuthorRole>.md. Once updated, notify Host via send_message with the exact text: "CR-UPDATED: <AuthorRole>"
      ```
    - Host awaits the authoring role's `CR-UPDATED: <AuthorRole>` confirmation message. Host MUST NOT treat file existence or mtime changes as completion signal for cross-review updates; only the explicit `CR-UPDATED` message de-queues the authoring role.
-   - Upon receiving the `CR-UPDATED` confirmation, Host cleans up `<AuthorRole>-Cross-Review-Requests.md` and all `<AuthorRole>-CR-*.md` files, and re-invokes the previously cross-gating roles to re-evaluate the updated remediation.
+   - Upon receiving the `CR-UPDATED` confirmation, Host cleans up `<AuthorRole>-Cross-Review-Requests.md` and all `<AuthorRole>-CR-*.md` files, and spawns fresh cross-reviewer subagents for the previously cross-gating roles via `invoke_subagent` using the Cross-Review Prompt Template (§2B) to re-evaluate the updated remediation. Host MUST NOT send messages to or reuse previous cross-reviewer subagent conversations.
    - Loop continues until all cross-reviewers return `CROSS-PASSED`.
 
 6. **Scope Constraints**:
