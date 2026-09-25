@@ -82,6 +82,9 @@ flowchart TD
      - `## Data Storage & Migration Scope`: Layer 1 inspects target DAs and codebase ground-truth for persistence markers (migration dirs `migrations/`, DDL `*.sql`, ORM models, storage drivers `sqlite3`, `IndexedDB`, `localStorage`, or sync libraries `powersync`, `yjs`).
        - If persistence is touched: declare `Persistence Status: TOUCHES_PERSISTENCE`, `Storage Archetype` (`Local-Side Storage` | `Server-Side Storage` | `Hybrid / Sync-Driven`), `Underlying Technology / Engine`, and `Target Seams & Files`.
        - If no persistence is touched: declare `Persistence Status: NO_PERSISTENCE` with concise technical justification.
+     - `## Security Scope & Threat Model Tier`: Layer 1 inspects target DAs and codebase ground-truth for security-relevant touchpoints (authentication, authorization, session tokens, password hashing, OAuth/OIDC, tenant isolation, IDOR/BOLA paths, ingress input parsing, file uploads, outbound HTTP/SSRF, webhooks, IPC channels, native shell commands, RLS policies, or sensitive secret storage).
+       - If security boundaries are touched: declare `Security Status: TOUCHES_SECURITY_BOUNDARY`, `Primary Archetype` (`Client-Side / Local Application` | `Server-Side / Multi-Tenant SaaS API` | `Database & Persistence Security` | `Multi-Tier / Hybrid Application`), `Trust Boundaries`, `Ingress & Egress Vectors`, and `Credential Exposure Surfaces`.
+       - If no security boundaries are touched (e.g. pure mathematical algorithms, localized UI formatting utilities, static mockup layouts): declare `Security Status: NO_SECURITY_BOUNDARY` with concise technical justification.
      - Active modifier tags (e.g. `## Active Modifiers: !PA, !SP<N>`).
      - Codebase rules (`AGENTS.md`), task domain skills, criteria, and static `SP` threshold.
 
