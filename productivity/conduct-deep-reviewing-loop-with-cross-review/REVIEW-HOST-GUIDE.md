@@ -311,14 +311,19 @@ When a tier batch is resolved with accepted blocking defects (at least one activ
 
    Host MAY invoke touched roles from downstream tiers that have not yet run their full audit. A role MUST NOT cross-review its own report.
 
-3. **Invoke Cross-Reviewers**: Host invokes each touched role using the Cross-Review Prompt Template (Section 2B), setting `Role: "<AuthorRole>: <CrossReviewerRole> Cross-Reviewer"` (e.g. `"Logic: Testability Cross-Reviewer"`). Cross-reviewers evaluating the same `<AuthorRole>.md` MUST be launched simultaneously in a single `invoke_subagent` call. Host initializes `PendingCrossReviewRoles` per authoring role and arms 600s liveness timers per Step 3 protocol.
+3. **Parallel Cross-Reviewer Invocation Across All Author Roles**:
+   - Host MUST launch cross-reviewers for ALL remediations requiring cross-review across all author roles simultaneously in a single invocation wave.
+   - Host MUST NOT serialize cross-reviews author-by-author. Because all reports (`<AuthorRole>-CR-<CrossReviewerRole>.md`) and requests (`<AuthorRole>-Cross-Review-Requests.md`) are namespaced by `<AuthorRole>`, concurrent evaluation across multiple author roles is completely isolated with zero filesystem collisions.
+   - Host sets each subagent's `Role: "<AuthorRole>: <CrossReviewerRole> Cross-Reviewer"` (e.g. `"Logic: Testability Cross-Reviewer"`, `"DataMigration: Architect Cross-Reviewer"`).
+   - Host initializes independent tracking sets `PendingCrossReviewRoles[AuthorRole]` for each authoring role and arms a 600s liveness check timer per Step 3 protocol.
 
-4. **Asynchronous Reactive Wakeup Handling**: Host tracks `PendingCrossReviewRoles` per authoring role. A cross-reviewer is de-queued when Host receives a `CR-COMPLETE <VERDICT>: <AuthorRole>-CR-<CrossReviewerRole>` message (where `<VERDICT>` is `CROSS-PASSED` or `CROSS-GATED`) from that cross-reviewer's conversation ID via `send_message`. Host immediately terminates that cross-reviewer subagent via `manage_subagents(Action="kill")` once the report is verified on disk to keep active subagents below platform caps. Host MUST NOT use file existence alone as completion signal. Liveness timer escalation follows the same Probe 1, Probe 2, and respawn protocol as Step 3.
+4. **Asynchronous Reactive Wakeup Handling**: Host tracks `PendingCrossReviewRoles` independently per authoring role. A cross-reviewer is de-queued when Host receives a `CR-COMPLETE <VERDICT>: <AuthorRole>-CR-<CrossReviewerRole>` message (where `<VERDICT>` is `CROSS-PASSED` or `CROSS-GATED`) from that cross-reviewer's conversation ID via `send_message`. Host immediately terminates that cross-reviewer subagent via `manage_subagents(Action="kill")` once the report is verified on disk. Host MUST NOT use file existence alone as completion signal. Liveness timer escalation follows the same Probe 1, Probe 2, and respawn protocol as Step 3.
 
 5. **Cross-Review Resolution**:
+   - Host evaluates and resolves cross-reviews independently per authoring role:
    - Host MUST NOT read or inspect `<AuthorRole>-CR-<CrossReviewerRole>.md` for any cross-reviewer that returned `CROSS-PASSED`.
-   - If all cross-reviewers returned `CROSS-PASSED`: Cross-review is complete for that authoring role. Host skips reading CR reports, cleans up CR artifacts, and proceeds.
-   - If any cross-reviewer returned `CROSS-GATED`: Host inspects ONLY the `<AuthorRole>-CR-<CrossReviewerRole>.md` reports of the cross-gating roles, compiles their feedback into `<review_dir>/reports/<AuthorRole>-Cross-Review-Requests.md` per Section 2D format, and sends the following fixed message to the authoring role's subagent via `send_message`:
+   - If all cross-reviewers for an authoring role returned `CROSS-PASSED`: Cross-review is complete for that authoring role. Host skips reading CR reports, cleans up CR artifacts, and marks that authoring role resolved without waiting for other author roles.
+   - If any cross-reviewer for an authoring role returned `CROSS-GATED`: Host inspects ONLY the `<AuthorRole>-CR-<CrossReviewerRole>.md` reports of the cross-gating roles, compiles their feedback into `<review_dir>/reports/<AuthorRole>-Cross-Review-Requests.md` per Section 2D format, and sends the following fixed message to the authoring role's subagent via `send_message` immediately:
      ```
      Cross-domain review identified requirements for your remediation. Read <review_dir>/reports/<AuthorRole>-Cross-Review-Requests.md. Incorporate all listed requirements into your report at <review_dir>/reports/<AuthorRole>.md. Once updated, notify Host via send_message with the exact text: "CR-UPDATED: <AuthorRole>"
      ```
