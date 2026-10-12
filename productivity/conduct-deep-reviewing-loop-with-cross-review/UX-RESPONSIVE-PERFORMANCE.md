@@ -16,7 +16,7 @@
 
 ### 3. Long-Running Progress & Staleness Timeouts
 - [ ] Quantitative Progress Revealing: Verify operations taking $>2\text{s}$ provide deterministic quantitative progress (`processed / total`, percentage, bytes/items) and an abort action instead of an opaque indeterminate spinner.
-- [ ] Staleness-Based Timeout (Inactivity vs Wall-Clock): Confirm timeouts abort strictly on progress staleness (e.g. 10s of zero delta/activity) rather than arbitrary total elapsed wall-clock duration that penalizes healthy, active progress.
+- [ ] Staleness-Based Timeout (Inactivity vs Wall-Clock): Confirm timeouts abort strictly on progress staleness (zero delta/activity exceeding a configurable inactivity window) rather than arbitrary total elapsed wall-clock duration that penalizes healthy, active progress.
 
 ## Concrete Anti-Patterns
 
@@ -170,7 +170,7 @@ function synchronizeCardHeights(cards) {
 
 - Cumulative Layout Shifts Disrupting User Interaction: Enforce CSS `contain-intrinsic-size` properties on off-screen dynamic components and smooth animated accordion transitions (or dimensional reservations) on dynamic in-flow containers.
 - Unhandled Optimistic Mutation Desynchronization: Enforce periodic background re-validation fetches (SWR patterns) after optimistic state mutations complete.
-- Wall-Clock Timeout Aborting Near-Complete Operations: Replace rigid total execution timers with rolling inactivity watchdogs that trigger only when no forward delta occurs for $>10\text{s}$.
+- Wall-Clock Timeout Aborting Near-Complete Operations: Replace rigid total execution timers with rolling inactivity watchdogs that trigger only when no forward delta occurs beyond a task-configured inactivity window.
 - Animation Timer Drift & Leakage: Replace imperative `setTimeout` chains with declarative CSS `@starting-style` and `transition-behavior: allow-discrete`.
 - Frame Drops from Layout Thrashing: Replace imperative window resize loops with CSS Container Queries (`@container`) or batch geometric reads before `requestAnimationFrame()` writes.
 - Layout Jumps on Modal Open: Mandate `scrollbar-gutter: stable` in root/dialog styles to eliminate scrollbar disappearance shifts.

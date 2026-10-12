@@ -9,7 +9,7 @@ Audit criteria for backend microservices, RPC systems, and asynchronous workers 
 - [ ] **Span Lifecycle & Exception Events**: Are custom spans closed explicitly in `finally` blocks, recording uncaught exceptions into span events with error status codes?
 - [ ] **OpenTelemetry Semantic Conventions**: Do span names and attributes adhere to standard conventions (e.g. `http.request.method`, `http.response.status_code`, `server.address`)?
 - [ ] **Structured JSON Logging**: Are logs emitted strictly as structured key-value JSON objects containing correlated `trace_id` and `span_id` fields?
-- [ ] **Hot-Path Logging Protection**: In execution loops exceeding 1,000 ops/sec, are debug loggers guarded (`logger.isDebugEnabled()`) to eliminate string allocations?
+- [ ] **Hot-Path Logging Protection**: In tight loops, stream iteration hot paths, or batch data pipelines, are debug loggers guarded (`logger.isDebugEnabled()`) to eliminate string allocations?
 - [ ] **Batch Exporting**: Are OpenTelemetry spans and logs exported using batch processors rather than synchronous per-event network calls?
 
 ## Concrete Anti-Patterns
@@ -37,7 +37,7 @@ func FetchUserData(ctx context.Context, userID string) (*User, error) {
 ### Anti-Pattern 2: Unguarded String Formatting in Hot Loops
 
 ```java
-// BAD: Allocates memory and formats string on every iteration (>1,000 ops/sec) even when debug is disabled.
+// BAD: Allocates memory and formats string on every iteration in hot paths even when debug is disabled.
 for (Transaction tx : transactions) {
     logger.debug("Processing transaction ID: " + tx.getId() + " for account: " + tx.getAccountId());
     process(tx);
