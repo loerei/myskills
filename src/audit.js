@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 
-const CATEGORY_ROW_MAP = {
+export const CATEGORY_ROW_MAP = {
   design: 'Design & Frontend UI',
   engineering: 'Engineering & Development',
   quality: 'Code Quality & CI/CD',
@@ -9,19 +9,33 @@ const CATEGORY_ROW_MAP = {
   personal: 'Content & Notes'
 };
 
+export const OFFICIAL_CATEGORIES = Object.keys(CATEGORY_ROW_MAP);
+
 function escapeRegex(str) {
   return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 /**
- * Discovers all skill directories in repoRoot containing SKILL.md.
+ * Discovers all skill directories in repoRoot containing SKILL.md strictly within whitelisted categories.
+ * @param {string} repoRoot
+ * @param {string[]} categories
+ * @returns {string[]}
  */
-export function findSkillDirectories(repoRoot) {
-  const entries = fs.readdirSync(repoRoot, { recursive: true, withFileTypes: true });
-  return entries
-    .filter(e => e.isFile() && e.name === 'SKILL.md')
-    .map(e => e.parentPath || path.dirname(path.join(repoRoot, e.name)))
-    .filter(p => !p.includes('node_modules') && !p.includes('.git') && !p.includes('.agents'));
+export function findSkillDirectories(repoRoot, categories = OFFICIAL_CATEGORIES) {
+  const results = [];
+  for (const cat of categories) {
+    const catDir = path.join(repoRoot, cat);
+    if (!fs.existsSync(catDir) || !fs.statSync(catDir).isDirectory()) continue;
+    const entries = fs.readdirSync(catDir, { withFileTypes: true });
+    for (const entry of entries) {
+      if (!entry.isDirectory() || entry.name.startsWith('.') || entry.name.startsWith('_')) continue;
+      const skillDir = path.join(catDir, entry.name);
+      if (fs.existsSync(path.join(skillDir, 'SKILL.md'))) {
+        results.push(skillDir);
+      }
+    }
+  }
+  return results;
 }
 
 /**
@@ -146,7 +160,8 @@ export function runPolicyAudit({ sourceRoot, config, autoAdd = false, autoPrune 
     return { success: false, exitCode: 1 };
   }
 
-  const skillDirs = findSkillDirectories(sourceRoot);
+  const categories = config.categories || OFFICIAL_CATEGORIES;
+  const skillDirs = findSkillDirectories(sourceRoot, categories);
   const repoSkillsMap = new Map();
   for (const dir of skillDirs) {
     const name = path.basename(dir);

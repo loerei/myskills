@@ -27,13 +27,28 @@ export function findSkillDirectories(dir, results = []) {
   return results;
 }
 
+export const OFFICIAL_CATEGORIES = ['design', 'engineering', 'quality', 'productivity', 'personal'];
+
 /**
  * Load skill catalog and deduplicate by shortest path.
+ * If baseDir contains whitelisted categories, strictly scans within those categories.
  * @param {string} baseDir 
+ * @param {string[]} [validCategories=OFFICIAL_CATEGORIES]
  * @returns {Map<string, {name: string, srcPath: string}>}
  */
-export function loadSkillCatalog(baseDir) {
-  const dirs = findSkillDirectories(baseDir);
+export function loadSkillCatalog(baseDir, validCategories = OFFICIAL_CATEGORIES) {
+  const hasCategories = Array.isArray(validCategories) && validCategories.some(cat => fs.existsSync(path.join(baseDir, cat)));
+  let dirs = [];
+  if (hasCategories) {
+    for (const cat of validCategories) {
+      const catDir = path.join(baseDir, cat);
+      if (fs.existsSync(catDir) && fs.statSync(catDir).isDirectory()) {
+        findSkillDirectories(catDir, dirs);
+      }
+    }
+  } else {
+    dirs = findSkillDirectories(baseDir);
+  }
   const catalog = new Map();
   
   for (const dir of dirs) {
@@ -53,11 +68,11 @@ export function loadSkillCatalog(baseDir) {
 /**
  * Loads all skills with name, category, and description from frontmatter.
  * @param {string} baseDir 
- * @param {string[]} validCategories 
+ * @param {string[]} [validCategories=OFFICIAL_CATEGORIES]
  * @returns {Array<{ name: string, category: string, description: string, srcPath: string }>}
  */
-export function listSkillsDetailed(baseDir, validCategories = []) {
-  const skillCatalog = loadSkillCatalog(baseDir);
+export function listSkillsDetailed(baseDir, validCategories = OFFICIAL_CATEGORIES) {
+  const skillCatalog = loadSkillCatalog(baseDir, validCategories);
   const results = [];
 
   for (const [name, skill] of skillCatalog.entries()) {
