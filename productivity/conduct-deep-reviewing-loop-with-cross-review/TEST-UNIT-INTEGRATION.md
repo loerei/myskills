@@ -14,7 +14,7 @@ Audits assertion determinism, mock boundary fidelity, self-fulfilling test preve
 - [ ] **Seeded Randomness**: Ensure randomized or property-based tests consume explicit, reproducible PRNG seeds.
 
 ### 3. Mock Boundary & Fixture Isolation
-- [ ] **External Boundary Mocking Only**: Mock only foreign I/O boundaries (network clients, third-party SDKs, OS dialogs), never internal domain entities, pure reducers, or data structures. For local SQLite/storage logic, prefer fast in-memory instances (`:memory:`) over brittle SQL string mocks.
+- [ ] **External Boundary Mocking & Programmatic Builders**: Mock only foreign I/O boundaries (network clients, third-party SDKs, OS dialogs), never internal domain entities, pure reducers, or parser helpers. For local SQLite/storage logic, prefer fast in-memory instances (`:memory:`) or cross-platform in-memory VFS adapters (`IFileSystem`), and use **programmatic byte/AST fixture builders** for binary/protocol parsers rather than committing opaque binary blobs or mocking internal parser steps.
 - [ ] **Independent State & Handle Teardown**: Verify integration tests run inside isolated transactions/temp directories and clean up all open timers, file handles, and event listeners in `afterEach`/`finally` hooks.
 
 ## Concrete Anti-Patterns

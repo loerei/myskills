@@ -7,6 +7,7 @@ Audits single-threaded async race conditions, multithreaded lock safety, monoton
 ### 1. Single-Threaded Async Concurrency & Race Safety
 - [ ] **Out-of-Order Async Response Guards**: When user input, route changes, or polling triggers concurrent async calls (fetch, IPC, worker tasks), verify older in-flight calls are aborted via `AbortController` OR gated by a monotonic request generation counter (`requestId === latestRequestId`) so stale responses never overwrite newer state.
 - [ ] **Non-Atomic Read-Modify-Write Across `await`**: Reject reading shared in-memory or persistent state before an `await` boundary and writing back a mutated value after `await` without a serialized async mutex, queue, or optimistic version check (`CAS`).
+- [ ] **Late-Rejection Suppression in `Promise.race` / `withTimeout`**: When racing an underlying promise against a timeout timer or `AbortSignal`, attach a no-op `.catch(() => {})` to the underlying promise immediately before racing, and clear the timeout timer / remove the abort listener in `finally`. Otherwise, if the timeout rejects first and the underlying task fails later, the late rejection crashes the host process with `UnhandledPromiseRejection`.
 - [ ] **Partial Batch Failure & Rollback (`Promise.all`)**: Verify concurrent fan-out operations (`Promise.all`, `errgroup`) define deterministic cleanup or `Promise.allSettled` reconciliation so one rejected task does not leave sibling mutations half-committed or resources leaked.
 - [ ] **Bounded Concurrency over Unbounded `Promise.all(items.map(...))`**: Reject unbounded `Promise.all(items.map(fn))` over dynamic or large collections when executing I/O, database queries, IPC, or external API calls. Mandate a bounded concurrency pool / semaphore (e.g. `concurrency = 5..10`) to prevent connection pool exhaustion, OOM spikes, and HTTP 429 rate-limit cascades.
 
@@ -15,7 +16,7 @@ Audits single-threaded async race conditions, multithreaded lock safety, monoton
 - [ ] **CAS & ABA Protection**: Confirm lock-free atomic swaps protect against ABA state recycling using generation counters or tagged pointers.
 
 ### 3. Temporal, Clock, and Timezone Invariants
-- [ ] **Monotonic Clock for Elapsed Durations**: Reject using system wall-clock (`Date.now()`, ` time.Now()` wall component, `time.time()`) to measure elapsed durations, timeouts, or rate-limit windows (vulnerable to NTP clock steps and DST shifts). Mandate monotonic clocks (`performance.now()`, `process.hrtime.bigint()`, `time.monotonic()`).
+- [ ] **Monotonic Clock for Elapsed Durations**: Reject using system wall-clock (`Date.now()`, `time.Now()` wall component, `time.time()`) to measure elapsed durations, timeouts, or rate-limit windows (vulnerable to NTP clock steps and DST shifts). Mandate monotonic clocks (`performance.now()`, `process.hrtime.bigint()`, `time.monotonic()`).
 - [ ] **UTC Persistence vs. IANA Timezone Recurrence**: Store point-in-time timestamps in UTC (ISO-8601 `Z` or integer epoch ms). For calendar-relative schedules (daily rollovers, billing cycles), store the explicit IANA timezone identifier (`America/New_York`, `Asia/Ho_Chi_Minh`) rather than a fixed numeric UTC offset.
 
 ### 4. Mathematical, Financial & String/Unicode Precision
@@ -81,5 +82,6 @@ export function isExpiredAndMatchingSafe(startMonoMs: number, fileNameA: string,
 | :--- | :--- | :--- |
 | **UI / State Regression on Fast Input** | Earlier slow async call resolves after later fast call. | Abort superseded requests via `AbortController` and verify sequence token before committing state. |
 | **Lost Updates Across `await`** | Two coroutines read the same counter/object before `await` and overwrite each other on resume. | Serialize state mutations through an async mutex/queue or atomic database `UPDATE ... WHERE version = ?`. |
+| **`UnhandledPromiseRejection` After Timeout** | `Promise.race` rejects early on timeout while the underlying promise rejects seconds later without a handler. | Attach `promise.catch(() => {})` before racing and clear the timeout timer in `finally`. |
 | **Timeout Freeze on Clock Sync** | NTP steps system wall-clock backward during an active timeout loop. | Measure all intervals and deadlines using `performance.now()` or `time.monotonic()`. |
 | **Silent File Lookup Mismatch on macOS** | Comparing NFC input string against NFD filesystem entry without normalization. | Normalize strings with `.normalize("NFC")` at ingress before indexing or comparison. |

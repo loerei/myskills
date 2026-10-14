@@ -1,10 +1,11 @@
 # Local Filesystem Hazards and Async Cancellation Cleanup
 
-Audits OS filesystem edge cases (locks, disk exhaustion, symlinks, cross-device moves, Unicode paths) and mid-flight cancellation cleanup.
+Audits OS filesystem edge cases (locks, bounded prefix probing, disk exhaustion, symlinks, cross-device moves) and mid-flight cancellation cleanup.
 
 ## Domain Audit Checklist
 
-### 1. Filesystem Mutation & Locking Edge Cases
+### 1. Filesystem Mutation, Probing & Locking Edge Cases
+- [ ] **Bounded Prefix/Header Probing (`handle.read` Slice vs. `fs.readFile`)**: When inspecting file magic bytes, MIME signatures, or metadata headers, open a file handle and read only the required prefix slice (`handle.read(buf, 0, 4096, 0)` inside `try/finally`) rather than calling `fs.readFile(path)` which loads multi-gigabyte files entirely into memory.
 - [ ] **Transient Lock Contention (`EBUSY` / `EPERM` / `EACCES`)**: On Windows and cloud-synced directories (OneDrive, Dropbox, iCloud, antivirus scanners), `fs.rename` and `fs.unlink` frequently fail with transient `EBUSY` or `EPERM`. Verify atomic file replacement routines implement bounded retry backoff (e.g. 3–5 attempts over 50–200ms) and close all open file descriptors before renaming.
 - [ ] **Cross-Device Rename Fallback (`EXDEV`)**: `fs.rename` fails with `EXDEV` if the temporary directory (`/tmp` or `os.tmpdir()`) resides on a different mount/volume than the destination file. Verify atomic writes either place the `.tmp` sibling file in the **same parent directory** as the target (`path.dirname(targetPath)`) or handle `EXDEV` via copy + `fsync` + unlink.
 - [ ] **Disk Exhaustion (`ENOSPC`) & Partial Write Rollback**: Verify file writers catch `ENOSPC` / `EIO` and unlink incomplete `.tmp` sibling files in `catch`/`finally` blocks so partial 0-byte or truncated artifacts never overwrite valid user data or remain orphaned.
@@ -54,6 +55,7 @@ export async function writeAtomicSafe(targetPath: string, content: string, signa
 
 | Failure Mode | Root Cause | Mitigation |
 | :--- | :--- | :--- |
+| **OOM on Header / Magic-Byte Check** | Calling `fs.readFile()` on a multi-GB archive or binary just to inspect the first 64 bytes. | Open a file handle and read a bounded prefix buffer (`handle.read(buf, 0, 4096, 0)`) with `finally { await handle.close() }`. |
 | **`EXDEV: cross-device link not permitted`** | Atomic write stages temp file in `/tmp` while target is on `/home` or `D:\`. | Always stage temp sibling file in `path.dirname(targetPath)`. |
 | **Orphaned `.tmp` Disk Bloat** | Exception or `AbortSignal` interrupts write before `rename` without `catch` cleanup. | Unlink `tmpPath` inside `catch` block after closing the file descriptor. |
 | **Infinite Directory Walk Hang** | Recursive scanner follows symlink pointing to an ancestor directory. | Do not follow symlinks by default (`lstat`), or track visited `stat.dev + ":" + stat.ino` in a `Set`. |

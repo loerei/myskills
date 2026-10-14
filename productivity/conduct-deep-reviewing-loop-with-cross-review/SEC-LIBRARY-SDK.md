@@ -1,18 +1,20 @@
 # Library and SDK Security: Credential Encapsulation, Prototype Pollution, and Parser Bounds
 
-Audits secret encapsulation, prototype pollution defenses on config merging, public parser resource bounds, and supply-chain hygiene in libraries and SDKs.
+Audits secret encapsulation, prototype pollution defenses, untrusted graph/binary parser bounds, pre-decode sanitization, and supply-chain hygiene in libraries and SDKs.
 
 ## Domain Audit Checklist
 
 ### 1. Explicit Credential Injection & Private Field Encapsulation
 - [ ] **No Silent `process.env` Credential Sniffing**: Libraries MUST NOT silently read `process.env` inside internal functions or default parameters. Require explicit credential passing (`new Client({ apiKey })`) or an explicit opt-in static factory (`Client.fromEnv()`).
-- [ ] **True Private Storage (`#apiKey`)**: Store credentials in hard private class fields (`#apiKey` in JS/TS) or closures rather than public/TypeScript-`private` properties so `Object.keys(client)`, ` {...client}`, and `JSON.stringify(client)` cannot exfiltrate secrets.
+- [ ] **True Private Storage (`#apiKey`)**: Store credentials in hard private class fields (`#apiKey` in JS/TS) or closures rather than public/TypeScript-`private` properties so `Object.keys(client)`, `{...client}`, and `JSON.stringify(client)` cannot exfiltrate secrets.
 
 ### 2. Prototype Pollution Defense in Config & Payload Merging
 - [ ] **Safe Recursive Merge / Object Creation**: If the library deep-merges caller options or parses dynamic key-value structures, explicitly reject keys matching `__proto__`, `constructor`, and `prototype` (or validate through strict Zod/TypeBox schemas / `Object.hasOwn`).
 
-### 3. Public Parser Input Ceilings & ReDoS Protection
-- [ ] **Pre-Parse Input Length Bounds**: Public library functions parsing strings, headers, URLs, markup, or binary buffers MUST enforce a configurable `maxInputLength` / `maxDepth` ceiling before executing regexes or recursive AST traversal.
+### 3. Public Parser Ceilings, Graph Cycle Guards & Canonicalization Order
+- [ ] **Pre-Parse Input & Step Ceilings**: Public library functions parsing strings, headers, URLs, markup, or binary buffers MUST enforce configurable `maxInputLength`, `maxDepth`, and `maxIterations`/`maxNodes` ceilings (with periodic `AbortSignal` checks) before executing regexes, bytecode/state-machine loops, or recursive AST traversal.
+- [ ] **Three-Color Graph & Offset Traversal (`activeStack` vs. `memoCache`)**: When traversing formats with internal pointers, offset tables, or object references (JSON `$ref`, binary object tables, ASTs), track the current recursion chain in an `activeStack: Set` (to reject cyclic self-references immediately) separately from a `memoCache: Map` (to allow valid shared DAG references), and validate 64-bit offsets against `Number.MAX_SAFE_INTEGER` and buffer bounds (`offset < 0 || offset + len > buf.length`) before slicing.
+- [ ] **Canonicalize Before Sanitize (Pre-Decode Byte & Entity Unmasking)**: When sanitizing untrusted markup, SVG, XML, or paths, reject null bytes (`0x00`) and unexpected UTF-16 BOMs (`0xFEFF`/`0xFFFE`) on the raw buffer *before* UTF-8 decoding (preventing multi-byte encoding bypasses), and decode numeric/hex character entities (`&#x...;`, `%XX`) *before* matching security blocklists (decoding `&amp;` last to defeat double-encoding unmasking).
 - [ ] **Linear-Time Regex Guarantee**: Reject ambiguous nested quantifiers (`(a+)+`) on public library inputs to prevent a single malformed caller string from freezing the host application's thread.
 
 ### 4. Supply-Chain & Install Script Hygiene
@@ -21,44 +23,41 @@ Audits secret encapsulation, prototype pollution defenses on config merging, pub
 
 ## Concrete Anti-Patterns
 
-### Anti-Pattern 1: Prototype Pollution in Library `mergeOptions` & Public Secret Property
+### Anti-Pattern 1: Prototype Pollution in `mergeOptions` & Cyclic Pointer Loop in Graph Parser
 
 ```typescript
 // BAD:
-// 1. Recursive merge copies "__proto__" from untrusted user config, polluting Object.prototype globally!
-// 2. TypeScript "private apiKey" is still a normal enumerable JS property leaked by JSON.stringify(client)!
-function mergeOptionsBad(target: any, source: any) {
-  for (const key of Object.keys(source)) {
-    if (typeof source[key] === "object" && source[key] !== null) {
-      target[key] = mergeOptionsBad(target[key] || {}, source[key]);
-    } else {
-      target[key] = source[key]; // Pollutes Object.prototype when key === "__proto__"
-    }
-  }
-  return target;
+// 1. Recursive merge copies "__proto__", polluting Object.prototype globally!
+// 2. Recursive offset/node parser lacks activeStack cycle check, hanging or overflowing stack on cyclic ref (0 -> 1 -> 0).
+function parseNodeBad(id: number, nodes: Map<number, { children: number[] }>): unknown {
+  const node = nodes.get(id);
+  return node?.children.map((childId) => parseNodeBad(childId, nodes)); // Infinite recursion on cycle!
 }
 
-// GOOD: Block dangerous prototype keys and store secrets in ECMAScript #private fields
-const FORBIDDEN_KEYS = new Set(["__proto__", "constructor", "prototype"]);
+// GOOD: Separate activeStack (cycle detection) from memoCache (DAG sharing) + enforce maxDepth
+const MAX_DEPTH = 64;
 
-export function mergeOptionsSafe<T extends Record<string, unknown>>(target: T, source: Record<string, unknown>): T {
-  const out: Record<string, unknown> = { ...target };
-  for (const [key, val] of Object.entries(source)) {
-    if (FORBIDDEN_KEYS.has(key)) continue;
-    if (typeof val === "object" && val !== null && !Array.isArray(val)) {
-      const base = typeof out[key] === "object" && out[key] !== null ? (out[key] as Record<string, unknown>) : {};
-      out[key] = mergeOptionsSafe(base, val as Record<string, unknown>);
-    } else {
-      out[key] = val;
-    }
-  }
-  return out as T;
-}
+export function parseNodeSafe(
+  id: number,
+  nodes: Map<number, { children: number[] }>,
+  activeStack = new Set<number>(),
+  memoCache = new Map<number, unknown>(),
+  depth = 0
+): unknown {
+  if (depth > MAX_DEPTH) throw new Error("Max recursion depth exceeded");
+  if (activeStack.has(id)) throw new Error(`Cyclic reference detected at node ${id}`);
+  if (memoCache.has(id)) return memoCache.get(id);
 
-export class SdkClient {
-  readonly #apiKey: string; // Inaccessible to JSON.stringify, Object.keys, or spread
-  constructor(options: { apiKey: string }) {
-    this.#apiKey = options.apiKey;
+  activeStack.add(id);
+  try {
+    const node = nodes.get(id);
+    const parsed = node?.children.map((childId) =>
+      parseNodeSafe(childId, nodes, activeStack, memoCache, depth + 1)
+    );
+    memoCache.set(id, parsed);
+    return parsed;
+  } finally {
+    activeStack.delete(id);
   }
 }
 ```
@@ -68,5 +67,6 @@ export class SdkClient {
 | Failure Mode | Root Cause | Mitigation |
 | :--- | :--- | :--- |
 | **Host Process RCE / Auth Bypass via Prototype Pollution** | Library deep-merges caller-supplied JSON options without filtering `__proto__` / `constructor`. | Filter `["__proto__", "constructor", "prototype"]` in all recursive merge/clone helpers or parse via strict schema. |
-| **API Key Leaked in Host App Telemetry** | Host app serializes `sdkClient` instance using `JSON.stringify`, exposing `private apiKey`. | Store sensitive credentials in `#private` fields or WeakMaps. |
-| **Host Event Loop DoS via Malformed Token/Input** | Library runs unbounded regex or recursive parser on multi-MB string input. | Check `if (input.length > maxLength) throw new SdkError("INPUT_TOO_LARGE")` before parsing. |
+| **Stack Overflow / Infinite Loop on Malformed Graph/Binary** | Parser traverses cyclic object references (`A -> B -> A`) or unchecked 64-bit offsets. | Track `activeStack: Set` alongside `memoCache: Map`, cap `maxDepth`, and bounds-check every buffer offset. |
+| **Sanitizer Bypass via UTF-16 BOM or Entity Encoding** | Regex blocklist runs before numeric entity decoding (`&#x3c;script`) or after UTF-16 BOM trickery. | Reject null bytes / UTF-16 BOM on raw bytes first; decode numeric entities before scanning (and `&amp;` last). |
+| **API Key Leaked in Host App Telemetry** | Host app serializes `sdkClient` instance using `JSON.stringify`, exposing `private apiKey`. | Store sensitive credentials in ECMAScript `#private` fields or WeakMaps. |
