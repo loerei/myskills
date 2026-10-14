@@ -14,7 +14,7 @@ Audits assertion determinism, mock boundary fidelity, self-fulfilling test preve
 - [ ] **Seeded Randomness**: Ensure randomized or property-based tests consume explicit, reproducible PRNG seeds.
 
 ### 3. Mock Boundary & Fixture Isolation
-- [ ] **External Boundary Mocking & Programmatic Builders**: Mock only foreign I/O boundaries (network clients, third-party SDKs, OS dialogs), never internal domain entities, pure reducers, or parser helpers. For local SQLite/storage logic, prefer fast in-memory instances (`:memory:`) or cross-platform in-memory VFS adapters (`IFileSystem`), and use **programmatic byte/AST fixture builders** for binary/protocol parsers rather than committing opaque binary blobs or mocking internal parser steps.
+- [ ] **External Boundary Mocking & Programmatic Builders**: Mock only foreign I/O boundaries (network clients, third-party SDKs, LLM/AI providers, OS dialogs), never internal domain entities, pure reducers, or parser helpers. Ban live LLM or external network calls in unit/integration suites (inject deterministic replay cassettes or schema-validated fixture seams). For local SQLite/storage logic, prefer fast in-memory instances (`:memory:`) or cross-platform in-memory VFS adapters (`IFileSystem`), and use **programmatic byte/AST fixture builders** for binary/protocol parsers rather than committing opaque binary blobs or mocking internal parser steps.
 - [ ] **Independent State & Handle Teardown**: Verify integration tests run inside isolated transactions/temp directories and clean up all open timers, file handles, and event listeners in `afterEach`/`finally` hooks.
 
 ## Concrete Anti-Patterns
@@ -64,4 +64,4 @@ const mockApiResponse = OrderResponseSchema.parse({
 | :--- | :--- | :--- |
 | **Green Tests on Broken Production Code** | AI implementer mocks internal helpers or asserts mock call arguments instead of output state. | Require assertions on returned values/persisted state across public interfaces with zero internal spies. |
 | **Mock Drift Integration Crash** | Producer changes response schema while consumer unit tests keep passing against stale hand-rolled mocks. | Validate all test fixtures through shared canonical schemas (`Schema.parse(fixture)`) at test setup. |
-| **Flaky CI Timeouts** | Real `setTimeout` delays or uncleaned open sockets/intervals across test files. | Use fake timers and enforce `afterEach` teardown of all handles and listeners. |
+| **Flaky / Expensive CI Runs** | Real `setTimeout` delays, live LLM/network calls, or uncleaned open sockets/intervals across test files. | Use fake timers, deterministic replay seams for external/LLM APIs, and `afterEach` handle teardown. |

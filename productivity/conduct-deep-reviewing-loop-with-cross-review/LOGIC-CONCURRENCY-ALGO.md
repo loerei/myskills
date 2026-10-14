@@ -1,12 +1,12 @@
 # Concurrency, Async Race Conditions, Temporal Logic, and Precision Invariants
 
-Audits single-threaded async race conditions, multithreaded lock safety, monotonic vs. wall-clock time handling, Unicode string normalization, and numerical precision.
+Audits single-threaded async race conditions, cross-tab coordination, multithreaded lock safety, monotonic vs. wall-clock time handling, Unicode string normalization, and numerical precision.
 
 ## Domain Audit Checklist
 
-### 1. Single-Threaded Async Concurrency & Race Safety
+### 1. Single-Threaded & Cross-Tab Async Concurrency
 - [ ] **Out-of-Order Async Response Guards**: When user input, route changes, or polling triggers concurrent async calls (fetch, IPC, worker tasks), verify older in-flight calls are aborted via `AbortController` OR gated by a monotonic request generation counter (`requestId === latestRequestId`) so stale responses never overwrite newer state.
-- [ ] **Non-Atomic Read-Modify-Write Across `await`**: Reject reading shared in-memory or persistent state before an `await` boundary and writing back a mutated value after `await` without a serialized async mutex, queue, or optimistic version check (`CAS`).
+- [ ] **Non-Atomic Read-Modify-Write Across `await` & Cross-Tab Locks**: Reject reading shared in-memory or persistent state before an `await` boundary and writing back a mutated value after `await` without a serialized async mutex, queue, or optimistic version check (`CAS`). When multiple browser tabs or desktop windows mutate shared client storage (`localStorage`, `IndexedDB`) or rotate tokens, coordinate via `navigator.locks.request` / `BroadcastChannel` rather than tab-local memory flags.
 - [ ] **Late-Rejection Suppression in `Promise.race` / `withTimeout`**: When racing an underlying promise against a timeout timer or `AbortSignal`, attach a no-op `.catch(() => {})` to the underlying promise immediately before racing, and clear the timeout timer / remove the abort listener in `finally`. Otherwise, if the timeout rejects first and the underlying task fails later, the late rejection crashes the host process with `UnhandledPromiseRejection`.
 - [ ] **Partial Batch Failure & Rollback (`Promise.all`)**: Verify concurrent fan-out operations (`Promise.all`, `errgroup`) define deterministic cleanup or `Promise.allSettled` reconciliation so one rejected task does not leave sibling mutations half-committed or resources leaked.
 - [ ] **Bounded Concurrency over Unbounded `Promise.all(items.map(...))`**: Reject unbounded `Promise.all(items.map(fn))` over dynamic or large collections when executing I/O, database queries, IPC, or external API calls. Mandate a bounded concurrency pool / semaphore (e.g. `concurrency = 5..10`) to prevent connection pool exhaustion, OOM spikes, and HTTP 429 rate-limit cascades.
@@ -81,7 +81,7 @@ export function isExpiredAndMatchingSafe(startMonoMs: number, fileNameA: string,
 | Failure Mode | Root Cause | Mitigation |
 | :--- | :--- | :--- |
 | **UI / State Regression on Fast Input** | Earlier slow async call resolves after later fast call. | Abort superseded requests via `AbortController` and verify sequence token before committing state. |
-| **Lost Updates Across `await`** | Two coroutines read the same counter/object before `await` and overwrite each other on resume. | Serialize state mutations through an async mutex/queue or atomic database `UPDATE ... WHERE version = ?`. |
+| **Lost Updates Across `await` or Tabs** | Two coroutines or browser tabs read the same state before `await` and overwrite each other on resume. | Serialize mutations via an async mutex, `navigator.locks.request`, or atomic DB `UPDATE ... WHERE version = ?`. |
 | **`UnhandledPromiseRejection` After Timeout** | `Promise.race` rejects early on timeout while the underlying promise rejects seconds later without a handler. | Attach `promise.catch(() => {})` before racing and clear the timeout timer in `finally`. |
 | **Timeout Freeze on Clock Sync** | NTP steps system wall-clock backward during an active timeout loop. | Measure all intervals and deadlines using `performance.now()` or `time.monotonic()`. |
 | **Silent File Lookup Mismatch on macOS** | Comparing NFC input string against NFD filesystem entry without normalization. | Normalize strings with `.normalize("NFC")` at ingress before indexing or comparison. |

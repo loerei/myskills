@@ -16,17 +16,17 @@ Audits authentication, authorization boundaries, input parsing, secret hygiene, 
   Assume the implementer is an AI coding agent that (a) writes production code and tests directly from ticket text in headless CI with no human operating the app, and (b) writes ONLY the tests its ticket's Acceptance Criteria explicitly call for (never unprompted exploratory or adversarial tests). `"A human tester would notice this in the browser/console"` is NEVER valid grounds to downgrade a defect to Suggestion:
   | Defect Behavior for Headless AI Implementer | Classification |
   | :--- | :--- |
-  | Silently passes functional tests while leaving an exploit vector (BOLA/IDOR, mass assignment, DOM XSS, IPC shell injection, RLS owner bypass, SSRF, plaintext secrets) OR raises an error whose secure generalized fix is non-obvious | **Blocking Defect** (MUST include `Why This Would Be Missed`). |
+  | Silently passes functional tests while leaving an exploit vector (BOLA/IDOR, mass assignment, DOM XSS, IPC shell injection, RLS owner bypass, SSRF, prompt-injected tool calls, plaintext secrets) OR raises an error whose secure generalized fix is non-obvious | **Blocking Defect** (MUST include `Why This Would Be Missed`). |
   | Produces an immediate compiler/type error or failing assertion against existing criteria with an obvious fix | **Suggestion Only** (NEVER mark as Blocking Defect). |
   | Security requirement violates hard OS sandbox, browser origin, or platform capability bounds with zero in-scope fixes | **`STATUS: INFEASIBLE`** (takes overall status precedence; include `Infeasibility Proof` and `Alternative Architectural Paths`). |
 
 ## 2. Mandatory Audit Checklist
 
 1. **Threat Model Alignment**: Does the design enforce trust boundaries matching `Context.md` without introducing cross-tier exposure?
-2. **Strict Ingress Parsing**: Are all untrusted inputs (HTTP bodies, query params, IPC payloads, `postMessage` events, file paths, URLs) parsed through strict allowlist schemas before reaching domain logic, SQL, DOM sinks, or OS shells?
+2. **Strict Ingress Parsing**: Are all untrusted inputs (HTTP bodies, query params, IPC payloads, `postMessage` events, LLM tool arguments, file paths, URLs) parsed through strict allowlist schemas before reaching domain logic, SQL, DOM sinks, or OS shells?
 3. **Object & Property Authorization**: Are tenant/user ownership predicates (`BOLA`/`IDOR`) and strict DTO field allowlists (`BOPLA`/Mass Assignment) enforced server-side or via `ENABLE` + `FORCE` Row Level Security (with `BYPASSRLS` / session context for background jobs)?
 4. **Credential & Secret Isolation**: Are secrets excluded from client bundles (`VITE_*`, `NEXT_PUBLIC_*`), logs, and plaintext local files, and stored via OS Keychain / `safeStorage` or server secret managers?
-5. **Transactional & Replay Safety**: Are sensitive mutations protected against replay, timing side-channels (`timingSafeEqual` on raw webhook buffers), CSRF, and race conditions?
+5. **Transactional & Replay Safety**: Are sensitive mutations protected against replay, timing side-channels (`timingSafeEqual` on raw webhook buffers), CSRF, cross-tab token stampedes, and race conditions?
 
 ## 3. Domain Subdocuments Routing Table
 
@@ -37,12 +37,13 @@ Inspect `## Security Scope & Threat Model Tier` in `Context.md` and call `view_f
 | **Universal Security Invariants** | Mandatory whenever `TOUCHES_SECURITY_BOUNDARY` is active | [`SEC-COMMON-INVARIANTS.md`](SEC-COMMON-INVARIANTS.md) |
 | **Web Frontend & Browser Security** | DA touches browser DOM rendering, HTML/Markdown/SVG, links/redirects, `postMessage`, cookies, or iframes | [`SEC-CLIENT-WEB.md`](SEC-CLIENT-WEB.md) |
 | **Desktop & Native IPC Isolation** | DA touches Electron, Tauri, CLI subprocess execution, native shell openers, or IPC bridges | [`SEC-CLIENT-DESKTOP-IPC.md`](SEC-CLIENT-DESKTOP-IPC.md) |
-| **Client Secrets & Token Storage** | DA touches client-side auth tokens, API keys, build-time `.env` variables, or local secret persistence | [`SEC-CLIENT-CREDENTIALS.md`](SEC-CLIENT-CREDENTIALS.md) |
+| **Client Secrets & Session Coordination** | DA touches client-side auth tokens, refresh rotation, API keys, build-time `.env` variables, or local secret persistence | [`SEC-CLIENT-CREDENTIALS.md`](SEC-CLIENT-CREDENTIALS.md) |
 | **Server API Authorization** | DA touches REST, GraphQL, or gRPC endpoints reading/mutating tenant or user resources | [`SEC-SERVER-AUTHZ-BOLA.md`](SEC-SERVER-AUTHZ-BOLA.md) |
 | **Server Ingress Abuse & DoS** | DA touches public unauthenticated endpoints, registration/auth forms, rate limits, or GraphQL/batch queries | [`SEC-SERVER-INGRESS-ABUSE.md`](SEC-SERVER-INGRESS-ABUSE.md) |
 | **Server Webhooks, SSRF & CORS** | DA touches inbound webhooks, outbound HTTP fetches to dynamic URLs, or CORS headers | [`SEC-SERVER-INTEGRATION.md`](SEC-SERVER-INTEGRATION.md) |
 | **Database & RLS Security** | DA touches PostgreSQL/Supabase schemas, RLS policies, `SECURITY DEFINER` functions, or DB roles | [`SEC-DATA-RLS.md`](SEC-DATA-RLS.md) |
 | **Library & SDK Security** | DA targets a reusable library, SDK, config merger, or public parser package | [`SEC-LIBRARY-SDK.md`](SEC-LIBRARY-SDK.md) |
+| **AI, LLM, RAG & Agentic Integration** | DA integrates LLM prompts, RAG retrieval, AI agent loops, MCP servers, or tool-calling workflows | [`SEC-AI-LLM-INTEGRATION.md`](SEC-AI-LLM-INTEGRATION.md) |
 
 ## 4. Verdict Rules & Standard Output Protocol
 

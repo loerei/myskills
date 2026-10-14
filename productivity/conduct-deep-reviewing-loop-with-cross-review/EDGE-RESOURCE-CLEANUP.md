@@ -1,11 +1,12 @@
-# OS Resource Handling, Subprocess Lifecycle, and Process Termination Cleanup
+# OS Resource Handling, Stream Pipelines, and Subprocess Lifecycle Cleanup
 
-Audits OS handle cleanup, subprocess spawn hardening, live stream buffer clamping, and two-stage process termination.
+Audits OS handle cleanup, managed stream pipelines (`stream.pipeline`), subprocess spawn hardening, live stream buffer clamping, and two-stage process termination.
 
 ## Domain Audit Checklist
 
-### 1. Resource Allocations & RAII Wrappers
+### 1. Resource Allocations, Stream Pipelines & RAII Wrappers
 - [ ] **Immediate Resource Cleanup**: Verify that every allocated OS handle (file descriptors, sockets, database connections, memory maps) uses deterministic cleanup blocks (`defer`, `try/finally`, `using` / `Symbol.asyncDispose`, RAII destructors).
+- [ ] **Managed Stream Pipelines (`pipeline` over `.pipe()`)**: Reject bare `readable.pipe(writable)` chains in Node.js (which fail to destroy sibling streams or close file descriptors when one stream errors or closes prematurely). Mandate `pipeline(src, transform, dest, { signal })` from `node:stream/promises`.
 - [ ] **Unbounded Buffer Memory**: Reject reading raw streams, child process pipes, or file allocations into unbounded in-memory buffers without explicit byte ceilings.
 
 ### 2. Signal Handling, Subprocess Lifecycle & Stream Bounds
@@ -89,5 +90,5 @@ export function runToolSafe(
 | :--- | :--- | :--- |
 | **Host OOM on Runaway Child Process** | Child prints infinite output while parent pushes all chunks into an array before `Buffer.concat`. | Track cumulative `totalBytes` on every `data` event and `SIGKILL` immediately when `totalBytes > maxBufferBytes`. |
 | **Zombie / Hung Child Process** | Parent sends `SIGTERM` on timeout, but hung child ignores `SIGTERM` and stays alive indefinitely. | Escalate from `SIGTERM` to `SIGKILL` after a bounded grace timer with `.unref()`. |
+| **Leaked File Descriptors on Stream Error** | `readable.pipe(writable)` leaves source/destination streams open when a transform or write errors out. | Use `await pipeline(readable, transform, writable, { signal })` from `node:stream/promises`. |
 | **Flashing Console Windows on Windows** | Spawning CLI helpers from Electron/Tauri/Node on Windows without `windowsHide: true`. | Always pass `windowsHide: true` and `shell: false` in `spawn`/`execFile` options. |
-| **OS File Descriptor Exhaustion** | Early error return skips closing an opened file descriptor or socket. | Always close handles inside `finally` blocks or `defer` / `using` scopes. |

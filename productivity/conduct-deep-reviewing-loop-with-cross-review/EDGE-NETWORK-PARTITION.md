@@ -2,8 +2,9 @@
 
 ## Domain Audit Checklist
 
-### 1. Timeouts & Connection Limits
+### 1. Timeouts, Stream Cancellation & Connection Limits
 - [ ] **Universal Request Timeouts**: Verify that all HTTP, gRPC, and database client invocation libraries configure explicit connection, read, and write timeouts. Reject default infinite timeouts.
+- [ ] **Upstream Stream Cancellation on Client Disconnect (`AbortSignal` Forwarding)**: When serving streaming responses (SSE, WebSockets, chunked HTTP proxies, or AI token streams), bind the downstream client disconnect event (`req.on("close")` / `request.signal`) to an `AbortController` passed into the upstream request/generator so mid-flight client disconnects immediately abort upstream compute and quota consumption.
 - [ ] **Connection Pool Limits**: Confirm connection pools enforce strict upper bounds on max idle and active sockets.
 
 ### 2. Retry Loops, Idempotency Keys & Circuit Breaking
@@ -54,5 +55,6 @@ def call_external_service_safe(payload: dict):
 ## Failure Modes & Mitigations
 
 - **Duplicate Financial / State Mutations on Timeout Retry**: Generate a stable `Idempotency-Key` outside the retry loop and attach it to all retry attempts for `POST`/`PATCH` mutations.
+- **Orphaned Upstream Stream & Quota Drain**: Forward client disconnect signals (`req.on("close")` $\to$ `upstreamController.abort()`) across SSE/streaming endpoints.
 - **Cascading System Overload**: Enforce deadline context propagation (`Context` / `AbortSignal` timeouts passed down across service chains).
 - **Thread Pool Starvation**: Isolate third-party network call execution blocks within dedicated bounded concurrency pools.
