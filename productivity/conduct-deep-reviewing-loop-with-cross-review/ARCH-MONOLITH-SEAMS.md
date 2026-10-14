@@ -7,6 +7,7 @@ Audits package visibility, internal facade contracts, dependency DAG acyclicity,
 ### 1. Domain Boundary Isolation & Interface Contracts
 - [ ] **Package Visibility**: Ensure domain entities and internal repositories maintain module-private visibility (e.g. Go `internal/`, Java package-private, Rust crate privacy). Reject direct cross-domain imports reaching into foreign data access layers or private structs.
 - [ ] **API Abstraction & DTO Demarcation**: Verify inter-module communication occurs exclusively through explicit public Interfaces or Application Services using immutable Data Transfer Objects (DTOs). Reject shared in-memory mutable state across distinct modules.
+- [ ] **Third-Party SDK Anti-Corruption Layer (ACL)**: Reject importing third-party vendor SDK clients, raw response types, or vendor-specific exceptions (e.g. Stripe, OpenAI, AWS, Supabase SDKs) directly into core domain services or UI components. Encapsulate external vendor SDKs behind domain-owned Port/Adapter interfaces that translate vendor payloads and rate-limit headers (`Retry-After`) into canonical domain DTOs and typed domain errors.
 
 ### 2. Dependency DAG Topology & Decomposition Thresholds
 - [ ] **Circular Dependency Analysis**: Verify module dependency graphs are strictly acyclic at both compile-time and runtime levels.

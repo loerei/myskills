@@ -31,6 +31,7 @@ Inspect `## Observability Scope & Monitoring Archetype` in `Context.md` and call
 | **Frontend Web / Mobile RUM** | DA targets browser SPAs, PWAs, or webviews | [`OBS-FRONTEND-RUM.md`](OBS-FRONTEND-RUM.md) |
 | **Server-Side Microservice** | DA targets backend APIs, RPC services, or queue workers | [`OBS-SERVER-TELEMETRY.md`](OBS-SERVER-TELEMETRY.md)<br>[`OBS-SERVER-METRICS-HEALTH.md`](OBS-SERVER-METRICS-HEALTH.md) |
 | **Feature Flags & Kill-Switches** | DA introduces or modifies feature toggles, experiments, or kill-switches | [`OBS-FEATURE-FLAGS.md`](OBS-FEATURE-FLAGS.md) |
+| **Library / SDK / Reusable Package** | DA targets a reusable library, SDK, or shared package consumed by host applications | [`OBS-LIBRARY-SDK.md`](OBS-LIBRARY-SDK.md) |
 
 ## 3. Verdict Rules & Standard Output Protocol
 

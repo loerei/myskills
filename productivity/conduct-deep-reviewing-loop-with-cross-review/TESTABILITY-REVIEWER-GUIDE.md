@@ -39,6 +39,7 @@ Call `view_file` on every subdocument whose trigger matches the target DA:
 | :--- | :--- | :--- |
 | **Unit & Integration Testing** | Mandatory for all Testability audits (seams, determinism, anti-tautology, mock schema parity) | [`TEST-UNIT-INTEGRATION.md`](TEST-UNIT-INTEGRATION.md) |
 | **E2E & Browser Test Harnesses** | DA includes end-to-end, browser automation (Playwright/Cypress), or full-stack test suites (exempt under `!NC0`/`!NCI`) | [`TEST-E2E-HARNESS.md`](TEST-E2E-HARNESS.md) |
+| **Library Public Contract & Type Tests** | DA targets a reusable library, SDK, or typed shared package | [`TEST-LIBRARY-CONTRACT.md`](TEST-LIBRARY-CONTRACT.md) |
 
 ## 4. Verdict Rules & Standard Output Protocol
 

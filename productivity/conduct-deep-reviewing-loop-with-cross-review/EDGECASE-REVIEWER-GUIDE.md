@@ -51,6 +51,7 @@ Call `view_file` on every subdocument whose trigger matches the target DA:
 | **Local Filesystem & Async Cancellation** | DA reads/writes local files, renames/swaps artifacts, walks directories, or supports job cancellation (`AbortSignal`) | [`EDGE-LOCAL-FILESYSTEM.md`](EDGE-LOCAL-FILESYSTEM.md) |
 | **OS Resource Lifecycle & Teardown** | DA allocates file descriptors, sockets, streams, memory buffers, or spawns child processes / daemons | [`EDGE-RESOURCE-CLEANUP.md`](EDGE-RESOURCE-CLEANUP.md) |
 | **Network Faults & Partitions** | DA performs outbound HTTP, gRPC, WebSocket, or remote database/queue calls | [`EDGE-NETWORK-PARTITION.md`](EDGE-NETWORK-PARTITION.md) |
+| **Library Boundaries & Disposal** | DA targets a reusable library, SDK, or stateful client with caller callbacks/`AbortSignal` | [`EDGE-LIBRARY-BOUNDARIES.md`](EDGE-LIBRARY-BOUNDARIES.md) |
 
 ## 4. Verdict Rules & Standard Output Protocol
 

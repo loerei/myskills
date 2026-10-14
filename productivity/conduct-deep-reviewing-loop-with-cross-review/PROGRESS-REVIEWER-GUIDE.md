@@ -17,6 +17,7 @@ Audits whether the Directive Artifact (DA) establishes an incremental, dependenc
 - **Fix Pre-Verification & Miss-Probability Gate (Headless AI Implementer Baseline)**:
   - Verify on disk that referenced modules, files, and tickets exist and boundary contracts remain symmetrical across split/reordered tickets.
   - Never flag syntax/type trivia in illustrative code snippets as blocking; demand an Acceptance Criterion instead.
+  - **Observer Identity**: Assume the implementer is an AI coding agent that (a) writes production code and tests directly from ticket text in headless CI with no human operating the app, and (b) writes ONLY the tests its ticket's Acceptance Criteria explicitly call for (never unprompted exploratory or adversarial tests). `"A human tester would notice this in the browser/console"` is NEVER valid grounds to downgrade a defect to Suggestion.
   - Classify as **Blocking Defect** only issues that silently cause delivery deadlocks, unverified big-bang integration accumulation, forward/circular dependencies, or unexecutable slices for a headless AI implementer (include `Why This Would Be Missed`). If a ticket premise is impossible under platform bounds, return `STATUS: INFEASIBLE`.
 
 ## 2. Mandatory Audit Checklist & WBS Action Primitives

@@ -41,6 +41,7 @@ Call `view_file` on every subdocument whose trigger matches the target DA:
 | **Build Systems, Modules & OS Portability** | DA modifies imports, `package.json`, `tsconfig.json`, bundlers (Vite/Rollup/Electron/Tauri), monorepo packages, or filesystem paths | [`READ-BUILD-MODULE-SYSTEM.md`](READ-BUILD-MODULE-SYSTEM.md) |
 | **Container Runtimes & Cloud Infra** | DA touches Dockerfiles, Kubernetes manifests, container images, or process entrypoints | [`READ-RUNTIME-CONTAINER.md`](READ-RUNTIME-CONTAINER.md) |
 | **Native Toolchains, FFI & ABIs** | DA touches Cgo/Rust/C++ FFI boundaries, native binaries, or cross-compilation flags | [`READ-NATIVE-CROSSPLATFORM.md`](READ-NATIVE-CROSSPLATFORM.md) |
+| **Library Packaging & Exports** | DA publishes or modifies a reusable library, SDK, `package.json` `exports`, or `peerDependencies` | [`READ-LIBRARY-PACKAGING.md`](READ-LIBRARY-PACKAGING.md) |
 
 ## 4. Verdict Rules & Standard Output Protocol
 

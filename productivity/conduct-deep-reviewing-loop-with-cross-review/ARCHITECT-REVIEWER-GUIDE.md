@@ -47,6 +47,7 @@ Call `view_file` on every subdocument whose trigger matches the target DA:
 | **Preparatory Refactoring ($S \to B$)** | DA modifies legacy/tangled modules, high-complexity functions, or lacks structural/config/migration seams | [`ARCH-PREPARATORY-REFACTORING.md`](ARCH-PREPARATORY-REFACTORING.md) |
 | **Distributed State & Sagas** | DA touches multi-node consensus, distributed locks, fencing tokens, or multi-step sagas | [`ARCH-DISTRIBUTED-STATE.md`](ARCH-DISTRIBUTED-STATE.md) |
 | **Event-Driven & Messaging** | DA touches message brokers, event streams, pub/sub, transactional outboxes, or DLQs | [`ARCH-EVENT-DRIVEN.md`](ARCH-EVENT-DRIVEN.md) |
+| **Library, SDK & Package Architecture** | DA designs or modifies a reusable library, SDK, plugin, or shared monorepo package | [`ARCH-LIBRARY-SDK.md`](ARCH-LIBRARY-SDK.md) |
 
 ## 4. Verdict Rules & Standard Output Protocol
 

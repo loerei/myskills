@@ -10,6 +10,7 @@ Audits schema evolution, storage contracts, migration scripts, locking behavior,
   - Read `## Data Storage & Migration Scope` in `<review_dir>/Context.md`. Confirm the storage archetype (`Local-Side Storage` | `Server-Side Storage` | `Hybrid / Sync-Driven`) and engine against codebase ground-truth.
   - Read `## Cross-Referenced DAs & Dependency Lineage` to verify target schema changes do not clobber fields owned by `Upstream` DAs.
   - **Mandatory Migration Runner & Zero Data Loss**: Enforce strict schema conformance via isolated sequential migration scripts/runners ($V_1 \to V_2 \to V_3$) with zero data loss. Strictly ban runtime field-sniffing fallbacks (`if ('legacy' in row)`), heuristic property guessing, or transient flags on domain read paths. If the codebase lacks a migration runner, mandate staging one as a preparatory structural step ($S$) in the DA.
+  - **Library / SDK Embedded Storage Lifecycle**: When the target DA is a reusable Library or SDK with embedded persistence, verify that schema migrations execute deterministically during explicit client instance initialization (`await Client.create()` / `open()`), NEVER as an implicit side effect at module `import` time.
   - Read `## Operational Continuity` in `<review_dir>/Context.md` and enforce the exact migration model:
     | Operational Continuity Mode | Required Migration Script & Rollout Strategy |
     | :--- | :--- |

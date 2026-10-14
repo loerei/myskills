@@ -8,6 +8,7 @@ Audits single-threaded async race conditions, multithreaded lock safety, monoton
 - [ ] **Out-of-Order Async Response Guards**: When user input, route changes, or polling triggers concurrent async calls (fetch, IPC, worker tasks), verify older in-flight calls are aborted via `AbortController` OR gated by a monotonic request generation counter (`requestId === latestRequestId`) so stale responses never overwrite newer state.
 - [ ] **Non-Atomic Read-Modify-Write Across `await`**: Reject reading shared in-memory or persistent state before an `await` boundary and writing back a mutated value after `await` without a serialized async mutex, queue, or optimistic version check (`CAS`).
 - [ ] **Partial Batch Failure & Rollback (`Promise.all`)**: Verify concurrent fan-out operations (`Promise.all`, `errgroup`) define deterministic cleanup or `Promise.allSettled` reconciliation so one rejected task does not leave sibling mutations half-committed or resources leaked.
+- [ ] **Bounded Concurrency over Unbounded `Promise.all(items.map(...))`**: Reject unbounded `Promise.all(items.map(fn))` over dynamic or large collections when executing I/O, database queries, IPC, or external API calls. Mandate a bounded concurrency pool / semaphore (e.g. `concurrency = 5..10`) to prevent connection pool exhaustion, OOM spikes, and HTTP 429 rate-limit cascades.
 
 ### 2. Multithreaded Lock & Atomic Safety
 - [ ] **Deterministic Lock Acquisition Ordering**: Verify code acquiring multiple locks always acquires them in a global, deterministic key order (`idA < idB`) to prevent deadlocks.

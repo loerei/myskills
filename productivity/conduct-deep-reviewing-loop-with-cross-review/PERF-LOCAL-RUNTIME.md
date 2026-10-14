@@ -8,6 +8,8 @@ Audits main-thread/event-loop blocking, IPC serialization overhead, embedded SQL
 - [ ] **Ban Synchronous I/O & Compute on Hot Paths**: Reject synchronous filesystem calls (`fs.readFileSync`, `fs.writeFileSync`), synchronous compression (`zlib.gzipSync`), synchronous crypto (`pbkdf2Sync`), or multi-megabyte `JSON.parse`/`JSON.stringify` inside request handlers, UI main threads, or active event loops.
 - [ ] **Catastrophic Regex Backtracking (ReDoS)**: Reject nested quantifiers (`(a+)+`, `([a-zA-Z]+)*`) evaluated against untrusted or large inputs. Mandate linear-time engines (`re2`), atomic groups, or strict input length caps before regex evaluation.
 - [ ] **Worker Thread / Utility Process Offloading**: Offload CPU-bound parsing, hashing, AST traversal, or large file indexing to Worker Threads, Web Workers, or child utility processes with bounded concurrency pools.
+- [ ] **Bounded Async I/O Fan-Out**: Reject unbounded `Promise.all(items.map(...))` over variable-length arrays for file I/O, IPC, or network requests; enforce a bounded concurrency limiter (e.g. max 8–16 concurrent operations) so file descriptors and memory buffers remain bounded.
+- [ ] **Zero Cold-Start Allocation & Tree-Shakability**: Avoid eagerly allocating large lookup tables, compiling unused regexes, or importing heavy optional adapters at module top-level; initialize heavy structures lazily on first use.
 
 ### 2. Desktop / Multi-Process IPC Bridge Throughput
 - [ ] **No Multi-Megabyte IPC Cloning**: In Electron/Tauri/WebWorker bridges, reject serializing massive object graphs or raw binary blobs repeatedly across structured-clone/JSON IPC channels on high-frequency events.

@@ -32,6 +32,7 @@
   1. **`Upstream` + `Implemented`**: Codebase on disk is authoritative ground-truth; target DA must integrate cleanly with existing implementations.
   2. **`Upstream` + `Unimplemented` (Authoritative Future Baseline)**: Reviewers MUST read the upstream DA and treat its declared types, schemas, and seams as the authoritative future baseline. Target DA MUST NOT duplicate/expand upstream features, MUST adhere strictly to upstream contracts, and reviewers MUST NOT flag upstream-scheduled files/methods as missing readiness defects.
   3. **`Downstream` + `Unimplemented`**: Target DA must expose clean extension points and domain seams without tightly coupling to or leaking logic of future downstream epics.
+  4. **Intra-Epic Multi-Ticket Contract Parity**: When `Target DA(s)` comprises a multi-file epic (`PRD.md` + `tickets/01-...md` .. `0N-...md`), Host and Reviewers MUST verify that function signatures, exported symbol names, and data schemas remain 100% consistent across `PRD.md` and across all sibling tickets.
 
 ---
 

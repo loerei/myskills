@@ -42,6 +42,7 @@ Inspect `## Security Scope & Threat Model Tier` in `Context.md` and call `view_f
 | **Server Ingress Abuse & DoS** | DA touches public unauthenticated endpoints, registration/auth forms, rate limits, or GraphQL/batch queries | [`SEC-SERVER-INGRESS-ABUSE.md`](SEC-SERVER-INGRESS-ABUSE.md) |
 | **Server Webhooks, SSRF & CORS** | DA touches inbound webhooks, outbound HTTP fetches to dynamic URLs, or CORS headers | [`SEC-SERVER-INTEGRATION.md`](SEC-SERVER-INTEGRATION.md) |
 | **Database & RLS Security** | DA touches PostgreSQL/Supabase schemas, RLS policies, `SECURITY DEFINER` functions, or DB roles | [`SEC-DATA-RLS.md`](SEC-DATA-RLS.md) |
+| **Library & SDK Security** | DA targets a reusable library, SDK, config merger, or public parser package | [`SEC-LIBRARY-SDK.md`](SEC-LIBRARY-SDK.md) |
 
 ## 4. Verdict Rules & Standard Output Protocol
 

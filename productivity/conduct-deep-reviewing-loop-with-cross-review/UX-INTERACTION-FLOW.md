@@ -21,6 +21,7 @@ Audits form state completeness, WCAG keyboard/screen-reader ergonomics, focus co
   1. **Parent Target Filtering (Mandatory when children include native checkboxes, radio inputs, links, or submit buttons)**: The parent container's click/keydown handler ignores events whose target matches an interactive descendant (`event.target.closest('button, a, input, select, textarea, [role="button"], [data-interactive]')`), preserving both native browser default behavior and document bubbling.
   2. **Preventable Event Contracts (Valid for custom non-native `type="button"` actions)**: The child action invokes `event.preventDefault()` and the parent handler exits early when `event.defaultPrevented` is true. NEVER prescribe `event.preventDefault()` on native checkboxes, radio buttons, links, or submit buttons where it cancels the browser's native toggle/navigation action.
 - [ ] **Stable List Focus & Roving Tabindex**: Enforce immutable entity keys (`key={item.id}`) and WAI-ARIA roving `tabindex` / `aria-activedescendant` state machines on dynamic collections, strictly rejecting post-render `setTimeout` DOM re-querying (`querySelector`) focus hacks.
+- [ ] **Reusable Component Primitive Ergonomics**: When the target DA specifies reusable UI primitives or component library controls, verify support for both Controlled (`value` + `onChange`) and Uncontrolled (`defaultValue`) state contracts, and require forwarding the underlying DOM element reference (`ref` / `forwardRef`) so host consumers can manage focus and layout measurements.
 
 ## Concrete Anti-Patterns
 
