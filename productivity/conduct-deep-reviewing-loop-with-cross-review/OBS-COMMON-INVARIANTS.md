@@ -68,5 +68,3 @@ def authenticate(user_request):
 | **Credential Leakage in Logs** | Dumping raw request/response objects into loggers. | Require interceptor-level sanitization using a centralized redaction mask before writing to log sinks. |
 | **Cascade Crash on Telemetry Outage** | Telemetry call throws uncaught network or filesystem error. | Require defensive try/catch around telemetry sink transport; telemetry failure MUST NOT abort business flow. |
 
-```
----

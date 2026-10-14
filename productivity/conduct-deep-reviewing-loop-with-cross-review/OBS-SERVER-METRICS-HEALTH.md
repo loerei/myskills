@@ -54,5 +54,3 @@ httpRequestsTotal.WithLabelValues(req.Method, matchedRoute, strconv.Itoa(statusC
 | **TSDB Memory Outage** | Recording user IDs or GUIDs in Prometheus metric labels creates millions of time series. | Reject any metric label whose value domain is unbounded; use parameterized routes only. |
 | **Silent Queue Poisoning** | Messages continuously fail and route to a DLQ without operational alerting. | Require explicit alerts triggering on `dlq_messages_visible > 0` with notification routing. |
 
-```
----

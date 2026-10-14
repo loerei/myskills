@@ -60,5 +60,3 @@ for (Transaction tx : transactions) {
 | **Service Latency Degradation** | High-throughput loop allocates millions of string objects for disabled log levels. | Mandate level guards (`isDebugEnabled`) or lazy supplier evaluations in high-frequency paths. |
 | **Collector OOM** | Synchronous exporter blocks worker threads during collector network timeouts. | Enforce BatchSpanProcessor with bounded buffer queues and drop-on-full policies. |
 
-```
----

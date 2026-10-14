@@ -148,5 +148,3 @@ class Order {
 * Aggregate Desynchronization: Exposing child collections enables callers to bypass business rules. Mitigate by returning immutable views (`readonly`) and encapsulating state mutations inside Aggregate Root methods.
 * DTO Leakage: Exposing persistence or domain entities directly through public APIs causes breaking changes when database schemas evolve. Mitigate by mandating strict DTO mapping layers.
 
-```
----

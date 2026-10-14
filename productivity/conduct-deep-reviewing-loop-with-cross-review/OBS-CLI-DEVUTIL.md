@@ -68,5 +68,3 @@ def log_progress(message: str):
 | **CI Log File Bloat** | ANSI carriage return (`\r`) spinners emitted in CI logs producing thousands of garbage lines. | Guard all spinner rendering behind `isatty` checks or `CI=true` detection. |
 | **Ambiguous Script Failure** | Command fails on invalid user argument but exits with generic code `0` or `1`. | Enforce exit code `2` for argument validation errors and `130` for SIGINT handlers. |
 
-```
----
