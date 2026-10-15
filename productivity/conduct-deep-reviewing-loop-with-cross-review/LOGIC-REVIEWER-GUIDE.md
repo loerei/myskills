@@ -52,7 +52,7 @@ Write evaluation to `<review_dir>/reports/Logic.md` via `write_to_file`, then no
 <!-- For Fixable Defects -->
 1. **[Issue Title]**:
    - **Target Section**: `<Section_Name>`
-   - **Required Fix**: <Exact logical, state machine, or concurrency modification required>
+   - **Required Fix**: <Diff-ready logic remediation specifying: (1) exact state machine, concurrency, or algorithmic code blocks, (2) all parallel state/error branches & symmetrical caller/callee sites, (3) any [NEW]/[MODIFY]/[DELETE] file manifest updates, and (4) synchronized test & Acceptance Criteria updates>
    - **Why This Would Be Missed**: <Why headless AI implementation silently misses this flaw or why symptom does not reveal generalized fix>
    - **Ground-Truth Proof**: <Verified codebase/upstream symbol path, or `<review_dir>/sandbox/Logic/` simulation counter-example>
    - **Macro Flow Proof**: <Proof that initialization order, symmetrical boundary endpoints, and dependent DA sections remain valid>

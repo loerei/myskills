@@ -54,7 +54,7 @@ Write evaluation to `<review_dir>/reports/Performance.md` via `write_to_file`, t
 <!-- For Fixable Defects -->
 1. **[Issue Title]**:
    - **Target Section**: `<Section_Name>`
-   - **Required Fix**: <Exact algorithmic, batching, indexing, or bounding modification required>
+   - **Required Fix**: <Diff-ready performance remediation specifying: (1) exact $O(1)$/batching/indexing/bounding code blocks and numeric thresholds, (2) all parallel hot-path branches & symmetrical sites, (3) any [NEW]/[MODIFY]/[DELETE] file manifest updates, and (4) synchronized test & Acceptance Criteria updates>
    - **Why This Would Be Missed**: <Why small-fixture headless CI tests miss this bottleneck or leak>
    - **Ground-Truth Proof**: <Verified codebase symbol/schema path, or `<review_dir>/sandbox/Performance/` benchmark delta>
    - **Macro Flow Proof**: <Proof that initialization order, symmetrical boundary endpoints, and dependent DA sections remain valid>

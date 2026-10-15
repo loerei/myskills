@@ -59,7 +59,7 @@ Write evaluation to `<review_dir>/reports/Readiness.md` via `write_to_file`, the
 <!-- For Fixable Defects -->
 1. **[Issue Title]**:
    - **Target Section**: `<Section_Name>`
-   - **Required Fix**: <Exact prerequisite step, config update, or contract fix required>
+   - **Required Fix**: <Diff-ready readiness remediation specifying: (1) exact config/manifest/signature blocks, (2) all symmetrical producer/consumer sites across PRD/tickets, (3) any [NEW]/[MODIFY]/[DELETE] file manifest or Blocked-by prerequisite additions, and (4) synchronized Verification Command & Acceptance Criteria updates>
    - **Why This Would Be Missed**: <Why headless AI implementation silently misses this or why symptom does not reveal generalized fix>
    - **Ground-Truth Proof**: <Verified codebase/lockfile path, upstream spec citation, or `<review_dir>/sandbox/Readiness/` probe output>
    - **Macro Flow Proof**: <Proof that initialization order, build pipeline, and symmetrical boundaries remain valid>

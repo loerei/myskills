@@ -59,7 +59,7 @@ Write evaluation to `<review_dir>/reports/DataMigration.md` via `write_to_file`,
 <!-- For Fixable Defects -->
 1. **[Issue Title]**:
    - **Target Section**: `<Section_Name>`
-   - **Required Fix**: <Exact migration script, schema runner, or transactional modification required>
+   - **Required Fix**: <Diff-ready persistence remediation specifying: (1) exact migration script/DDL/schema/transactional code blocks, (2) all parallel read/write/delete branches & symmetrical producer/consumer sites, (3) any [NEW]/[MODIFY]/[DELETE] file manifest or Blocked-by updates, and (4) synchronized test & Acceptance Criteria updates>
    - **Why This Would Be Missed**: <Why headless AI implementation silently misses this data/locking hazard>
    - **Ground-Truth Proof**: <Verified codebase schema/migration path, or `<review_dir>/sandbox/DataMigration/` dry-run output>
    - **Macro Flow Proof**: <Proof that bootstrap order, transaction boundaries, and symmetrical endpoints remain valid>

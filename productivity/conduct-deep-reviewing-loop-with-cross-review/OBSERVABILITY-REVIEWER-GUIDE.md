@@ -49,7 +49,7 @@ Write evaluation to `<review_dir>/reports/Observability.md` via `write_to_file`,
 <!-- For Fixable Defects -->
 1. **[Issue Title]**:
    - **Target Section**: `<Section_Name>`
-   - **Required Fix**: <Exact logging, error chaining, stream routing, metric, or flag lifecycle specification required>
+   - **Required Fix**: <Diff-ready observability remediation specifying: (1) exact logging, error chaining, stream routing, metric, or flag lifecycle code/config blocks, (2) all parallel handlers & symmetrical sites, (3) any [NEW]/[MODIFY]/[DELETE] file manifest updates, and (4) synchronized test & Acceptance Criteria updates>
    - **Why This Would Be Missed**: <Why headless AI implementation silently misses this operational blind spot>
    - **Ground-Truth Proof**: <Verified codebase logger/collector path, upstream spec citation, or non-colliding target symbol>
    - **Macro Flow Proof**: <Proof that diagnostic context, stream hygiene, and symmetrical boundary endpoints remain unbroken>

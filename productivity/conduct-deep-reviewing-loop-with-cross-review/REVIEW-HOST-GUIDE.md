@@ -24,9 +24,9 @@
 
 - **Reviewer Isolation**: Reviewers MUST read only their assigned target DA(s), cross-referenced Upstream DAs declared in `Context.md`, `<review_dir>/Context.md`, and their `<Role>-REVIEWER-GUIDE.md` (plus its domain subdocuments). Reviewers MUST NOT inspect `<review_dir>/host/`, `<review_dir>/reports/` of other roles, or sibling `<review_dir>/sandbox/<OtherRole>/` directories.
 - **Context Freezing & Content Rules**: `<review_dir>/Context.md` remains strictly frozen during active reviewer execution (updated only by Host in Step 7 if WBS restructuring splits/merges target DAs). `Context.md` MUST NOT contain leading prompt questions, past reviewer scores, historical changelogs, or dynamic execution state (round numbers, iteration counts, or current `PassCount`).
-- **File Authoring Protocol**: Host and Reviewers MUST use native `write_to_file` directly (without `ArtifactMetadata`) for all markdown and sandbox files. NEVER create intermediate helper scripts (`write_report.cjs`, `.js`, `.ps1`) or embed multi-line code inside `run_command` inline strings (`node -e`, `python -c`, `echo`, `pwsh`) to author files.
-- **Specification Hygiene (Zero-Loss & Clean Integration)**:
-  - Integrate accepted remediations into target DAs as native first-class requirements without omission or semantic drift. Do not paraphrase concrete contracts or code signatures into vague prose, and do not invent requirements beyond accepted reports.
+- **File Authoring & Direct Editing Protocol**: Host and Reviewers MUST use native file authoring/editing tools directly (without `ArtifactMetadata`) for all markdown and sandbox files. NEVER create intermediate helper scripts (`write_report.cjs`, `.js`, `.ps1`) or embed multi-line code inside `run_command` inline strings (`node -e`, `python -c`, `echo`, `pwsh`) to author files. **Host MUST NEVER write or run batch mutation scripts (`mutate_*.js`, `update_*.py`, regex replacement scripts) inside `<review_dir>/sandbox/` to modify target DAs**; always inspect target DA context and edit each DA file directly.
+- **Specification Hygiene (Clean Integration)**:
+  - Integrate accepted remediations into target DAs as native first-class requirements per §7.1 (5-Dimensional Zero-Loss Protocol) without omission or semantic drift.
   - Strip review-iteration markers (`[UPDATED]`, `[FIXED]`, `[ADDED IN ROUND N]`, `[RESOLVED]`), internal changelogs, and version tables (`v1.x`) while preserving standard `AGENTS.md` plan action tags (`[NEW]`, `[MODIFY]`, `[DELETE]`).
 - **Cross-Referenced DA Lineage Semantics**:
   1. **`Upstream` + `Implemented`**: Codebase on disk is authoritative ground-truth; target DA must integrate cleanly with existing implementations.
@@ -233,19 +233,20 @@ When a tier batch (`<FailingTier>`) resolves with 1+ accepted blocking defects (
 
 ### Step 7: Direct DA Mutation, Coordination Artifacts & Teardown
 
-#### 7.1 Direct DA Mutation Transaction (`ROUND_REVISION_NEEDED` only)
+#### 7.1 Direct DA Mutation Transaction & 5-Dimensional Zero-Loss Protocol (`ROUND_REVISION_NEEDED` only)
 *(When verdict is `PLAN_INFEASIBLE`, `ROUND_PASS`, or `FINAL_PASS`, skip §7.1 entirely: do NOT mutate target DAs and generate zero `.bak.md` files).*
 1. **Pre-Mutation Backups**: Create sibling `<da_stem>.bak.md` copies before mutating or deleting any target DA. If WBS restructuring alters `## Target Directive Artifacts` in `Context.md`, create `<review_dir>/Context.bak.md`.
-2. **In-Place DA Mutation & File Tree Synchronization**:
-   - Apply verified remediations from accepted `<Role>.md` reports directly into target DA(s) per §1.1 Specification Hygiene. Document every applied non-blocking suggestion in `Analyzation.md`.
-   - Verify boundary contract symmetry (caller + callee + shared types) and cross-section coherence (`Verification Plan` synchronized with behavioral changes).
-   - If accepted feedback splits, merges, creates, or deletes DA files (Progress WBS actions):
-     - For `DECOMPOSE_PLAN_TO_PRD_AND_TICKETS`:
-       1. Create target epic directory `<epic_dir>/` and `<epic_dir>/tickets/`.
-       2. Write `<epic_dir>/PRD.md` containing architectural context, milestones, and continuity invariants.
-       3. Write modular `<epic_dir>/tickets/01-...md`, `02-...md` capturing independent slices, acceptance criteria, and verification steps.
-       4. Preserve `<source_plan_stem>.bak.md` in source plan's directory, then delete original monolithic plan file from disk.
-       5. Update `## Target Directive Artifacts` in `<review_dir>/Context.md` to reference the newly generated `PRD.md` and tickets.
+2. **In-Place DA Mutation (5-Dimensional Zero-Loss Integration Protocol)**:
+   Apply verified remediations and accepted suggestions from `<Role>.md` directly into target DA(s) (never via batch `.js`/`.py` replacement scripts in `sandbox/`) enforcing all 5 preservation dimensions across all 11 roles:
+   - **Dimension 1 — Zero-Paraphrase Artifact Fidelity**: Preserve concrete technical constructs from `<Role>.md` verbatim — exact code blocks, interface/type signatures, SQL/Zod schemas, regexes, numeric bounds/thresholds, error codes, and CLI verification commands. NEVER compress or paraphrase concrete code, formulas, or contracts into vague high-level prose.
+   - **Dimension 2 — Intra-Document Layer Synchronization**: Every requirement in a DA spans up to 5 structural layers: (a) **Type/Schema/Code Blocks**, (b) **Behavioral/Workflow Prose**, (c) **File Modification Inventory** (`Target Files` / `Proposed Changes` `[NEW]`/`[MODIFY]`/`[DELETE]` entries), (d) **Test & Verification Specifications** (`Verification Plan`, unit/integration test descriptions, CLI commands), and (e) **Acceptance Criteria Checklists (`- [ ]`)**. When mutating a DA file, update **all applicable layers within that file** symmetrically — never update prose and `- [ ]` criteria while leaving inline code blocks, `[NEW]`/`[MODIFY]`/`[DELETE]` file manifests, or test sections out of sync.
+   - **Dimension 3 — Multi-Site & Parallel-Branch Completeness**: When a remediation fixes a pattern repeated across parallel branches or symmetric operations within a target section (e.g. `loading` / `updating` / `error` branches, `create` / `update` / `delete` handlers, single-item vs. batch/collection views), scan the entire target section and apply the modification across **all parallel branches and occurrences**, never stopping after patching only the first branch.
+   - **Dimension 4 — Cross-DA & Dependency DAG Propagation**: In multi-file epics (`PRD.md` + `tickets/*.md`), when a remediation modifies a shared contract (function signature, DTO, IPC channel, database table, environment variable, or design token) or introduces a cross-ticket dependency, propagate the update symmetrically across `PRD.md` and **all producer and consumer tickets**, and update **`Blocked by` / prerequisite links** whenever Ticket B now consumes an artifact created in Ticket A.
+   - **Dimension 5 — Exhaustive 1-to-1 Issue & Suggestion Accounting**: Before authoring `State.md` and `Analyzation.md`, audit every accepted `<Role>.md` report item-by-item:
+     - Verify that **100% of sub-requirements (`1, 2, 3...`) and criteria** inside every accepted `Blocking Issue` are present in the mutated DA(s).
+     - Account for **100% of items under `### Suggestions for Improvement (Non-blocking):`** 1-to-1: every suggestion MUST either be applied to the DA (following Dimensions 1–4) and documented under `## Accepted Issues and Suggestions` in `Analyzation.md`, OR rejected with technical rationale under `## Rejected Suggestions` in `Analyzation.md`. NEVER silently drop a suggestion, and NEVER record previously gated/removed Blocking Issues under `## Rejected Suggestions`.
+   - **WBS File Tree Synchronization**: If accepted `Progress` feedback splits, merges, creates, or deletes DA files:
+     - For `DECOMPOSE_PLAN_TO_PRD_AND_TICKETS`: create `<epic_dir>/PRD.md` and `<epic_dir>/tickets/01-...md` .. `0N-...md`, preserve `<source_plan_stem>.bak.md`, delete original monolithic plan file, and update `## Target Directive Artifacts` in `Context.md`.
      - For `SPLIT_PRD`, `MERGE_PRDS`, `EXTRACT_PRD_FROM_TICKETS`, `SPLIT_TICKET_TRACER_BULLETS`: create, rename, or remove target DA files on disk and synchronize `Context.md`.
 3. **Write Verification & Abort Recovery**:
    - Verify on disk that all mutated and restructured DA files were written and are non-empty (`size > 0`).
@@ -341,8 +342,8 @@ To prevent anchoring Host $N+1$ on prior round mutation details, `State.md` cont
 | `<Role_2>` | UNTOUCHED | <Proof that applied DA mutations introduce zero modifications or regressions relevant to this sibling role's domain> |
 
 ## Accepted Issues and Suggestions
-<!-- Group by role: ### N. [<Role> Issue:] <Title> or ### N. [<Role> Suggestion:] <Title>. Document every applied suggestion with target section, applied remediation, and rationale. Record *(None - All active roles cleared with zero blocking defects)* if empty. Zero rejected/gated blocking issues. -->
+<!-- Group by role: ### N. [<Role> Issue:] <Title> or ### N. [<Role> Suggestion:] <Title>. Document every applied blocking issue and every applied non-blocking suggestion with target section, applied remediation, and rationale. Record *(None - All active roles cleared with zero blocking defects)* if empty. Zero rejected/gated blocking issues. -->
 
 ## Rejected Suggestions
-<!-- Group by role: ### N. [<Role> Suggestion:] <Title> with technical rejection rationale, or *(None)*. -->
+<!-- 1-to-1 accounting for every non-blocking suggestion from <Role>.md that was NOT applied to the DA, grouped by role: ### N. [<Role> Suggestion:] <Title> with technical rejection rationale, or *(None)*. NEVER list gated/removed blocking issues here. -->
 ```

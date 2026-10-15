@@ -57,7 +57,7 @@ Write evaluation to `<review_dir>/reports/Testability.md` via `write_to_file`, t
 <!-- For Fixable Defects -->
 1. **[Issue Title]**:
    - **Target Section**: `<Section_Name>`
-   - **Required Fix**: <Exact test seam, schema-validated fixture, or atomic verification criterion required>
+   - **Required Fix**: <Diff-ready testability remediation specifying: (1) exact DI seam/interface/fixture code blocks, (2) all symmetrical component/module & test file sites, (3) any [NEW]/[MODIFY]/[DELETE] test file manifest updates, and (4) synchronized test suite descriptions & atomic Acceptance Criteria>
    - **Why This Would Be Missed**: <Why headless AI implementation writes a self-fulfilling, drifting, or flaky test without this constraint>
    - **Ground-Truth Proof**: <Verified codebase interface/runner path, or `<review_dir>/sandbox/Testability/` harness output>
    - **Macro Flow Proof**: <Proof that seam injection, symmetrical boundaries, and `Verification Plan` assertions align across the DA>

@@ -50,7 +50,7 @@ Write evaluation to `<review_dir>/reports/UXUI.md` via `write_to_file`, then not
 <!-- For Fixable Defects -->
 1. **[Issue Title]**:
    - **Target Section**: `<Section_Name>`
-   - **Required Fix**: <Grounded JSX/TSX/ARIA/event-handler/tokenized-CSS remediation + atomic Given/When/Then Acceptance Criteria. Zero invented tokens or magic-pixel offsets>
+   - **Required Fix**: <Diff-ready UI remediation specifying: (1) grounded JSX/TSX/ARIA/event-handler/tokenized-CSS code blocks (zero invented tokens or magic-pixel offsets), (2) all parallel UI state branches & symmetrical parent/child component props, (3) any [NEW]/[MODIFY]/[DELETE] stylesheet/component Target Files additions, and (4) synchronized test descriptions & atomic Given/When/Then Acceptance Criteria>
    - **Why This Would Be Missed**: <Why a headless AI implementer without eyes or manual browser testing silently misses this UX/a11y/focus defect>
    - **Ground-Truth Proof**: <Exact file path and line number verifying theme/elevation tokens, component structure, or view lifecycle on disk>
    - **Macro Flow Proof**: <Proof that layout stability (CLS=0), focus anchor continuity, error recovery controls, and symmetrical state transitions remain intact>

@@ -61,7 +61,7 @@ Write evaluation to `<review_dir>/reports/Security.md` via `write_to_file`, then
 <!-- For Fixable Defects -->
 1. **[Issue Title]**:
    - **Target Section**: `<Section_Name>`
-   - **Required Fix**: <Exact security remediation and contract specification required>
+   - **Required Fix**: <Diff-ready security remediation specifying: (1) exact authz/schema/sanitization/CSP code blocks, (2) all parallel endpoints/branches & symmetrical producer/consumer sites, (3) any [NEW]/[MODIFY]/[DELETE] file manifest updates, and (4) synchronized adversarial test & Acceptance Criteria updates>
    - **Why This Would Be Missed**: <Why headless AI implementation silently misses this vulnerability or why symptom does not reveal generalized fix>
    - **Ground-Truth Proof**: <Verified codebase/upstream file path and symbol, or non-colliding target landing location>
    - **Macro Flow Proof**: <Proof that authz lifecycle, trust boundaries, background worker compatibility, and symmetrical endpoints remain unbroken>

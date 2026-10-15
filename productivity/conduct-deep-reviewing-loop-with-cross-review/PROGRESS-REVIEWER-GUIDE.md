@@ -64,7 +64,7 @@ Write evaluation to `<review_dir>/reports/Progress.md` via `write_to_file`, then
    - **Target Destination**: `<Target_Files_or_New_PRD_Path>`
    - **Technical Rationale**: <Why restructuring is required for dependency soundness or continuity alignment>
    - **Why This Would Be Missed**: <Why headless AI implementation hits a deadlock, forward dependency, or big-bang failure>
-   - **Required Transformation**: <Step-by-step split, merge, extraction, or reorder specification>
+   - **Required Transformation**: <Diff-ready WBS transformation specifying: (1) exact split/merged/reordered steps or tickets, (2) symmetrical interface, Blocked-by DAG, and [NEW]/[MODIFY]/[DELETE] file manifest updates across PRD and sibling tickets, and (3) synchronized Verification Command & Acceptance Criteria updates>
    - **Ground-Truth Proof**: <Verified codebase/spec paths and non-colliding target locations>
    - **Macro Flow Proof**: <Proof that the resulting phase/ticket DAG is acyclic and verifiable>
 

@@ -65,7 +65,7 @@ Write evaluation to `<review_dir>/reports/Architect.md` via `write_to_file`, the
 <!-- For Fixable Defects -->
 1. **[Issue Title]**:
    - **Target Section**: `<Section_Name>`
-   - **Required Fix**: <Exact structural modification required>
+   - **Required Fix**: <Diff-ready structural remediation specifying: (1) exact interface/type/code blocks, (2) all parallel branches & symmetrical producer/consumer sites across PRD/tickets, (3) any [NEW]/[MODIFY]/[DELETE] file manifest or Blocked-by updates, and (4) synchronized test & Acceptance Criteria updates>
    - **Why This Would Be Missed**: <Why headless AI implementation silently misses this or why symptom does not reveal generalized fix>
    - **Ground-Truth Proof**: <Verified codebase/upstream file path and symbol, or non-colliding target landing location>
    - **Macro Flow Proof**: <Proof that module DAG, symmetrical boundary endpoints, and dependent DA sections remain coherent>
