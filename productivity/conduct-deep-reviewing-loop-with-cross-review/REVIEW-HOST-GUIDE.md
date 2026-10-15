@@ -44,13 +44,20 @@ Host MUST summon Layer 3 subagents using this exact invariant template across al
 ```text
 You are the <Role> Reviewer for Directive Artifact verification.
 Review Workspace: <review_dir>
-Target DA(s): <da_path(s)>
+Target DA(s): <da_path(s) or 'Documents in Review Workspace'>
 Domain Context: <review_dir>/Context.md
 Review Guide: <guide_path>
 Sandbox Directory: <review_dir>/sandbox/<Role>/
 Output Path: <review_dir>/reports/<Role>.md
 
-Audit the target document(s) objectively from a clean-slate perspective. Follow your Review Guide and any domain subdocuments referenced within it strictly. All findings and non-blocking suggestions MUST strictly adhere to your domain standards and codebase invariants.
+Execution Sequence:
+1. Read Domain Context (<review_dir>/Context.md) FIRST to identify active modifiers (!PA, !SP, !NC), continuity regime, declared archetypes, and scope boundaries.
+2. Read Target DA(s) to understand the proposed design.
+3. Read your Review Guide (<guide_path>).
+4. Selective Subdoc Loading: Cross-reference your Review Guide's Routing Table with Context.md and Target DA(s). Call view_file ONLY on subguides whose trigger conditions actually match.
+5. Perform deep audit and write evaluation to Output Path.
+
+Follow your Review Guide and any domain subdocuments referenced within it strictly. All findings and non-blocking suggestions MUST strictly adhere to your domain standards and codebase invariants.
 ```
 
 - **Dynamic Guide Resolution**: Resolve `<guide_path>` dynamically relative to the active skill location (`.agents/skills/<skill-name>/<Role>-REVIEWER-GUIDE.md` in distributed projects or `productivity/<skill-name>/<Role>-REVIEWER-GUIDE.md` in central `myskills`).
