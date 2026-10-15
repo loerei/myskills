@@ -1,9 +1,6 @@
 # Form State Feedback and Accessible Interaction Flows
 
-Audits form state completeness, WCAG keyboard/screen-reader ergonomics, focus continuity, icon clarity, and event coordination.
-
-> [!IMPORTANT]
-> **Strict Code Ban for UXUI Reports**: The `BAD` code snippets below illustrate buggy patterns to detect when reading a target Directive Artifact. When writing `<review_dir>/reports/UXUI.md`, you **MUST NOT** output concrete CSS, HTML, or JSX code snippets; state all remediations as **Abstract Behavioral Specifications** with testable **Acceptance Criteria (Given/When/Then)** as shown in the `GOOD` blocks.
+Audits form state completeness, WCAG keyboard/screen-reader ergonomics, focus continuity, icon clarity, and event coordination. Pair grounded JSX/TSX/ARIA/event-handler code remediations with atomic Given/When/Then acceptance criteria (never invent unverified token names or magic-pixel offsets).
 
 ## Domain Audit Checklist
 
@@ -27,100 +24,163 @@ Audits form state completeness, WCAG keyboard/screen-reader ergonomics, focus co
 
 ### Anti-Pattern 1: Uninformative Silent Form Failure
 
-```jsx
-// BAD (In Target DA): Button disables silently without explaining why input fields are invalid.
-function SubmitForm({ isValid }) {
+```tsx
+// BAD: Button disables silently without explaining why input fields are invalid.
+function SubmitFormBad({ isValid }: { isValid: boolean }) {
   return <button disabled={!isValid}>Submit</button>;
 }
-```
-- **GOOD (Required Abstract Behavioral Spec for `UXUI.md`)**:
-  - **Specification**: Keep the Submit control focusable in the tab order (`aria-disabled` or active validation trigger) and associate the control with an inline error summary container via `aria-describedby` (`role="alert"`) that renders explicit field recovery instructions upon invalid submission attempts.
-  - **Acceptance Criterion**: *Given* a form with invalid input fields, *when* the user navigates to and activates the Submit button via keyboard or pointer, *then* focus remains anchored, submission is blocked, and an accessible alert summary linked via `aria-describedby` announces the specific field validation errors.
 
-### Anti-Pattern 2: Focus Eviction via Native HTML `disabled` on Active Elements
-
-```jsx
-// BAD (In Target DA): Native disabled on focused button instantly blurs focus to document.body
-async function handleAction(e) {
-  const btn = e.currentTarget;
-  btn.disabled = true; // Browser fires blur and dumps focus to body
-  await performAsyncOperation();
-  btn.disabled = false; // Focus is lost from tab order
-}
-```
-- **GOOD (Required Abstract Behavioral Spec for `UXUI.md`)**:
-  - **Specification**: Replace native HTML `disabled` during in-flight async operations with `aria-disabled="true"` and an in-flight interaction guard (ignoring duplicate click/Enter/Space activations while pending), preserving `document.activeElement` on the invoking button across the async boundary.
-  - **Acceptance Criterion**: *Given* keyboard focus is on the action button, *when* the user triggers the async operation, *then* the button sets `aria-disabled="true"`, retains `document.activeElement` throughout execution, blocks duplicate triggers, and clears `aria-disabled` upon settlement.
-
-### Anti-Pattern 3: Raw Emoji Icons in UI Controls
-
-```jsx
-// BAD (In Target DA): Raw emoji icon lacks theme styling, scales poorly, and renders inconsistently across OSes
-function OpenFolderButton() {
-  return <button className="icon-btn">📁 Open Folder</button>;
-}
-```
-- **GOOD (Required Abstract Behavioral Spec for `UXUI.md`)**:
-  - **Specification**: Replace raw emoji glyphs with inline vector SVG primitives or icon library components bound to theme text color (`currentColor`) with explicit width/height dimensions and `aria-hidden="true"` alongside the visible text label.
-  - **Acceptance Criterion**: *Given* the button renders across light and dark themes, *when* inspected in the DOM, *then* the icon is a vector `<svg aria-hidden="true">` inheriting `currentColor` with zero raw emoji characters.
-
-### Anti-Pattern 4: Unlabeled or Ambiguous Icon-Only Controls
-
-```jsx
-// BAD (In Target DA): Icon-only button on ambiguous domain action without accessible name, text, or tooltip
-function RebaseButton() {
+// GOOD: Keep Submit focusable via aria-disabled and announce validation errors via aria-describedby alert
+function SubmitFormSafe({ isValid, errorMsg, onSubmit }: { isValid: boolean; errorMsg?: string; onSubmit: () => void }) {
   return (
-    <button className="icon-btn" onClick={handleRebase}>
-      <svg className="icon" aria-hidden="true">...</svg>
-    </button>
-  );
-}
-```
-- **GOOD (Required Abstract Behavioral Spec for `UXUI.md`)**:
-  - **Specification**: Retain an explicit visible text label (e.g. `"Rebase Branch"`) on non-canonical domain actions. For canonical icon-only controls in dense toolbars or table rows (e.g. trash delete, settings gear), require both an `aria-label` attribute and a visual tooltip triggered on pointer hover and keyboard focus.
-  - **Acceptance Criterion**: *Given* a toolbar containing domain and canonical actions, *when* rendered, *then* non-canonical domain actions display visible text labels, and every canonical icon-only button exposes a non-empty `aria-label` and displays a tooltip on hover and `:focus-visible`.
-
-### Anti-Pattern 5: Indiscriminate `stopPropagation()` Event Swallowing
-
-```jsx
-// BAD (In Target DA): stopPropagation breaks document dismiss listeners, global shortcuts, and telemetry
-function TableRowCard({ item, onSelectRow }) {
-  return (
-    <div className="row-card" onClick={() => onSelectRow(item.id)}>
-      <input type="checkbox" onClick={(e) => e.stopPropagation()} />
-      <button onClick={(e) => { e.stopPropagation(); performItemDelete(item.id); }}>Delete</button>
+    <div>
+      {errorMsg && <div id="form-err" role="alert">{errorMsg}</div>}
+      <button
+        type="submit"
+        aria-disabled={!isValid}
+        aria-describedby={errorMsg ? "form-err" : undefined}
+        onClick={(e) => { if (!isValid) { e.preventDefault(); return; } onSubmit(); }}
+      >
+        Submit
+      </button>
     </div>
   );
 }
 ```
-- **GOOD (Required Abstract Behavioral Spec for `UXUI.md`)**:
-  - **Specification**: Prohibit `event.stopPropagation()` on nested row controls. Configure the parent row click/keydown handler to ignore events whose target matches an interactive descendant control (`event.target.closest('button, a, input, select, textarea, [role="button"], [data-interactive]')`), or check `event.defaultPrevented` for custom non-native `type="button"` actions, ensuring child checkboxes and buttons execute cleanly while events bubble to `document`.
-  - **Acceptance Criterion**: *Given* a clickable row containing a child checkbox and Delete button, *when* the user activates the child checkbox or Delete button, *then* the child action executes (checkbox toggles or delete fires), the parent row selection handler does not trigger, and document-level click listeners receive the bubbled event.
+- **Acceptance Criterion**: *Given* a form with invalid fields, *when* the user activates Submit via keyboard or pointer, *then* focus remains anchored on the button, submission is blocked, and `#form-err` (`role="alert"`) announces the validation error via `aria-describedby`.
 
-### Anti-Pattern 6: Focus Loss from Destructive Re-renders (`key={index}` & `setTimeout` Focus Hacks)
+### Anti-Pattern 2: Focus Eviction via Native HTML `disabled` on Active Elements
 
-```jsx
-// BAD (In Target DA): Volatile index keys and post-render timeout querySelector focus hacks
-function UserList({ users }) {
-  const [userList, setUserList] = useState(users);
-  const handleDelete = (userId) => {
-    setUserList(prev => prev.filter(u => u.id !== userId));
-    setTimeout(() => {
-      document.querySelector('.user-item-btn')?.focus(); // Brittle post-render focus query
-    }, 150);
+```tsx
+// BAD: Native disabled on focused button instantly blurs focus to document.body
+async function handleActionBad(e: React.MouseEvent<HTMLButtonElement>) {
+  e.currentTarget.disabled = true; // Browser fires blur and dumps focus to document.body
+  await performAsyncOperation();
+  e.currentTarget.disabled = false;
+}
+
+// GOOD: Preserve document.activeElement across async boundary using aria-disabled and in-flight guard
+function ActionButtonSafe({ onAction }: { onAction: () => Promise<void> }) {
+  const [pending, setPending] = useState(false);
+  const handleClick = async () => {
+    if (pending) return;
+    setPending(true);
+    try { await onAction(); } finally { setPending(false); }
+  };
+  return <button type="button" aria-disabled={pending} onClick={handleClick}>Run Job</button>;
+}
+```
+- **Acceptance Criterion**: *Given* keyboard focus is on the button, *when* the async operation runs, *then* the button sets `aria-disabled="true"`, retains `document.activeElement` throughout execution, ignores duplicate activations, and resets `aria-disabled="false"` in `finally`.
+
+### Anti-Pattern 3: Raw Emoji Icons & Unlabeled Icon-Only Controls
+
+```tsx
+// BAD 1: Raw emoji icon renders inconsistently across OSes and ignores theme currentColor
+// BAD 2: Icon-only button on non-canonical domain action ("Rebase") lacks visible text label
+function ToolbarBad({ onOpen, onRebase, onDelete }: { onOpen: () => void; onRebase: () => void; onDelete: () => void }) {
+  return (
+    <div>
+      <button onClick={onOpen}>📁 Open Folder</button>
+      <button onClick={onRebase}><svg aria-hidden="true" /></button>
+      <button onClick={onDelete}><svg aria-hidden="true" /></button>
+    </div>
+  );
+}
+
+// GOOD: Vector SVG bound to currentColor, visible text on domain action, and aria-label + tooltip on canonical icon-only button
+function ToolbarSafe({ onOpen, onRebase, onDelete }: { onOpen: () => void; onRebase: () => void; onDelete: () => void }) {
+  return (
+    <div>
+      <button type="button" onClick={onOpen}>
+        <svg width="16" height="16" fill="currentColor" aria-hidden="true"><use href="#icon-folder" /></svg>
+        <span>Open Folder</span>
+      </button>
+      <button type="button" onClick={onRebase}>
+        <svg width="16" height="16" fill="currentColor" aria-hidden="true"><use href="#icon-git-branch" /></svg>
+        <span>Rebase Branch</span>
+      </button>
+      <button type="button" aria-label="Delete item" title="Delete item" onClick={onDelete}>
+        <svg width="16" height="16" fill="currentColor" aria-hidden="true"><use href="#icon-trash" /></svg>
+      </button>
+    </div>
+  );
+}
+```
+- **Acceptance Criterion**: *Given* the toolbar renders, *when* inspected in the DOM, *then* icons use `<svg aria-hidden="true" fill="currentColor">` with zero raw emojis, non-canonical domain actions display visible text labels, and canonical icon-only buttons expose `aria-label` and hover/focus tooltips.
+
+### Anti-Pattern 4: Indiscriminate `stopPropagation()` Event Swallowing
+
+```tsx
+// BAD: stopPropagation breaks document-level popover dismiss listeners, global shortcuts, and analytics
+function TableRowBad({ item, onSelectRow, onDelete }: { item: { id: string }; onSelectRow: (id: string) => void; onDelete: (id: string) => void }) {
+  return (
+    <div onClick={() => onSelectRow(item.id)}>
+      <input type="checkbox" onClick={(e) => e.stopPropagation()} />
+      <button onClick={(e) => { e.stopPropagation(); onDelete(item.id); }}>Delete</button>
+    </div>
+  );
+}
+
+// GOOD: Parent target filtering ignores interactive descendants while preserving native checkbox toggle and document bubbling
+const INTERACTIVE_SELECTOR = 'button, a, input, select, textarea, [role="button"], [data-interactive]';
+
+function TableRowSafe({ item, onSelectRow, onDelete }: { item: { id: string }; onSelectRow: (id: string) => void; onDelete: (id: string) => void }) {
+  const handleRowClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if ((e.target as Element).closest(INTERACTIVE_SELECTOR)) return;
+    onSelectRow(item.id);
   };
   return (
-    <ul>
-      {userList.map((user, index) => (
-        <li key={index}><button className="user-item-btn" onClick={() => handleDelete(user.id)}>Remove</button></li>
+    <div onClick={handleRowClick}>
+      <input type="checkbox" aria-label={`Select ${item.id}`} />
+      <button type="button" onClick={() => onDelete(item.id)}>Delete</button>
+    </div>
+  );
+}
+```
+- **Acceptance Criterion**: *Given* a clickable row containing a child checkbox and Delete button, *when* the user activates the checkbox or Delete button, *then* the child action executes, `onSelectRow` does not fire, and `document` click listeners still receive the bubbled event.
+
+### Anti-Pattern 5: Focus Loss from Volatile `key={index}` & `setTimeout` DOM Focus Hacks
+
+```tsx
+// BAD: Volatile index keys remount siblings and brittle setTimeout querySelector loses keyboard focus
+function UserListBad({ users, onRemove }: { users: { id: string; name: string }[]; onRemove: (id: string) => void }) {
+  const handleDelete = (id: string) => {
+    onRemove(id);
+    setTimeout(() => document.querySelector<HTMLElement>(".user-btn")?.focus(), 150);
+  };
+  return <ul>{users.map((u, idx) => <li key={idx}><button className="user-btn" onClick={() => handleDelete(u.id)}>{u.name}</button></li>)}</ul>;
+}
+
+// GOOD: Stable entity keys (key={u.id}) and synchronous roving tabindex focus handoff via ref map
+function UserListSafe({ users, onRemove }: { users: { id: string; name: string }[]; onRemove: (id: string) => void }) {
+  const [activeId, setActiveId] = useState<string | undefined>(users[0]?.id);
+  const itemRefs = useRef(new Map<string, HTMLButtonElement>());
+
+  const handleDelete = (index: number, id: string) => {
+    const nextUser = users[index + 1] ?? users[index - 1];
+    onRemove(id);
+    setActiveId(nextUser?.id);
+    if (nextUser) itemRefs.current.get(nextUser.id)?.focus();
+  };
+
+  return (
+    <ul role="list">
+      {users.map((u, idx) => (
+        <li key={u.id}>
+          <button
+            ref={(el) => { if (el) itemRefs.current.set(u.id, el); else itemRefs.current.delete(u.id); }}
+            tabIndex={u.id === activeId ? 0 : -1}
+            onClick={() => handleDelete(idx, u.id)}
+          >
+            Remove {u.name}
+          </button>
+        </li>
       ))}
     </ul>
   );
 }
 ```
-- **GOOD (Required Abstract Behavioral Spec for `UXUI.md`)**:
-  - **Specification**: Bind list items to immutable entity identifiers (`key={user.id}`) to preserve DOM node identity across mutations, and manage composite keyboard focus via a deterministic WAI-ARIA roving `tabindex` state machine that synchronously transfers focus to the next surviving item (or empty-state fallback) without `setTimeout` DOM queries.
-  - **Acceptance Criterion**: *Given* keyboard focus is on item $k$ in a list keyed by stable entity IDs, *when* item $k$ is removed, *then* surviving sibling DOM nodes are retained without remounting and keyboard focus transfers synchronously to item $k+1$ (or $k-1$) with zero `setTimeout` delays.
+- **Acceptance Criterion**: *Given* keyboard focus is on item $k$ in a list keyed by `user.id`, *when* item $k$ is removed, *then* surviving sibling DOM nodes are retained without remounting and focus transfers synchronously to item $k+1$ (or $k-1$) with zero `setTimeout` calls.
 
 ## Failure Modes & Mitigations
 
@@ -129,4 +189,4 @@ function UserList({ users }) {
 - **Inconsistent Emoji Rendering**: Replace raw emoji characters with vector SVGs bound to `currentColor`.
 - **Ambiguous Icon-Only Controls**: Require visible text labels on domain actions; require `aria-label` + hover/focus tooltips on canonical icon-only controls.
 - **Swallowed Global Shortcuts & Dismiss Events**: Ban `stopPropagation()`; use parent `event.target.closest(...)` filtering or custom `defaultPrevented` coordination.
-- **Focus Loss on List Mutation**: Use immutable entity keys (`key={item.id}`) and roving `tabindex` state machines instead of post-render `querySelector` timers.
+- **Focus Loss on List Mutation**: Use immutable entity keys (`key={item.id}`) and roving `tabindex` ref maps instead of post-render `querySelector` timers.

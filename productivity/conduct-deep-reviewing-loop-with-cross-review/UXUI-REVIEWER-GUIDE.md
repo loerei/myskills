@@ -6,9 +6,9 @@ Audits interface flows, accessibility (WCAG), focus continuity, layout stability
 
 - **Clean-Slate Isolation**: Audit target DA(s) solely against codebase ground-truth, `<review_dir>/Context.md`, and this guide. NEVER inspect git history, `<review_dir>/host/`, or other roles' reports/sandboxes.
 - **Single-Pass Exhaustiveness & Forward Simulation**: Scan the entire DA end-to-end and report all UI friction, missing states, focus/a11y flaws, layout shifts, and event suppression defects in one pass. Mentally apply all proposed fixes and re-audit the projected state before writing `<review_dir>/reports/UXUI.md`.
-- **Mandatory Abstract Behavioral Specification (Strict Code Ban)**:
-  - Because `UXUI` operates without a live browser rendering engine to verify CSS cascade or DOM layout side effects, you **MUST NOT** include concrete CSS, HTML, or JSX/TSX code snippets in `<review_dir>/reports/UXUI.md`.
-  - State every `Required Fix` exclusively as an **Abstract Behavioral Specification** paired with single-responsibility **Acceptance Criteria (Given/When/Then)**.
+- **Grounded Code Remediations & Atomic Acceptance Criteria (Zero Semantic Loss)**:
+  - Deliver every `Required Fix` using **concrete, grounded code** — JSX/TSX/HTML markup, WAI-ARIA attributes (`aria-*`, `role`), TypeScript event/focus/state handlers (`event.target.closest(...)`, roving `tabindex`, optimistic rollback, staleness watchdogs), and structural/tokenized CSS (`isolation: isolate`, `@container`, `prefers-reduced-motion: reduce`, `aspect-ratio`, `scrollbar-gutter: stable`, and verified `--zIndex-*` / theme tokens) — paired with single-responsibility **Acceptance Criteria (Given/When/Then)**.
+  - **Ban Invented Tokens & Magic-Pixel Geometry Guessing**: Because `UXUI` operates without a live visual viewport, NEVER fabricate design token names not verified on disk (`Ground-Truth Proof`) and NEVER guess arbitrary pixel coordinates or magic layout offsets (`margin-top: -13px`, `width: calc(100% - 247px)`).
 - **Universal GUI Ground-Truth Invariants**:
   - **Design Tokens & Surface Context**: Verify and cite exact design token names (`theme.css`, token catalog) on disk; NEVER invent token names. On fixed dark/media surfaces, allow surface-scoped high-contrast tokens rather than forcing root light-theme tokens.
   - **Vector SVG Icons vs. Raw Emojis**: Reject raw emoji characters (`📁`, `⚙️`, `🗑️`, `⭐`) in UI markup or mockups; require vector SVG icons bound to `currentColor` (`aria-hidden="true"` when paired with text). Allow icon-only buttons ONLY for universally recognized canonical actions (close, trash delete, settings gear, copy, search) equipped with both `aria-label` and a hover/focus tooltip; require visible text labels on non-canonical domain actions.
@@ -50,7 +50,7 @@ Write evaluation to `<review_dir>/reports/UXUI.md` via `write_to_file`, then not
 <!-- For Fixable Defects -->
 1. **[Issue Title]**:
    - **Target Section**: `<Section_Name>`
-   - **Required Fix**: <Abstract Behavioral Specification and atomic Given/When/Then Acceptance Criteria. STRICTLY NO CSS/DOM/JSX CODE SNIPPETS>
+   - **Required Fix**: <Grounded JSX/TSX/ARIA/event-handler/tokenized-CSS remediation + atomic Given/When/Then Acceptance Criteria. Zero invented tokens or magic-pixel offsets>
    - **Why This Would Be Missed**: <Why a headless AI implementer without eyes or manual browser testing silently misses this UX/a11y/focus defect>
    - **Ground-Truth Proof**: <Exact file path and line number verifying theme/elevation tokens, component structure, or view lifecycle on disk>
    - **Macro Flow Proof**: <Proof that layout stability (CLS=0), focus anchor continuity, error recovery controls, and symmetrical state transitions remain intact>
@@ -67,6 +67,6 @@ Write evaluation to `<review_dir>/reports/UXUI.md` via `write_to_file`, then not
 ## 4. Gate Response Protocol (Host Interaction)
 
 If notified that Host filed `<review_dir>/reports/UXUI_Gated_Issues.md`, read it via `view_file`, execute ONE action below, and notify Host via `send_message`:
-1. **Refine / Complete as Requested**: Edit `<review_dir>/reports/UXUI.md` in-place via `write_to_file` to strip any accidental code snippets into pure Abstract Behavioral Specifications, supply verified token/component proofs on disk, decompose compound criteria, or replace unsafe `preventDefault()` demands on native controls with parent target filtering.
+1. **Refine / Complete as Requested**: Edit `<review_dir>/reports/UXUI.md` in-place via `write_to_file` to replace any unverified magic-pixel geometry or invented tokens with grounded codebase tokens, supply verified component proofs on disk, decompose compound criteria, or replace unsafe `preventDefault()` demands on native controls with parent target filtering.
 2. **Remove**: Edit `<review_dir>/reports/UXUI.md` in-place to remove the invalid/false-positive issue (e.g. optimistic UI demanded on destructive writes) and update `- **Status**:`.
 3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/UXUI_Explain.md` with deeper codebase evidence AND update `<review_dir>/reports/UXUI.md` in-place. NEVER repeat stale arguments.
