@@ -87,15 +87,13 @@ Call `invoke_subagent` with `TypeName: "review_host"`, `Role: "Review Host & Cri
 Immediately upon receiving completion from `review_host` for Round $N$:
 1. Read `<review_dir>/host/Analyzation.md` and `<review_dir>/host/State.md`.
 2. Terminate `review_host` via `manage_subagents(Action="kill")` (cascading termination to all Layer 3 subagents).
-3. Archive Round $N$ into `/tmp/deep-review-trace-<short_title>/round-<NN>/` (e.g. `round-01`, `round-02`):
-   - If Round 1 and `<review_dir>/host/Reviewer_Choice_Rationale.md` exists, copy it to `/tmp/deep-review-trace-<short_title>/00-initial-context/Reviewer_Choice_Rationale.md`.
-   - Copy `<review_dir>/host/State.md` and `<review_dir>/host/Analyzation.md` into `/tmp/deep-review-trace-<short_title>/round-<NN>/`.
-   - Move all files in `<review_dir>/reports/` into `/tmp/deep-review-trace-<short_title>/round-<NN>/reports-final/`.
-   - Move all files in `<review_dir>/host/trace/` into `/tmp/deep-review-trace-<short_title>/round-<NN>/negotiation-trace/`.
-   - Move all contents of `<review_dir>/sandbox/` into `/tmp/deep-review-trace-<short_title>/round-<NN>/sandbox/`.
-   - Copy current target DA(s) (and updated `Context.md` if WBS changed) into `/tmp/deep-review-trace-<short_title>/round-<NN>/da-snapshot/`. If sibling `.bak.md` files exist, copy them into `/tmp/deep-review-trace-<short_title>/round-<NN>/da-pre-mutation/`.
-   - If `!PA` / `!WA` is NOT active in `<review_dir>/Context.md` and verdict is `ROUND_REVISION_NEEDED`, delete the sibling `<da_stem>.bak.md` and `<review_dir>/Context.bak.md` files from the repo after copying them into `da-pre-mutation/`.
-4. Delete `<review_dir>/host/Analyzation.md` (preserving `<review_dir>/host/State.md` and `<review_dir>/host/Reviewer_Choice_Rationale.md`).
+3. Archive Round $N$ into `/tmp/deep-review-trace-<short_title>/round-<NN>/`:
+   Run the bundled archival script (atomically snapshots target DAs, moves reports/trace/sandbox, preserves pre-mutation `.bak.md` in `da-pre-mutation/`, respects `!PA` retention, and purges `host/Analyzation.md`):
+   ```bash
+   pwsh productivity/conduct-deep-reviewing-loop-with-cross-review/scripts/archive-round.ps1 -ReviewDir <review_dir> -Target <target_da_or_dir> -Round <N> [-Pause]
+   # Or cross-platform Node.js:
+   node productivity/conduct-deep-reviewing-loop-with-cross-review/scripts/archive-round.mjs --review-dir <review_dir> --target <target_da_or_dir> --round <N> [--pause]
+   ```
 
 #### 3B. Verdict Routing Table
 
