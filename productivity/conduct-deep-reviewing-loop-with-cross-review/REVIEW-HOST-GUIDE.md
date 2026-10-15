@@ -196,11 +196,11 @@ Evaluate Layer 3 reports strictly per **tier batch** after `PendingTierRoles` is
   - **1+ accepted blocking defects**: Proceed to Step 4B.
 
 ### Step 4B: Cross-Domain Remediation Review
-When a tier resolves with 1+ accepted blocking defects (`STATUS: REVISIONS NEEDED`), validate remediations against cross-domain standards before Early Suspension (Step 5) or DA Mutation (Step 7):
-1. **Collect Remediations**: Identify all `<Role>.md` reports in the resolved tier with status `REVISION NEEDED`.
-2. **Determine Touched Roles (Selective Triggering)**:
-   - **Zero Cross-Domain Impact (`Touched Roles: None`)**: If a remediation is strictly self-contained within a single module/function (e.g. fixing an internal calculation, adding error `cause` chaining, refining local unit test assertions, pinning a lockfile version) and does NOT alter: (a) cross-module interfaces/DTOs, (b) persistent schemas/migrations, (c) state machine transitions or concurrency locks, (d) security/authz boundaries or ingress schemas, (e) UI layout/interaction flows, or (f) ticket WBS sequencing $\rightarrow$ assign `Touched Roles: None` and skip cross-review for that remediation.
-   - **Cross-Cutting Remediations**: Identify touched active roles from the full roster (excluding `<AuthorRole>` itself):
+When a tier batch (`<FailingTier>`) resolves with 1+ accepted blocking defects (`STATUS: REVISIONS NEEDED`), validate remediations against cross-domain standards before Early Suspension (Step 5) or DA Mutation (Step 7):
+1. **Collect Remediations**: Identify all `<Role>.md` reports in the resolved `<FailingTier>` with status `REVISION NEEDED`.
+2. **Determine Cross-Review Roles (Selective Triggering)**:
+   - **Zero Cross-Domain Impact (`Cross-Review Roles: None`)**: If a remediation is strictly self-contained within a single module/function (e.g. fixing an internal calculation, adding error `cause` chaining, refining local unit test assertions, pinning a lockfile version) and does NOT alter: (a) cross-module interfaces/DTOs, (b) persistent schemas/migrations, (c) state machine transitions or concurrency locks, (d) security/authz boundaries or ingress schemas, (e) UI layout/interaction flows, or (f) ticket WBS sequencing $\rightarrow$ assign `Cross-Review Roles: None` and skip cross-review for that remediation.
+   - **Cross-Cutting Remediations**: Select cross-review roles from the active roster (excluding `<AuthorRole>` itself):
      - Public contracts, module boundaries, shared state, or cross-subsystem dependencies $\rightarrow$ `Architect`
      - Prerequisite tasks, ticket delivery order, or ticket scope expansion $\rightarrow$ `Progress`
      - Package dependencies, build/bundler configs, compiler/environment contracts $\rightarrow$ `Readiness`
@@ -208,6 +208,7 @@ When a tier resolves with 1+ accepted blocking defects (`STATUS: REVISIONS NEEDE
      - Database schemas, configuration formats, or caching/query strategies $\rightarrow$ `DataMigration`, `Performance`
      - State machines, concurrency control, or algorithmic logic $\rightarrow$ `Logic`, `Edgecase`, `Testability`
      - Component composition, focus lifecycle, event handling, or rendering $\rightarrow$ `UXUI`
+   - **`Cross-Review Tier Invariant`**: Cross-Reviewers validate `<AuthorRole>`'s proposed remediation in-flight; they are NOT primary tier reviewers for the round and **MUST NEVER shift, override, or alter `Highest Modified Tier` or `Reviewer Accounting` in `host/State.md`**.
 3. **Invoke Cross-Reviewers**: Launch all `<AuthorRole>-CR-<CrossReviewerRole>` subagents simultaneously in a single wave per §2B (`CRWave = 1`). Initialize `PendingCrossReviewRoles[AuthorRole]` and arm a 600s timer per Step 3.
 4. **Wakeup & Immediate Termination**: Upon receiving `"CR-COMPLETE <VERDICT>: <AuthorRole>-CR-<CrossReviewerRole>"` via `send_message`, verify report on disk, de-queue, and immediately terminate that cross-reviewer via `manage_subagents(Action="kill")`.
 5. **Cross-Review Resolution & Trace Preservation**:
@@ -217,15 +218,15 @@ When a tier resolves with 1+ accepted blocking defects (`STATUS: REVISIONS NEEDE
    - Upon receiving `"CR-UPDATED: <AuthorRole>"`:
      1. Move `<AuthorRole>-Cross-Review-Requests.md` and prior `<AuthorRole>-CR-*.md` files into `<review_dir>/host/trace/cr_w<CRWave>_...`, and purge `<review_dir>/sandbox/<AuthorRole>-CR-*/`.
      2. Increment `CRWave += 1`.
-     3. **Re-Evaluate Touched Roles on Updated Remediation**: Inspect the updated `<AuthorRole>.md` and spawn fresh clean-slate cross-reviewers per §2B for all previously gating roles **PLUS any active role (including roles that returned `CROSS-PASSED` in Wave 1 or newly touched roles) whose domain standards are affected by the newly incorporated changes**.
-     4. Repeat until all touched roles return `CROSS-PASSED`.
+     3. **Re-Evaluate Cross-Review Roles on Updated Remediation**: Inspect the updated `<AuthorRole>.md` and spawn fresh clean-slate cross-reviewers per §2B for all previously gating roles **PLUS any active role (including roles that returned `CROSS-PASSED` in Wave 1 or newly affected roles) whose domain standards are affected by the newly incorporated changes**.
+     4. Repeat until all selected cross-review roles return `CROSS-PASSED`.
 
 ### Step 5: Early Suspension
-- After Step 4B completes for a tier with accepted blocking defects: reset `PassCount = 0`, cancel downstream tiers for that round, and transition directly to Step 7.
+- After Step 4B completes for a tier batch (`<FailingTier>`, e.g. `Layer 3.X`) with accepted blocking defects: bind **`Highest Modified Tier = <FailingTier>`** (the exact DAG tier whose primary reviewer(s) returned `STATUS: REVISIONS NEEDED` — NEVER a Cross-Reviewer's tier from Step 4B), reset `PassCount = 0`, cancel downstream tiers for that round, and transition directly to Step 7.
 
 ### Step 6: Snapshot Delta Backfill & Full Sweep Clearance Gate
 - When all active roles in the current pass clear with zero blocking defects:
-  - **Snapshot Delta Backfill**: If un-evaluated active roles exist on snapshot $S_N$ (skipped upstream roles or `UNTOUCHED` roles from `host/State.md`), summon ONLY those skipped roles in topological DAG sequence on snapshot $S_N$ (applying Steps 3–5 if defects or impasses arise).
+  - **Snapshot Delta Backfill**: If un-evaluated active roles exist on snapshot $S_N$ (skipped upstream roles or `UNTOUCHED` roles from `host/State.md`), summon ONLY those skipped roles in topological DAG sequence on snapshot $S_N$ (if any backfilled tier returns blocking defects or impasses, that backfilled tier becomes `<FailingTier>` and executes Steps 4–5).
   - **Full Sweep Clearance Check**: Once 100% of active roles in the frozen roster have audited and passed snapshot $S_N$ with zero blocking defects:
     - Increment `PassCount += 1`.
     - Set `Gate Verdict: FINAL_PASS` if `PassCount >= SP`, else `Gate Verdict: ROUND_PASS`, and transition to Step 7.
@@ -281,7 +282,7 @@ When Host applies verified mutations to the DA, it transitions to static snapsho
 
 ## Required Reviewer Action
 Read the gated issues below. For each issue, choose ONE action:
-1. **Refine / Complete as Requested**: Update `<Role>.md` in-place, resolving the gate failure (e.g. converting ungrounded snippets into an abstract specification, converting speculative impasse claims into fixable defects with concrete remediation and updating report header to `STATUS: REVISIONS NEEDED`, supplying missing symmetrical boundary endpoints, or harmonizing contradicting assertions in dependent sections) with verified proofs.
+1. **Refine / Complete as Requested**: Update `<Role>.md` in-place, resolving the gate failure (e.g. replacing ungrounded snippets or invented tokens with verified codebase symbols/tokens, converting speculative impasse claims into fixable defects with concrete remediation and updating report header to `STATUS: REVISIONS NEEDED`, supplying missing symmetrical boundary endpoints, or harmonizing contradicting assertions in dependent sections) with verified proofs.
 2. **Remove**: Remove the issue from `<Role>.md` in-place (set status to `STATUS: PASS` if zero blocking issues remain, or `STATUS: REVISIONS NEEDED` if other fixable defects remain).
 3. **Reject Gating/Removal and Explain**: Author `<Role>_Explain.md` with differing/deeper codebase proof (or empirical probe logs / sandbox traces) AND update `<Role>.md` in-place with verified proofs and clean remediation text (or verified `Infeasibility Proof` and `Alternative Architectural Paths`).
 Notify Host via message when done.
@@ -309,7 +310,8 @@ To prevent anchoring Host $N+1$ on prior round mutation details, `State.md` cont
   | `<Role_1>` | TOUCHED |
   | `<Role_2>` | UNTOUCHED |
   ```
-  - **Mandatory 100% Tier Coverage**: List 100% of active roles in `Highest Modified Tier` (never write `*(None)*` or omit active roles). Mark `TOUCHED` if the role raised an accepted blocking defect OR if applied DA mutations touch contracts, seams, requirements, or dependencies relevant to that role's domain checklist. Mark `UNTOUCHED` ONLY if applied mutations introduce zero modifications, additions, or regressions relevant to that role's domain (default to `TOUCHED` on any ambiguity).
+  - **`Highest Modified Tier` Invariant (`<FailingTier>`)**: `Highest Modified Tier` MUST ALWAYS be the exact DAG tier (`Layer 3.1`, `Layer 3.2`, `Layer 3.3`, or `Layer 3.4`) whose **primary Reviewer (`<Role>.md`)** returned `STATUS: REVISIONS NEEDED` and triggered Early Suspension in Step 5 of the current round (e.g. if `UXUI` in `Layer 3.4` failed, `Highest Modified Tier` MUST be `Layer 3.4`). **NEVER** shift `Highest Modified Tier` to an upstream tier because a Cross-Reviewer (`<AuthorRole>-CR-<CrossReviewerRole>`) from that upstream tier participated or gated in Step 4B, or because the remediation modifies an upstream domain section (all upstream tiers are automatically scheduled via §5 Step 6 Snapshot Delta Backfill once `<FailingTier>` passes in Round $N+1$).
+  - **Mandatory 100% Intra-Tier Coverage (`Reviewer Accounting`)**: List 100% of active primary roles belonging strictly to that exact `Highest Modified Tier` (`<FailingTier>`) — NEVER list roles from other tiers, never write `*(None)*`, and never omit active sibling roles in `<FailingTier>` (e.g. if `Highest Modified Tier` is `Layer 3.4`, the table lists ONLY `| \`UXUI\` | TOUCHED |`). Within `<FailingTier>`, mark a role `TOUCHED` if it raised an accepted blocking defect OR if applied DA mutations touch contracts, seams, requirements, or dependencies relevant to that sibling role's domain checklist; mark a sibling role in `<FailingTier>` `UNTOUCHED` ONLY if applied mutations introduce zero modifications, additions, or regressions relevant to its domain (default to `TOUCHED` on any ambiguity).
 - **When verdict is `ROUND_PASS`, `FINAL_PASS`, `PLAN_INFEASIBLE`, or `ABORTED_MUTATION_FAILURE`**:
   ```markdown
   # Gate State
@@ -335,8 +337,8 @@ To prevent anchoring Host $N+1$ on prior round mutation details, `State.md` cont
 ## Reviewer Accounting Rationale (Layer 3.X)
 | Role Identifier | Status | Technical Rationale |
 | :--- | :---: | :--- |
-| `<Role_1>` | TOUCHED | <How applied DA mutations touch this role's contracts, seams, or domain> |
-| `<Role_2>` | UNTOUCHED | <Proof that applied DA mutations introduce zero modifications or regressions relevant to this role's domain> |
+| `<Role_1>` | TOUCHED | <How applied DA mutations touch this role's contracts, seams, or domain within Highest Modified Tier> |
+| `<Role_2>` | UNTOUCHED | <Proof that applied DA mutations introduce zero modifications or regressions relevant to this sibling role's domain> |
 
 ## Accepted Issues and Suggestions
 <!-- Group by role: ### N. [<Role> Issue:] <Title> or ### N. [<Role> Suggestion:] <Title>. Document every applied suggestion with target section, applied remediation, and rationale. Record *(None - All active roles cleared with zero blocking defects)* if empty. Zero rejected/gated blocking issues. -->
