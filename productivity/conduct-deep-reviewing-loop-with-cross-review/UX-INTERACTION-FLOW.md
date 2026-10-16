@@ -1,65 +1,133 @@
-# Form State Feedback and Accessible Interaction Flows
+# Interactive Flows, Physical Focus Retention, and Front-End DX
 
-Audits form state completeness, WCAG keyboard/screen-reader ergonomics, focus continuity, icon clarity, and event coordination. Pair grounded JSX/TSX/ARIA/event-handler code remediations with atomic Given/When/Then acceptance criteria (never invent unverified token names or magic-pixel offsets).
+Audits 4-state interaction completeness, physical focus retention against `document.body` eviction on unmount/async boundaries, icon clarity, browser-safe event coordination, and clean, debt-free Front-End Developer Experience (DX) & maintainability. Pair grounded JSX/TSX/event-handler/tokenized-CSS code remediations with atomic Given/When/Then acceptance criteria (never invent unverified token names or magic-pixel offsets).
 
 ## Domain Audit Checklist
 
-### 1. Form Validation & User Guidance
-- [ ] **Explicit Four-State Coverage**: Verify interactive forms explicitly specify all four states: `Idle`, `Submitting`, `Success`, and `Error`.
-- [ ] **Contextual Error Messages**: Keep submit buttons actionable/focusable and associate validation error summaries with inputs via `aria-invalid="true"` and `aria-describedby` (`role="alert"`) rather than silently disabling submit controls without explanation.
+### 1. Interactive State Completeness & User Guidance
+- [ ] **Explicit Four-State Coverage**: Verify interactive forms, dialogs, and action flows explicitly specify all four states: `Idle`, `Submitting` / `Loading`, `Success`, and `Error` (including retry or recovery affordances in `Error` states).
+- [ ] **Actionable Validation & Error Feedback**: Keep submit/action triggers responsive and display clear, contextual validation messages explaining why an input or action is blocked rather than silently failing or leaving dead, unclickable controls without explanation.
 
-### 2. Accessible Ergonomics (WCAG Standards)
-- [ ] **Keyboard Navigation & Modal Focus Return**: Confirm all interactive visual controls receive keyboard focus in logical sequential order, modals trap focus while open, and closing a modal returns focus deterministically to its invoking trigger.
-- [ ] **ARIA Roles & Attributes**: Verify screen-reader attributes (`aria-expanded`, `aria-invalid`, `aria-describedby`, `aria-activedescendant`) dynamically update to match component state changes.
-- [ ] **In-Flight Focus Continuity**: For buttons initiating async jobs, require `aria-disabled="true"` with in-flight interaction blocking rather than native HTML `disabled` (which causes browsers to blur the control and evict focus to `document.body`).
-- [ ] **Vector Icon Accessibility & Parity**: Require clean vector SVGs (`currentColor`, explicit dimensions, and `aria-hidden="true"` when paired with text, or `aria-label` on icon-only controls). Strictly reject raw emoji characters (`📁`, `⚙️`, `🗑️`, `⭐`) as interface icons.
-- [ ] **Icon-Only Controls & Tooltips**: In space-constrained toolbars or row action slots, allow icon-only controls ONLY for universally recognized canonical actions (e.g. settings gear, trash delete, close) paired with both `aria-label` and a visual hover/focus tooltip. Require visible text labels on non-canonical domain actions (e.g. "Rebase Branch") and unconfirmed destructive actions.
-- [ ] **Browser-Safe Event Coordination (Ban on `stopPropagation()`)**: Reject specifications prescribing `event.stopPropagation()` or `event.stopImmediatePropagation()`. Coordinate nested interactive elements (e.g. buttons, checkboxes, or links inside a clickable row/card) while preserving event bubbling to `document` listeners via:
+### 2. Physical Focus Retention (Preventing `document.body` Eviction)
+- [ ] **Modal & Overlay Unmount Focus Return**: Confirm that when a modal dialog, drawer, or popover closes and unmounts, focus returns deterministically to its invoking trigger element (or a designated surviving container if the trigger itself unmounted) so keyboard/gamepad `Tab` and `Space` navigation never resets to `document.body`.
+- [ ] **Active List Item Deletion Focus Handoff**: When the user deletes or removes the currently focused item in a dynamic list (e.g. deleting an active save slot, row, or card), synchronously transfer focus to the adjacent surviving item (`items[index + 1] ?? items[index - 1]`) or the empty-state fallback container via a lightweight ref lookup. Never allow unmount to drop focus to `document.body`, and strictly reject post-render `setTimeout(() => document.querySelector(...))` focus hacks.
+- [ ] **In-Flight Async Button Focus Retention**: For focused buttons initiating async jobs, block duplicate activations via a pending state guard and `aria-disabled="true"` (rather than native HTML `disabled` when preserving active focus matters, since native `disabled` causes Chromium/browsers to blur the active element and dump focus to `document.body`).
+- [ ] **Pragmatic Scope Boundary (`PRAGMATIC_PRODUCT_UX`)**: When `Context.md` declares `UX/UI Regime: PRAGMATIC_PRODUCT_UX`, standard clickable controls (filter pills, category bars, tabs, badges, toolbars, and list rows built with native `<button>`, `<a>`, or `<input>` elements) rely on native browser `Tab`/`Shift+Tab` and pointer/keyboard activation. **NEVER** demand WAI-ARIA roving `tabindex` cyclic arrow-key state machines, `aria-activedescendant`, or screen-reader-only `useId()` `aria-labelledby`/`aria-describedby` graphs under `PRAGMATIC_PRODUCT_UX` (those belong strictly to `UX-ACCESSIBILITY-WCAG.md` under `STRICT_ACCESSIBILITY_COMPLIANCE`).
+
+### 3. Front-End DX, Clean Architecture & Zero Tech Debt
+- [ ] **Browser-Safe Event Coordination (Ban on `stopPropagation()`)**: Reject specifications prescribing `event.stopPropagation()` or `event.stopImmediatePropagation()`, which silently break document-level outside-click dismiss listeners and global shortcuts. Coordinate nested interactive elements inside clickable containers via:
   1. **Parent Target Filtering (Mandatory when children include native checkboxes, radio inputs, links, or submit buttons)**: The parent container's click/keydown handler ignores events whose target matches an interactive descendant (`event.target.closest('button, a, input, select, textarea, [role="button"], [data-interactive]')`), preserving both native browser default behavior and document bubbling.
   2. **Preventable Event Contracts (Valid for custom non-native `type="button"` actions)**: The child action invokes `event.preventDefault()` and the parent handler exits early when `event.defaultPrevented` is true. NEVER prescribe `event.preventDefault()` on native checkboxes, radio buttons, links, or submit buttons where it cancels the browser's native toggle/navigation action.
-- [ ] **Stable List Focus & Roving Tabindex**: Enforce immutable entity keys (`key={item.id}`) and WAI-ARIA roving `tabindex` / `aria-activedescendant` state machines on dynamic collections, strictly rejecting post-render `setTimeout` DOM re-querying (`querySelector`) focus hacks.
-- [ ] **Reusable Component Primitive Ergonomics**: When the target DA specifies reusable UI primitives or component library controls, verify support for both Controlled (`value` + `onChange`) and Uncontrolled (`defaultValue`) state contracts, and require forwarding the underlying DOM element reference (`ref` / `forwardRef`) so host consumers can manage focus and layout measurements.
+- [ ] **Immutable Entity Keys & React Render Hygiene**: Enforce stable domain entity IDs (`key={item.id}`) on all dynamic collections; strictly reject volatile array index keys (`key={index}`) that corrupt child state and force unnecessary DOM remounts on insertion/deletion/reordering. Avoid redundant `useEffect` mirror-state synchronization when values can be derived during render.
+- [ ] **Vector Icon Clarity & Canonical Tooltips**: Require clean vector SVGs (`currentColor`, explicit dimensions, and `aria-hidden="true"` when paired with text). Strictly reject raw emoji characters (`📁`, `⚙️`, `🗑️`, `⭐`) as UI icons. Allow icon-only buttons ONLY for universally recognized canonical actions (close, trash delete, settings gear, search, copy) paired with `aria-label` and a hover/focus tooltip (`title` or tooltip primitive); require visible text labels on ambiguous domain actions.
+- [ ] **Extensible & Maintainable Component Contracts**: Verify shared/reusable UI primitives expose clean, minimal TypeScript prop interfaces without boolean prop explosion, support Controlled (`value` + `onChange`) or Uncontrolled (`defaultValue`) contracts where appropriate, forward `ref` when host consumers need DOM access, and deterministically clean up timers, observers, and listeners on unmount.
 
 ## Concrete Anti-Patterns
 
-### Anti-Pattern 1: Uninformative Silent Form Failure
+### Anti-Pattern 1: Silent Form Failure & Missing Error Recovery State
 
 ```tsx
-// BAD: Button disables silently without explaining why input fields are invalid.
-function SubmitFormBad({ isValid }: { isValid: boolean }) {
-  return <button disabled={!isValid}>Submit</button>;
+// BAD: Submit button disables silently with no validation feedback and no error recovery state.
+function SaveConfigFormBad({ isValid, onSave }: { isValid: boolean; onSave: () => Promise<void> }) {
+  return <button disabled={!isValid} onClick={onSave}>Save</button>;
 }
 
-// GOOD: Keep Submit focusable via aria-disabled and announce validation errors via aria-describedby alert
-function SubmitFormSafe({ isValid, errorMsg, onSubmit }: { isValid: boolean; errorMsg?: string; onSubmit: () => void }) {
+// GOOD: Explicit 4-state feedback (Idle/Saving/Success/Error) with actionable validation message
+function SaveConfigFormSafe({ isValid, validationMsg, onSave }: { isValid: boolean; validationMsg?: string; onSave: () => Promise<void> }) {
+  const [status, setStatus] = useState<"idle" | "saving" | "error">("idle");
+  const [errorText, setErrorText] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!isValid || status === "saving") return;
+    setStatus("saving");
+    setErrorText(null);
+    try {
+      await onSave();
+      setStatus("idle");
+    } catch (err) {
+      setStatus("error");
+      setErrorText(err instanceof Error ? err.message : "Failed to save configuration.");
+    }
+  };
+
   return (
-    <div>
-      {errorMsg && <div id="form-err" role="alert">{errorMsg}</div>}
-      <button
-        type="submit"
-        aria-disabled={!isValid}
-        aria-describedby={errorMsg ? "form-err" : undefined}
-        onClick={(e) => { if (!isValid) { e.preventDefault(); return; } onSubmit(); }}
-      >
-        Submit
+    <form onSubmit={handleSubmit}>
+      {validationMsg && <p className="form-validation-msg">{validationMsg}</p>}
+      {status === "error" && <p className="form-error-banner">{errorText}</p>}
+      <button type="submit" aria-disabled={!isValid || status === "saving"}>
+        {status === "saving" ? "Saving..." : "Save"}
       </button>
+    </form>
+  );
+}
+```
+- **Acceptance Criterion**: *Given* invalid form input or a rejected save promise, *when* the user attempts to submit, *then* the form prevents duplicate in-flight submissions, displays the specific validation or error message, and keeps the submit control mounted for retry without evicting focus to `document.body`.
+
+### Anti-Pattern 2: Focus Eviction to `document.body` on Active Item Deletion or Modal Unmount
+
+```tsx
+// BAD: Deleting a focused row or unmounting a modal without focus handoff drops activeElement to document.body,
+// and setTimeout + querySelector races against React commits.
+function SaveSlotListBad({ slots, onDelete }: { slots: { id: string; label: string }[]; onDelete: (id: string) => void }) {
+  const handleDelete = (id: string) => {
+    onDelete(id);
+    setTimeout(() => document.querySelector<HTMLElement>(".slot-delete-btn")?.focus(), 100);
+  };
+  return <ul>{slots.map((s, idx) => <li key={idx}><button className="slot-delete-btn" onClick={() => handleDelete(s.id)}>Delete {s.label}</button></li>)}</ul>;
+}
+
+// GOOD: Stable entity key (key={s.id}) and lightweight ref handoff to adjacent item on active item deletion
+// (prevents focus drop to document.body without forcing complex roving tabindex state machines on the list)
+function SaveSlotListSafe({ slots, onDelete }: { slots: { id: string; label: string }[]; onDelete: (id: string) => void }) {
+  const deleteBtnRefs = useRef(new Map<string, HTMLButtonElement>());
+  const emptyFallbackRef = useRef<HTMLDivElement>(null);
+
+  const handleDelete = (index: number, id: string) => {
+    const neighbor = slots[index + 1] ?? slots[index - 1];
+    onDelete(id);
+    queueMicrotask(() => {
+      if (neighbor) {
+        deleteBtnRefs.current.get(neighbor.id)?.focus();
+      } else {
+        emptyFallbackRef.current?.focus();
+      }
+    });
+  };
+
+  return (
+    <div ref={emptyFallbackRef} tabIndex={-1}>
+      <ul>
+        {slots.map((s, idx) => (
+          <li key={s.id}>
+            <span>{s.label}</span>
+            <button
+              type="button"
+              ref={(el) => { if (el) deleteBtnRefs.current.set(s.id, el); else deleteBtnRefs.current.delete(s.id); }}
+              onClick={() => handleDelete(idx, s.id)}
+            >
+              Delete
+            </button>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }
 ```
-- **Acceptance Criterion**: *Given* a form with invalid fields, *when* the user activates Submit via keyboard or pointer, *then* focus remains anchored on the button, submission is blocked, and `#form-err` (`role="alert"`) announces the validation error via `aria-describedby`.
+- **Acceptance Criterion**: *Given* focus is on the Delete button of slot $k$ in a list keyed by `slot.id`, *when* slot $k$ is deleted, *then* surviving sibling DOM nodes are retained without remounting and focus transfers deterministically to slot $k+1$ (or $k-1$, or the container when empty) with zero focus drop to `document.body` and zero `setTimeout` DOM queries.
 
-### Anti-Pattern 2: Focus Eviction via Native HTML `disabled` on Active Elements
+### Anti-Pattern 3: Focus Eviction via Native HTML `disabled` on Active Async Buttons
 
 ```tsx
-// BAD: Native disabled on focused button instantly blurs focus to document.body
+// BAD: Setting native disabled on a focused button immediately blurs focus to document.body
 async function handleActionBad(e: React.MouseEvent<HTMLButtonElement>) {
-  e.currentTarget.disabled = true; // Browser fires blur and dumps focus to document.body
+  e.currentTarget.disabled = true;
   await performAsyncOperation();
   e.currentTarget.disabled = false;
 }
 
-// GOOD: Preserve document.activeElement across async boundary using aria-disabled and in-flight guard
+// GOOD: Preserve document.activeElement across async boundary using pending guard + aria-disabled
 function ActionButtonSafe({ onAction }: { onAction: () => Promise<void> }) {
   const [pending, setPending] = useState(false);
   const handleClick = async () => {
@@ -70,9 +138,9 @@ function ActionButtonSafe({ onAction }: { onAction: () => Promise<void> }) {
   return <button type="button" aria-disabled={pending} onClick={handleClick}>Run Job</button>;
 }
 ```
-- **Acceptance Criterion**: *Given* keyboard focus is on the button, *when* the async operation runs, *then* the button sets `aria-disabled="true"`, retains `document.activeElement` throughout execution, ignores duplicate activations, and resets `aria-disabled="false"` in `finally`.
+- **Acceptance Criterion**: *Given* keyboard focus is on the action button, *when* the async operation runs, *then* the button sets `aria-disabled="true"`, retains `document.activeElement` throughout execution, blocks duplicate activations, and resets `aria-disabled="false"` in `finally`.
 
-### Anti-Pattern 3: Raw Emoji Icons & Unlabeled Icon-Only Controls
+### Anti-Pattern 4: Raw Emoji Icons & Unlabeled Icon-Only Controls
 
 ```tsx
 // BAD 1: Raw emoji icon renders inconsistently across OSes and ignores theme currentColor
@@ -108,7 +176,7 @@ function ToolbarSafe({ onOpen, onRebase, onDelete }: { onOpen: () => void; onReb
 ```
 - **Acceptance Criterion**: *Given* the toolbar renders, *when* inspected in the DOM, *then* icons use `<svg aria-hidden="true" fill="currentColor">` with zero raw emojis, non-canonical domain actions display visible text labels, and canonical icon-only buttons expose `aria-label` and hover/focus tooltips.
 
-### Anti-Pattern 4: Indiscriminate `stopPropagation()` Event Swallowing
+### Anti-Pattern 5: Indiscriminate `stopPropagation()` Event Swallowing
 
 ```tsx
 // BAD: stopPropagation breaks document-level popover dismiss listeners, global shortcuts, and analytics
@@ -139,54 +207,11 @@ function TableRowSafe({ item, onSelectRow, onDelete }: { item: { id: string }; o
 ```
 - **Acceptance Criterion**: *Given* a clickable row containing a child checkbox and Delete button, *when* the user activates the checkbox or Delete button, *then* the child action executes, `onSelectRow` does not fire, and `document` click listeners still receive the bubbled event.
 
-### Anti-Pattern 5: Focus Loss from Volatile `key={index}` & `setTimeout` DOM Focus Hacks
-
-```tsx
-// BAD: Volatile index keys remount siblings and brittle setTimeout querySelector loses keyboard focus
-function UserListBad({ users, onRemove }: { users: { id: string; name: string }[]; onRemove: (id: string) => void }) {
-  const handleDelete = (id: string) => {
-    onRemove(id);
-    setTimeout(() => document.querySelector<HTMLElement>(".user-btn")?.focus(), 150);
-  };
-  return <ul>{users.map((u, idx) => <li key={idx}><button className="user-btn" onClick={() => handleDelete(u.id)}>{u.name}</button></li>)}</ul>;
-}
-
-// GOOD: Stable entity keys (key={u.id}) and synchronous roving tabindex focus handoff via ref map
-function UserListSafe({ users, onRemove }: { users: { id: string; name: string }[]; onRemove: (id: string) => void }) {
-  const [activeId, setActiveId] = useState<string | undefined>(users[0]?.id);
-  const itemRefs = useRef(new Map<string, HTMLButtonElement>());
-
-  const handleDelete = (index: number, id: string) => {
-    const nextUser = users[index + 1] ?? users[index - 1];
-    onRemove(id);
-    setActiveId(nextUser?.id);
-    if (nextUser) itemRefs.current.get(nextUser.id)?.focus();
-  };
-
-  return (
-    <ul role="list">
-      {users.map((u, idx) => (
-        <li key={u.id}>
-          <button
-            ref={(el) => { if (el) itemRefs.current.set(u.id, el); else itemRefs.current.delete(u.id); }}
-            tabIndex={u.id === activeId ? 0 : -1}
-            onClick={() => handleDelete(idx, u.id)}
-          >
-            Remove {u.name}
-          </button>
-        </li>
-      ))}
-    </ul>
-  );
-}
-```
-- **Acceptance Criterion**: *Given* keyboard focus is on item $k$ in a list keyed by `user.id`, *when* item $k$ is removed, *then* surviving sibling DOM nodes are retained without remounting and focus transfers synchronously to item $k+1$ (or $k-1$) with zero `setTimeout` calls.
-
 ## Failure Modes & Mitigations
 
-- **Double Form Submission & Focus Loss**: Guard in-flight triggers via `aria-disabled="true"` and state flags rather than native HTML `disabled`.
-- **Screen Reader Focus Traps**: Return focus deterministically to the invoking trigger element when closing dialogs or popovers.
+- **Focus Drop to `document.body` on Unmount**: Return focus to the invoking trigger when closing modals/popovers, and hand off focus to the adjacent surviving item (`index + 1` or `index - 1`) when deleting an actively focused list item.
+- **Double Submission & Async Blur**: Guard in-flight triggers via state flags and `aria-disabled="true"` rather than native HTML `disabled`.
 - **Inconsistent Emoji Rendering**: Replace raw emoji characters with vector SVGs bound to `currentColor`.
 - **Ambiguous Icon-Only Controls**: Require visible text labels on domain actions; require `aria-label` + hover/focus tooltips on canonical icon-only controls.
 - **Swallowed Global Shortcuts & Dismiss Events**: Ban `stopPropagation()`; use parent `event.target.closest(...)` filtering or custom `defaultPrevented` coordination.
-- **Focus Loss on List Mutation**: Use immutable entity keys (`key={item.id}`) and roving `tabindex` ref maps instead of post-render `querySelector` timers.
+- **State Corruption on List Mutation**: Use immutable entity keys (`key={item.id}`) instead of volatile array indices (`key={index}`) or post-render `querySelector` timers.

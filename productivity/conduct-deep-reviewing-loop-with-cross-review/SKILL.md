@@ -62,7 +62,10 @@ flowchart TD
        - If `!NC0` or `!NCI` is present, or prompt explicitly specifies intermediate stepping stone / non-operational after epic: declare `Operational Continuity: NON_CONTINUOUS_INTERMEDIATE` with concise technical justification.
        - If `!NC` is present, or prompt/architecture explicitly specifies non-continuous/offline upgrades (e.g. offline refactors, single-instance local/desktop/CLI version upgrades where versions $N$ and $N+1$ do not run side-by-side, or isolated rewrite branches; must be operational after the epic and preserve data via sequential migration scripts when schemas evolve): declare `Operational Continuity: NON_CONTINUOUS_OPERATION` with concise technical justification.
        - Otherwise (live 24/7 continuous services requiring side-by-side $N$ & $N+1$ zero-downtime rollout): declare `Operational Continuity: CONTINUOUS_OPERATION` (default).
-     - `## Active Modifiers` (e.g. `!PA`, `!SP<N>`), codebase rules (`AGENTS.md`), task domain skills, user criteria, and static `SP` threshold.
+     - `## UX/UI & Accessibility Regime`: Inspect invocation prompt for `!A11Y` / `!WCAG`, target DA scope, and product archetype:
+       - If `!A11Y` or `!WCAG` is present, or prompt/architecture explicitly targets an ADA/EAA/Section 508/WCAG-mandated product (e.g. Enterprise B2B SaaS, Public-Sector/GovTech, FinTech/Banking, Healthcare, Education, public E-Commerce storefront, or shared UI Component Library / Design System): declare `UX/UI Regime: STRICT_ACCESSIBILITY_COMPLIANCE` with concise technical justification.
+       - Otherwise (local/desktop apps, game launchers/save editors, community/indie tools, developer utilities, internal dashboards, or products without statutory disability compliance mandates): declare `UX/UI Regime: PRAGMATIC_PRODUCT_UX` (default) with concise technical justification (enforcing target-audience UX smoothness, physical focus retention against `document.body` drops on element unmount/async actions, and clean debt-free Front-End DX/maintainability without dogmatic WCAG/WAI-ARIA composite state-machine bloat).
+     - `## Active Modifiers` (e.g. `!PA`, `!SP<N>`, `!NC`, `!A11Y`), codebase rules (`AGENTS.md`), task domain skills, user criteria, and static `SP` threshold.
    - Copy `<repo-root>/<review_dir>/Context.md` to `/tmp/deep-review-trace-<short_title>/00-initial-context/Context.md`.
 
 ### Step 2: Spawn Review Host & Critical Gate (Layer 2)
@@ -129,4 +132,5 @@ When `ROUND_REVISION_NEEDED` occurs under `!PA` / `!WA`:
 | `!PA` / `!WA` | Pre-review pause gate: retains `<da_stem>.bak.md` on `ROUND_REVISION_NEEDED` and halts turn awaiting `"C"` or rollback. |
 | `!NC` | Set operational continuity to `NON_CONTINUOUS_OPERATION` (offline upgrades/refactors, local/desktop apps, isolated rewrite branches; must be operational after the epic and migrate existing data via sequential migration scripts without 24/7 dual-write shims). Default is `CONTINUOUS_OPERATION`. |
 | `!NC0` / `!NCI` | Set operational continuity to `NON_CONTINUOUS_INTERMEDIATE` (intermediate stepping stone / scaffolding; does not need to operate during OR after this epic). |
+| `!A11Y` / `!WCAG` | Set UX/UI regime to `STRICT_ACCESSIBILITY_COMPLIANCE` (enforces full WCAG 2.1 AA / WAI-ARIA APG composite widget state machines, roving `tabindex`, `aria-activedescendant`, and screen-reader semantic graphs). Default is `PRAGMATIC_PRODUCT_UX`. |
 | `!FPA` | Instantly kill running subagents and pause execution. |
