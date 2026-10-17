@@ -1,6 +1,6 @@
-# Interactive Flows, Physical Focus Retention, and Front-End DX
+# Pragmatic Interactive Flows, Unmount Focus Retention, and Front-End DX
 
-Audits 4-state interaction completeness, physical focus retention against `document.body` eviction on unmount/async boundaries, icon clarity, browser-safe event coordination, and clean, debt-free Front-End Developer Experience (DX) & maintainability. Pair grounded JSX/TSX/event-handler/tokenized-CSS code remediations with atomic Given/When/Then acceptance criteria (never invent unverified token names or magic-pixel offsets).
+**REGIME GATE**: Load and enforce this subdocument when `<review_dir>/Context.md` declares `UX/UI Regime: PRAGMATIC_PRODUCT_UX`. Audits 4-state interaction completeness, physical focus retention against `document.body` eviction on element unmount or async execution, vector icon clarity, browser-safe event coordination, and clean, debt-free Front-End Developer Experience (DX) & maintainability. Pair grounded JSX/TSX/event-handler/tokenized-CSS code remediations with atomic Given/When/Then acceptance criteria (never invent unverified token names or magic-pixel offsets).
 
 ## Domain Audit Checklist
 
@@ -12,7 +12,7 @@ Audits 4-state interaction completeness, physical focus retention against `docum
 - [ ] **Modal & Overlay Unmount Focus Return**: Confirm that when a modal dialog, drawer, or popover closes and unmounts, focus returns deterministically to its invoking trigger element (or a designated surviving container if the trigger itself unmounted) so keyboard/gamepad `Tab` and `Space` navigation never resets to `document.body`.
 - [ ] **Active List Item Deletion Focus Handoff**: When the user deletes or removes the currently focused item in a dynamic list (e.g. deleting an active save slot, row, or card), synchronously transfer focus to the adjacent surviving item (`items[index + 1] ?? items[index - 1]`) or the empty-state fallback container via a lightweight ref lookup. Never allow unmount to drop focus to `document.body`, and strictly reject post-render `setTimeout(() => document.querySelector(...))` focus hacks.
 - [ ] **In-Flight Async Button Focus Retention**: For focused buttons initiating async jobs, block duplicate activations via a pending state guard and `aria-disabled="true"` (rather than native HTML `disabled` when preserving active focus matters, since native `disabled` causes Chromium/browsers to blur the active element and dump focus to `document.body`).
-- [ ] **Pragmatic Scope Boundary (`PRAGMATIC_PRODUCT_UX`)**: When `Context.md` declares `UX/UI Regime: PRAGMATIC_PRODUCT_UX`, standard clickable controls (filter pills, category bars, tabs, badges, toolbars, and list rows built with native `<button>`, `<a>`, or `<input>` elements) rely on native browser `Tab`/`Shift+Tab` and pointer/keyboard activation. **NEVER** demand WAI-ARIA roving `tabindex` cyclic arrow-key state machines, `aria-activedescendant`, or screen-reader-only `useId()` `aria-labelledby`/`aria-describedby` graphs under `PRAGMATIC_PRODUCT_UX` (those belong strictly to `UX-ACCESSIBILITY-WCAG.md` under `STRICT_ACCESSIBILITY_COMPLIANCE`).
+- [ ] **Native Control Simplicity**: Standard clickable controls (filter pills, category bars, tabs, badges, toolbars, and list rows built with native `<button>`, `<a>`, or `<input>` elements) rely on native browser `Tab`/`Shift+Tab` and pointer/keyboard activation without custom arrow-key state machines or ref-map boilerplate.
 
 ### 3. Front-End DX, Clean Architecture & Zero Tech Debt
 - [ ] **Browser-Safe Event Coordination (Ban on `stopPropagation()`)**: Reject specifications prescribing `event.stopPropagation()` or `event.stopImmediatePropagation()`, which silently break document-level outside-click dismiss listeners and global shortcuts. Coordinate nested interactive elements inside clickable containers via:
@@ -78,7 +78,6 @@ function SaveSlotListBad({ slots, onDelete }: { slots: { id: string; label: stri
 }
 
 // GOOD: Stable entity key (key={s.id}) and lightweight ref handoff to adjacent item on active item deletion
-// (prevents focus drop to document.body without forcing complex roving tabindex state machines on the list)
 function SaveSlotListSafe({ slots, onDelete }: { slots: { id: string; label: string }[]; onDelete: (id: string) => void }) {
   const deleteBtnRefs = useRef(new Map<string, HTMLButtonElement>());
   const emptyFallbackRef = useRef<HTMLDivElement>(null);

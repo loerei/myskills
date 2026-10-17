@@ -51,7 +51,7 @@ Sandbox Directory: <review_dir>/sandbox/<Role>/
 Output Path: <review_dir>/reports/<Role>.md
 
 Execution Sequence:
-1. Read Domain Context (<review_dir>/Context.md) FIRST to identify active modifiers (!PA, !SP, !NC, !A11Y), continuity regime, UX/UI regime, declared archetypes, and scope boundaries.
+1. Read Domain Context (<review_dir>/Context.md) FIRST to identify active modifiers (!PA, !SP, !NC, !A11Y, !MOBILE), continuity regime, UX/UI regime & form factor, declared archetypes, and scope boundaries.
 2. Read Target DA(s) to understand the proposed design.
 3. Read your Review Guide (<guide_path>).
 4. Selective Subdoc Loading: Cross-reference your Review Guide's Routing Table with Context.md and Target DA(s). Call view_file ONLY on subguides whose trigger conditions actually match.
@@ -298,7 +298,7 @@ Notify Host via message when done.
 ## Gated Issues
 1. **[Issue Title]**:
    - **Target Section**: `<Section_Name>`
-   - **Gate Failure Classification**: `Ungrounded Fix Proposal` | `Asymmetric Boundary Contract` | `Cross-Section Contradiction` | `Inter-Role Remediation Conflict` | `False-Positive Upstream Unreadiness` | `Premature Downstream Coupling` | `Speculative Over-Engineering` | `Spec-Induced Regression` | `Ungrounded Infeasibility Claim` | `Ad-Hoc Runtime Migration Bloat` | `Invented Protocol Verdict` | `Defensive Fallback Bloat` | `Ambient Fault Masking` | `Ad-Hoc Runtime Flag Bloat` | `Hot-Path Telemetry Overhead` | `Ad-Hoc Configuration & Runtime Shim Bloat` | `Unlabeled or Ambiguous Icon` | `Ad-Hoc Z-Index Escalation` | `Monolithic Acceptance Criteria Bloat` | `Propagation Suppression` | `Post-Render Focus Hacks` | `Callee Masking / Downstream Patching` | `Obvious Implementation Signal` | `False-Positive Plan Decomposition` | `False-Positive Continuous Phasing Demand` | `False-Positive Intermediate Boot Demand` | `False-Positive Application Rule on Library/SDK` | `False-Positive Enterprise WCAG Demand`
+   - **Gate Failure Classification**: `Ungrounded Fix Proposal` | `Asymmetric Boundary Contract` | `Cross-Section Contradiction` | `Inter-Role Remediation Conflict` | `False-Positive Upstream Unreadiness` | `Premature Downstream Coupling` | `Speculative Over-Engineering` | `Spec-Induced Regression` | `Ungrounded Infeasibility Claim` | `Ad-Hoc Runtime Migration Bloat` | `Invented Protocol Verdict` | `Defensive Fallback Bloat` | `Ambient Fault Masking` | `Ad-Hoc Runtime Flag Bloat` | `Hot-Path Telemetry Overhead` | `Ad-Hoc Configuration & Runtime Shim Bloat` | `Unlabeled or Ambiguous Icon` | `Ad-Hoc Z-Index Escalation` | `Monolithic Acceptance Criteria Bloat` | `Propagation Suppression` | `Post-Render Focus Hacks` | `Callee Masking / Downstream Patching` | `Obvious Implementation Signal` | `False-Positive Plan Decomposition` | `False-Positive Continuous Phasing Demand` | `False-Positive Intermediate Boot Demand` | `False-Positive Application Rule on Library/SDK` | `False-Positive Enterprise WCAG Demand` | `False-Positive Mobile/Responsive Demand on Desktop App`
    - **Gate Rationale**: <Exact technical reason why issue failed the gate without proposing fix code>
 ```
 
