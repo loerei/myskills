@@ -119,13 +119,13 @@ Write your evaluation to the Output Path per the Cross-Review Output Format, the
 ## 3. Dynamic DAG Hierarchy & Role Catalog
 
 ### 3.1 DAG Execution Sequence (Seam-First Topology)
-Host executes Layer 3 reviewers in dependency order across the active selected roster (`Testability` runs in Layer 3.2 to enforce module test seams and dependency injection before Layer 3.3 audits implementation logic and edge cases):
+Host executes Layer 3 reviewers in dependency order across the active selected roster (`Testability` runs in Layer 3.2 to enforce module test seams and dependency injection before Layer 3.3 audits implementation logic, data science/ML methodology, and edge cases):
 
 | DAG Tier | Role Identifiers | Prerequisite | Guide Reference Path | Output Artifact Path |
 | :--- | :--- | :--- | :--- | :--- |
 | **Layer 3.1** | `Architect` *(Mandatory Core)*<br>`Progress` | None | `<skill-root>/ARCHITECT-REVIEWER-GUIDE.md`<br>`<skill-root>/PROGRESS-REVIEWER-GUIDE.md` | `<review_dir>/reports/Architect.md`<br>`<review_dir>/reports/Progress.md` |
 | **Layer 3.2** | `Readiness`<br>`Security`<br>`DataMigration`<br>`Testability` | Layer 3.1 PASS | `<skill-root>/READINESS-REVIEWER-GUIDE.md`<br>`<skill-root>/SECURITY-REVIEWER-GUIDE.md`<br>`<skill-root>/DATA-MIGRATION-REVIEWER-GUIDE.md`<br>`<skill-root>/TESTABILITY-REVIEWER-GUIDE.md` | `<review_dir>/reports/Readiness.md`<br>`<review_dir>/reports/Security.md`<br>`<review_dir>/reports/DataMigration.md`<br>`<review_dir>/reports/Testability.md` |
-| **Layer 3.3** | `Logic` *(Mandatory Core)*<br>`Edgecase`<br>`Performance`<br>`Observability` | Layer 3.2 PASS | `<skill-root>/LOGIC-REVIEWER-GUIDE.md`<br>`<skill-root>/EDGECASE-REVIEWER-GUIDE.md`<br>`<skill-root>/PERFORMANCE-REVIEWER-GUIDE.md`<br>`<skill-root>/OBSERVABILITY-REVIEWER-GUIDE.md` | `<review_dir>/reports/Logic.md`<br>`<review_dir>/reports/Edgecase.md`<br>`<review_dir>/reports/Performance.md`<br>`<review_dir>/reports/Observability.md` |
+| **Layer 3.3** | `Logic` *(Mandatory Core)*<br>`DataScience`<br>`Edgecase`<br>`Performance`<br>`Observability` | Layer 3.2 PASS | `<skill-root>/LOGIC-REVIEWER-GUIDE.md`<br>`<skill-root>/DATA-SCIENCE-REVIEWER-GUIDE.md`<br>`<skill-root>/EDGECASE-REVIEWER-GUIDE.md`<br>`<skill-root>/PERFORMANCE-REVIEWER-GUIDE.md`<br>`<skill-root>/OBSERVABILITY-REVIEWER-GUIDE.md` | `<review_dir>/reports/Logic.md`<br>`<review_dir>/reports/DataScience.md`<br>`<review_dir>/reports/Edgecase.md`<br>`<review_dir>/reports/Performance.md`<br>`<review_dir>/reports/Observability.md` |
 | **Layer 3.4** | `UXUI` | Layer 3.3 PASS | `<skill-root>/UXUI-REVIEWER-GUIDE.md` | `<review_dir>/reports/UXUI.md` |
 
 - **Skipped Tiers**: If all roles in a DAG tier are `EXCLUDED`, or if all active roles in the tier are skipped during an initial targeted pass (upstream of `Highest Modified Tier` or marked `UNTOUCHED` in `host/State.md`), treat that tier as skipped for the targeted pass and advance immediately to the next tier.
@@ -143,6 +143,7 @@ Host executes Layer 3 reviewers in dependency order across the active selected r
   - `Architect` and `Logic` MUST ALWAYS be `INCLUDED`.
   - `Progress` MUST be `INCLUDED` for multi-phase/multi-ticket epics, roadmaps, or WBS plans; `EXCLUDED` for single-ticket/simple plans.
   - `DataMigration` MUST be `EXCLUDED` if `## Data Storage & Migration Scope` in `Context.md` specifies `Persistence Status: NO_PERSISTENCE`, and `INCLUDED` if `TOUCHES_PERSISTENCE`.
+  - `DataScience` MUST be `EXCLUDED` if `## Data Science & ML Modeling Scope` in `Context.md` specifies `ML Status: NO_DATA_SCIENCE`, and `INCLUDED` if `TOUCHES_DATA_SCIENCE`.
   - Remaining specialist roles are marked `INCLUDED` or `EXCLUDED` with concrete technical justification.
 
 ### Step 1: Workspace & Anti-Leak Sandbox Preparation
@@ -206,7 +207,7 @@ Evaluate Layer 3 reports strictly per **tier batch** after `PendingTierRoles` is
 When a tier batch (`<FailingTier>`) resolves with 1+ accepted blocking defects (`STATUS: REVISIONS NEEDED`), validate remediations against cross-domain standards before Early Suspension (Step 5) or DA Mutation (Step 7):
 1. **Collect Remediations**: Identify all `<Role>.md` reports in the resolved `<FailingTier>` with status `REVISION NEEDED`.
 2. **Determine Cross-Review Roles (Selective Triggering)**:
-   - **Zero Cross-Domain Impact (`Cross-Review Roles: None`)**: If a remediation is strictly self-contained within a single module/function (e.g. fixing an internal calculation, adding error `cause` chaining, refining local unit test assertions, pinning a lockfile version) and does NOT alter: (a) cross-module interfaces/DTOs, (b) persistent schemas/migrations, (c) state machine transitions or concurrency locks, (d) security/authz boundaries or ingress schemas, (e) UI layout/interaction flows, or (f) ticket WBS sequencing $\rightarrow$ assign `Cross-Review Roles: None` and skip cross-review for that remediation.
+   - **Zero Cross-Domain Impact (`Cross-Review Roles: None`)**: If a remediation is strictly self-contained within a single module/function (e.g. fixing an internal calculation, adding error `cause` chaining, refining local unit test assertions, pinning a lockfile version) and does NOT alter: (a) cross-module interfaces/DTOs, (b) persistent schemas/migrations, (c) state machine transitions or concurrency locks, (d) security/authz boundaries or ingress schemas, (e) UI layout/interaction flows, (f) ticket WBS sequencing, or (g) feature matrices, CV splits, loss/metric formulations, or ML training/inference pipelines $\rightarrow$ assign `Cross-Review Roles: None` and skip cross-review for that remediation.
    - **Cross-Cutting Remediations**: Select cross-review roles from the active roster (excluding `<AuthorRole>` itself):
      - Public contracts, module boundaries, shared state, or cross-subsystem dependencies $\rightarrow$ `Architect`
      - Prerequisite tasks, ticket delivery order, or ticket scope expansion $\rightarrow$ `Progress`
@@ -214,6 +215,7 @@ When a tier batch (`<FailingTier>`) resolves with 1+ accepted blocking defects (
      - API boundaries, authz/authn, network/IPC protocols, or payload schemas $\rightarrow$ `Security`, `Testability`, `Observability`
      - Database schemas, configuration formats, or caching/query strategies $\rightarrow$ `DataMigration`, `Performance`
      - State machines, concurrency control, or algorithmic logic $\rightarrow$ `Logic`, `Edgecase`, `Testability`
+     - Feature engineering, data splitting/CV, loss/metric formulations, model architectures, training loops, or ensembling/inference pipelines $\rightarrow$ `DataScience`, `Testability`
      - Component composition, focus lifecycle, event handling, or rendering $\rightarrow$ `UXUI`
    - **`Cross-Review Tier Invariant`**: Cross-Reviewers validate `<AuthorRole>`'s proposed remediation in-flight; they are NOT primary tier reviewers for the round and **MUST NEVER shift, override, or alter `Highest Modified Tier` or `Reviewer Accounting` in `host/State.md`**.
 3. **Invoke Cross-Reviewers**: Launch all `<AuthorRole>-CR-<CrossReviewerRole>` subagents simultaneously in a single wave per §2B (`CRWave = 1`). Initialize `PendingCrossReviewRoles[AuthorRole]` and arm a 600s timer per Step 3.
@@ -244,7 +246,7 @@ When a tier batch (`<FailingTier>`) resolves with 1+ accepted blocking defects (
 *(When verdict is `PLAN_INFEASIBLE`, `ROUND_PASS`, or `FINAL_PASS`, skip §7.1 entirely: do NOT mutate target DAs and generate zero `.bak.md` files).*
 1. **Pre-Mutation Backups**: Create sibling `<da_stem>.bak.md` copies before mutating or deleting any target DA. If WBS restructuring alters `## Target Directive Artifacts` in `Context.md`, create `<review_dir>/Context.bak.md`.
 2. **In-Place DA Mutation (5-Dimensional Zero-Loss Integration Protocol)**:
-   Apply verified remediations and accepted suggestions from `<Role>.md` directly into target DA(s) (never via batch `.js`/`.py` replacement scripts in `sandbox/`) enforcing all 5 preservation dimensions across all 11 roles:
+   Apply verified remediations and accepted suggestions from `<Role>.md` directly into target DA(s) (never via batch `.js`/`.py` replacement scripts in `sandbox/`) enforcing all 5 preservation dimensions across all 12 roles:
    - **Dimension 1 — Zero-Paraphrase Artifact Fidelity**: Preserve concrete technical constructs from `<Role>.md` verbatim — exact code blocks, interface/type signatures, SQL/Zod schemas, regexes, numeric bounds/thresholds, error codes, and CLI verification commands. NEVER compress or paraphrase concrete code, formulas, or contracts into vague high-level prose.
    - **Dimension 2 — Intra-Document Layer Synchronization**: Every requirement in a DA spans up to 5 structural layers: (a) **Type/Schema/Code Blocks**, (b) **Behavioral/Workflow Prose**, (c) **File Modification Inventory** (`Target Files` / `Proposed Changes` `[NEW]`/`[MODIFY]`/`[DELETE]` entries), (d) **Test & Verification Specifications** (`Verification Plan`, unit/integration test descriptions, CLI commands), and (e) **Acceptance Criteria Checklists (`- [ ]`)**. When mutating a DA file, update **all applicable layers within that file** symmetrically — never update prose and `- [ ]` criteria while leaving inline code blocks, `[NEW]`/`[MODIFY]`/`[DELETE]` file manifests, or test sections out of sync.
    - **Dimension 3 — Multi-Site & Parallel-Branch Completeness**: When a remediation fixes a pattern repeated across parallel branches or symmetric operations within a target section (e.g. `loading` / `updating` / `error` branches, `create` / `update` / `delete` handlers, single-item vs. batch/collection views), scan the entire target section and apply the modification across **all parallel branches and occurrences**, never stopping after patching only the first branch.
@@ -277,7 +279,7 @@ When Host applies verified mutations to the DA, it transitions to static snapsho
 | :--- | :--- | :--- |
 | **Layer 3.1 (`Architect`, `Progress`)** | Active 3.1 to 3.4 Roles minus Untouched Roles | Untouched 3.1 to 3.4 Roles |
 | **Layer 3.2 (`Readiness`, `Security`, `DataMigration`, `Testability`)** | Active 3.2 to 3.4 Roles minus Untouched Roles | Active Layer 3.1 Roles + Untouched 3.2–3.4 Roles |
-| **Layer 3.3 (`Logic`, `Edgecase`, `Performance`, `Observability`)** | Active 3.3 to 3.4 Roles minus Untouched Roles | Active Layer 3.1 & 3.2 Roles + Untouched 3.3–3.4 Roles |
+| **Layer 3.3 (`Logic`, `DataScience`, `Edgecase`, `Performance`, `Observability`)** | Active 3.3 to 3.4 Roles minus Untouched Roles | Active Layer 3.1 & 3.2 Roles + Untouched 3.3–3.4 Roles |
 | **Layer 3.4 (`UXUI`)** | Active 3.4 Roles minus Untouched Roles | Active Layer 3.1 to 3.3 Roles + Untouched 3.4 Roles |
 
 ---
