@@ -9,6 +9,8 @@ Universal requirements for error context preservation, silent failure eliminatio
 * [ ] **Anti-Swallowing Verification**: Are empty `catch` blocks, unhandled promise rejections, and discarded error return values completely eliminated?
 * [ ] **Sensitive Data Redaction**: Are passwords, authentication tokens, API keys, credit card numbers, and session cookies scrubbed from logs and telemetry payloads before emission?
 * [ ] **Non-Blocking Telemetry**: Does telemetry emission avoid crashing business logic when telemetry sinks are unavailable or rate-limited?
+* [ ] **Silent Branch & Security-Masked Exit Telemetry**: Whenever a control-flow branch intentionally suppresses an error or returns a generic success response to the caller (e.g., anti-enumeration auth/OTP flows returning `200 OK`, idempotency skips, webhook filters, rate-limit drops), does it emit an internal structured log or span attribute recording the exact `internal_outcome` and `abort_reason`?
+* [ ] **Privacy-Preserving Diagnostic Fingerprints**: When logging comparison or validation failures involving sensitive PII (emails, phone numbers, usernames), does telemetry emit non-reversible diagnostic metadata (e.g., salted short-hash, string length, whitespace/casing normalization flags) instead of raw PII or opaque `[REDACTED]` placeholders?
 
 ## Concrete Anti-Patterns
 
@@ -67,4 +69,5 @@ def authenticate(user_request):
 | **Diagnostic Blind Spot** | Exception caught and logged without stack trace or entity IDs. | Demand an Acceptance Criterion requiring error wrapping with explicit `cause` and structured context. |
 | **Credential Leakage in Logs** | Dumping raw request/response objects into loggers. | Require interceptor-level sanitization using a centralized redaction mask before writing to log sinks. |
 | **Cascade Crash on Telemetry Outage** | Telemetry call throws uncaught network or filesystem error. | Require defensive try/catch around telemetry sink transport; telemetry failure MUST NOT abort business flow. |
+| **Silent Security/Business Drop** | Control flow takes an early return with a masked `200 OK` (e.g., anti-enumeration mismatch) without emitting internal telemetry. | Require structured log and span attributes specifying `internal_outcome: "ABORTED"` and an explicit enum `abort_reason` before every masked return. |
 

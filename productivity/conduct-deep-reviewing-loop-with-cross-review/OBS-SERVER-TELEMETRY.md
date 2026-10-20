@@ -7,6 +7,7 @@ Audit criteria for backend microservices, RPC systems, and asynchronous workers 
 - [ ] **W3C Traceparent Header Propagation**: Do all outbound HTTP, gRPC, and messaging calls inject the standard `traceparent` header (`00-{trace-id}-{parent-id}-{trace-flags}`)?
 - [ ] **Inbound Context Extraction**: Do ingress controllers and queue message consumers extract incoming trace context before creating child spans?
 - [ ] **Span Lifecycle & Exception Events**: Are custom spans closed explicitly in `finally` blocks, recording uncaught exceptions into span events with error status codes?
+- [ ] **Semantic Decision Attributes on Spans**: Do spans covering critical business verification or eligibility gates (e.g., 2FA email matching, permission checks, quota gates) attach explicit boolean/enum decision attributes (`app.decision.matched`, `app.decision.abort_reason`) prior to early returns?
 - [ ] **OpenTelemetry Semantic Conventions**: Do span names and attributes adhere to standard conventions (e.g. `http.request.method`, `http.response.status_code`, `server.address`)?
 - [ ] **Structured JSON Logging**: Are logs emitted strictly as structured key-value JSON objects containing correlated `trace_id` and `span_id` fields?
 - [ ] **Hot-Path Logging Protection**: In tight loops, stream iteration hot paths, or batch data pipelines, are debug loggers guarded (`logger.isDebugEnabled()`) to eliminate string allocations?

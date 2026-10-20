@@ -8,8 +8,11 @@ Audits deep learning and GBDT training loops, train/eval mode switching, gradien
 - [ ] **Explicit `model.train()` vs. `model.eval()` & `torch.no_grad()` Switching**: Verify every training epoch/step explicitly sets `model.train()` and every validation/test inference pass sets `model.eval()` wrapped in `with torch.no_grad():` (or `torch.inference_mode()`), restoring `model.train()` afterward so `Dropout` and `BatchNorm` running statistics are never corrupted during validation or left active during inference.
 - [ ] **Optimizer Zero-Grad, Gradient Accumulation & Clipping Order**:
   - Verify `optimizer.zero_grad(set_to_none=True)` is called before forward/backward passes (or at the start of each accumulation window).
-  - When accumulating gradients over $K$ micro-batches, divide the micro-batch loss by $K$ (`loss = raw_loss / accum_steps`) and flush remaining un-stepped gradients when `len(dataloader) % accum_steps != 0`.
-  - When using Automatic Mixed Precision (`torch.cuda.amp.GradScaler` / `torch.amp.GradScaler`) with gradient clipping, call `scaler.unscale_(optimizer)` **before** `torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm)` so clipping operates on true unscaled gradient magnitudes.
+  - When accumulating gradients over $K$ micro-batches, divide the micro-batch loss by $K$ (`loss = raw_loss / float(accum_steps)`) and flush remaining un-stepped gradients when `accum_count > 0 and (accum_count == accum_steps or is_last_batch)`.
+  - When using Automatic Mixed Precision (`torch.cuda.amp.GradScaler` / `torch.amp.GradScaler`) with gradient clipping, call `scaler.unscale_(optimizer)` **before** `torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm)` so clipping operates on true unscaled gradient magnitudes. Default to `bfloat16` when supported (`torch.cuda.is_bf16_supported()`), disabling `GradScaler`.
+  - For per-batch LR schedulers (e.g. `OneCycleLR`), verify `scheduler.step()` is only executed when `scaler.get_scale()` didn't skip `optimizer.step()` due to Inf/NaN.
+- [ ] **Decoupled AdamW Parameter Groups (Zero Decay on 1D Biases & Norms)**: For networks trained with `AdamW`, verify that 1D parameters (biases, `LayerNorm`, `BatchNorm`, `GroupNorm` weights) are segregated into a parameter group with `weight_decay = 0.0` so representation capacity is not degraded by L2 penalty.
+- [ ] **Comprehensive Hardware Determinism Flags**: Confirm deterministic seed initialization across `random.seed(seed)`, `np.random.seed(seed)`, `torch.manual_seed(seed)`, `torch.cuda.manual_seed_all(seed)`, DataLoader `generator` / `worker_init_fn`, plus low-level CUDA flags: `os.environ["PYTHONHASHSEED"] = str(seed)`, `os.environ["CUBLAS_WORKSPACE_CONFIG"] = ":4096:8"`, `torch.backends.cudnn.deterministic = True`, `torch.backends.cudnn.benchmark = False`, and `torch.use_deterministic_algorithms(True, warn_only=True)`.
 - [ ] **BatchNorm Singleton Batch Guard (`batch_size == 1`)**: For networks containing `nn.BatchNorm1d` / `nn.BatchNorm2d`, verify training DataLoaders either set `drop_last=True` (when `len(dataset) % batch_size == 1` is possible), dynamically skip singleton tail batches, or use batch-size-independent normalization (`nn.LayerNorm`, `nn.GroupNorm`) to prevent `ValueError: Expected more than 1 value per channel when training`.
 - [ ] **Best-Checkpoint Restoration vs. Last-Epoch Overfit**: When early stopping or validation monitoring is used, verify the training loop snapshots the best model weights (`copy.deepcopy(model.state_dict())` or disk checkpoint) at peak validation score and restores those best weights before generating final validation/test predictions—never returning the overfitted final-epoch weights after patience expires.
 
@@ -40,50 +43,116 @@ def train_model_bad(model, train_loader, val_loader, optimizer, scaler):
         val_preds = [model(vx) for vx, _ in val_loader]
     return model
 
-# GOOD: Proper train/eval toggling, scaler.unscale_() before clip_grad_norm_, and best-checkpoint restoration
+# GOOD: Proper train/eval toggling, decoupled AdamW, bfloat16/fp16 AMP with safe accumulation & singleton flush, and best-checkpoint restoration
 import copy
+import os
+import random
+import numpy as np
 import torch
+import torch.nn as nn
 
-def train_epoch_and_validate_safe(
-    model: torch.nn.Module,
+def seed_everything_deterministic(seed: int = 42) -> None:
+    """Enforces comprehensive RNG and CUDA kernel determinism."""
+    os.environ["PYTHONHASHSEED"] = str(seed)
+    os.environ.setdefault("CUBLAS_WORKSPACE_CONFIG", ":4096:8")
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    torch.use_deterministic_algorithms(True, warn_only=True)
+
+def build_decoupled_adamw(model: nn.Module, lr: float = 1e-3, weight_decay: float = 1e-2) -> torch.optim.AdamW:
+    """Excludes 1D parameters (biases, LayerNorm/BatchNorm weights) from weight decay penalty."""
+    decay_params, no_decay_params = [], []
+    for name, param in model.named_parameters():
+        if not param.requires_grad:
+            continue
+        if param.ndim < 2 or "bias" in name or "norm" in name.lower() or "bn" in name.lower():
+            no_decay_params.append(param)
+        else:
+            decay_params.append(param)
+    return torch.optim.AdamW(
+        [
+            {"params": decay_params, "weight_decay": weight_decay},
+            {"params": no_decay_params, "weight_decay": 0.0},
+        ],
+        lr=lr,
+    )
+
+def train_and_validate_complete_safe(
+    model: nn.Module,
     train_loader: torch.utils.data.DataLoader,
     val_loader: torch.utils.data.DataLoader,
     optimizer: torch.optim.Optimizer,
-    criterion: torch.nn.Module,
+    criterion: nn.Module,
     device: torch.device,
+    scheduler: torch.optim.lr_scheduler.LRScheduler | None = None,
+    step_scheduler_per_batch: bool = False,
     max_epochs: int = 20,
+    accum_steps: int = 1,
     max_grad_norm: float = 1.0,
-) -> torch.nn.Module:
-    use_amp = device.type == "cuda"
-    scaler = torch.amp.GradScaler("cuda", enabled=use_amp)
+) -> nn.Module:
+    use_cuda = device.type == "cuda"
+    amp_dtype = torch.bfloat16 if (use_cuda and torch.cuda.is_bf16_supported()) else torch.float16
+    use_scaler = use_cuda and (amp_dtype == torch.float16)
+    scaler = torch.amp.GradScaler("cuda", enabled=use_scaler)
+
     best_val_loss = float("inf")
     best_state = copy.deepcopy(model.state_dict())
+    num_batches = len(train_loader)
 
     for _ in range(max_epochs):
         model.train()
-        for x, y in train_loader:
-            if x.size(0) < 2:
-                continue  # Guard BatchNorm against singleton tail batch
-            x, y = x.to(device), y.to(device)
-            optimizer.zero_grad(set_to_none=True)
-            with torch.amp.autocast(device.type, enabled=use_amp):
-                loss = criterion(model(x), y)
-            scaler.scale(loss).backward()
-            scaler.unscale_(optimizer)
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
-            scaler.step(optimizer)
-            scaler.update()
+        optimizer.zero_grad(set_to_none=True)
+        accum_count = 0
+
+        for batch_idx, (x, y) in enumerate(train_loader):
+            is_last_batch = (batch_idx + 1) == num_batches
+
+            # Safe singleton BatchNorm guard that still flushes any pending accumulated gradients on last batch
+            if x.size(0) >= 2:
+                x, y = x.to(device), y.to(device)
+                with torch.amp.autocast(device.type, dtype=amp_dtype, enabled=use_cuda):
+                    raw_loss = criterion(model(x), y)
+                    loss = raw_loss / float(accum_steps)
+                scaler.scale(loss).backward()
+                accum_count += 1
+
+            if accum_count > 0 and (accum_count == accum_steps or is_last_batch):
+                scaler.unscale_(optimizer)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
+                scale_before = scaler.get_scale() if use_scaler else 1.0
+                scaler.step(optimizer)
+                scaler.update()
+                optimizer.zero_grad(set_to_none=True)
+                accum_count = 0
+
+                # Only step per-batch scheduler if GradScaler did not skip optimizer.step() due to Inf/NaN
+                scale_after = scaler.get_scale() if use_scaler else 1.0
+                if scheduler is not None and step_scheduler_per_batch and scale_after >= scale_before:
+                    scheduler.step()
 
         model.eval()
         val_loss_sum, val_count = 0.0, 0
-        with torch.no_grad():
+        with torch.inference_mode():
             for vx, vy in val_loader:
                 vx, vy = vx.to(device), vy.to(device)
-                batch_loss = criterion(model(vx), vy)
+                with torch.amp.autocast(device.type, dtype=amp_dtype, enabled=use_cuda):
+                    batch_loss = criterion(model(vx), vy)
                 val_loss_sum += float(batch_loss.item()) * vx.size(0)
                 val_count += vx.size(0)
 
         val_loss = val_loss_sum / max(val_count, 1)
+        if scheduler is not None and not step_scheduler_per_batch:
+            if isinstance(scheduler, torch.optim.lr_scheduler.ReduceLROnPlateau):
+                scheduler.step(val_loss)
+            else:
+                scheduler.step()
+
         if val_loss < best_val_loss:
             best_val_loss = val_loss
             best_state = copy.deepcopy(model.state_dict())
@@ -92,7 +161,7 @@ def train_epoch_and_validate_safe(
     model.eval()
     return model
 ```
-- **Acceptance Criterion**: *Given* a `BatchNorm1d` network trained over multiple epochs where validation loss peaks at epoch $k < \text{max\_epochs}$ and the dataset size satisfies $N \equiv 1 \pmod{\text{batch\_size}}$, *when* `train_epoch_and_validate_safe` executes on CPU or CUDA, *then* singleton tail batches do not raise `ValueError`, validation runs under `model.eval()` with `torch.no_grad()`, gradients are unscaled before norm clipping, and the returned model contains the restored `best_state` weights from epoch $k$.
+- **Acceptance Criterion**: *Given* a `BatchNorm1d` network trained with `accum_steps = 4` on a dataset with a singleton tail batch, *when* `train_and_validate_complete_safe` executes twice with `seed_everything_deterministic`, *then* pending accumulated gradients flush safely on the last batch without BatchNorm crash, biases and normalization layers have `weight_decay == 0.0`, and model outputs are bit-for-bit identical across runs.
 
 ### Anti-Pattern 2: Silent Conditional Loading of Ephemeral `.scratch/` Latents
 
@@ -129,3 +198,6 @@ def build_latent_features_safe(
 - **Returning Overfitted Final-Epoch Weights**: Snapshot `copy.deepcopy(model.state_dict())` whenever validation score improves and call `model.load_state_dict(best_state)` before returning.
 - **AMP Gradient Explosion / Underflow**: Call `scaler.unscale_(optimizer)` before `clip_grad_norm_`.
 - **Singleton Tail-Batch `BatchNorm` Crash**: Set `drop_last=True` on training DataLoader or skip batches with `x.size(0) < 2`.
+- **Gradient Accumulation Residual Loss**: Always flush accumulated gradients on the final micro-batch (`accum_count > 0 and (accum_count == accum_steps or is_last_batch)`) even when singleton tail batches are bypassed.
+- **AdamW Representation Degradation on Biases/Norms**: Always exclude 1D parameters (`ndim < 2`, bias, LayerNorm/BatchNorm weights) from weight decay (`weight_decay = 0.0`).
+- **Non-Deterministic CUDA Execution**: Set `PYTHONHASHSEED`, `CUBLAS_WORKSPACE_CONFIG=":4096:8"`, `cudnn.deterministic=True`, `cudnn.benchmark=False`, and `use_deterministic_algorithms(True, warn_only=True)`.

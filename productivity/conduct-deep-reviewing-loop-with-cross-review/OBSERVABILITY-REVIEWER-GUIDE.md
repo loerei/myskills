@@ -15,7 +15,7 @@ Audits telemetry, error context preservation, crash boundaries, CLI stream hygie
   Assume the implementer is an AI coding agent that (a) writes production code and tests directly from ticket text in headless CI with no human operating the app, and (b) writes ONLY the tests its ticket's Acceptance Criteria explicitly call for (never unprompted exploratory or adversarial tests). `"A human tester would notice this in the browser/console"` is NEVER valid grounds to downgrade a defect to Suggestion:
   | Defect Behavior for Headless AI Implementer | Classification |
   | :--- | :--- |
-  | Silently swallows errors (`catch {}`), drops error `cause`/stack traces, leaks PII/secrets into logs, pollutes CLI `stdout` with diagnostics, creates unbounded client log files or high-cardinality metric labels, or introduces unbounded feature flags | **Blocking Defect** (MUST include `Why This Would Be Missed`). |
+  | Silently swallows errors (`catch {}`), executes silent business/security early returns without internal outcome telemetry, drops error `cause`/stack traces, leaks PII/secrets into logs, pollutes CLI `stdout` with diagnostics, creates unbounded client log files or high-cardinality metric labels, or introduces unbounded feature flags | **Blocking Defect** (MUST include `Why This Would Be Missed`). |
   | Produces an immediate compiler error, uncaught stack trace, or failing assertion against stated Acceptance Criteria with an obvious fix | **Suggestion Only** (NEVER mark as Blocking Defect). |
   | Telemetry/crash requirement violates OS sandbox, browser security, or platform bounds with zero viable in-scope fixes | **`STATUS: INFEASIBLE`** (takes overall status precedence; include `Infeasibility Proof` and `Alternative Architectural Paths`). |
 

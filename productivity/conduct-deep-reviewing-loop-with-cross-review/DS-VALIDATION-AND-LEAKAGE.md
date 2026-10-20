@@ -15,6 +15,8 @@ Audits cross-validation topology, preprocessing/target/transductive leakage prev
 ### 2. Cross-Validation & Split Topology Alignment
 - [ ] **Entity Group Isolation (`GroupKFold` / `StratifiedGroupKFold`)**: When multiple rows belong to the same underlying entity (`user_id`, `customer_id`, `patient_id`, `session_id`, `borrower_id`), reject random `KFold` or `StratifiedKFold`; mandate `GroupKFold` or `StratifiedGroupKFold` grouped by entity ID. Furthermore, reject peer-target features that leak labels across repeat entity rows in CV while defaulting to a static global prior on $>95\%$ of cold-start test entities.
 - [ ] **Temporal Ordering & Lookahead Prevention (`TimeSeriesSplit` / Purged Walk-Forward)**: For time-series, financial, event-log, or forecasting datasets, reject random shuffling (`shuffle=True`); mandate chronological splitting (`TimeSeriesSplit` or walk-forward validation) with an explicit purge/embargo gap when rolling-window features or lagged labels span split boundaries.
+- [ ] **Strict Causal Feature Engineering for Time Series (`.shift(1)` Causality Gate)**: For time-series, event-log, or longitudinal data, mandate an explicit `.shift(1)` per entity before any rolling or expanding target aggregation (`df.groupby(entity_col)[target_col].shift(1)`). Strictly reject un-shifted aggregations like `df.groupby(entity)[target].rolling(w).mean()`, which leak the current row's label $y_t$ into predictors for time $t$. Ban future lookahead differences (`.diff(-k)`) and global non-causal aggregations (`.transform("mean")`).
+- [ ] **Nested Out-of-Fold Loops for Level-2 Stacking & Threshold Tuning**: When tuning binary decision thresholds ($\tau^* = \arg\max_\tau \text{F1}$), fitting probability calibrators (`IsotonicRegression`, `Venn-ABERS`), or training Level-2 stacking meta-learners on Out-of-Fold predictions $\mathbf{Z}_{\text{oof}}$, strictly reject fitting and evaluating on the same $\mathbf{Z}_{\text{oof}}$ matrix (Level-2 In-Sample Overfitting). Require a nested cross-validation split (e.g. 5-fold inner OOF on $\mathbf{Z}_{\text{oof}}$) to evaluate generalization.
 - [ ] **Stratification on Skewed Targets**: For classification tasks with imbalanced class distributions, enforce `StratifiedKFold` (or `StratifiedGroupKFold`) so every fold preserves the global positive class prior.
 
 ### 3. Model-Tailored Feature Views, Index Alignment & MNAR Preservation
@@ -88,54 +90,136 @@ def prepare_all_models_bad(df: pd.DataFrame) -> pd.DataFrame:
     return df.fillna(df.median())
 
 # GOOD: Model-family-specific Feature Views tailored to each model's mathematical inductive bias
+import numpy as np
+import pandas as pd
 from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import QuantileTransformer
 
-class MultiModelFeatureRouter:
+class MultiModelFeatureRouterSafe:
     def __init__(self, base_continuous_cols: list[str], interaction_cols: list[str], raw_cat_cols: list[str]):
         self.base_cols = base_continuous_cols
         self.interaction_cols = interaction_cols
         self.raw_cat_cols = raw_cat_cols
+        self.cat_dtypes_: dict[str, pd.CategoricalDtype] = {}
+        self.nan_cols_: list[str] = []
+        self.imputer_: SimpleImputer | None = None
+        self.qt_: QuantileTransformer | None = None
 
-    def view_for_gbdt(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Preserves native NaNs for MNAR tree routing across base + non-collinear interaction features."""
+    @staticmethod
+    def _clean_cat_series(s: pd.Series) -> pd.Series:
+        """Safely normalizes nullable categorical Series without turning NaN into literal 'nan' or '102.0'."""
+        if pd.api.types.is_float_dtype(s):
+            s_str = s.dropna().apply(lambda v: str(int(v)) if float(v).is_integer() else str(v))
+            return s.map(s_str).fillna("__MISSING__").astype(str)
+        return s.fillna("__MISSING__").astype(str)
+
+    def fit_router(self, train_df: pd.DataFrame, seed: int = 42) -> "MultiModelFeatureRouterSafe":
+        """Fits categorical vocabularies and neural RankGauss/Imputer state strictly on train_df."""
+        for c in self.raw_cat_cols:
+            clean_s = self._clean_cat_series(train_df[c])
+            cats = sorted(clean_s.unique().tolist())
+            if "__MISSING__" not in cats:
+                cats.append("__MISSING__")
+            self.cat_dtypes_[c] = pd.CategoricalDtype(categories=cats, ordered=False)
+
+        tr_base = train_df[self.base_cols].replace([np.inf, -np.inf], np.nan)
+        self.nan_cols_ = [c for c in self.base_cols if tr_base[c].isna().any()]
+        self.imputer_ = SimpleImputer(strategy="median", keep_empty_features=True)
+        n_q = max(min(1000, len(tr_base)), 10)
+        self.qt_ = QuantileTransformer(output_distribution="normal", n_quantiles=n_q, random_state=seed)
+        self.qt_.fit(self.imputer_.fit_transform(tr_base))
+        return self
+
+    def view_for_gbdt(self, df: pd.DataFrame, include_native_cats: bool = True) -> pd.DataFrame:
+        """Preserves native NaNs, avoids arbitrary 1e6 clipping, and supplies locked CategoricalDtype for LightGBM/XGBoost."""
+        f32_bound = float(np.finfo(np.float32).max / 10.0)
         cols = self.base_cols + self.interaction_cols
-        out = df[cols].replace([np.inf, -np.inf], np.nan).copy()
-        return out.clip(-1e6, 1e6).astype(np.float32)
+        out = df[cols].replace([np.inf, -np.inf], np.nan).clip(-f32_bound, f32_bound).astype(np.float32)
+        if include_native_cats:
+            for c in self.raw_cat_cols:
+                clean_s = self._clean_cat_series(df[c])
+                # Unseen categories in eval/test naturally map to NaN under locked train CategoricalDtype
+                out[c] = clean_s.astype(self.cat_dtypes_[c])
+        return out
 
     def view_for_catboost(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Provides base continuous features + raw high-cardinality categoricals for native Ordered TS."""
-        out = self.view_for_gbdt(df)
+        """Exposes continuous features + clean string categoricals with '__MISSING__' preserved."""
+        out = self.view_for_gbdt(df, include_native_cats=False)
         for c in self.raw_cat_cols:
-            out[c] = df[c].astype(str).fillna("__MISSING__")
+            out[c] = self._clean_cat_series(df[c])
         return out
 
     def view_for_gam_ebm(self, df: pd.DataFrame) -> pd.DataFrame:
-        """Prunes pre-multiplied 3-way interactions so additive splines learn clean main & pairwise effects."""
-        return df[self.base_cols].replace([np.inf, -np.inf], np.nan).clip(-1e6, 1e6).astype(np.float32)
+        """Compact additive base view without higher-order interaction bloat or destructive 1e6 truncation."""
+        f32_bound = float(np.finfo(np.float32).max / 10.0)
+        return df[self.base_cols].replace([np.inf, -np.inf], np.nan).clip(-f32_bound, f32_bound).astype(np.float32)
 
-    def fit_transform_neural_view(
-        self, train_df: pd.DataFrame, eval_df: pd.DataFrame, seed: int = 42
-    ) -> tuple[np.ndarray, np.ndarray]:
-        """Fold-isolated finite imputation + missingness flags + RankGauss normalization on de-collinearized subset."""
-        tr_base = train_df[self.base_cols].replace([np.inf, -np.inf], np.nan)
-        ev_base = eval_df[self.base_cols].replace([np.inf, -np.inf], np.nan)
-
-        nan_cols = [c for c in self.base_cols if tr_base[c].isna().any()]
-        tr_flags = tr_base[nan_cols].isna().to_numpy(dtype=np.float32)
-        ev_flags = ev_base[nan_cols].isna().to_numpy(dtype=np.float32)
-
-        imputer = SimpleImputer(strategy="median")
-        qt = QuantileTransformer(output_distribution="normal", random_state=seed)
-        tr_norm = qt.fit_transform(imputer.fit_transform(tr_base)).astype(np.float32)
-        ev_norm = qt.transform(imputer.transform(ev_base)).astype(np.float32)
-        return np.hstack([tr_norm, tr_flags]), np.hstack([ev_norm, ev_flags])
+    def transform_neural_view(self, df: pd.DataFrame) -> np.ndarray:
+        """Applies fold-fitted finite imputation + RankGauss normalization + consistent missingness indicators."""
+        if self.imputer_ is None or self.qt_ is None:
+            raise RuntimeError("Call fit_router(train_df) before transform_neural_view(df).")
+        base = df[self.base_cols].replace([np.inf, -np.inf], np.nan)
+        flags = base[self.nan_cols_].isna().to_numpy(dtype=np.float32) if self.nan_cols_ else np.empty((len(df), 0), dtype=np.float32)
+        normed = self.qt_.transform(self.imputer_.transform(base)).astype(np.float32)
+        return np.hstack([normed, flags])
 ```
-- **Acceptance Criterion**: *Given* a multi-model pipeline training GBDT, CatBoost, EBM GAM, and a Neural Network, *when* feature views are routed via `MultiModelFeatureRouter`, *then* `view_for_gbdt` retains native `NaN`s, `view_for_catboost` retains raw string categoricals, `view_for_gam_ebm` excludes pre-multiplied higher-order interaction columns, and `fit_transform_neural_view` outputs finite zero-`NaN` RankGauss-normalized arrays with explicit missingness indicators fitted strictly on `train_df`.
+- **Acceptance Criterion**: *Given* a multi-model pipeline training GBDT, CatBoost, EBM GAM, and a Neural Network, *when* feature views are routed via `MultiModelFeatureRouterSafe`, *then* `view_for_gbdt` retains native `NaN`s with locked `pd.CategoricalDtype` without arbitrary `1e6` truncation, `view_for_catboost` normalizes float integers and preserves `"__MISSING__"` strings, `view_for_gam_ebm` excludes interaction bloat, and `transform_neural_view` evaluates on train/val/test splits using stored imputer/scaler state.
+
+### Anti-Pattern 3: Un-Shifted Rolling Target Aggregations Leaking Current & Future Labels
+
+```python
+# BAD: df.groupby("id")["target"].rolling(w).mean() leaks current target y_t into predictors for time t!
+# BAD: .diff(-k) looks into the future t+k; .transform("mean") averages past AND future rows!
+
+# GOOD: Strict .shift(1) per entity before rolling or expanding window computations
+import numpy as np
+import pandas as pd
+
+def build_causal_time_series_features_safe(
+    df: pd.DataFrame,
+    entity_col: str,
+    time_col: str,
+    target_col: str,
+    windows: tuple[int, ...] = (3, 7, 14),
+) -> pd.DataFrame:
+    """Computes strictly causal historical rolling and expanding target statistics with zero lookahead."""
+    if not df[time_col].is_monotonic_increasing:
+        df = df.sort_values([entity_col, time_col], kind="mergesort").copy()
+    else:
+        df = df.copy()
+
+    # CRITICAL: .shift(1) per entity strictly isolates t from y_t and future rows t+1..T
+    lagged_target = df.groupby(entity_col, observed=False)[target_col].shift(1)
+    out = pd.DataFrame(index=df.index)
+    out[f"{target_col}_lag_1"] = lagged_target.to_numpy(dtype=np.float32)
+
+    for w in windows:
+        rolled = (
+            lagged_target.groupby(df[entity_col], observed=False)
+            .rolling(window=w, min_periods=1)
+            .mean()
+            .reset_index(level=0, drop=True)
+        )
+        out[f"{target_col}_causal_roll_mean_{w}"] = rolled.to_numpy(dtype=np.float32)
+
+    expanding_mean = (
+        lagged_target.groupby(df[entity_col], observed=False)
+        .expanding(min_periods=1)
+        .mean()
+        .reset_index(level=0, drop=True)
+    )
+    out[f"{target_col}_causal_expanding_mean"] = expanding_mean.to_numpy(dtype=np.float32)
+    return out
+```
+- **Acceptance Criterion**: *Given* a longitudinal or event-log dataset, *when* targets at time $t$ and future times $t' > t$ are perturbed, *then* `build_causal_time_series_features_safe` produces features for time $t$ that are 100% invariant ($\max |\Delta X_t| == 0.0$).
 
 ## Failure Modes & Mitigations
 
-- **Monolithic Feature Pack Correlation Collapse**: Route model-family-specific feature subsets (`view_for_gbdt`, `view_for_catboost`, `view_for_gam_ebm`, `fit_transform_neural_view`) rather than feeding one identical feature matrix to all models.
+- **Un-shifted Rolling Target Leakage**: Always apply `.shift(1)` per entity before computing rolling or expanding statistics on target or simultaneous variables.
+- **In-Sample Level-2 Overfitting on OOF Predictions**: Enforce nested cross-validation when tuning decision thresholds or training Level-2 stacking meta-learners.
+- **Arbitrary 1e6 Feature Truncation**: Never clip numeric features to `[-1e6, 1e6]`; preserve variance for currency/timestamp columns and clip only at float32 safe bounds.
+- **Pandas String Conversion Bug**: Never call `.astype(str)` before `.fillna("__MISSING__")`; use `_clean_cat_series` to handle float integers and fill `NaN` first.
+- **Monolithic Feature Pack Correlation Collapse**: Route model-family-specific feature subsets (`view_for_gbdt`, `view_for_catboost`, `view_for_gam_ebm`, `transform_neural_view`) rather than feeding one identical feature matrix to all models.
 - **100% Test-Set `NaN` Collapse from Series Slicing**: Convert all sliced Series to 1D NumPy arrays (`.to_numpy()`) before constructing `X_train` and `X_test` DataFrames with custom indices.
 - **Scale Shift on Non-10-Fold Runs**: Divide accumulated test encodings by `float(cv.get_n_splits())`, never by a hardcoded literal.
 - **MNAR Signal Destruction in Tree Models**: Preserve native `NaN` values in GBDT feature views; apply finite imputation only inside neural/linear model views.
