@@ -143,7 +143,7 @@ Host executes Layer 3 reviewers in dependency order across the active selected r
   - `Architect` and `Logic` MUST ALWAYS be `INCLUDED`.
   - `Progress` MUST be `INCLUDED` for multi-phase/multi-ticket epics, roadmaps, or WBS plans; `EXCLUDED` for single-ticket/simple plans.
   - `DataMigration` MUST be `EXCLUDED` if `## Data Storage & Migration Scope` in `Context.md` specifies `Persistence Status: NO_PERSISTENCE`, and `INCLUDED` if `TOUCHES_PERSISTENCE`.
-  - `DataScience` MUST be `EXCLUDED` if `## Data Science & ML Modeling Scope` in `Context.md` specifies `ML Status: NO_DATA_SCIENCE`, and `INCLUDED` if `TOUCHES_DATA_SCIENCE`.
+  - `DataScience` MUST be `EXCLUDED` if `## Data Science & ML Modeling Scope` in `Context.md` specifies `ML Status: NO_DATA_SCIENCE`, and `INCLUDED` if `TOUCHES_DATA_SCIENCE` (or specifies an active track: `APPLIED_BUSINESS_CONSULTING`, `COMPETITION_BENCHMARK`, or `VISUALIZATION_DASHBOARD`).
   - Remaining specialist roles are marked `INCLUDED` or `EXCLUDED` with concrete technical justification.
 
 ### Step 1: Workspace & Anti-Leak Sandbox Preparation

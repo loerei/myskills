@@ -26,7 +26,7 @@ flowchart TD
         CheckRepoAgents -->|"Not Found"| LoadGlobalRules["Apply Global Policies Only"]
         LoadRepoRules --> CheckContextLoss{"Context Truncated or New Turn?"}
         LoadGlobalRules --> CheckContextLoss
-        CheckContextLoss -->|"Yes"| RecoverState["Recover Context & State:<br/>1. Read implementation_plan.md (find active [/])<br/>2. Inspect disk via git status & git diff"] --> EvalPrompt
+        CheckContextLoss -->|"Yes"| ContextRecovery["Context Recovery Protocol:<br/>1. Read 'What To Re-read After A Checkpoint.md'<br/>2. Re-read active Skills & Tool Guides<br/>3. Read transcript log<br/>4. Read plan [/] & git state"] --> EvalPrompt
         CheckContextLoss -->|"No"| EvalPrompt
     end
 
@@ -186,12 +186,13 @@ flowchart TD
             GitNeeded -->|"No"| FinalizeWalkthrough
         end
 
-        subgraph REPORTING_STAGE["3C: Response Formats"]
-            FinalizeWalkthrough --> ReportOutcome["ReportOutcome:<br/>• Present empirical evidence & test verification<br/>• Disclose Incidents & Mid-Turn Fixes<br/>• Clickable Links + State tested vs untested"] --> TurnEnd["Turn End"]
+        subgraph REPORTING_STAGE["3C: Response Formats & Checkpoint Maintenance"]
+            FinalizeWalkthrough --> MaintainCheckpointDoc["Maintain 'What To Re-read After A Checkpoint.md':<br/>• Sync Active Skills & Tool Guides<br/>• Sync Referenced Artifacts<br/>• Record Active Tags & Invariants"]
+            MaintainCheckpointDoc --> ReportOutcome["ReportOutcome:<br/>• Present empirical evidence & test verification<br/>• Disclose Incidents & Mid-Turn Fixes<br/>• Clickable Links + State tested vs untested"] --> TurnEnd["Turn End"]
 
-            ReportProposal["ReportProposal:<br/>• Present technical proposal / plan / question<br/>• Surface tradeoffs & await explicit approval"] --> TurnEnd
+            MaintainCheckpointDoc --> ReportProposal["ReportProposal:<br/>• Present technical proposal / plan / question<br/>• Surface tradeoffs & await explicit approval"] --> TurnEnd
 
-            ReportBlocker["ReportBlocker:<br/>• Disclose exact failure / leak / conflict upfront<br/>• Provide logs, repro steps & ask user guidance"] --> TurnEnd
+            MaintainCheckpointDoc --> ReportBlocker["ReportBlocker:<br/>• Disclose exact failure / leak / conflict upfront<br/>• Provide logs, repro steps & ask user guidance"] --> TurnEnd
         end
     end
 ```
@@ -208,8 +209,14 @@ flowchart TD
 
 * **Workspace Override Rule:** MUST ALWAYS check for a workspace-level `AGENTS.md` at the repository root as the very first action on any task. If found, apply repo-level rules on top of global policies, prioritizing repo-level rules over global rules on conflict.
 * **Context Recovery Protocol:** Following context window truncation or turn splits, the agent's **VERY FIRST ACTION** MUST be:
-  1. Reading `implementation_plan.md` to identify the active `[/]` or next `[ ]` step.
-  2. Inspecting repository state via `git status` and `git diff` to determine what files have already been modified on disk before taking any code action, preventing duplicate or conflicting edits.
+  1. **Read `What To Re-read After A Checkpoint.md`**: Locate and read `<appDataDir>\brain\<conversation-id>/What To Re-read After A Checkpoint.md` (or workspace `.scratch/`).
+  2. **Reload Active Skills**: Execute `view_file` on `SKILL.md` for every skill listed under `## Active Skills` to restore behavioral rules and specialized execution paths into active memory.
+  3. **Re-call Active Tool Guides**: Execute tool guide calls (e.g. `patchitright_guide`, `jcodemunch_guide`) with their specified arguments recorded under `## Active Tool Guides` to restore latest parameter constraints, schemas, and recipes into active memory.
+  4. **Reload Referenced Artifacts**: Execute `view_file` on all artifacts listed under `## Referenced Artifacts` (e.g. Directive Artifacts, review reports, PRDs, specs) to recover current task state.
+  5. **Restore Active Directives & Tags**: Re-adopt active modifier tags (e.g., `!PA`, `!SP<N>`, `!PU`), multi-agent review rosters, and operational invariants recorded under `## Active Context & Invariants`.
+  6. **Query Recent Dialogue & Execution Context**: Read the last 15 lines of `<appDataDir>\brain\<conversation-id>\.system_generated\logs\transcript.jsonl` to recover recent user agreements, keywords (e.g., "Approve", "Proceed"), in-flight tool executions, and immediate conversational nuance truncated by context compression.
+  7. **Inspect Plan & Git State**: Read `implementation_plan.md` to identify the active `[/]` or next `[ ]` step, and inspect `git status` and `git diff` to determine what files have already been modified on disk before taking any code action, preventing duplicate or conflicting edits.
+  Following step 7, context recovery is complete. The agent proceeds immediately into Phase 1 (Tier Gate, Router & Triage) and Phase 2 execution without halting or requesting redundant confirmation.
 
 ---
 
@@ -277,7 +284,6 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
 | :--- | :--- | :--- |
 | **Code Reading & Symbol search** | `jcodemunch` | MUST call `jcodemunch_guide` first. MUST use `search_symbols`, `get_symbol_source`, etc. inside repos. MUST NOT use `list_dir`, `view_file`, `grep_search` on indexed code. MUST index via `index_folder` if not indexed. *Exception: May use `view_file` directly for non-code files (.md, docs, configs) or untracked/ignored files to avoid latency.* |
 | **Code Editing (Minimal Diffs)** | `patchitright` | **MUST call `patchitright_guide` first with target `file_type` list (e.g., `["js_ts"]`, `["python"]`, `["html_css"]`) and follow its instructions.** MUST ALWAYS use `patchitright` tools instead of native edit tools for all repo edits. |
-| **Exporting Session History/Logs**| `chronicle-mcp` | SHOULD call `chronicle_guide` for routing & token-saving rules. MUST use `chronicle-mcp` tools (`list_sessions`, `get_session_details`, etc.). MUST use `reverseSteps=true` when reading recent context first. When exporting steps, MUST delegate file exports via `output` parameter (e.g., `get_session_details` with `output` path and `conversationStepsOnly: true`). MUST NEVER write manually or read SQLite/jsonl transcripts. |
 | **Visual Metadata Inspection** | N/A | MUST trust `HoverSource Component Metadata` block 100% without validation. MUST go straight to target lines. |
 
 ---
@@ -480,6 +486,32 @@ Before pushing to remote:
 * **Claims require evidence.** Every claim of success (e.g., "fixed the bug", "resolved the issue") MUST be stated as theoretical unless backed by real runtime evidence (test output, build logs, screenshots). When not tested or still needing verification, state it explicitly. If manual verification is needed, tell the user HOW to verify.
 * **Iteration reporting.** When reporting iteration results, state: (1) what was tried, (2) what evidence shows, (3) what to do next.
 * **No energy padding.** MUST NOT use over-energetic, enthusiastic, or celebratory language.
+
+#### Checkpoint Continuity File Maintenance (`What To Re-read After A Checkpoint.md`)
+*Applies to: Every turn conclusion before outputting final response.*
+Across the entire conversation, the agent's duty at the conclusion of every turn is to maintain a dedicated markdown file at `<appDataDir>\brain\<conversation-id>/What To Re-read After A Checkpoint.md`.
+- **Lifecycle Operations**:
+  - **Sync Active Skills**: Add every skill currently governing active or upcoming work in this session file link. Remove skills whose task lifecycle is completely finished.
+  - **Sync Active Tool Guides**: Add every tool guide currently governing active MCP usage along with its required arguments (e.g. `patchitright_guide` with `file_types`, `jcodemunch_guide`). Remove guides no longer relevant.
+  - **Sync Referenced Artifacts**: Add every artifact actively referenced by ongoing work. Remove artifacts that are obsolete or no longer referenced.
+  - **Sync Active Context & Invariants**: Record active context, current operational constraints, and critical user directives that must survive context compression.
+- **Mandatory Markdown Template Schema**:
+  ```markdown
+  # What To Re-read After A Checkpoint
+
+  ## Active Skills
+  - [<skill-name>](file:///<absolute-path-to-SKILL.md>) — [Brief role / purpose in session]
+
+  ## Active Tool Guides (To Re-call)
+  - `<tool_guide_name>` (args: `{...}`) — [Purpose / topic / language scope]
+
+  ## Referenced Artifacts
+  - [<artifact-name>](file:///<absolute-path-to-artifact>) — [Current state / role]
+
+  ## Active Context & Invariants
+  - **Active Directives / Tags**: `<active tags, e.g. !PA, !SP2, custom rosters>`
+  - **Operational Invariants**: `<key constraints, user decisions, or states that must survive context compression>`
+  ```
 
 ---
 
