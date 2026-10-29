@@ -50,13 +50,26 @@ if (!fs.existsSync(resolvedTarget)) {
 // 1. Determine Vault Base
 const leaf = path.basename(resolvedReviewDir);
 const vaultName = leaf.replace(/^deep-review-/, 'deep-review-trace-');
-if (!vaultDir) {
+if (!vaultDir || !vaultDir.trim()) {
   vaultDir = `/tmp/${vaultName}`;
 }
 const resolvedVaultDir = path.resolve(vaultDir);
 
+// Guard against empty path or filesystem root (e.g. D:\ or /)
+const vaultRoot = path.parse(resolvedVaultDir).root;
+if (resolvedVaultDir === vaultRoot || !resolvedVaultDir) {
+  console.error(`Error: Vault directory cannot be empty or filesystem root: ${resolvedVaultDir}`);
+  process.exit(1);
+}
+
 const roundStr = round < 10 ? `round-0${round}` : `round-${round}`;
 const roundBase = path.join(resolvedVaultDir, roundStr);
+
+const roundBaseRoot = path.parse(roundBase).root;
+if (roundBase === roundBaseRoot || !roundBase) {
+  console.error(`Error: Target archival base cannot be empty or filesystem root: ${roundBase}`);
+  process.exit(1);
+}
 
 const reportsFinalDir = path.join(roundBase, 'reports-final');
 const negotiationTraceDir = path.join(roundBase, 'negotiation-trace');

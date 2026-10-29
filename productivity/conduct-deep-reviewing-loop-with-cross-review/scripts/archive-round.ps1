@@ -49,13 +49,24 @@ $resolvedTarget = (Resolve-Path -Path $Target).Path
 # 1. Determine Vault Base
 $leaf = Split-Path $resolvedReviewDir -Leaf
 $vaultName = $leaf -replace '^deep-review-', 'deep-review-trace-'
-if (-not $VaultDir) {
+if ([string]::IsNullOrWhiteSpace($VaultDir)) {
     $VaultDir = "/tmp/$vaultName"
 }
 $resolvedVaultDir = [System.IO.Path]::GetFullPath($VaultDir)
 
+# Guard against empty path or filesystem root (e.g. D:\ or /)
+$vaultRoot = [System.IO.Path]::GetPathRoot($resolvedVaultDir)
+if ($resolvedVaultDir -eq $vaultRoot -or [string]::IsNullOrWhiteSpace($resolvedVaultDir)) {
+    throw "Vault directory cannot be empty or a filesystem root: $resolvedVaultDir"
+}
+
 $roundStr = if ($Round -lt 10) { "round-0$Round" } else { "round-$Round" }
 $base = Join-Path $resolvedVaultDir $roundStr
+
+$baseRoot = [System.IO.Path]::GetPathRoot($base)
+if ($base -eq $baseRoot -or [string]::IsNullOrWhiteSpace($base)) {
+    throw "Target archival base cannot be empty or a filesystem root: $base"
+}
 
 # 2. Create vault subdirectories
 $reportsFinalDir = Join-Path $base "reports-final"
