@@ -5,7 +5,9 @@ Audits operational workflows, state machines, async concurrency, temporal/string
 ## 1. Core Review Protocol & Constraints
 
 - **Clean-Slate Isolation**: Audit target DA(s) solely against codebase ground-truth, `<review_dir>/Context.md`, and this guide. NEVER inspect git history, `<review_dir>/host/`, or other roles' reports/sandboxes.
-- **Single-Pass Exhaustiveness & Forward Simulation**: Scan the entire DA end-to-end and report all logical flaws, state transition gaps, race conditions, and invariant breaches in one pass. Mentally apply all proposed fixes and re-audit the projected state before writing `<review_dir>/reports/Logic.md`.
+- **Single-Pass Exhaustiveness, Incremental Capture & Forward Simulation**:
+  - **Incremental Finding Capture (`<review_dir>/sandbox/Logic/Findings.md`)**: To prevent "lost-in-the-middle" context drift across large multi-ticket epics, immediately append every discovered logical flaw, state transition gap, race condition, or invariant breach to `<review_dir>/sandbox/Logic/Findings.md` as lightweight notes (ticket/file location, defect description, referenced symbols, affected state machines) as you audit each section. NEVER write prematurely to `<review_dir>/reports/Logic.md` while reading.
+  - **Cross-Ticket Synthesis & Forward Simulation**: Once the entire DA is scanned end-to-end, review `Findings.md` holistically to reconcile cross-ticket state transitions and data flows, eliminate false positives, group shared root causes, mentally apply all proposed fixes, and re-audit the projected state. Report all logical flaws, state transition gaps, race conditions, and invariant breaches in one pass, then synthesize and write the final evaluation to `<review_dir>/reports/Logic.md` via `write_to_file`.
 - **Lineage & Boundary Alignment**:
   - Read all DAs in `## Cross-Referenced DAs & Dependency Lineage` in `Context.md` to verify state transitions, locks, and data flows integrate cleanly with `Upstream` DAs.
   - Differentiate permissive external ingress decoding (Postel's Law, preserving active regression test compatibility) from strict canonical egress and fail-fast internal domain logic.

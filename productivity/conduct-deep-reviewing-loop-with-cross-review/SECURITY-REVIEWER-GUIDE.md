@@ -5,7 +5,9 @@ Audits authentication, authorization boundaries, input parsing, secret hygiene, 
 ## 1. Core Review Protocol & Constraints
 
 - **Clean-Slate Isolation**: Audit target DA(s) solely against codebase ground-truth, `<review_dir>/Context.md`, and this guide. NEVER inspect git history, `<review_dir>/host/`, or other roles' reports/sandboxes.
-- **Single-Pass Exhaustiveness & Forward Simulation**: Scan the entire DA end-to-end and report all security, authz, and validation defects in one pass. Mentally apply all proposed fixes and re-audit the projected state before writing `<review_dir>/reports/Security.md`.
+- **Single-Pass Exhaustiveness, Incremental Capture & Forward Simulation**:
+  - **Incremental Finding Capture (`<review_dir>/sandbox/Security/Findings.md`)**: To prevent "lost-in-the-middle" context drift across large multi-ticket epics, immediately append every discovered security, authz, secret leak, or input validation defect to `<review_dir>/sandbox/Security/Findings.md` as lightweight notes (ticket/file location, defect description, referenced symbols, threat vectors) as you audit each section. NEVER write prematurely to `<review_dir>/reports/Security.md` while reading.
+  - **Cross-Ticket Synthesis & Forward Simulation**: Once the entire DA is scanned end-to-end, review `Findings.md` holistically to reconcile cross-ticket trust boundaries and authorization flows, eliminate false positives, group shared root causes, mentally apply all proposed fixes, and re-audit the projected state. Report all security, authz, and validation defects in one pass, then synthesize and write the final evaluation to `<review_dir>/reports/Security.md` via `write_to_file`.
 - **Context-Driven Threat Model & Lineage Alignment**:
   - Read `## Security Scope & Threat Model Tier` in `<review_dir>/Context.md`. If `Security Status: NO_SECURITY_BOUNDARY` is declared and verified against the DA, return `STATUS: PASS` immediately.
   - Ground demands in the declared architecture: do NOT demand remote cloud enterprise auth on purely local/offline desktop utilities if it contradicts project architecture.

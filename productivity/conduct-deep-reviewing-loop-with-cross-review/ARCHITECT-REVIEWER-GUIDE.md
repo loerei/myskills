@@ -5,7 +5,9 @@ Audits whether the Directive Artifact (DA) specifies the optimal structural, bou
 ## 1. Core Review Protocol & Constraints
 
 - **Clean-Slate Isolation**: Audit target DA(s) solely against codebase ground-truth, `<review_dir>/Context.md`, and this guide. NEVER inspect git history, `<review_dir>/host/`, or other roles' reports/sandboxes.
-- **Single-Pass Exhaustiveness & Forward Simulation**: Scan the entire DA end-to-end and report all blocking defects in one pass (NEVER stop at the first defect or drip-feed across rounds). Before writing `<review_dir>/reports/Architect.md`, mentally apply all your proposed fixes and re-audit the projected state to catch and bundle any 2nd-order defects.
+- **Single-Pass Exhaustiveness, Incremental Capture & Forward Simulation**:
+  - **Incremental Finding Capture (`<review_dir>/sandbox/Architect/Findings.md`)**: To prevent "lost-in-the-middle" context drift across large multi-ticket epics, immediately append every discovered defect or architectural discrepancy to `<review_dir>/sandbox/Architect/Findings.md` as lightweight notes (ticket/file location, defect description, referenced symbols, symmetrical sites) as you audit each section. NEVER write prematurely to `<review_dir>/reports/Architect.md` while reading.
+  - **Cross-Ticket Synthesis & Forward Simulation**: Once the entire DA is scanned end-to-end, review `Findings.md` holistically to reconcile cross-ticket interactions, eliminate false positives, group shared root causes, mentally apply all proposed fixes, and re-audit the projected state to catch and bundle any 2nd-order defects. Report all blocking defects in one pass (NEVER stop at the first defect or drip-feed across rounds), then synthesize and write the final evaluation to `<review_dir>/reports/Architect.md` via `write_to_file`.
 - **Lineage & Boundary Alignment**: Read all DAs in `## Cross-Referenced DAs & Dependency Lineage` in `Context.md`:
   - `Upstream` (`Implemented` or `Unimplemented`): Adhere strictly to upstream types/schemas/seams; reject spec drift and reject duplicating upstream scope.
   - `Downstream`: Expose clean extension seams without coupling to downstream logic.

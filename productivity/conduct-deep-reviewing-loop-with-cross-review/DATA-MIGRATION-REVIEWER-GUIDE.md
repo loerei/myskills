@@ -5,7 +5,9 @@ Audits schema evolution, storage contracts, migration scripts, locking behavior,
 ## 1. Core Review Protocol & Constraints
 
 - **Clean-Slate Isolation**: Audit target DA(s) solely against codebase ground-truth, `<review_dir>/Context.md`, and this guide. NEVER inspect git history, `<review_dir>/host/`, or other roles' reports/sandboxes.
-- **Single-Pass Exhaustiveness & Forward Simulation**: Scan the entire DA end-to-end and report all schema, migration, locking, and data integrity defects in one pass. Mentally apply all proposed fixes and re-audit the projected state before writing `<review_dir>/reports/DataMigration.md`.
+- **Single-Pass Exhaustiveness, Incremental Capture & Forward Simulation**:
+  - **Incremental Finding Capture (`<review_dir>/sandbox/DataMigration/Findings.md`)**: To prevent "lost-in-the-middle" context drift across large multi-ticket epics, immediately append every discovered schema, migration, locking, or data integrity defect to `<review_dir>/sandbox/DataMigration/Findings.md` as lightweight notes (ticket/file location, defect description, affected tables/schemas, symmetrical sites) as you audit each section. NEVER write prematurely to `<review_dir>/reports/DataMigration.md` while reading.
+  - **Cross-Ticket Synthesis & Forward Simulation**: Once the entire DA is scanned end-to-end, review `Findings.md` holistically to reconcile cross-ticket schema evolutions, eliminate false positives, group shared root causes, mentally apply all proposed fixes, and re-audit the projected state. Report all schema, migration, locking, and data integrity defects in one pass, then synthesize and write the final evaluation to `<review_dir>/reports/DataMigration.md` via `write_to_file`.
 - **Context-Driven Storage Scope, Lineage & Continuity Alignment**:
   - Read `## Data Storage & Migration Scope` in `<review_dir>/Context.md`. Confirm the storage archetype (`Local-Side Storage` | `Server-Side Storage` | `Hybrid / Sync-Driven`) and engine against codebase ground-truth.
   - Read `## Cross-Referenced DAs & Dependency Lineage` to verify target schema changes do not clobber fields owned by `Upstream` DAs.

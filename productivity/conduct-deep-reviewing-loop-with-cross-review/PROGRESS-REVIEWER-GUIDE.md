@@ -5,7 +5,9 @@ Audits whether the Directive Artifact (DA) establishes an incremental, dependenc
 ## 1. Core Review Protocol & Constraints
 
 - **Clean-Slate Isolation**: Audit target DA(s) solely against codebase ground-truth, `<review_dir>/Context.md`, and this guide. NEVER inspect git history, `<review_dir>/host/`, or other roles' reports/sandboxes.
-- **Single-Pass Exhaustiveness & Forward Simulation**: Scan the entire DA end-to-end and report all WBS, sequencing, and slicing defects in one pass. Mentally apply all proposed transformations and re-audit the projected ticket DAG before writing `<review_dir>/reports/Progress.md`.
+- **Single-Pass Exhaustiveness, Incremental Capture & Forward Simulation**:
+  - **Incremental Finding Capture (`<review_dir>/sandbox/Progress/Findings.md`)**: To prevent "lost-in-the-middle" context drift across large multi-ticket epics, immediately append every discovered WBS gap, dependency cycle, unsequenced step, or horizontal slicing defect to `<review_dir>/sandbox/Progress/Findings.md` as lightweight notes (ticket/file location, defect description, affected dependencies, proposed restructuring) as you audit each section. NEVER write prematurely to `<review_dir>/reports/Progress.md` while reading.
+  - **Cross-Ticket Synthesis & Forward Simulation**: Once the entire DA is scanned end-to-end, review `Findings.md` holistically to reconcile cross-ticket execution ordering, eliminate false positives, group shared root causes, mentally apply all proposed transformations, and re-audit the projected ticket DAG. Report all WBS, sequencing, and slicing defects in one pass, then synthesize and write the final evaluation to `<review_dir>/reports/Progress.md` via `write_to_file`.
 - **Lineage & Operational Continuity Alignment**:
   - Read all DAs in `## Cross-Referenced DAs & Dependency Lineage` in `Context.md` so target tickets do not duplicate or invert `Upstream` milestones.
   - Read `## Operational Continuity` in `<review_dir>/Context.md` and enforce the matching phasing/slicing model:

@@ -19,6 +19,7 @@
 │   └── <AuthorRole>-Cross-Review-Requests.md
 └── sandbox/                 # [ISOLATED SANDBOXES] Purged every round; isolated per subagent
     ├── <Role>/              # Dedicated sandbox for primary reviewer (<Role>)
+    │   └── Findings.md      # Incremental defect capture scratchpad (anti-lost-in-the-middle)
     └── <AuthorRole>-CR-<CrossReviewerRole>/ # Dedicated sandbox for cross-reviewer
 ```
 
@@ -55,7 +56,7 @@ Execution Sequence:
 2. Read Target DA(s) to understand the proposed design.
 3. Read your Review Guide (<guide_path>).
 4. Selective Subdoc Loading: Cross-reference your Review Guide's Routing Table with Context.md and Target DA(s). Call view_file ONLY on subguides whose trigger conditions actually match.
-5. Perform deep audit and write evaluation to Output Path.
+5. Perform deep audit: As you scan target DAs, capture findings incrementally in <review_dir>/sandbox/<Role>/Findings.md to prevent lost-in-the-middle omissions. Once all DAs are reviewed, reconcile multi-ticket interactions, forward-simulate fixes, and synthesize final evaluation into Output Path.
 
 Follow your Review Guide and any domain subdocuments referenced within it strictly. All findings and non-blocking suggestions MUST strictly adhere to your domain standards and codebase invariants.
 ```
