@@ -26,7 +26,7 @@ flowchart TD
         CheckRepoAgents -->|"Not Found"| LoadGlobalRules["Apply Global Policies Only"]
         LoadRepoRules --> CheckContextLoss{"Context Truncated or New Turn?"}
         LoadGlobalRules --> CheckContextLoss
-        CheckContextLoss -->|"Yes"| ContextRecovery["Context Recovery Protocol:<br/>1. Read 'What To Re-read After A Checkpoint.md'<br/>2. Re-read active Skills & Tool Guides<br/>3. Read transcript log<br/>4. Read plan [/] & git state"] --> EvalPrompt
+        CheckContextLoss -->|"Yes"| ContextRecovery["Context Recovery Protocol:<br/>1. Read 'What To Re-read After A Checkpoint.md'<br/>2. Re-read active Skills & Tool Guides<br/>3. Query dialogue via chronicle / transcript<br/>4. Read plan [/] & git state"] --> EvalPrompt
         CheckContextLoss -->|"No"| EvalPrompt
     end
 
@@ -211,10 +211,12 @@ flowchart TD
 * **Context Recovery Protocol:** Following context window truncation or turn splits, the agent's **VERY FIRST ACTION** MUST be:
   1. **Read `What To Re-read After A Checkpoint.md`**: Locate and read `<appDataDir>\brain\<conversation-id>/What To Re-read After A Checkpoint.md` (or workspace `.scratch/`).
   2. **Reload Active Skills**: Execute `view_file` on `SKILL.md` for every skill listed under `## Active Skills` to restore behavioral rules and specialized execution paths into active memory.
-  3. **Re-call Active Tool Guides**: Execute tool guide calls (e.g. `patchitright_guide`, `jcodemunch_guide`) with their specified arguments recorded under `## Active Tool Guides` to restore latest parameter constraints, schemas, and recipes into active memory.
+  3. **Re-call Active Tool Guides**: Execute tool guide calls (e.g. `patchitright_guide`, `chronicle_guide`, `jcodemunch_guide`) with their specified arguments recorded under `## Active Tool Guides` to restore latest parameter constraints, schemas, and recipes into active memory.
   4. **Reload Referenced Artifacts**: Execute `view_file` on all artifacts listed under `## Referenced Artifacts` (e.g. Directive Artifacts, review reports, PRDs, specs) to recover current task state.
   5. **Restore Active Directives & Tags**: Re-adopt active modifier tags (e.g., `!PA`, `!SP<N>`, `!PU`), multi-agent review rosters, and operational invariants recorded under `## Active Context & Invariants`.
-  6. **Query Recent Dialogue & Execution Context**: Read the last 15 lines of `<appDataDir>\brain\<conversation-id>\.system_generated\logs\transcript.jsonl` to recover recent user agreements, keywords (e.g., "Approve", "Proceed"), in-flight tool executions, and immediate conversational nuance truncated by context compression.
+  6. **Query Recent Dialogue & Execution Context**:
+     - *Primary*: Call `chronicle:query_transcript` with `sessionId: "<conversation-id>"`, `detailLevel: { dialogue: "full", executions: "compact" }`, `include: ["dialogue", "executions"]`, and `lastTurns: 3` to recover recent user agreements, keywords (e.g., "Approve", "Proceed"), in-flight tool executions, and immediate conversational nuance truncated by context compression (query further back only if context is insufficient).
+     - *Fallback*: If `chronicle` is unavailable, read the last 15 lines of `<appDataDir>\brain\<conversation-id>\.system_generated\logs\transcript.jsonl`.
   7. **Inspect Plan & Git State**: Read `implementation_plan.md` to identify the active `[/]` or next `[ ]` step, and inspect `git status` and `git diff` to determine what files have already been modified on disk before taking any code action, preventing duplicate or conflicting edits.
   Following step 7, context recovery is complete. The agent proceeds immediately into Phase 1 (Tier Gate, Router & Triage) and Phase 2 execution without halting or requesting redundant confirmation.
 
@@ -284,6 +286,7 @@ Use this matrix to select tools inside repository paths. NEVER use native tools 
 | :--- | :--- | :--- |
 | **Code Reading & Symbol search** | `jcodemunch` | MUST call `jcodemunch_guide` first. MUST use `search_symbols`, `get_symbol_source`, etc. inside repos. MUST NOT use `list_dir`, `view_file`, `grep_search` on indexed code. MUST index via `index_folder` if not indexed. *Exception: May use `view_file` directly for non-code files (.md, docs, configs) or untracked/ignored files to avoid latency.* |
 | **Code Editing (Minimal Diffs)** | `patchitright` | **MUST call `patchitright_guide` first with target `file_type` list (e.g., `["js_ts"]`, `["python"]`, `["html_css"]`) and follow its instructions.** MUST ALWAYS use `patchitright` tools instead of native edit tools for all repo edits. |
+| **Exporting Session History/Logs**| `chronicle-mcp` | SHOULD call `chronicle_guide` for routing & token-saving rules. MUST use `chronicle-mcp` tools (`list_sessions`, `get_session_details`, etc.). MUST use `reverseSteps=true` when reading recent context first. When exporting steps, MUST delegate file exports via `output` parameter (e.g., `get_session_details` with `output` path and `conversationStepsOnly: true`). MUST NEVER write manually or read SQLite/jsonl transcripts. |
 | **Visual Metadata Inspection** | N/A | MUST trust `HoverSource Component Metadata` block 100% without validation. MUST go straight to target lines. |
 
 ---
@@ -387,10 +390,48 @@ Clarifying questions on requirements or technical approaches.
   - **Phase 1 — Understand the actual state.** Read the relevant code and inspect runtime behavior using available tools (Chrome DevTools MCP, debuggers, logs, REPL). If the root cause is NOT CONFIRMED after reading, do not proceed — add logging or measurements, simulate and reproduce the problem, or ask the user to conduct manual tests to generate logs. Do not attempt to solve alone what is impossible to know without the user's environment or input. Confirmation means reproducing the problem or using logs to point out the exact cause — not reading code and guessing.
   - **Phase 2 — Identify the root cause.** Trace the data flow, understand WHY the problem occurs, not just WHERE it manifests.
   - **Phase 3 — Propose solution.** Propose a clean solution addressing the root cause directly. MUST STOP and await explicit User approval (command or T3 tag) before executing any fix or state-modifying actions. Skipping phases and jumping to a workaround (e.g., hacks, pattern-guessing, post-processing that sidesteps the cause) is not fixing — it's masking.
-  - **Execution & Recovery Loop — Verify & adapt.** Execute approved fix and verify runtime evidence:
-    - **Passed:** Task complete.
-    - **Failed (Bugs in solution code, root cause unchanged):** Polish solution code and retry execution.
-    - **Failed (Unknown reasons):** STOP execution immediately and return to Phase 1 / Instrument to plan a collaboration with the user to find the exact root cause.
+    - **Execution & Recovery Loop — Verify & adapt.** Execute approved fix and verify runtime evidence:
+      - **Passed:** Task complete.
+      - **Failed (Bugs in solution code, root cause unchanged):** Polish solution code and retry execution.
+      - **Failed (Unknown reasons):** STOP execution immediately and return to Phase 1 / Instrument to plan a collaboration with the user to find the exact root cause.
+
+  ---
+
+  ### Phase 2C Reference: Subagent Delegation Protocol (3 Modes & Anti-Prescription)
+
+  > [!IMPORTANT]
+  > **Subagent Dispatch Mandate:**  
+  > When delegating tasks to subagents via `invoke_subagent` or `send_message`, the main agent MUST explicitly classify the task into one of three operational modes and format the prompt accordingly.
+  > The main agent MUST NEVER spoon-feed ("mớm sẵn") conclusions, deductions, or pre-baked answers into the subagent prompt. Let empirical codebase, data, and test evidence drive the subagent's findings.
+
+  #### 1. Deterministic Execution Mode (Chế độ Thực thi)
+  - **Use Cases:** Executing specific tickets, refactoring functions against established specifications, running test suites, applying surgical bugfixes.
+  - **Prompt Requirements:**
+    - Define explicit acceptance criteria, input/output data contracts, and technical boundaries.
+    - **Zero Telephone Game (Strict Anti-Semantic-Drift):** If the ticket, PRD, or technical specification already defines requirements on disk, the prompt **MUST NOT** paraphrase, re-explain, or summarize them. The prompt MUST point the subagent directly to the original file path on disk (e.g., `tickets/XX.md`) to read directly.
+  - **Prompt Template:**
+    - *Good:* `"Execute the implementation defined strictly in [ticket.md](file:///path/to/ticket.md). Follow the acceptance criteria in the specification. Run verification command npm test and report modified files, test stdout, and commit hash."`
+
+  #### 2. Autonomous Discovery & Investigation Mode (Chế độ Khám phá & Nghiên cứu)
+  - **Use Cases:** Exploratory Data Analysis (EDA), security audits, hunting elusive bugs, architectural surveys, dependency analysis.
+  - **Strict Ban on Micro-Prescription:** The main agent MUST NOT feed conclusions, pre-baked hypotheses, or desired answers into the prompt.
+  - **Prompt Requirements:**
+    - Provide: High-level objective ($X$), established known baseline context ($Y$), and access to query tools, codebase, or datasets.
+    - **Broad Scope of 'New Discoveries':** The prompt MUST explicitly instruct the subagent that "new discoveries" are NOT limited to facts outside existing findings. New discoveries encompass completely new elements, deeper mechanics, unmentioned relationships, or cross-feature interactions among already known elements.
+    - **Anti-Hallucination Exit Hatch:** The prompt MUST explicitly grant an exit door: If thorough investigation reveals no new findings or anomalies, the subagent **MUST report that there is nothing new to report**, rather than inventing, padding, or exaggerating findings.
+  - **Prompt Templates:**
+    - *Bad (Micro-Prescription):* `"Hãy explore thông tin cụ thể A, chỉ ra đặc điểm cụ thể B của A, qua đó đưa ra kết luận cụ thể C."` (Forces B and C upfront).
+    - *Good:* `"Mục tiêu của chúng ta là X, chúng ta đã biết Y. Hãy explore công cụ/dữ liệu và chỉ ra những điều chưa biết có giá trị Z. Lưu ý: phát hiện mới có thể là những góc nhìn hoặc mối quan hệ sâu hơn giữa các yếu tố đã biết Y. Nếu dữ liệu không có phát hiện nào mới, hãy báo cáo trung thực là không còn gì mới để báo cáo, tuyệt đối không suy đoán hoặc bịa đặt."`
+
+  #### 3. Review & Stress-Test Mode (Chế độ Review & Phản biện)
+  - **Use Cases:** Stress-testing a hypothesis, confirming or invalidating a suspected bug, evaluating patch completeness, comparing alternative approaches.
+  - **Strict Ban on Confirmation-Bias Prompts:** The main agent MUST NOT prompt the subagent to "prove" a claim or construct a one-sided argument.
+  - **Prompt Requirements:**
+    - Provide: Problem context ($P$), tools/codebase/data pointers ($C$), the tentative hypothesis or claim ($A$), and the preliminary rationale ($B$).
+    - **Bilateral Mandate:** The subagent MUST be tasked with a two-sided mission: either confirm claim $A$ with concrete empirical evidence, OR actively search for counter-examples, blind spots, weaknesses, and alternative explanations that invalidate $A$.
+  - **Prompt Templates:**
+    - *Bad (Confirmation Bias):* `"Ta có bài toán P, nhận định A, nó đúng bởi vì B, hãy đọc C và chứng minh là A đúng."`
+    - *Good:* `"Ta có bài toán P, tôi cho rằng A bởi vì B. Hãy tìm hiểu C bằng công cụ/dữ liệu thực nghiệm để hoặc confirm nhận định A kèm bằng chứng, hoặc chỉ ra các điểm yếu, phản ví dụ, hay góc nhìn phủ định nhận định A."`
 
 ---
 
@@ -492,7 +533,7 @@ Before pushing to remote:
 Across the entire conversation, the agent's duty at the conclusion of every turn is to maintain a dedicated markdown file at `<appDataDir>\brain\<conversation-id>/What To Re-read After A Checkpoint.md`.
 - **Lifecycle Operations**:
   - **Sync Active Skills**: Add every skill currently governing active or upcoming work in this session file link. Remove skills whose task lifecycle is completely finished.
-  - **Sync Active Tool Guides**: Add every tool guide currently governing active MCP usage along with its required arguments (e.g. `patchitright_guide` with `file_types`, `jcodemunch_guide`). Remove guides no longer relevant.
+  - **Sync Active Tool Guides**: Add every tool guide currently governing active MCP usage along with its required arguments (e.g. `patchitright_guide` with `file_types`, `chronicle_guide` with `topic`). Remove guides no longer relevant.
   - **Sync Referenced Artifacts**: Add every artifact actively referenced by ongoing work. Remove artifacts that are obsolete or no longer referenced.
   - **Sync Active Context & Invariants**: Record active context, current operational constraints, and critical user directives that must survive context compression.
 - **Mandatory Markdown Template Schema**:
@@ -522,7 +563,7 @@ Across the entire conversation, the agent's duty at the conclusion of every turn
 | **Grounded Responses**| MUST base responses ONLY on provided context and codebase. MUST NEVER guess, assume, or hallucinate. MUST ask if info is missing. |
 | **Clickable Resource Links** | **MUST ALWAYS** format all mentions of commits, pull requests (PRs), issues, repositories, local files, and code symbols as clickable Markdown links (e.g., [commit <sha>](<url>), [PR #<id>](<url>), [issue #<id>](<url>), [repo-name](<url>), [file.ts](file:///<path>)). |
 | **Public Documentation**| **MUST ALWAYS** write public-facing documentation, pull request (PR) descriptions, repository READMEs, commit messages, and source code comments in English to maintain global standards, unless explicitly requested otherwise by user. |
-| **Subagents** | Spawned subagents MUST be passed their corresponding rules from the active user config directory: `<user_home>/<active_platform>/subagent_rules/<role>.md` (e.g. `~/.gemini/config/subagent_rules/` or `~/.claude/subagent_rules/`). |
+| **Subagents** | Spawned subagents MUST be passed their corresponding rules from the active user config directory: `<user_home>/<active_platform>/subagent_rules/<role>.md` (e.g. `~/.gemini/config/subagent_rules/` or `~/.claude/subagent_rules/`). Delegating prompts MUST strictly follow one of the 3 operational modes in Phase 2C (Deterministic Execution, Autonomous Discovery, or Review / Stress-Test). Micro-prescription, pre-baked conclusions, leading questions, and confirmation-bias prompting are STRICTLY FORBIDDEN. |
 | **Private Data & Commits**| **MUST NEVER** commit or push private session data, conversation logs, scratch scripts, or transcripts to public repositories. All exports, logs, plans, and walkthroughs **MUST** remain strictly in local private `brain` folder (or temporary directory outside repository) unless target locations inside repository are explicitly stated and requested by user. |
 | **Incremental API Design** | When building API backup or sync scripts (e.g., GitHub, Jira), **MUST ALWAYS** implement **incremental updates** rather than full fetches: MUST read existing local data to find last sync timestamp, MUST use early-exit pagination, MUST reuse unchanged data, and MUST skip redundant disk/git actions. |
 | **Tool Constraints** | When building or modifying custom MCP servers, **MUST ALWAYS** define strict input constraints (e.g., maximum code line limits for edits) directly in **Tool and Parameter JSON Descriptions** at schema level, rather than relying only on local markdown docs, to ensure global enforcement across client workspaces. |
