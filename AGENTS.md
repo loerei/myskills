@@ -401,26 +401,26 @@ Clarifying questions on requirements or technical approaches.
 
   ---
 
-    ### Phase 2C Reference: Subagent Delegation Protocol (3 Modes & Anti-Prescription)
+  ### Phase 2C Reference: Subagent Delegation Protocol (3 Modes & Anti-Prescription)
 
   > [!IMPORTANT]
   > **Subagent Dispatch Mandate:**  
   > When delegating tasks to subagents via `invoke_subagent` or `send_message`, the main agent MUST explicitly classify the task into one of three operational modes and format the prompt accordingly.
-  > The main agent MUST NEVER spoon-feed conclusions, deductions, or pre-baked answers into the prompt. Let empirical data and codebase reality drive the subagent's conclusions.
+  > The main agent MUST NEVER inject conclusions, deductions, or pre-baked answers into the prompt. Empirical data and codebase reality must drive all subagent conclusions.
 
   #### 1. Deterministic Execution Mode
   - **Scope:** Implementing tickets, refactoring functions against specifications, running tests, applying defined edits.
   - **Rules:**
     - Define clear acceptance criteria, inputs/outputs, and technical constraints.
-    - **Avoid Semantic Drift (Zero Telephone Game):** If the specification or referenced document is already strictly defined, NEVER re-interpret or paraphrase it in the prompt. Point the subagent directly to the original directive on disk.
+    - **Avoid Semantic Drift (Zero Telephone Game):** NEVER paraphrase or re-interpret defined specifications in the prompt. Point the subagent directly to the authoritative file path on disk.
 
   #### 2. Autonomous Discovery & Investigation Mode
-  - **Scope:** EDA, security audits, hunting difficult bugs, architectural surveys.
+  - **Scope:** Exploratory data analysis (EDA), security audits, investigating complex bugs, architectural surveys.
   - **Rules:**
-    - **Strict Ban on Micro-Prescription:** NEVER feed pre-baked conclusions or hypotheses into the prompt. Provide only: problem objective, query tools, source code, and data pointers. Let empirical data drive the subagent's conclusions.
-    - **Definition of New Discoveries:** "New discoveries" MUST NOT be understood as strictly outside existing discoveries. They can be completely new (outside existing findings), or deeper findings within existing discoveries (e.g. unmentioned relationships or interactions between known elements).
-    - **Anti-Hallucination Exit Hatch:** The main agent MUST state clearly that if there is nothing new to discover, the subagent MUST report that there is nothing new to report, rather than fabricating findings.
-    - **Context Framing Mandate ("What's Already Known" vs Echoed Answers):** When passing supplementary information, existing documents, preliminary notes, or domain knowledge to discovery agents, ALWAYS categorize and frame them strictly under "What is already known" or "What is currently claimed / observed". NEVER frame supplementary context as "This is the answer you need to echo" or "Prove this claim true". Discovery agents must treat all provided context as the existing baseline to surpass or challenge, not as pre-determined truth.
+    - **Strict Ban on Micro-Prescription:** NEVER feed pre-baked conclusions or leading hypotheses into the prompt. Provide only: problem objective, query tools, source code, and data pointers.
+    - **Definition of New Discoveries:** Discoveries comprise three categories: (1) novel findings outside existing baseline, (2) deeper dynamics of known entities (e.g. non-linearities, threshold cliffs), and (3) cross-domain interactions between known entities.
+    - **Anti-Hallucination Exit Hatch:** Prompts MUST mandate an explicit null outcome: if no new findings emerge, the subagent MUST report zero discoveries rather than fabricating patterns or exaggerating noise.
+    - **Context Framing Mandate ("What's Already Known" vs Echoed Answers):** Frame reference material strictly under "What is already known" or "Current baseline observations". NEVER frame background as target answers to echo or claims to prove. Subagents must treat provided context as a baseline to challenge or surpass.
   - **Prompt Formats:**
     - *Bad prompt format:* `"Explore specific information <target_info>, point out specific characteristic <characteristic> of <target_info>, and thereby conclude <conclusion>."`
     - *Good prompt format:* `"Our objective is <objective>, we already know <known_baseline>. Explore and point out unknown findings of value <target_scope>."`
@@ -428,8 +428,8 @@ Clarifying questions on requirements or technical approaches.
   #### 3. Review Mode
   - **Scope:** Stress-testing hypotheses, analyzing code/data to confirm or invalidate a bug, evaluating patch soundness, exploring better alternatives.
   - **Rules:**
-    - Provide: Problem objective, tools/source code/data pointers, tentative hypotheses, and claims.
-    - Let empirical data drive the subagent's conclusions.
+    - Provide: Problem objective, query tools, source code/data pointers, tentative hypotheses, and claims under review.
+    - **Bilateral Assessment Mandate:** Prompts MUST require testing both confirmation and refutation: instruct the subagent to actively seek counter-evidence, edge-case failures, and architectural weaknesses. NEVER instruct a reviewer to prove a claim true.
   - **Prompt Templates:**
     - *Bad prompt template:* `"We have problem <problem> and claim <claim>, which is true because of <rationale>. Read <ground_truth> and prove that <claim> is true."`
     - *Good prompt template:* `"We have problem <problem>, I consider <claim> because of <rationale>. Investigate <ground_truth> and either confirm claim <claim>, or point out weaknesses/counter-evidence of <claim> if any."`

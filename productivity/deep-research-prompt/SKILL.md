@@ -11,18 +11,18 @@ Draft a self-contained, single-file markdown prompt for autonomous deep research
 
 1. **Anti-Prescription & Objective Triad (<objective>, <known_baseline>, <target_scope>)**: The prompt MUST define the research task using three explicit boundaries:
    - **Problem Objective (`<objective>`)**: The overarching problem statement, intent, and constraints.
-   - **Known Baseline (`<known_baseline>`)**: Known patterns, existing architectures, established context, and what has already been investigated (prevents rediscovering the obvious or misidentifying knowns as novelties). All supplementary context, attached reference files, or preliminary observations MUST be framed strictly under this category as "What is already known / What is currently claimed", NEVER as expected answers to echo.
+   - **Known Baseline (`<known_baseline>`)**: Established architectures, known patterns, existing findings, and current limitations. The prompt MUST prohibit reporting baseline elements as novel discoveries. Frame all attached files or preliminary observations strictly under this category as "What is currently claimed/known", NEVER as expected answers to echo.
    - **Target Scope (`<target_scope>`)**: Unknown dynamics, deeper relationships, edge cases, or potential alternative architectures to investigate.
-   - NEVER spoon-feed predetermined answers, leading questions, or confirmation-bias framing (e.g., never ask to "prove why solution A is better than B"; ask to "evaluate A and B against criteria C").
-2. **Definition of New Discoveries**: The prompt MUST clarify that "new discoveries" are not strictly limited to completely unknown elements outside baseline `<known_baseline>`. They also include discovering deeper, unmentioned relationships, friction points, trade-offs, or interactions between known elements in `<known_baseline>`.
-3. **Anti-Hallucination Exit Hatch**: The prompt MUST explicitly instruct the researcher that if research reveals existing architecture or baseline (`<known_baseline>`) is already optimal, or if no meaningful new dynamics exist, it MUST report that there are no new findings or that current state is optimal, rather than fabricating flaws, artificial complexity, or unnecessary refactoring.
+   - NEVER spoon-feed predetermined answers, leading questions, or confirmation-bias framing (e.g. do not ask to "prove why solution A is better than B"; ask to "evaluate A and B against criteria C").
+2. **Definition of New Discoveries**: The prompt MUST define "new discoveries" to include both external solutions outside `<known_baseline>` and unmentioned relationships, friction points, trade-offs, or latent interactions between known elements within `<known_baseline>`.
+3. **Anti-Hallucination Exit Hatch**: The prompt MUST instruct the researcher that if `<known_baseline>` is already optimal or if no meaningful new dynamics exist, it MUST report that no changes are warranted. Prohibit fabricating flaws, artificial complexity, or unnecessary refactoring to justify research effort.
 4. **Actionable Deliverable Mandate**: The prompt MUST demand concrete output, not an abstract essay:
    - For file modification: exact file paths, rationale, and concrete line-anchored patches or complete replacement content.
    - For new architecture or files: concrete file topology, anti-patterns (BAD vs GOOD code or schemas), failure modes, and mitigations.
    - For migrations: cleanup plans, retirement steps for obsolete assets, and verification criteria.
-5. **Autonomous Primary-Source Research**: The prompt MUST instruct the researcher to synthesize broad industry consensus, primary documentation, formal specifications, or empirical benchmarks, without artificially constraining research to pre-selected tools or vendors.
-6. **Self-Contained Single-File Invariant**: The final artifact MUST be a single `.md` file containing the task directives followed by inlined baseline files, reference documents, and applicable quality skills.
-7. **Quality Standards Constraint**: Enforce writing quality (e.g. plain English, RFC 2119 imperatives, self-contained examples) within the prompt directives.
+5. **Autonomous Primary-Source Research**: The prompt MUST instruct the researcher to synthesize broad industry consensus, primary documentation, formal specifications, and empirical benchmarks, without artificially constraining research to pre-selected tools or vendors.
+6. **Self-Contained Single-File Invariant**: The final artifact MUST be a single `.md` file containing the task directives followed by fully inlined baseline files, reference documents, and applicable quality skills.
+7. **Quality Standards Constraint**: The prompt MUST use RFC 2119 imperatives (`MUST`, `MUST NOT`, `SHOULD`) and plain English. Ban ambiguous suggestions ("consider", "try to") in favor of testable constraints.
 
 ---
 
@@ -61,7 +61,6 @@ Your task is to conduct deep research on <Broad Domain Area> and deliver <Concre
 - **Anti-Prescription & Objectivity**: Do NOT bias research toward specific pre-selected tools, vendors, or predetermined conclusions. Synthesize modern industry consensus and primary source documentation.
 - **Definition of New Discoveries**: New discoveries include novel solutions outside baseline (<known_baseline>), as well as deeper, unmentioned relationships, conflicts, or trade-offs between known elements in (<known_baseline>).
 - **Anti-Hallucination Exit Hatch**: If investigation reveals that baseline (<known_baseline>) is already optimal or that no meaningful new dynamics exist, explicitly conclude that no changes are warranted. Do NOT fabricate flaws or propose artificial complexity to justify research effort.
-- Deliver concrete anti-patterns (BAD vs GOOD illustrations), failure modes with mitigations, and actionable evaluation criteria.
 
 ---
 
@@ -71,6 +70,7 @@ Your task is to conduct deep research on <Broad Domain Area> and deliver <Concre
 - If modifying existing files: Provide exact file path, rationale, and complete replacement content or line-anchored patch.
 - If authoring new files: Provide complete file content, structure, and integration points.
 - If deprecating files: Provide retirement checklist and migration steps.
+- Illustrate recommendations with concrete anti-patterns (BAD vs GOOD examples), failure modes with mitigations, and actionable evaluation criteria.
 
 ---
 
