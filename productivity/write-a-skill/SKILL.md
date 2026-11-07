@@ -15,6 +15,7 @@ Create and distribute agent skills across workspaces.
 4. **Mermaid Decision Trees**: Use flowcharts ONLY for workflows with 3+ branching paths or error recovery loops. Do NOT use for flat linear steps.
 5. **Mindset Over Micro-Format**: Directives MUST state the thinking principle for the agent to adopt rather than rigid output templates. Do NOT prescribe arbitrary response structures.
 6. **Prerequisite**: MUST read `write-for-ai/SKILL.md` before drafting or editing any skill.
+7. **Context-Independent Portability**: Directives MUST stand on first-principles. NEVER contaminate skill instructions with local repository jargon, dataset names, or private file structures from the workspace where the skill was authored. When drafting, evaluate: "If an agent in an unfamiliar repository reads this rule with zero knowledge of my current task, will it understand and execute correctly, or will it hallucinate?"
 
 | Bad (Bloated Fluff) | Good (Plain English) |
 | :--- | :--- |

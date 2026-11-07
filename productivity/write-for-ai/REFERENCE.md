@@ -18,10 +18,12 @@
 | **Opaque Error vs Actionable** | `An unexpected internal exception occurred within the subsystem processing pipeline.` | `Invalid file path: 'src/main.ts'. Check that the file exists and retry.` |
 | **Decorative Bullet Titles** | `- **Action Enforcement**: Verify that all tests pass before merge.` | `- Verify all tests pass before merge.` |
 | **Theatrical / Hollow Headers** | `### Enforcement Gate\nIf not satisfied, reject the DA.` | `- If not satisfied -> Reject DA.` |
+| **Cosmetic Granularity / Scope Narrowing** | `STRICT BAN: Never guess multivariate trends from univariate statistics when querying data.` | `Do not stop at CLI output and guess deeper; all deeper claims require empirical proof.` |
+| **Cross-Repo Context Contamination** | `Before modifying parser, check telemetry in Client.csv and Record.csv for schema drift.` | `Before modifying parser, inspect local schema definitions and test fixtures for schema changes.` |
 
 ---
 
-## 2. The 6 Universal Forms of Redundancy
+## 2. The 7 Universal Forms of Redundancy
 
 | Redundancy Form | Definition & Anti-Pattern | How to Fix |
 | :--- | :--- | :--- |
@@ -31,6 +33,7 @@
 | Motivation & History | Explaining why a feature was created, past architecture decisions, or how much time/tokens/bandwidth it saves. | State only the operational contract and requirements. AI models execute instructions; they do not need justification. |
 | Synonym Stacking | Chaining multiple near-identical adjectives, adverbs, or qualifiers to emphasize importance ("strict, absolute, mandatory, and non-negotiable"). | Use a single unambiguous keyword (`MUST`, `MUST NOT`). |
 | Reference Over-Specification | Itemizing, summarizing, or listing internal sub-topics, case study titles, or contents of a referenced document inside the link sentence. | State only the high-level category of the target file without cataloging its contents. |
+| Cosmetic Granularity & Context Contamination | Adding gratuitous local details or domain jargon to look thorough, inadvertently narrowing a universal directive into a specific sub-case or leaking local repo assumptions to future reader agents. | Strip local context. Formulate directives at the highest level of generality that still provides unambiguous behavioral constraints. |
 
 ---
 

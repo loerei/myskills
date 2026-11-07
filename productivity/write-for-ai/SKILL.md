@@ -23,6 +23,8 @@ Text written for AI must directly drive decisions, constraints, or routing. It s
 12. **No theatrical or hollow headers.** Do not create section headers or sub-headers for 1–2 sentences. Merge directly into parent flow.
 13. **Frontmatter description is trigger condition only.** Answer ONLY "When to choose this skill?" in 10–15 words. Never summarize features (What), explain benefits (Why), or include slash command mentions.
 14. **Use universal, self-contained examples.** NEVER write examples, lookup tables, or case studies that depend on specific context from a random repository or proprietary domain that an LLM does not always have. All examples MUST be universally understandable from first principles ("Hello World examples", e.g. canonical scenarios like resizing an image, sending an email, user auth, or basic CRUD pagination) that any LLM can understand and generalize instantly.
+15. **Detail standard: Reinforce statement, never cosmetic granularity.** Extra detail is justified ONLY when it directly strengthens the statement, establishes an operational boundary, or provides a concrete recovery path. NEVER add details merely to "look more thorough" or "do more than asked" when that addition narrows the statement's generality or dilutes its authority.
+16. **Reader context decoupling (Zero cross-repo contamination).** Write rules and documentation from the standpoint of an agent with zero prior context of the author's local repository. Never inject local project jargon, dataset specifics, or workspace paths into shared rules or skills. Doing so causes future agents in other codebases to hallucinate, misinterpret directives, or fail.
 
 ## Workflows
 
