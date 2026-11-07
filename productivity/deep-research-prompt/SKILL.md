@@ -12,7 +12,7 @@ Draft a self-contained, single-file markdown prompt for autonomous deep research
 1. **Anti-Prescription & Objective Triad (<objective>, <known_baseline>, <target_scope>)**: The prompt MUST define the research task using three explicit boundaries:
    - **Problem Objective (`<objective>`)**: The overarching problem statement, intent, and constraints.
    - **Known Baseline (`<known_baseline>`)**: Established architectures, known patterns, existing findings, and current limitations. The prompt MUST prohibit reporting baseline elements as novel discoveries. Frame all attached files or preliminary observations strictly under this category as "What is currently claimed/known", NEVER as expected answers to echo.
-   - **Target Scope (`<target_scope>`)**: Unknown dynamics, deeper relationships, edge cases, or potential alternative architectures to investigate.
+   - **Target Scope (`<target_scope>`)**: Unknown dynamics, deeper relationships, edge cases, or alternative architectures to investigate, explicitly including any other emergent high-value areas discovered during research that directly contribute to `<objective>`.
    - NEVER spoon-feed predetermined answers, leading questions, or confirmation-bias framing (e.g. do not ask to "prove why solution A is better than B"; ask to "evaluate A and B against criteria C").
 2. **Definition of New Discoveries**: The prompt MUST define "new discoveries" to include both external solutions outside `<known_baseline>` and unmentioned relationships, friction points, trade-offs, or latent interactions between known elements within `<known_baseline>`.
 3. **Anti-Hallucination Exit Hatch**: The prompt MUST instruct the researcher that if `<known_baseline>` is already optimal or if no meaningful new dynamics exist, it MUST report that no changes are warranted. Prohibit fabricating flaws, artificial complexity, or unnecessary refactoring to justify research effort.
@@ -52,7 +52,10 @@ Your task is to conduct deep research on <Broad Domain Area> and deliver <Concre
 
 ## 3. Target Scope & Unknowns to Discover (<target_scope>)
 
-<Specific unknown dynamics, deeper relationships, performance boundaries, or architectural trade-offs to investigate.>
+- <Macro Focus Area 1>
+- <Macro Focus Area 2>
+- <Macro Focus Area 3>
+- Other emergent area(s), if any valuable area that contributes directly to <objective> is discovered during the research process.
 
 ---
 

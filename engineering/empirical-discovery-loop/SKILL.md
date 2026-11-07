@@ -87,7 +87,7 @@ You are an Explorer.
 Explore target: <data_source_or_subsystem>.
 Objective: <objective>.
 Known baseline: <known_baseline>.
-Target scope: <target_scope>.
+Target scope: <target_scope> (including other emergent area(s) if any valuable area that contributes directly to <objective> is discovered during exploration).
 Ground truth: <ground_truth>.
 Output target: <target_doc_path>.
 Directives:

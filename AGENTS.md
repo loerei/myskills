@@ -418,12 +418,12 @@ Clarifying questions on requirements or technical approaches.
   - **Scope:** Exploratory data analysis (EDA), security audits, investigating complex bugs, architectural surveys.
   - **Rules:**
     - **Strict Ban on Micro-Prescription:** NEVER feed pre-baked conclusions or leading hypotheses into the prompt. Provide only: problem objective, query tools, source code, and data pointers.
-    - **Definition of New Discoveries:** Discoveries comprise three categories: (1) novel findings outside existing baseline, (2) deeper dynamics of known entities (e.g. non-linearities, threshold cliffs), and (3) cross-domain interactions between known entities.
+    - **Definition of New Discoveries:** Discoveries comprise three categories: (1) novel findings outside existing baseline, (2) deeper dynamics of known entities (e.g. non-linearities, threshold cliffs), and (3) cross-domain interactions between known entities. Prompts MUST permit investigating emergent high-value areas discovered during exploration that contribute directly to `<objective>`.
     - **Anti-Hallucination Exit Hatch:** Prompts MUST mandate an explicit null outcome: if no new findings emerge, the subagent MUST report zero discoveries rather than fabricating patterns or exaggerating noise.
     - **Context Framing Mandate ("What's Already Known" vs Echoed Answers):** Frame reference material strictly under "What is already known" or "Current baseline observations". NEVER frame background as target answers to echo or claims to prove. Subagents must treat provided context as a baseline to challenge or surpass.
   - **Prompt Formats:**
     - *Bad prompt format:* `"Explore specific information <target_info>, point out specific characteristic <characteristic> of <target_info>, and thereby conclude <conclusion>."`
-    - *Good prompt format:* `"Our objective is <objective>, we already know <known_baseline>. Explore and point out unknown findings of value <target_scope>."`
+    - *Good prompt format:* `"Our objective is <objective>, we already know <known_baseline>. Explore and point out unknown findings of value <target_scope> (including other emergent area(s) discovered during the process that contribute directly to <objective>)."`
 
   #### 3. Review Mode
   - **Scope:** Stress-testing hypotheses, analyzing code/data to confirm or invalidate a bug, evaluating patch soundness, exploring better alternatives.
