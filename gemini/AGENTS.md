@@ -420,36 +420,32 @@ Clarifying questions on requirements or technical approaches.
   > [!IMPORTANT]
   > **Subagent Dispatch Mandate:**  
   > When delegating tasks to subagents via `invoke_subagent` or `send_message`, the main agent MUST explicitly classify the task into one of three operational modes and format the prompt accordingly.
-  > The main agent MUST NEVER spoon-feed ("mớm sẵn") conclusions, deductions, or pre-baked answers into the subagent prompt. Let empirical codebase, data, and test evidence drive the subagent's findings.
+  > The main agent MUST NEVER spoon-feed conclusions, deductions, or pre-baked answers into the prompt. Let empirical data and codebase reality drive the subagent's conclusions.
 
-  #### 1. Deterministic Execution Mode (Chế độ Thực thi)
-  - **Use Cases:** Executing specific tickets, refactoring functions against established specifications, running test suites, applying surgical bugfixes.
-  - **Prompt Requirements:**
-    - Define explicit acceptance criteria, input/output data contracts, and technical boundaries.
-    - **Zero Telephone Game (Strict Anti-Semantic-Drift):** If the ticket, PRD, or technical specification already defines requirements on disk, the prompt **MUST NOT** paraphrase, re-explain, or summarize them. The prompt MUST point the subagent directly to the original file path on disk (e.g., `tickets/XX.md`) to read directly.
-  - **Prompt Template:**
-    - *Good:* `"Execute the implementation defined strictly in [ticket.md](file:///path/to/ticket.md). Follow the acceptance criteria in the specification. Run verification command npm test and report modified files, test stdout, and commit hash."`
+  #### 1. Deterministic Execution Mode
+  - **Scope:** Implementing tickets, refactoring functions against specifications, running tests, applying defined edits.
+  - **Rules:**
+    - Define clear acceptance criteria, inputs/outputs, and technical constraints.
+    - **Avoid Semantic Drift (Zero Telephone Game):** If the specification or referenced document is already strictly defined, NEVER re-interpret or paraphrase it in the prompt. Point the subagent directly to the original directive on disk.
 
-  #### 2. Autonomous Discovery & Investigation Mode (Chế độ Khám phá & Nghiên cứu)
-  - **Use Cases:** Exploratory Data Analysis (EDA), security audits, hunting elusive bugs, architectural surveys, dependency analysis.
-  - **Strict Ban on Micro-Prescription:** The main agent MUST NOT feed conclusions, pre-baked hypotheses, or desired answers into the prompt.
-  - **Prompt Requirements:**
-    - Provide: High-level objective ($X$), established known baseline context ($Y$), and access to query tools, codebase, or datasets.
-    - **Broad Scope of 'New Discoveries':** The prompt MUST explicitly instruct the subagent that "new discoveries" are NOT limited to facts outside existing findings. New discoveries encompass completely new elements, deeper mechanics, unmentioned relationships, or cross-feature interactions among already known elements.
-    - **Anti-Hallucination Exit Hatch:** The prompt MUST explicitly grant an exit door: If thorough investigation reveals no new findings or anomalies, the subagent **MUST report that there is nothing new to report**, rather than inventing, padding, or exaggerating findings.
+  #### 2. Autonomous Discovery & Investigation Mode
+  - **Scope:** EDA, security audits, hunting difficult bugs, architectural surveys.
+  - **Rules:**
+    - **Strict Ban on Micro-Prescription:** NEVER feed pre-baked conclusions or hypotheses into the prompt. Provide only: problem objective, query tools, source code, and data pointers. Let empirical data drive the subagent's conclusions.
+    - **Definition of New Discoveries:** "New discoveries" MUST NOT be understood as strictly outside existing discoveries. They can be completely new (outside existing findings), or deeper findings within existing discoveries (e.g. unmentioned relationships or interactions between known elements).
+    - **Anti-Hallucination Exit Hatch:** The main agent MUST state clearly that if there is nothing new to discover, the subagent MUST report that there is nothing new to report, rather than fabricating findings.
+  - **Prompt Formats:**
+    - *Bad prompt format:* `"Explore specific information A, point out specific characteristic B of A, and thereby conclude C."`
+    - *Good prompt format:* `"Our objective is X, we already know Y. Explore and point out unknown findings of value Z."`
+
+  #### 3. Review Mode
+  - **Scope:** Stress-testing hypotheses, analyzing code/data to confirm or invalidate a bug, evaluating patch soundness, exploring better alternatives.
+  - **Rules:**
+    - Provide: Problem objective, tools/source code/data pointers, tentative hypotheses, and claims.
+    - Let empirical data drive the subagent's conclusions.
   - **Prompt Templates:**
-    - *Bad (Micro-Prescription):* `"Hãy explore thông tin cụ thể A, chỉ ra đặc điểm cụ thể B của A, qua đó đưa ra kết luận cụ thể C."` (Forces B and C upfront).
-    - *Good:* `"Mục tiêu của chúng ta là X, chúng ta đã biết Y. Hãy explore công cụ/dữ liệu và chỉ ra những điều chưa biết có giá trị Z. Lưu ý: phát hiện mới có thể là những góc nhìn hoặc mối quan hệ sâu hơn giữa các yếu tố đã biết Y. Nếu dữ liệu không có phát hiện nào mới, hãy báo cáo trung thực là không còn gì mới để báo cáo, tuyệt đối không suy đoán hoặc bịa đặt."`
-
-  #### 3. Review & Stress-Test Mode (Chế độ Review & Phản biện)
-  - **Use Cases:** Stress-testing a hypothesis, confirming or invalidating a suspected bug, evaluating patch completeness, comparing alternative approaches.
-  - **Strict Ban on Confirmation-Bias Prompts:** The main agent MUST NOT prompt the subagent to "prove" a claim or construct a one-sided argument.
-  - **Prompt Requirements:**
-    - Provide: Problem context ($P$), tools/codebase/data pointers ($C$), the tentative hypothesis or claim ($A$), and the preliminary rationale ($B$).
-    - **Bilateral Mandate:** The subagent MUST be tasked with a two-sided mission: either confirm claim $A$ with concrete empirical evidence, OR actively search for counter-examples, blind spots, weaknesses, and alternative explanations that invalidate $A$.
-  - **Prompt Templates:**
-    - *Bad (Confirmation Bias):* `"Ta có bài toán P, nhận định A, nó đúng bởi vì B, hãy đọc C và chứng minh là A đúng."`
-    - *Good:* `"Ta có bài toán P, tôi cho rằng A bởi vì B. Hãy tìm hiểu C bằng công cụ/dữ liệu thực nghiệm để hoặc confirm nhận định A kèm bằng chứng, hoặc chỉ ra các điểm yếu, phản ví dụ, hay góc nhìn phủ định nhận định A."`
+    - *Bad prompt template:* `"We have problem P and claim A, which is true because of B. Read C and prove that A is true."`
+    - *Good prompt template:* `"We have problem P, I consider A because of B. Investigate C and either confirm claim A, or point out weaknesses/counter-evidence of A if any."`
 
 ---
 
