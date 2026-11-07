@@ -11,7 +11,7 @@ Draft a self-contained, single-file markdown prompt for autonomous deep research
 
 1. **Anti-Prescription & Objective Triad (<objective>, <known_baseline>, <target_scope>)**: The prompt MUST define the research task using three explicit boundaries:
    - **Problem Objective (`<objective>`)**: The overarching problem statement, intent, and constraints.
-   - **Known Baseline (`<known_baseline>`)**: Known patterns, existing architectures, established context, and what has already been investigated (prevents rediscovering the obvious or misidentifying knowns as novelties).
+   - **Known Baseline (`<known_baseline>`)**: Known patterns, existing architectures, established context, and what has already been investigated (prevents rediscovering the obvious or misidentifying knowns as novelties). All supplementary context, attached reference files, or preliminary observations MUST be framed strictly under this category as "What is already known / What is currently claimed", NEVER as expected answers to echo.
    - **Target Scope (`<target_scope>`)**: Unknown dynamics, deeper relationships, edge cases, or potential alternative architectures to investigate.
    - NEVER spoon-feed predetermined answers, leading questions, or confirmation-bias framing (e.g., never ask to "prove why solution A is better than B"; ask to "evaluate A and B against criteria C").
 2. **Definition of New Discoveries**: The prompt MUST clarify that "new discoveries" are not strictly limited to completely unknown elements outside baseline `<known_baseline>`. They also include discovering deeper, unmentioned relationships, friction points, trade-offs, or interactions between known elements in `<known_baseline>`.
@@ -83,6 +83,9 @@ Your task is to conduct deep research on <Broad Domain Area> and deliver <Concre
 ---
 
 # Attached Context & Reference Files
+
+> [!NOTE]
+> All attached reference files, baseline documents, and supplementary context below represent "What is already known / What is currently claimed". The researcher MUST treat them as the baseline context to challenge or build beyond, NOT as predetermined truths or answers to echo.
 
 ## File: <File Label 1>
 Path: `<file_path_1>`

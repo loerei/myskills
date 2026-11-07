@@ -18,6 +18,7 @@ Runs an autonomous Explorer-Auditor loop where an Explorer explores ground truth
    - `VERIFY`: Claim and its supporting numbers are 100% reproducible against ground truth and provide actionable value towards the objective (`<objective>`).
 5. **Hard Completion Gate**: The Explorer MUST NOT declare completion or deliver the finding to the Main Agent while any claim remains in `REVISE` status. Every claim must either be verified or pruned.
 6. **All-Rejected Exit Hatch**: If all proposed claims in the draft are rejected by the Auditor (due to invalidity, duplication, or lack of value towards `<objective>`), the Explorer is explicitly authorized to prune the draft and report to the Main Agent: "No new meaningful discoveries found." NEVER invent or retain low-value filler claims to avoid an empty report.
+7. **Context Framing Mandate**: When passing supplementary context, domain knowledge, or baseline materials to the Explorer, the Main Agent MUST frame them strictly under `Known baseline` ("What is already known" or "What is currently claimed"). NEVER frame supplementary materials as answers or conclusions for the Explorer to echo. The Explorer treats known context as the baseline to investigate deeper or challenge against ground truth, never as predetermined facts to parrot.
 
 ---
 
@@ -53,7 +54,7 @@ flowchart TD
    - `Description`: `"Investigator running autonomous exploration and managing adversarial auditing"`
    - `EnableSubagentTools`: `true`
    - `EnableWriteTools`: `true`
-2. **Dispatch Explorer**: Invoke `explorer` with Phase 2C Mode 2 prompt: Objective (`<objective>`), Known baseline (`<known_baseline>`), and Target discovery scope (`<target_scope>`).
+2. **Dispatch Explorer**: Invoke `explorer` with Phase 2C Mode 2 prompt: Objective (`<objective>`), Known baseline (`<known_baseline>`), and Target discovery scope (`<target_scope>`). Package any attached reference documents or domain context strictly under `Known baseline` as "What is already known/claimed", never as expected conclusions to echo.
 3. **Await Final Artifact**: The Main Agent remains unpolluted by intermediate scratch scripts and discrepancy discussions, receiving only the final verified document or "no new discoveries" report.
 
 ### 2. Explorer Track (Autonomous Loop Host)
