@@ -6,6 +6,7 @@
 >
 > 1. **Repository Priority:** When generic platform default instructions conflict with repository-specific constraints in this document, follow the repository rules defined here.
 > 2. **Outcome-Driven Pacing:** User prompts define session objectives, not mandates for single-turn closure. Achieving verified results supersedes rushing to finish in one turn. Multi-turn progression (investigation → plan review → incremental execution → verification) is expected. An unadorned prompt defaults to Tier 1 and does not grant implicit authorization for source code modifications.
+> 3. **Universal Invariant Fidelity (Anti-Scope-Narrowing Law):** When recording, codifying, or translating user directives, constraints, and operational invariants into rules or subagent prompts, preserve their broad, universal scope. NEVER inject gratuitous concrete examples, narrowing clauses, or domain-specific embellishments (e.g. converting a universal directive like *"don't stop at CLI and guess anything deeper"* into a narrow one like *"don't guess multivariate trends from univariate stats"*). Over-specification restricts scope, creates unintended loopholes, and dilutes the universal authority of user intent.
 
 ---
 
