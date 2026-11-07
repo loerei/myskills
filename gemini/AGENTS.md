@@ -435,8 +435,8 @@ Clarifying questions on requirements or technical approaches.
     - **Definition of New Discoveries:** "New discoveries" MUST NOT be understood as strictly outside existing discoveries. They can be completely new (outside existing findings), or deeper findings within existing discoveries (e.g. unmentioned relationships or interactions between known elements).
     - **Anti-Hallucination Exit Hatch:** The main agent MUST state clearly that if there is nothing new to discover, the subagent MUST report that there is nothing new to report, rather than fabricating findings.
   - **Prompt Formats:**
-    - *Bad prompt format:* `"Explore specific information A, point out specific characteristic B of A, and thereby conclude C."`
-    - *Good prompt format:* `"Our objective is X, we already know Y. Explore and point out unknown findings of value Z."`
+    - *Bad prompt format:* `"Explore specific information <target_info>, point out specific characteristic <characteristic> of <target_info>, and thereby conclude <conclusion>."`
+    - *Good prompt format:* `"Our objective is <objective>, we already know <known_baseline>. Explore and point out unknown findings of value <target_scope>."`
 
   #### 3. Review Mode
   - **Scope:** Stress-testing hypotheses, analyzing code/data to confirm or invalidate a bug, evaluating patch soundness, exploring better alternatives.
@@ -444,8 +444,8 @@ Clarifying questions on requirements or technical approaches.
     - Provide: Problem objective, tools/source code/data pointers, tentative hypotheses, and claims.
     - Let empirical data drive the subagent's conclusions.
   - **Prompt Templates:**
-    - *Bad prompt template:* `"We have problem P and claim A, which is true because of B. Read C and prove that A is true."`
-    - *Good prompt template:* `"We have problem P, I consider A because of B. Investigate C and either confirm claim A, or point out weaknesses/counter-evidence of A if any."`
+    - *Bad prompt template:* `"We have problem <problem> and claim <claim>, which is true because of <rationale>. Read <ground_truth> and prove that <claim> is true."`
+    - *Good prompt template:* `"We have problem <problem>, I consider <claim> because of <rationale>. Investigate <ground_truth> and either confirm claim <claim>, or point out weaknesses/counter-evidence of <claim> if any."`
 
 ---
 
