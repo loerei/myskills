@@ -13,7 +13,7 @@ For human-facing documentation (READMEs, API docs, release notes), use the `desl
 2. **Apply the Drop Test:** Every sentence or detail must change how the AI selects a tool, sets a parameter, recovers from failure, or handles an edge case. If removing it changes nothing in AI execution, delete it.
 3. **State failure modes and recovery actions:** Explicitly state *when* an action fails and *what* the AI must do next.
 4. **Delete triggers instead of banning artifacts:** To stop unwanted behavior caused by an existing prompt, delete the instruction triggering it. Use `NEVER` or `MUST NOT` only to override default LLM biases (e.g., sycophancy, filler, hallucinated APIs).
-5. **Write with zero repo context:** Assume the AI has no prior knowledge of the local repository, dataset, or workspace paths. Use universal, self-contained examples (e.g., user auth, image resize, CRUD pagination).
+5. **Write with zero repo context:** Assume the AI has no prior knowledge of the local repository, dataset, or workspace paths. Use universal, self-contained examples and rules (e.g., user auth, image resize, CRUD pagination).
 6. **Format for fast parsing:**
    - **Frontmatter `description`:** 10–15 words stating ONLY *when* to trigger the skill (no features, benefits, or slash commands).
    - **2-column tables (`| Condition | Action |`):** Use for rule branching, mappings, and enums.
