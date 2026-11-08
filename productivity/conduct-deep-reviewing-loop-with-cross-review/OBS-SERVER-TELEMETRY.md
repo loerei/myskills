@@ -9,6 +9,8 @@ Audit criteria for backend microservices, RPC systems, and asynchronous workers 
 - [ ] **Span Lifecycle & Exception Events**: Are custom spans closed explicitly in `finally` blocks, recording uncaught exceptions into span events with error status codes?
 - [ ] **Semantic Decision Attributes on Spans**: Do spans covering critical business verification or eligibility gates (e.g., 2FA email matching, permission checks, quota gates) attach explicit boolean/enum decision attributes (`app.decision.matched`, `app.decision.abort_reason`) prior to early returns?
 - [ ] **OpenTelemetry Semantic Conventions**: Do span names and attributes adhere to standard conventions (e.g. `http.request.method`, `http.response.status_code`, `server.address`)?
+- [ ] **Silent Branch & Security-Masked Exit Telemetry**: Whenever an ingress endpoint intentionally suppresses an error or returns a masked generic response to external callers (e.g., anti-enumeration auth/OTP flows returning `200 OK`, idempotency skips, rate-limit drops), does it emit an internal structured log or span attribute recording the exact `internal_outcome` and `abort_reason`?
+- [ ] **Privacy-Preserving Diagnostic Fingerprints**: When logging validation failures involving sensitive user identifiers (emails, phone numbers, account names), does telemetry emit non-reversible diagnostic metadata (salted short-hash, string length, normalization flags) instead of raw PII or opaque `[REDACTED]` placeholders?
 - [ ] **Structured JSON Logging**: Are logs emitted strictly as structured key-value JSON objects containing correlated `trace_id` and `span_id` fields?
 - [ ] **Hot-Path Logging Protection**: In tight loops, stream iteration hot paths, or batch data pipelines, are debug loggers guarded (`logger.isDebugEnabled()`) to eliminate string allocations?
 - [ ] **Batch Exporting**: Are OpenTelemetry spans and logs exported using batch processors rather than synchronous per-event network calls?
@@ -60,4 +62,6 @@ for (Transaction tx : transactions) {
 | **Broken Trace Lineage** | Queue consumer creates a new root trace instead of linking to the producer span. | Demand OpenTelemetry context extraction from message metadata headers prior to processing. |
 | **Service Latency Degradation** | High-throughput loop allocates millions of string objects for disabled log levels. | Mandate level guards (`isDebugEnabled`) or lazy supplier evaluations in high-frequency paths. |
 | **Collector OOM** | Synchronous exporter blocks worker threads during collector network timeouts. | Enforce BatchSpanProcessor with bounded buffer queues and drop-on-full policies. |
+| **Silent Security/Business Drop** | Control flow returns masked generic success (e.g. anti-enumeration check) without emitting internal outcome. | Require structured logs or span attributes specifying `internal_outcome` and `abort_reason` before masked exits. |
+| **Diagnostic Blind Spot on PII Validation** | Validation logs redact all input as opaque `[REDACTED]`, preventing debugging of character-encoding issues. | Emit non-reversible diagnostic fingerprints (salted short-hash, string length, whitespace flags) instead of raw PII. |
 

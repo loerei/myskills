@@ -1,6 +1,6 @@
-# CLI & Developer Utility Observability and Terminal Ergonomics
+# Interactive CLI & Developer Utility Observability and Terminal Ergonomics
 
-Audit criteria for command-line tools, batch scripts, TUI apps, and automation runners covering stream hygiene, verbosity flags, non-TTY CI safety, terminal state restoration, and deterministic POSIX exit codes.
+Audit criteria for interactive command-line tools, TUI applications, shell commands, and developer utilities covering stream hygiene, verbosity flags, non-TTY CI safety, terminal state restoration, and deterministic POSIX exit codes. (For offline batch processing, ETL scripts, and scientific ML training/eval engines, see [`OBS-PIPELINE-ANALYTICAL.md`](OBS-PIPELINE-ANALYTICAL.md)).
 
 ## Domain Audit Checklist
 
