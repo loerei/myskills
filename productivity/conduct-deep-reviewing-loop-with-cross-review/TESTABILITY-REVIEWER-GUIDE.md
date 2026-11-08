@@ -18,12 +18,14 @@ Audits module test seams, mock-to-contract fidelity, anti-tautology, determinism
   - Author inline mock/seam verification harnesses in `<review_dir>/sandbox/Testability/harness_<name>.*` via `write_to_file` and execute under a 15s timeout (monitor/kill hung tasks via `manage_task`). NEVER modify repository source files.
 - **Fix Pre-Verification & Miss-Probability Gate (Headless AI Implementer Baseline)**:
   - Verify on disk that referenced test utilities, interfaces, and target locations exist and that boundary contracts remain symmetrical.
+
   Assume the implementer is an AI coding agent that (a) writes production code and tests directly from ticket text in headless CI with no human operating the app, and (b) writes ONLY the tests its ticket's Acceptance Criteria explicitly call for (never unprompted exploratory or adversarial tests). `"A human tester would notice this in the browser/console"` is NEVER valid grounds to downgrade a defect to Suggestion:
-  | Defect Behavior for Headless AI Implementer | Classification |
-  | :--- | :--- |
-  | Allows self-fulfilling tests (mocking the SUT, asserting only `toHaveBeenCalled`, or duplicating formulas), asserts only generic masked responses (e.g. `HTTP 200`) without verifying downstream side-effects or disambiguating internal abort reasons, omits string normalization boundaries (case/whitespace/Unicode) on identity comparisons, permits unvalidated mocks that drift from producer schemas, lacks clock/I/O injection seams, leaks async handles, or leaves Acceptance Criteria unverified | **Blocking Defect** (MUST include `Why This Would Be Missed`). |
-  | Produces an immediate compiler/type error or failing assertion against existing criteria with an obvious mechanical fix | **Suggestion Only** (NEVER mark as Blocking Defect). |
-  | Verification requirement is blocked by hard platform/sandbox constraints with zero viable in-scope test seams | **`STATUS: INFEASIBLE`** (takes overall status precedence; include `Infeasibility Proof` and `Alternative Architectural Paths`). |
+
+| Defect Behavior for Headless AI Implementer | Classification |
+| :--- | :--- |
+| Allows self-fulfilling tests (mocking the SUT, asserting only `toHaveBeenCalled`, or duplicating formulas), asserts only generic masked responses (e.g. `HTTP 200`) without verifying downstream side-effects or disambiguating internal abort reasons, omits string normalization boundaries (case/whitespace/Unicode) on identity comparisons, permits unvalidated mocks that drift from producer schemas, lacks clock/I/O injection seams, leaks async handles, or leaves Acceptance Criteria unverified | **Blocking Defect** (MUST include `Why This Would Be Missed`). |
+| Produces an immediate compiler/type error or failing assertion against existing criteria with an obvious mechanical fix | **Suggestion Only** (NEVER mark as Blocking Defect). |
+| Verification requirement is blocked by hard platform/sandbox constraints with zero viable in-scope test seams | **`STATUS: INFEASIBLE`** (takes overall status precedence; include `Infeasibility Proof` and `Alternative Architectural Paths`). |
 
 ## 2. Mandatory Audit Checklist
 

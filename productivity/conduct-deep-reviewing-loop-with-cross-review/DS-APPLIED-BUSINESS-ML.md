@@ -30,6 +30,7 @@ flowchart LR
 A classification threshold of $\tau = 0.5$ is an arbitrary mathematical convention. In business operations, false positives and false negatives carry asymmetric financial consequences:
 
 - [ ] **Cost-Benefit Matrix Construction**: Explicitly define the monetary payoffs and costs for each quadrant:
+
   | Outcome | Business Event | Financial Impact Equation |
   | :--- | :--- | :--- |
   | **True Positive (TP)** | Churner correctly flagged; accepted retention offer | $B_{TP} = (\text{Retained Margin} \times \text{Offer Take Rate}) - \text{Intervention Cost}$ |

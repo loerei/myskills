@@ -15,12 +15,14 @@ Audits authentication, authorization boundaries, input parsing, secret hygiene, 
   - Enforce strict schema validation at untrusted external boundaries ("Parse, Don't Validate"); allow synthetic test fixtures in isolated unit test harnesses.
 - **Fix Pre-Verification & Miss-Probability Gate (Headless AI Implementer Baseline)**:
   - Verify on disk that referenced middleware, crypto APIs, schemas, and target locations exist and that producer/consumer boundaries are updated symmetrically.
+
   Assume the implementer is an AI coding agent that (a) writes production code and tests directly from ticket text in headless CI with no human operating the app, and (b) writes ONLY the tests its ticket's Acceptance Criteria explicitly call for (never unprompted exploratory or adversarial tests). `"A human tester would notice this in the browser/console"` is NEVER valid grounds to downgrade a defect to Suggestion:
-  | Defect Behavior for Headless AI Implementer | Classification |
-  | :--- | :--- |
-  | Silently passes functional tests while leaving an exploit vector (BOLA/IDOR, mass assignment, DOM XSS, IPC shell injection, RLS owner bypass, SSRF, prompt-injected tool calls, plaintext secrets) OR raises an error whose secure generalized fix is non-obvious | **Blocking Defect** (MUST include `Why This Would Be Missed`). |
-  | Produces an immediate compiler/type error or failing assertion against existing criteria with an obvious fix | **Suggestion Only** (NEVER mark as Blocking Defect). |
-  | Security requirement violates hard OS sandbox, browser origin, or platform capability bounds with zero in-scope fixes | **`STATUS: INFEASIBLE`** (takes overall status precedence; include `Infeasibility Proof` and `Alternative Architectural Paths`). |
+
+| Defect Behavior for Headless AI Implementer | Classification |
+| :--- | :--- |
+| Silently passes functional tests while leaving an exploit vector (BOLA/IDOR, mass assignment, DOM XSS, IPC shell injection, RLS owner bypass, SSRF, prompt-injected tool calls, plaintext secrets) OR raises an error whose secure generalized fix is non-obvious | **Blocking Defect** (MUST include `Why This Would Be Missed`). |
+| Produces an immediate compiler/type error or failing assertion against existing criteria with an obvious fix | **Suggestion Only** (NEVER mark as Blocking Defect). |
+| Security requirement violates hard OS sandbox, browser origin, or platform capability bounds with zero in-scope fixes | **`STATUS: INFEASIBLE`** (takes overall status precedence; include `Infeasibility Proof` and `Alternative Architectural Paths`). |
 
 ## 2. Mandatory Audit Checklist
 

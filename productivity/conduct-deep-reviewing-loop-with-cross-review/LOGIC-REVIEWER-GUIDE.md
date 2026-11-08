@@ -15,12 +15,14 @@ Audits operational workflows, state machines, async concurrency, temporal/string
   - Author self-contained simulation scripts in `<review_dir>/sandbox/Logic/simulate_<name>.*` via `write_to_file` stepping through state transitions, async interleavings, or boundary inputs under a 15s timeout (emitting stdout progress markers; monitor/kill hung tasks via `manage_task`). NEVER modify repository source files.
 - **Fix Pre-Verification & Miss-Probability Gate (Headless AI Implementer Baseline)**:
   - Verify on disk that referenced methods, types, and target locations exist and that internal boundary endpoints + `Verification Plan` assertions are updated symmetrically.
+
   Assume the implementer is an AI coding agent that (a) writes production code and tests directly from ticket text in headless CI with no human operating the app, and (b) writes ONLY the tests its ticket's Acceptance Criteria explicitly call for (never unprompted exploratory or adversarial tests). `"A human tester would notice this in the browser/console"` is NEVER valid grounds to downgrade a defect to Suggestion:
-  | Defect Behavior for Headless AI Implementer | Classification |
-  | :--- | :--- |
-  | Silently produces wrong output, state desynchronization, async out-of-order overwrite, non-atomic `await` race, wall-clock duration drift, Unicode mismatch, or unhandled state permutation without crashing existing basic tests | **Blocking Defect** (MUST include `Why This Would Be Missed`). |
-  | Produces an immediate compiler error, uncaught stack trace, or failing assertion against stated Acceptance Criteria with an obvious fix | **Suggestion Only** (NEVER mark as Blocking Defect). |
-  | Requirement is logically contradictory or impossible under platform/theoretical constraints with zero in-scope fixes | **`STATUS: INFEASIBLE`** (takes overall status precedence; include `Infeasibility Proof` and `Alternative Architectural Paths`). |
+
+| Defect Behavior for Headless AI Implementer | Classification |
+| :--- | :--- |
+| Silently produces wrong output, state desynchronization, async out-of-order overwrite, non-atomic `await` race, wall-clock duration drift, Unicode mismatch, or unhandled state permutation without crashing existing basic tests | **Blocking Defect** (MUST include `Why This Would Be Missed`). |
+| Produces an immediate compiler error, uncaught stack trace, or failing assertion against stated Acceptance Criteria with an obvious fix | **Suggestion Only** (NEVER mark as Blocking Defect). |
+| Requirement is logically contradictory or impossible under platform/theoretical constraints with zero in-scope fixes | **`STATUS: INFEASIBLE`** (takes overall status precedence; include `Infeasibility Proof` and `Alternative Architectural Paths`). |
 
 ## 2. Mandatory Audit Checklist
 

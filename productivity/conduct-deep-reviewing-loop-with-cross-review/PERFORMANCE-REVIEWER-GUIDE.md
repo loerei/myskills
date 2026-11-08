@@ -15,12 +15,14 @@ Audits algorithmic complexity, runtime event-loop/IPC throughput, query efficien
   - Author inline benchmark scripts in `<review_dir>/sandbox/Performance/bench_<name>.*` via `write_to_file` comparing proposed logic against baseline across realistic scale ($N = 10^4 \dots 10^5$, large payloads, or regex stress inputs) under a 15s timeout (monitor/kill hung tasks via `manage_task`). NEVER modify repository source files.
 - **Fix Pre-Verification & Miss-Probability Gate (Headless AI Implementer Baseline)**:
   - Verify on disk that referenced APIs, indexes, and target locations exist and that producer/consumer boundaries are updated symmetrically.
+
   Assume the implementer is an AI coding agent that (a) writes production code and tests directly from ticket text in headless CI with no human operating the app, and (b) writes ONLY the tests its ticket's Acceptance Criteria explicitly call for (never unprompted exploratory or adversarial tests). `"A human tester would notice this in the browser/console"` is NEVER valid grounds to downgrade a defect to Suggestion:
-  | Defect Behavior for Headless AI Implementer | Classification |
-  | :--- | :--- |
-  | Silently passes small-fixture unit tests while causing $O(N^2)$ hot-path degradation, N+1 queries, unbatched SQLite `fsync` loops, main-thread/IPC freezes, unbounded memory growth, or rigid wall-clock timeouts killing active streams | **Blocking Defect** (MUST include `Why This Would Be Missed`). |
-  | Produces an immediate compiler error, uncaught stack trace, or failing assertion against stated Acceptance Criteria with an obvious fix | **Suggestion Only** (NEVER mark as Blocking Defect). |
-  | Performance target violates hard hardware, memory ceiling, or platform throughput bounds with zero viable in-scope fixes | **`STATUS: INFEASIBLE`** (takes overall status precedence; include `Infeasibility Proof` and `Alternative Architectural Paths`). |
+
+| Defect Behavior for Headless AI Implementer | Classification |
+| :--- | :--- |
+| Silently passes small-fixture unit tests while causing $O(N^2)$ hot-path degradation, N+1 queries, unbatched SQLite `fsync` loops, main-thread/IPC freezes, unbounded memory growth, or rigid wall-clock timeouts killing active streams | **Blocking Defect** (MUST include `Why This Would Be Missed`). |
+| Produces an immediate compiler error, uncaught stack trace, or failing assertion against stated Acceptance Criteria with an obvious fix | **Suggestion Only** (NEVER mark as Blocking Defect). |
+| Performance target violates hard hardware, memory ceiling, or platform throughput bounds with zero viable in-scope fixes | **`STATUS: INFEASIBLE`** (takes overall status precedence; include `Infeasibility Proof` and `Alternative Architectural Paths`). |
 
 ## 2. Mandatory Audit Checklist
 

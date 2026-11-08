@@ -11,11 +11,12 @@ Audits whether the Directive Artifact (DA) establishes an incremental, dependenc
 - **Lineage & Operational Continuity Alignment**:
   - Read all DAs in `## Cross-Referenced DAs & Dependency Lineage` in `Context.md` so target tickets do not duplicate or invert `Upstream` milestones.
   - Read `## Operational Continuity` in `<review_dir>/Context.md` and enforce the matching phasing/slicing model:
-    | Operational Continuity Mode | Required Phasing & Verification Model |
-    | :--- | :--- |
-    | `CONTINUOUS_OPERATION` *(default: 24/7 live service)* | Enforce vertical tracer-bullet slicing (UI-to-DB), zero-downtime $N$ & $N+1$ compatibility, and expand-contract phasing at every ticket. |
-    | `NON_CONTINUOUS_OPERATION` *(tag `!NC`: offline upgrades/refactors, local/desktop/CLI apps, greenfield builds, or isolated rewrite branches)* | Permit horizontal foundation phasing during implementation; BAN throwaway UI mocks on early tickets and BAN 24/7 multi-deploy dual-write shims; enforce headless atomic testability on early tickets, sequential migration script staging ($S \to B$) when persistent schemas evolve, and full system cutover with bootable verification + legacy decommissioning at the terminal ticket. |
-    | `NON_CONTINUOUS_INTERMEDIATE` *(tag `!NC0` / `!NCI`: intermediate scaffolding)* | Enforce headless contract verification (unit tests, typecheck, export schemas) and downstream handoff integrity only. BAN demanding application bootability, UI rendering, migration runners, or runtime cutovers during OR after the epic. |
+
+| Operational Continuity Mode | Required Phasing & Verification Model |
+| :--- | :--- |
+| `CONTINUOUS_OPERATION` *(default: 24/7 live service)* | Enforce vertical tracer-bullet slicing (UI-to-DB), zero-downtime $N$ & $N+1$ compatibility, and expand-contract phasing at every ticket. |
+| `NON_CONTINUOUS_OPERATION` *(tag `!NC`: offline upgrades/refactors, local/desktop/CLI apps, greenfield builds, or isolated rewrite branches)* | Permit horizontal foundation phasing during implementation; BAN throwaway UI mocks on early tickets and BAN 24/7 multi-deploy dual-write shims; enforce headless atomic testability on early tickets, sequential migration script staging ($S \to B$) when persistent schemas evolve, and full system cutover with bootable verification + legacy decommissioning at the terminal ticket. |
+| `NON_CONTINUOUS_INTERMEDIATE` *(tag `!NC0` / `!NCI`: intermediate scaffolding)* | Enforce headless contract verification (unit tests, typecheck, export schemas) and downstream handoff integrity only. BAN demanding application bootability, UI rendering, migration runners, or runtime cutovers during OR after the epic. |
 - **Fix Pre-Verification & Miss-Probability Gate (Headless AI Implementer Baseline)**:
   - Verify on disk that referenced modules, files, and tickets exist and boundary contracts remain symmetrical across split/reordered tickets.
   - Never flag syntax/type trivia in illustrative code snippets as blocking; demand an Acceptance Criterion instead.

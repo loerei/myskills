@@ -23,10 +23,11 @@ Audits target-audience interaction flows, physical focus retention, layout stabi
 
 - **Miss-Probability Gate (Headless AI Implementer Baseline)**:
   Assume the implementer is an AI coding agent that (a) writes production code and tests directly from ticket text in headless CI with no human operating the app, and (b) writes ONLY the tests its ticket's Acceptance Criteria explicitly call for (never unprompted exploratory or adversarial tests). `"A human tester would notice this in the browser/console"` is NEVER valid grounds to downgrade a defect to Suggestion:
-  | Defect Behavior for Headless AI Implementer | Classification |
-  | :--- | :--- |
-  | Silently missed in headless CI (unmount focus eviction to `document.body`, CLS jump, flex/grid text overflow blowout, swallowed bubbling event, raw emoji, unlabeled icon-only action, missing error recovery state, volatile `key={index}` state corruption, or active-subdoc flaw) OR visible error whose generalized fix is non-obvious | **Blocking Defect** (MUST include `Why This Would Be Missed`). |
-  | Produces an immediate compiler/type error or failing assertion against stated Acceptance Criteria with an obvious fix | **Suggestion Only** (NEVER mark as Blocking Defect). |
+
+| Defect Behavior for Headless AI Implementer | Classification |
+| :--- | :--- |
+| Silently missed in headless CI (unmount focus eviction to `document.body`, CLS jump, flex/grid text overflow blowout, swallowed bubbling event, raw emoji, unlabeled icon-only action, missing error recovery state, volatile `key={index}` state corruption, or active-subdoc flaw) OR visible error whose generalized fix is non-obvious | **Blocking Defect** (MUST include `Why This Would Be Missed`). |
+| Produces an immediate compiler/type error or failing assertion against stated Acceptance Criteria with an obvious fix | **Suggestion Only** (NEVER mark as Blocking Defect). |
 
 ## 2. Domain Subdocuments Routing Table (Strict Physical Context Isolation)
 

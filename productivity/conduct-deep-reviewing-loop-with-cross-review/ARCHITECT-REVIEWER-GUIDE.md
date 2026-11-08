@@ -19,11 +19,12 @@ Audits whether the Directive Artifact (DA) specifies the optimal structural, bou
   - **Zero-Loss Specification**: Provide concrete type/interface signatures or diffs where prose would drift; omit synthetic code blocks when declarative criteria are already deterministic.
 - **Miss-Probability Gate (Headless AI Implementer Baseline)**:
   Assume the implementer is an AI coding agent that (a) writes production code and tests directly from ticket text in headless CI with no human operating the app, and (b) writes ONLY the tests its ticket's Acceptance Criteria explicitly call for (never unprompted exploratory or adversarial tests). `"A human tester would notice this in the browser/console"` is NEVER valid grounds to downgrade a defect to Suggestion:
-  | Defect Behavior for Headless AI Implementer | Classification |
-  | :--- | :--- |
-  | Silently missed (plausible wrong output, state drift, race condition) OR raises an error whose generalized fix across the class requires architectural/domain insight not obvious from the error message | **Blocking Defect** (MUST include `Why This Would Be Missed`). |
-  | Raises an immediate compiler error, uncaught stack trace, or failing assertion against stated Acceptance Criteria AND the generalized fix is obvious from the symptom | **Suggestion Only** (NEVER mark as Blocking Defect). |
-  | Requirement violates hard platform, sandbox, protocol, or physical bounds with zero viable in-scope fixes | **`STATUS: INFEASIBLE`** (takes overall status precedence; include `Infeasibility Proof` and `Alternative Architectural Paths`). |
+
+| Defect Behavior for Headless AI Implementer | Classification |
+| :--- | :--- |
+| Silently missed (plausible wrong output, state drift, race condition) OR raises an error whose generalized fix across the class requires architectural/domain insight not obvious from the error message | **Blocking Defect** (MUST include `Why This Would Be Missed`). |
+| Raises an immediate compiler error, uncaught stack trace, or failing assertion against stated Acceptance Criteria AND the generalized fix is obvious from the symptom | **Suggestion Only** (NEVER mark as Blocking Defect). |
+| Requirement violates hard platform, sandbox, protocol, or physical bounds with zero viable in-scope fixes | **`STATUS: INFEASIBLE`** (takes overall status precedence; include `Infeasibility Proof` and `Alternative Architectural Paths`). |
 
 ## 2. Mandatory Audit Checklist
 

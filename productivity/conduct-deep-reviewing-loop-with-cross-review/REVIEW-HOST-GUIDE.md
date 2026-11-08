@@ -317,6 +317,7 @@ To prevent anchoring Host $N+1$ on prior round mutation details, `State.md` cont
   - Current PassCount: 0 / <SP>
 
   ## Reviewer Accounting (Layer 3.X)
+
   | Role Identifier | Status |
   | :--- | :---: |
   | `<Role_1>` | TOUCHED |
@@ -347,6 +348,7 @@ To prevent anchoring Host $N+1$ on prior round mutation details, `State.md` cont
 
 <!-- For all other verdicts -->
 ## Reviewer Accounting Rationale (Layer 3.X)
+
 | Role Identifier | Status | Technical Rationale |
 | :--- | :---: | :--- |
 | `<Role_1>` | TOUCHED | <How applied DA mutations touch this role's contracts, seams, or domain within Highest Modified Tier> |

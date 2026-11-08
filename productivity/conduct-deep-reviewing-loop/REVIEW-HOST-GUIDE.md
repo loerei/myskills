@@ -28,6 +28,7 @@
     - `## Cross-Referenced DAs & Dependency Lineage` table:
       ```markdown
       ## Cross-Referenced DAs & Dependency Lineage
+
       | DA Path | Lineage Direction | Codebase Status | Domain Boundary & Contract Responsibility |
       | :--- | :---: | :---: | :--- |
       | `<path-to-da>` | `Upstream` | `Downstream` | `Implemented` | `Unimplemented` | <Explicit responsibility boundary> |

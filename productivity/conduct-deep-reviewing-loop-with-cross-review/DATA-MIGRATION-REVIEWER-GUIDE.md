@@ -14,20 +14,23 @@ Audits schema evolution, storage contracts, migration scripts, locking behavior,
   - **Mandatory Migration Runner & Zero Data Loss**: Enforce strict schema conformance via isolated sequential migration scripts/runners ($V_1 \to V_2 \to V_3$) with zero data loss. Strictly ban runtime field-sniffing fallbacks (`if ('legacy' in row)`), heuristic property guessing, or transient flags on domain read paths. If the codebase lacks a migration runner, mandate staging one as a preparatory structural step ($S$) in the DA.
   - **Library / SDK Embedded Storage Lifecycle**: When the target DA is a reusable Library or SDK with embedded persistence, verify that schema migrations execute deterministically during explicit client instance initialization (`await Client.create()` / `open()`), NEVER as an implicit side effect at module `import` time.
   - Read `## Operational Continuity` in `<review_dir>/Context.md` and enforce the exact migration model:
-    | Operational Continuity Mode | Required Migration Script & Rollout Strategy |
-    | :--- | :--- |
-    | `CONTINUOUS_OPERATION` *(default: 24/7 live service with side-by-side $N$ & $N+1$ binaries)* | **Mandatory Migration Scripts + Expand-Contract**: Enforce multi-deploy Expand $\rightarrow$ Dual-Write/Backfill $\rightarrow$ Switch $\rightarrow$ Contract migration scripts, non-blocking index/constraint builds (`CONCURRENTLY`, `NOT VALID`), keyset backfills, and backward-compatible reads across $N$ & $N+1$. |
-    | `NON_CONTINUOUS_OPERATION` *(tag `!NC`: offline upgrades/refactors, local/desktop/CLI apps, or isolated branches where $N$ & $N+1$ do not run simultaneously)* | **Mandatory Migration Scripts ($V_1 \to V_2$) + Direct Atomic Cutover**: Require sequential migration scripts/runners that transform and preserve existing data ($V_1 \to V_2$) with pre-upgrade backup/rollback safety. Because $N$ & $N+1$ never run concurrently, permit single-step schema cutover DDL inside the migration script (e.g. `RENAME COLUMN`, `DROP COLUMN`, or SQLite 12-step table recreation in one atomic transaction) and **REJECT** temporary dual-write pipelines or multi-deploy expand-contract shims. |
-    | `NON_CONTINUOUS_INTERMEDIATE` *(tag `!NC0` / `!NCI`: intermediate scaffolding)* | **Schema Definitions Only**: Audit schema definitions, field types, and precision invariants only; BAN demanding migration runners, rollback scripts, or dual-write shims. |
+
+| Operational Continuity Mode | Required Migration Script & Rollout Strategy |
+| :--- | :--- |
+| `CONTINUOUS_OPERATION` *(default: 24/7 live service with side-by-side $N$ & $N+1$ binaries)* | **Mandatory Migration Scripts + Expand-Contract**: Enforce multi-deploy Expand $\rightarrow$ Dual-Write/Backfill $\rightarrow$ Switch $\rightarrow$ Contract migration scripts, non-blocking index/constraint builds (`CONCURRENTLY`, `NOT VALID`), keyset backfills, and backward-compatible reads across $N$ & $N+1$. |
+| `NON_CONTINUOUS_OPERATION` *(tag `!NC`: offline upgrades/refactors, local/desktop/CLI apps, or isolated branches where $N$ & $N+1$ do not run simultaneously)* | **Mandatory Migration Scripts ($V_1 \to V_2$) + Direct Atomic Cutover**: Require sequential migration scripts/runners that transform and preserve existing data ($V_1 \to V_2$) with pre-upgrade backup/rollback safety. Because $N$ & $N+1$ never run concurrently, permit single-step schema cutover DDL inside the migration script (e.g. `RENAME COLUMN`, `DROP COLUMN`, or SQLite 12-step table recreation in one atomic transaction) and **REJECT** temporary dual-write pipelines or multi-deploy expand-contract shims. |
+| `NON_CONTINUOUS_INTERMEDIATE` *(tag `!NC0` / `!NCI`: intermediate scaffolding)* | **Schema Definitions Only**: Audit schema definitions, field types, and precision invariants only; BAN demanding migration runners, rollback scripts, or dual-write shims. |
+
 - **Empirical Verification (`<review_dir>/sandbox/DataMigration/`)**:
   - Author inline dry-run scripts in `<review_dir>/sandbox/DataMigration/dryrun_<name>.*` via `write_to_file` testing proposed migration scripts against in-memory SQLite (`:memory:`) or mock stores seeded with legacy $V_1$ payload fixtures (verifying zero data loss, idempotency on double-run, and crash rollback) under a 15s timeout. NEVER modify repository source files or production DBs.
 - **Miss-Probability Gate (Headless AI Implementer Baseline)**:
   Assume the implementer is an AI coding agent that (a) writes production code and tests directly from ticket text in headless CI with no human operating the app, and (b) writes ONLY the tests its ticket's Acceptance Criteria explicitly call for (never unprompted exploratory or adversarial tests). `"A human tester would notice this in the browser/console"` is NEVER valid grounds to downgrade a defect to Suggestion:
-  | Defect Behavior for Headless AI Implementer | Classification |
-  | :--- | :--- |
-  | Missing migration script/runner on schema change, silent data loss/corruption during migration, production lock queues, missing SQLite `PRAGMA foreign_keys = OFF` outside transaction, IEEE 754 float precision drift, or runtime schema-sniffing bloat | **Blocking Defect** (MUST include `Why This Would Be Missed`). |
-  | Produces an immediate SQL syntax error, compiler error, or failing assertion against existing criteria with an obvious fix | **Suggestion Only** (NEVER mark as Blocking Defect). |
-  | Requirement violates hard storage engine, multi-tab lock, or distributed CAP constraints with zero viable in-scope fixes | **`STATUS: INFEASIBLE`** (takes overall status precedence; include `Infeasibility Proof` and `Alternative Architectural Paths`). |
+
+| Defect Behavior for Headless AI Implementer | Classification |
+| :--- | :--- |
+| Missing migration script/runner on schema change, silent data loss/corruption during migration, production lock queues, missing SQLite `PRAGMA foreign_keys = OFF` outside transaction, IEEE 754 float precision drift, or runtime schema-sniffing bloat | **Blocking Defect** (MUST include `Why This Would Be Missed`). |
+| Produces an immediate SQL syntax error, compiler error, or failing assertion against existing criteria with an obvious fix | **Suggestion Only** (NEVER mark as Blocking Defect). |
+| Requirement violates hard storage engine, multi-tab lock, or distributed CAP constraints with zero viable in-scope fixes | **`STATUS: INFEASIBLE`** (takes overall status precedence; include `Infeasibility Proof` and `Alternative Architectural Paths`). |
 
 ## 2. Domain Subdocuments Routing Table
 

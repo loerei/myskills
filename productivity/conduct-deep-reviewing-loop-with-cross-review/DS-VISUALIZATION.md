@@ -47,6 +47,7 @@ When deploying interactive research dashboards (e.g. React / TypeScript shells):
   - Encapsulate data fetching, schema validation, and retry state inside custom hooks (e.g. `useDataCategory.ts`).
   - Leaf chart components (`UnivariateHistogram`, `DecileChurnChart`, `CorrelationHeatmap`) must remain pure presentational views driven solely by typed immutable props. They must never trigger side-effect fetches.
 - [ ] **Four-State Lifecycle Completeness**: Every visual component must explicitly handle all four lifecycle states:
+
   | State | UI Behavior & Requirement |
   | :--- | :--- |
   | **Idle** | Clean initial state or placeholder before action is triggered. |

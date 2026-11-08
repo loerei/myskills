@@ -183,6 +183,7 @@ When authoring `<review_dir>/host/State.md`:
      - Current PassCount: 0 / <SP>
 
      ## Reviewer Accounting (Layer 3.X)
+
      | Role Identifier | Status | Technical Rationale |
      | :--- | :---: | :--- |
      | `<Role_1>` | TOUCHED | <Explanation how applied DA mutations touch this role's contracts, seams, or domain> |

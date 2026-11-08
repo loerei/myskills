@@ -27,6 +27,7 @@ Universal statistical standards, cross-validation topology, leakage prevention, 
 ## 3. Model-Tailored Feature Views & Matrix Hygiene
 
 - [ ] **Inductive-Bias-Matched Feature Views**: Multi-model pipelines must provide dedicated feature subsets matched to model inductive biases rather than a single monolithic feature dump:
+
   | Model Family | Feature View Invariants |
   | :--- | :--- |
   | **Tree Ensembles (LightGBM, XGBoost)** | Retain native `NaN`s for informative MNAR split routing; retain non-linear interactions; prune exact/affine collinear copies. |

@@ -20,11 +20,12 @@ Audits whether the existing codebase, build system, dependencies, and runtime en
   - Author inline import/symbol probes in `<review_dir>/sandbox/Readiness/check_readiness_<name>.*` via `write_to_file` and execute under a 15s timeout (emitting stdout progress markers; monitor/kill hung background tasks via `manage_task`).
 - **Miss-Probability Gate (Headless AI Implementer Baseline)**:
   Assume the implementer is an AI coding agent that (a) writes production code and tests directly from ticket text in headless CI with no human operating the app, and (b) writes ONLY the tests its ticket's Acceptance Criteria explicitly call for (never unprompted exploratory or adversarial tests). `"A human tester would notice this in the browser/console"` is NEVER valid grounds to downgrade a defect to Suggestion:
-  | Defect Behavior for Headless AI Implementer | Classification |
-  | :--- | :--- |
-  | Silently missed or produces an environment/build/ABI/config failure whose generalized fix requires domain/architectural insight (e.g. ESM/CJS bundler externalization, Windows file-lock/case-sensitivity mismatch, dual-format shim debt) | **Blocking Defect** (MUST include `Why This Would Be Missed`). |
-  | Produces an immediate compiler/type error or missing local import with an obvious mechanical fix | **Suggestion Only** (NEVER mark as Blocking Defect). |
-  | Requirement is blocked by hard OS/runtime/sandbox/package impossibility with zero in-scope fixes | **`STATUS: INFEASIBLE`** (takes overall status precedence; include empirical `Infeasibility Proof` and `Alternative Architectural Paths`). |
+
+| Defect Behavior for Headless AI Implementer | Classification |
+| :--- | :--- |
+| Silently missed or produces an environment/build/ABI/config failure whose generalized fix requires domain/architectural insight (e.g. ESM/CJS bundler externalization, Windows file-lock/case-sensitivity mismatch, dual-format shim debt) | **Blocking Defect** (MUST include `Why This Would Be Missed`). |
+| Produces an immediate compiler/type error or missing local import with an obvious mechanical fix | **Suggestion Only** (NEVER mark as Blocking Defect). |
+| Requirement is blocked by hard OS/runtime/sandbox/package impossibility with zero in-scope fixes | **`STATUS: INFEASIBLE`** (takes overall status precedence; include empirical `Infeasibility Proof` and `Alternative Architectural Paths`). |
 
 ## 2. Mandatory Audit Checklist
 

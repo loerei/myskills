@@ -30,11 +30,12 @@ Audits boundary conditions, failure paths, OS/filesystem hazards, network partit
   - Author inline reproduction probes in `<review_dir>/sandbox/Edgecase/repro_<name>.*` via `write_to_file` testing boundary payloads (`null`, `0`, empty, overflow, `AbortSignal`, concurrent bursts) under a 15s timeout (monitor/kill hung tasks via `manage_task`). NEVER modify repository source files.
 - **Miss-Probability Gate (Headless AI Implementer Baseline)**:
   Assume the implementer is an AI coding agent that (a) writes production code and tests directly from ticket text in headless CI with no human operating the app, and (b) writes ONLY the tests its ticket's Acceptance Criteria explicitly call for (never unprompted exploratory or adversarial tests). `"A human tester would notice this in the browser/console"` is NEVER valid grounds to downgrade a defect to Suggestion:
-  | Defect Behavior for Headless AI Implementer | Classification |
-  | :--- | :--- |
-  | Silently corrupts state, leaks OS handles/orphaned `.tmp` files, fails across mount points (`EXDEV` / Windows `EBUSY`), hangs on unpropagated `AbortSignal`, or masks upstream bugs via leaf fallbacks | **Blocking Defect** (MUST include `Why This Would Be Missed`). |
-  | Produces an immediate compiler error, uncaught stack trace, or failing assertion against stated Acceptance Criteria with an obvious generalized fix | **Suggestion Only** (NEVER mark as Blocking Defect). |
-  | Requirement violates hard OS, filesystem, protocol, or hardware bounds with zero viable in-scope fixes | **`STATUS: INFEASIBLE`** (takes overall status precedence; include `Infeasibility Proof` and `Alternative Architectural Paths`). |
+
+| Defect Behavior for Headless AI Implementer | Classification |
+| :--- | :--- |
+| Silently corrupts state, leaks OS handles/orphaned `.tmp` files, fails across mount points (`EXDEV` / Windows `EBUSY`), hangs on unpropagated `AbortSignal`, or masks upstream bugs via leaf fallbacks | **Blocking Defect** (MUST include `Why This Would Be Missed`). |
+| Produces an immediate compiler error, uncaught stack trace, or failing assertion against stated Acceptance Criteria with an obvious generalized fix | **Suggestion Only** (NEVER mark as Blocking Defect). |
+| Requirement violates hard OS, filesystem, protocol, or hardware bounds with zero viable in-scope fixes | **`STATUS: INFEASIBLE`** (takes overall status precedence; include `Infeasibility Proof` and `Alternative Architectural Paths`). |
 
 ## 2. Mandatory Audit Checklist
 
