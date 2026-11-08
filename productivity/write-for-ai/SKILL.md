@@ -5,7 +5,7 @@ description: Use when asked to review, edit, or deslop AI-facing text (prompts, 
 
 # Write for AI
 
-Text written for AI must directly drive decisions, constraints, or routing. It should never market, reassure, speculate, or over-explain.
+Text written for AI must directly drive decisions, constraints, or routing. It should never market, reassure, speculate, or over-explain. For human-facing technical documentation (READMEs, API docs, release notes), use the deslop skill instead.
 
 ## Core Rules
 
