@@ -25,13 +25,16 @@ Text written for AI must directly drive decisions, constraints, or routing. It s
 14. **Use universal, self-contained examples.** NEVER write examples, lookup tables, or case studies that depend on specific context from a random repository or proprietary domain that an LLM does not always have. All examples MUST be universally understandable from first principles ("Hello World examples", e.g. canonical scenarios like resizing an image, sending an email, user auth, or basic CRUD pagination) that any LLM can understand and generalize instantly.
 15. **Detail standard: Reinforce statement, never cosmetic granularity.** Extra detail is justified ONLY when it directly strengthens the statement, establishes an operational boundary, or provides a concrete recovery path. NEVER add details merely to "look more thorough" or "do more than asked" when that addition narrows the statement's generality or dilutes its authority.
 16. **Reader context decoupling (Zero cross-repo contamination).** Write rules and documentation from the standpoint of an agent with zero prior context of the author's local repository. Never inject local project jargon, dataset specifics, or workspace paths into shared rules or skills. Doing so causes future agents in other codebases to hallucinate, misinterpret directives, or fail.
+17. **Operational rationale vs. motivational fluff (The Drop Test).** Distinguish between behavioral mechanisms vs. human history:
+    - **Motivational fluff (MUST CUT):** Explaining past creation history, author preferences, or external business/cost savings (e.g. "compress images to save bandwidth and improve user UX"). AI models execute instructions; they do not need justification.
+    - **Operational rationale (PRESERVE IF IT PASSES DROP TEST):** Stating the underlying failure mode, downstream blast radius, or anti-bias mechanism that guides agent decisions during out-of-distribution edge cases (e.g. "run auditor in clean-slate context because authors have confirmation bias and overlook own bugs"). If dropping the rationale causes an agent to misjudge intent in ambiguous edge cases or revert to default LLM bias, it is a vital decision signal and MUST be preserved.
 
 ## Workflows
 
 ### 1. Deslop & Optimize Existing Text
 1. Read as the AI model to assess decision value.
 2. Strip buzzwords, marketing claims, and Latinate verbs.
-3. Eliminate redundancy: schema duplication, circular naming, hedging, motivation history, synonym stacking, and reference over-specification.
+3. Eliminate redundancy: schema duplication, circular naming, hedging, motivational fluff (preserve operational rationale that passes Drop Test), synonym stacking, and reference over-specification.
 4. Test each sentence: if removing it does not change AI execution, delete it.
 5. Present Original -> Deslopped with concise rationale for cuts.
 

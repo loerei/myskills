@@ -11,7 +11,7 @@
 | **Schema Duplication** | `"description": "Optional boolean flag. If true, previews changes. Defaults to false."` | `"description": "Preview changes without writing to disk. Returns diff."` |
 | **Circular Naming** | `# Tool: delete_user\nThis tool is used to delete a user from the system.` | `# Tool: delete_user\nPermanently removes user account and invalidates active session tokens.` |
 | **Conversational Chaff & Hedging** | `Please make sure to always remember that you should try to run tests before committing` | `MUST run tests before committing` |
-| **Motivational Justification** | `Compresses avatars to JPEG to save server bandwidth and improve user UX.` | `Compresses uploaded avatars to JPEG with max 512x512 dimensions.` |
+| **Motivational Fluff vs. Operational Rationale** | Fluff: `Compresses avatars to JPEG to save server bandwidth and improve user UX.` | Fluff: `Compresses uploaded avatars to JPEG with max 512x512 dimensions.` Preserve operational rationale passing Drop Test: `Isolate auditor in clean session because authors have confirmation bias and overlook own bugs.` |
 | **Synonym Stacking** | `This rule is a strict, absolute, mandatory, and non-negotiable boundary.` | `MUST NOT modify files outside workspace root.` |
 | **Reference Over-Specification** | `For canonical case studies (Auth, Emails, Payments, Images), see [REFERENCE.md](REFERENCE.md).` | `For canonical case studies, see [REFERENCE.md](REFERENCE.md).` |
 | **Phantom Bans** | `STRICT BAN: NEVER output Persona Trees or Magic Metaphors under any circumstances.` | *(Delete the instruction that introduced Persona Trees/Metaphors instead of adding a ban rule)* |
@@ -30,7 +30,7 @@
 | Schema and Location Duplication | Repeating types, default values, enums, required status, or repository layout constraints already declared in schemas or configuration files. | State only runtime consequences, non-obvious formatting, or downstream return values. |
 | Circular Naming | Rephrasing or defining what the identifier, symbol, or header already makes obvious (e.g. "The fetch_user tool fetches a user"). | State unique trigger conditions, differentiators against peer tools, or state mutations. If self-evident, omit prose. |
 | Conversational Chaff & Hedging | Polite conversational filler, introductory padding, and weak modals ("Please note that you should try to...", "You may want to consider..."). | Strip polite phrasing. Replace with direct, standard imperatives (`MUST`, `NEVER`, `ALWAYS`). |
-| Motivation & History | Explaining why a feature was created, past architecture decisions, or how much time/tokens/bandwidth it saves. | State only the operational contract and requirements. AI models execute instructions; they do not need justification. |
+| Motivational Fluff & History | Explaining past creation history, author preferences, or external cost/bandwidth savings. | State only operational constraints. EXCEPTION (The Drop Test): Preserve operational rationale (underlying failure mode, downstream blast radius, or anti-bias mechanism) if removing it causes agents to misjudge intent in ambiguous edge cases or revert to default LLM bias. |
 | Synonym Stacking | Chaining multiple near-identical adjectives, adverbs, or qualifiers to emphasize importance ("strict, absolute, mandatory, and non-negotiable"). | Use a single unambiguous keyword (`MUST`, `MUST NOT`). |
 | Reference Over-Specification | Itemizing, summarizing, or listing internal sub-topics, case study titles, or contents of a referenced document inside the link sentence. | State only the high-level category of the target file without cataloging its contents. |
 | Cosmetic Granularity & Context Contamination | Adding gratuitous local details or domain jargon to look thorough, inadvertently narrowing a universal directive into a specific sub-case or leaking local repo assumptions to future reader agents. | Strip local context. Formulate directives at the highest level of generality that still provides unambiguous behavioral constraints. |
@@ -43,7 +43,7 @@
 | :--- | :--- | :--- | :--- |
 | **Tool Description** | Tool selection | When to call this vs. other tools? | Parameter repetition, internal implementation details, marketing adjectives |
 | **Parameter Doc** | Value formulation | What value format is expected & what does it trigger? | Type/default repeats, redundant explanations of obvious names |
-| **System / Agent Rule** | Behavioral constraint | What MUST / NEVER happen in this condition? | Polite hedging (`try to`), explanatory rationale, background context |
+| **System / Agent Rule** | Behavioral constraint | What MUST / NEVER happen in this condition? | Polite hedging (`try to`), motivational fluff/history (preserve operational rationale passing Drop Test), background context |
 | **SKILL.md Frontmatter** | Router gate / Trigger | When to load this skill? (Trigger condition only) | Feature summaries (What), benefits (Why), slash command mentions |
 | **Tool Error Message** | Agent recovery | What went wrong and what exact command/action fixes it? | Generic failures (`Something went wrong`), internal stack traces without recovery steps |
 
@@ -281,6 +281,30 @@ Fails if the account has active subscriptions (must cancel first) or is unverifi
 
 ---
 
+### M. Operational Rationale vs. Motivational Fluff (The Drop Test)
+
+Distinguish between external human justification (fluff) vs. internal failure mode prevention (signal). Apply **The Drop Test**: If dropping the sentence causes an agent to misinfer intent in edge cases or revert to default LLM bias, it is a vital operational rationale and MUST be preserved.
+
+**Bad (Motivational Fluff — External / Cost / History):**
+```
+Compress uploaded avatar images to JPEG to save server disk storage, reduce AWS S3 bandwidth costs, and improve user mobile load time.
+```
+*(AI models do not care about cloud billing or user emotions. None of these clauses change the model's tool calls or code logic).*
+
+**Bad (Over-Pruned Cargo Cult Rule — No Intent Compass):**
+```
+Isolate explorer and auditor into separate subagents.
+```
+*(Dangerous in ambiguous edge cases: Without knowing WHY, an explorer encountering a blocking issue might re-run past scripts to "quickly self-verify", unaware that doing so violates the anti-confirmation-bias invariant).*
+
+**Good (True Operational Rationale — Passes Drop Test):**
+```
+Isolate explorer and auditor into separate subagents because authors have confirmation bias and systematically overlook defects in their own hypotheses or code.
+```
+*(Provides the causal failure mode mechanism. The agent understands the behavioral invariant and avoids self-confirmation across uncataloged edge cases).*
+
+---
+
 ## 5. Noise Checklist (What to Cut)
 
 - [ ] Fluff adjectives: `robust`, `seamless`, `powerful`, `atomic`, `crash-resilient`, `intelligent`
@@ -288,7 +312,7 @@ Fails if the account has active subscriptions (must cancel first) or is unverifi
 - [ ] Schema duplicates: restating type, required status, or default values present in schema
 - [ ] Circular naming: rephrasing the tool or parameter identifier without adding new decision criteria
 - [ ] Conversational chaff and hedging: `Please note`, `You should try to`, `Keep in mind that`, `Make sure to`
-- [ ] Motivation and history: explaining why a feature exists or what tokens/speed it saves
+- [ ] Motivational fluff and history: explaining past creation history, author preferences, or external cost/bandwidth savings (preserve operational rationale that passes the Drop Test)
 - [ ] Synonym stacking: chaining multiple near-identical descriptors (`strict, mandatory, non-negotiable`)
 - [ ] Reference over-specification: listing sub-topics, case study titles, or cataloging contents inside link references
 - [ ] Phantom bans: forbidding custom artifacts introduced by previous iterations instead of deleting the original trigger prompt
