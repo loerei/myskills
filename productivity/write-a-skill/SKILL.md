@@ -10,13 +10,14 @@ Create and distribute agent skills across workspaces.
 ## Directives
 
 1. **Instruction Equivalence & Generative Compression (Occam's Instruction Law)**: If an instruction or instruction set can be reproduced by another instruction or instruction set that is more generalized or more concise with similar or better quality, the old instruction or instruction set MUST be replaced by that simpler instruction or instruction set. To decide, look strictly at the ultimate objective the instruction or instruction set is aiming for.
-2. **Description Format**: MUST use format `Use when [specific triggers]` in 10–14 words. NEVER summarize internal features (What), explain benefits (Why), or include slash commands.
-3. **Plain English**: State direct instructions; NEVER use self-important titles or marketing fluff (`orchestrate`, `robust`, `comprehensive pipeline`).
-4. **Progressive Disclosure**: Keep `SKILL.md` lean. Disclose heavy tables, checklists, or domain guides into sub-documents (`REFERENCE.md` or `<DOMAIN>.md`) per [HEURISTICS.md](HEURISTICS.md).
-5. **Mermaid Decision Trees**: Use flowcharts ONLY for workflows with 3+ branching paths or error recovery loops. Do NOT use for flat linear steps.
-6. **Mindset Over Micro-Format**: Directives MUST state the thinking principle for the agent to adopt rather than rigid output templates. Do NOT prescribe arbitrary response structures.
-7. **Prerequisite**: MUST read `write-for-ai/SKILL.md` before drafting or editing any skill.
-8. **Context-Independent Portability**: Directives MUST stand on first-principles. NEVER contaminate skill instructions with local repository jargon, dataset names, or private file structures from the workspace where the skill was authored. When drafting, evaluate: "If an agent in an unfamiliar repository reads this rule with zero knowledge of my current task, will it understand and execute correctly, or will it hallucinate?"
+2. **Logical Precision Over Stylistic Brevity (No Lossy Compression)**: Do NOT rewrite or shorten an instruction if doing so narrows its scope, drops a condition (`more generalized OR more concise`), weakens an imperative (`MUST`), or alters set mappings (`1-to-1` vs. `N-to-M`). Repeating an exact noun phrase across clauses to maintain strict variable binding is execution signal, NOT stylistic noise.
+3. **Description Format**: MUST use format `Use when [specific triggers]` in 10–14 words. NEVER summarize internal features (What), explain benefits (Why), or include slash commands.
+4. **Plain English**: State direct instructions; NEVER use self-important titles or marketing fluff (`orchestrate`, `robust`, `comprehensive pipeline`).
+5. **Progressive Disclosure**: Keep `SKILL.md` lean. Disclose heavy tables, checklists, or domain guides into sub-documents (`REFERENCE.md` or `<DOMAIN>.md`) per [HEURISTICS.md](HEURISTICS.md).
+6. **Mermaid Decision Trees**: Use flowcharts ONLY for workflows with 3+ branching paths or error recovery loops. Do NOT use for flat linear steps.
+7. **Mindset Over Micro-Format**: Directives MUST state the thinking principle for the agent to adopt rather than rigid output templates. Do NOT prescribe arbitrary response structures.
+8. **Prerequisite**: MUST read `write-for-ai/SKILL.md` before drafting or editing any skill.
+9. **Context-Independent Portability**: Directives MUST stand on first-principles. NEVER contaminate skill instructions with local repository jargon, dataset names, or private file structures from the workspace where the skill was authored. When drafting, evaluate: "If an agent in an unfamiliar repository reads this rule with zero knowledge of my current task, will it understand and execute correctly, or will it hallucinate?"
 
 | Bad (Bloated Fluff) | Good (Plain English) |
 | :--- | :--- |

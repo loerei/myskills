@@ -20,6 +20,7 @@
 | **Theatrical / Hollow Headers** | `### Enforcement Gate\nIf not satisfied, reject the DA.` | `- If not satisfied -> Reject DA.` |
 | **Cosmetic Granularity / Scope Narrowing** | `STRICT BAN: Never guess multivariate trends from univariate statistics when querying data.` | `Do not stop at CLI output and guess deeper; all deeper claims require empirical proof.` |
 | **Cross-Repo Context Contamination** | `Before modifying parser, check telemetry in Client.csv and Record.csv for schema drift.` | `Before modifying parser, inspect local schema definitions and test fixtures for schema changes.` |
+| **Lossy Compression vs Precision** | `If a prompt can be replaced by a shorter rule, replace it.` (drops `instruction set`, drops `more generalized`, drops quality threshold) | `If an instruction or instruction set can be reproduced by another instruction or instruction set that is more generalized or more concise with similar or better quality, the old instruction or instruction set MUST be replaced by that simpler instruction or instruction set.` (preserves scope and strict variable binding) |
 
 ---
 
@@ -339,6 +340,24 @@ Otherwise, it MUST be classified as a **Blocking Defect** (MUST include `Why Thi
 
 ---
 
+### O. Logical Precision Over Stylistic Brevity (No Lossy Compression)
+
+Do NOT rewrite or shorten an instruction if doing so narrows its scope, drops a condition (`more generalized OR more concise`), weakens an imperative (`MUST`), or alters set mappings (`1-to-1` vs. `N-to-M`). Repeating an exact noun phrase across clauses to maintain strict variable binding is execution signal, NOT stylistic noise.
+
+**Bad (Lossy Compression / Stylistic Paraphrasing):**
+```markdown
+Replace verbose instructions with a shorter rule that achieves the same execution outcome.
+```
+*(Drops `instruction set`, drops `more generalized`, weakens quality threshold, and breaks variable binding across clauses).*
+
+**Good (Exact Variable Binding & Scope Preservation):**
+```markdown
+If an instruction or instruction set can be reproduced by another instruction or instruction set that is more generalized or more concise with similar or better quality, the old instruction or instruction set MUST be replaced by that simpler instruction or instruction set. To decide, look strictly at the ultimate objective the instruction or instruction set is aiming for.
+```
+*(Preserves full invariant scope, explicit conditions, imperative strength, and binds variables unambiguously).*
+
+---
+
 ## 5. Noise Checklist (What to Cut)
 
 - [ ] Fluff adjectives: `robust`, `seamless`, `powerful`, `atomic`, `crash-resilient`, `intelligent`
@@ -354,3 +373,4 @@ Otherwise, it MUST be classified as a **Blocking Defect** (MUST include `Why Thi
 - [ ] Decorative bullet titles: pseudo-titles forced onto bullet items without taxonomy or routing value
 - [ ] Theatrical and hollow headers: section headers or sub-headers wrapping 1–2 trivial sentences
 - [ ] Enumerative sub-case clutter: sprawling lists of examples when a simpler, more generalized instruction or instruction set achieves equivalent or better quality
+- [ ] Lossy compression: shortening text at the expense of dropped conditions, narrowed scope, weakened imperatives, or broken variable binding
