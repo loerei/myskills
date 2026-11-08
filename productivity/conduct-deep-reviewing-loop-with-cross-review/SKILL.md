@@ -25,8 +25,10 @@ flowchart TD
     Archive --> Eval{"Verdict in State.md?"}
     Eval -->|"PLAN_INFEASIBLE / ABORTED"| ExportHalt["Layer 1: Export <trace_vault>, report details & halt"]
     Eval -->|"ROUND_REVISION_NEEDED"| CheckPA{"!PA Active?"}
-    CheckPA -->|"Yes"| PAPause["Layer 1: Report diff vs .bak.md, halt turn.<br/>Await 'C' or rollback"]
-    PAPause -->|"Receives 'C'"| CleanBak["Layer 1: Delete .bak.md files"] --> SpawnHost
+    CheckPA -->|"Yes"| CheckBudget{"Remaining<br/>Budget B > 0?"}
+    CheckBudget -->|"Yes (B > 0)"| DecrBudget["B = B - 1<br/>Delete .bak.md files"] --> SpawnHost
+    CheckBudget -->|"No (B == 0)"| PAPause["Layer 1: Report diff vs .bak.md, halt turn.<br/>Await 'C', '<N>C', or rollback"]
+    PAPause -->|"Receives 'C' or '<N>C'"| SetBudget["Parse Budget N (Default: 1)<br/>B = N - 1<br/>Delete .bak.md files"] --> SpawnHost
     PAPause -->|"Rollback"| RevertHalt["Layer 1: Restore from .bak.md, export <trace_vault> & halt"]
     CheckPA -->|"No"| SpawnHost
     Eval -->|"ROUND_PASS"| SpawnHost
@@ -107,7 +109,7 @@ Immediately upon receiving completion from `review_host` for Round $N$:
 
 | Verdict in `State.md` | Layer 1 Action (After Step 3A Archival) |
 | :--- | :--- |
-| `ROUND_REVISION_NEEDED` | • If Host updated `Context.md` for WBS restructuring, re-read `<review_dir>/Context.md` to bind active DA paths.<br>• **If `!PA` / `!WA` active**: Retain `<da_stem>.bak.md` backups on disk, output quota pause message, halt turn, and await `"C"` or rollback (see **Pause Gate Protocol**).<br>• **If no pause tag**: Immediately spawn a fresh Layer 2 Host for Round $N+1$ per Step 2B. |
+| `ROUND_REVISION_NEEDED` | • If Host updated `Context.md` for WBS restructuring, re-read `<review_dir>/Context.md` to bind active DA paths.<br>• **If `!PA` / `!WA` active**: If remaining continuous budget $B > 0$, delete working tree `.bak.md` files, decrement $B \leftarrow B - 1$, log auto-advance in `Chain of Actions.md`, and immediately spawn a fresh Layer 2 Host for Round $N+1$ per Step 2B without halting. If $B = 0$ (budget exhausted or default), retain `<da_stem>.bak.md` backups on disk, output quota pause message, halt turn, and await `"C"`, `"<N>C"`, or rollback (see **Pause Gate Protocol**).<br>• **If no pause tag**: Immediately spawn a fresh Layer 2 Host for Round $N+1$ per Step 2B. |
 | `ROUND_PASS` | Immediately spawn a fresh Layer 2 Host for the next Full Sweep round on the unchanged DA per Step 2B. |
 | `FINAL_PASS` | Copy verified target DA(s) to `/tmp/deep-review-trace-<short_title>/final-verified-da/`. Purge `<repo-root>/<review_dir>/*`. Present verified DA(s) and report trace vault path `/tmp/deep-review-trace-<short_title>/` to user. |
 | `PLAN_INFEASIBLE` | Purge `<repo-root>/<review_dir>/*`. Present `Technical Impasse Analysis` and `Alternative Architectural Paths` from archived `Analyzation.md` along with trace vault path `/tmp/deep-review-trace-<short_title>/`, and halt loop. |
@@ -116,11 +118,17 @@ Immediately upon receiving completion from `review_host` for Round $N$:
 #### 3C. Pause Gate Protocol (`!PA` / `!WA`) [FOR LAYER 1 ONLY]
 When `ROUND_REVISION_NEEDED` occurs under `!PA` / `!WA`:
 - Output message:
-  `> "Paused per !PA request. Verified mutations were applied directly to target DA(s). Round trace archived to /tmp/deep-review-trace-<short_title>/round-<NN>/. Please check API quota or inspect diff against <da_stem>.bak.md. Send 'C' to remove backup files and proceed to Round {N+1}, or request rollback to revert mutations and halt."`
-- **Upon receiving `"C"`**:
-  1. If `<review_dir>/Context.bak.md` exists: delete sibling `<da_stem>.bak.md` files for any deleted DAs, and delete `<review_dir>/Context.bak.md`.
-  2. Delete sibling `<da_stem>.bak.md` files for all active target DAs in `Context.md` and any orphaned `.bak.md` files.
-  3. Spawn fresh Layer 2 Host for Round $N+1$ per Step 2B.
+  `> "Paused per !PA request. Verified mutations were applied directly to target DA(s). Round trace archived to /tmp/deep-review-trace-<short_title>/round-<NN>/. Please check API quota or inspect diff against <da_stem>.bak.md. Send 'C' to remove backup files and proceed to Round {N+1}, '<N>C' (e.g. '5C') to execute up to N rounds continuously before the next quota check pause, or request rollback to revert mutations and halt."`
+- **Upon receiving `"C"` or `"<N>C"`**:
+  1. **Parse Multi-Round Continuous Budget $N$**:
+     - Plain `"C"` (or `"1C"`): Runs 1 iteration before pausing again on the next mutation (sets remaining auto-advance budget $B = 0$).
+     - `"<N>C"` (e.g. `2C`, `3C`, `5C`, `10C`, case-insensitive `<N>c` / `<N>C` where $N \ge 1$): Sets remaining continuous budget $B = N - 1$.
+  2. If `<review_dir>/Context.bak.md` exists: delete sibling `<da_stem>.bak.md` files for any deleted DAs, and delete `<review_dir>/Context.bak.md`.
+  3. Delete sibling `<da_stem>.bak.md` files for all active target DAs in `Context.md` and any orphaned `.bak.md` files.
+  4. Spawn fresh Layer 2 Host for Round $N+1$ per Step 2B.
+  5. **Auto-Advancement under Budget ($B > 0$)**:
+     - On subsequent `ROUND_REVISION_NEEDED` outcomes while $B > 0$, Layer 1 executes Step 3A archival (snapshotting target DAs, moving reports/sandbox to trace vault), deletes working tree `.bak.md` files, decrements $B \leftarrow B - 1$, and immediately spawns Round $N+1$ without halting or prompting the user.
+     - When $B = 0$ and another `ROUND_REVISION_NEEDED` occurs, Layer 1 pauses at the gate as normal, retaining `.bak.md` files and prompting the user to check quota.
 - **Upon user rollback command**:
   1. If `<review_dir>/Context.bak.md` exists: delete newly created DAs, restore `<review_dir>/Context.md` from `Context.bak.md`, and delete `Context.bak.md`.
   2. Restore every target DA in `Context.md` from its sibling `<da_stem>.bak.md` and delete all `.bak.md` files.
@@ -134,7 +142,7 @@ When `ROUND_REVISION_NEEDED` occurs under `!PA` / `!WA`:
 | Command | Action |
 | :--- | :--- |
 | `!SP<N>` | Set required continuous Full Sweep PASS rounds threshold to `N` (Default: `1`). |
-| `!PA` / `!WA` | Pre-review pause gate: retains `<da_stem>.bak.md` on `ROUND_REVISION_NEEDED` and halts turn awaiting `"C"` or rollback. |
+| `!PA` / `!WA` / `!PA<N>` | Pre-review pause gate: retains `<da_stem>.bak.md` on `ROUND_REVISION_NEEDED` and halts turn awaiting `"C"`, `"<N>C"` (executes $N$ rounds continuously before the next quota check pause), or rollback. If `!PA<N>` is specified at invocation (e.g. `!PA5`), initializes the continuous execution budget to $N$ rounds before pausing. |
 | `!NC` | Set operational continuity to `NON_CONTINUOUS_OPERATION` (offline upgrades/refactors, local/desktop apps, isolated rewrite branches; must be operational after the epic and migrate existing data via sequential migration scripts without 24/7 dual-write shims). Default is `CONTINUOUS_OPERATION`. |
 | `!NC0` / `!NCI` | Set operational continuity to `NON_CONTINUOUS_INTERMEDIATE` (intermediate stepping stone / scaffolding; does not need to operate during OR after this epic). |
 | `!A11Y` / `!WCAG` | Set UX/UI regime to `STRICT_ACCESSIBILITY_COMPLIANCE` (loads `UX-STRICT-ACCESSIBILITY-WCAG.md`). Default is `PRAGMATIC_PRODUCT_UX` (`UX-PRAGMATIC-INTERACTION-DX.md`). |
