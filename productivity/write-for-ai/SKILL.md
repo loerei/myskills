@@ -9,7 +9,7 @@ For human-facing documentation (READMEs, API docs, release notes), use the `desl
 
 ## Core Rules
 
-1. **Compress to the simplest general rule:** Replace overlapping or verbose instructions with a single, shorter rule that achieves the same or better execution outcome toward the ultimate objective.
+1. **Instruction equivalence & generative compression (Occam's Instruction Law):** If an instruction or instruction set can be reproduced by another instruction or instruction set that is more generalized or more concise with similar or better quality, the old instruction or instruction set MUST be replaced by that simpler instruction or instruction set. To decide, look strictly at the ultimate objective the instruction or instruction set is aiming for.
 2. **Apply the Drop Test:** Every sentence or detail must change how the AI selects a tool, sets a parameter, recovers from failure, or handles an edge case. If removing it changes nothing in AI execution, delete it.
 3. **State failure modes and recovery actions:** Explicitly state *when* an action fails and *what* the AI must do next.
 4. **Delete triggers instead of banning artifacts:** To stop unwanted behavior caused by an existing prompt, delete the instruction triggering it. Use `NEVER` or `MUST NOT` only to override default LLM biases (e.g., sycophancy, filler, hallucinated APIs).
