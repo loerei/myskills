@@ -34,7 +34,7 @@
 | Synonym Stacking | Chaining multiple near-identical adjectives, adverbs, or qualifiers to emphasize importance ("strict, absolute, mandatory, and non-negotiable"). | Use a single unambiguous keyword (`MUST`, `MUST NOT`). |
 | Reference Over-Specification | Itemizing, summarizing, or listing internal sub-topics, case study titles, or contents of a referenced document inside the link sentence. | State only the high-level category of the target file without cataloging its contents. |
 | Cosmetic Granularity & Context Contamination | Adding gratuitous local details or domain jargon to look thorough, inadvertently narrowing a universal directive into a specific sub-case or leaking local repo assumptions to future reader agents. | Strip local context. Formulate directives at the highest level of generality that still provides unambiguous behavioral constraints. |
-| Enumerative Sub-Case Clutter | Cataloging individual symptom examples or special cases across sprawling tables instead of formulating the underlying boolean generative decision function. | Identify the teleological objective and derive the minimal boolean gate. Replace the enumeration with the generative rule. |
+| Enumerative Sub-Case Clutter | Cataloging ad-hoc sub-cases or symptom examples across sprawling instructions instead of deriving a simpler, more generalized instruction or instruction set. | Look strictly at the ultimate objective. If a simpler, more generalized instruction or instruction set achieves similar or better quality, replace the old instructions with it. |
 
 ---
 
@@ -308,7 +308,7 @@ Isolate explorer and auditor into separate subagents because authors have confir
 
 ### N. Instruction Equivalence & Generative Compression (Occam's Instruction Law)
 
-When defining classifications, gates, or operational policies, derive the underlying boolean generative function instead of cataloging an ad-hoc enumeration of symptoms or special cases. If a simpler, more generalized formulation reproduces the decision boundaries with equal or superior quality toward the teleological objective, the old instruction set MUST be replaced.
+If an instruction or instruction set can be reproduced by another instruction or instruction set that is more generalized or more concise with similar or better quality, the old instruction or instruction set MUST be replaced by that simpler instruction or instruction set. To decide, look strictly at the ultimate objective the instruction or instruction set is aiming for.
 
 **Bad (The Enumeration Trap — Multi-Row Sprawling Tables):**
 ```markdown
@@ -353,4 +353,4 @@ Otherwise, it MUST be classified as a **Blocking Defect** (MUST include `Why Thi
 - [ ] Implementation trivia: internal algorithms, memory caches, languages, or threading models
 - [ ] Decorative bullet titles: pseudo-titles forced onto bullet items without taxonomy or routing value
 - [ ] Theatrical and hollow headers: section headers or sub-headers wrapping 1–2 trivial sentences
-- [ ] Enumerative sub-case clutter: sprawling lists of examples when a 2-condition generative boolean gate defines the boundary
+- [ ] Enumerative sub-case clutter: sprawling lists of examples when a simpler, more generalized instruction or instruction set achieves equivalent or better quality
