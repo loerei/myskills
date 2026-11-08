@@ -26,7 +26,7 @@ For human-facing documentation (READMEs, API docs, release notes), use the `desl
 | Hard imperatives (`MUST`, `NEVER`, `ALWAYS`, `do NOT`) | Hedging and conversational padding (`Please note`, `Make sure to`) |
 | `e.g.` on non-exhaustive lists | Exhaustive sub-case lists when a general rule suffices |
 | Disambiguation between easily confused tools or rules | Explanations of self-evident tool or parameter names |
-| Operational rationale that prevents edge-case errors or LLM bias | Motivational fluff, creation history, or business/UX justifications |
+| Operational rationale required to resolve ambiguity, prevent edge-case errors, or override LLM biases | Creation history, author preferences, motivational and business justifications |
 | Simple active verbs (`get`, `set`, `run`, `check`, `edit`, `delete`) | Buzzwords and marketing adjectives (`orchestrate`, `leverage`, `robust`, `seamless`) |
 
 ## Workflows
