@@ -24,15 +24,12 @@ Audits statistical validity, cross-validation topology, preprocessing and target
 
 ## 2. Miss-Probability Gate (Headless AI Implementer Baseline)
 
-Assume the implementer is an AI coding agent operating in headless CI that writes production code and tests directly from ticket text without exploratory manual inspection:
-
-| Defect Behavior for Headless AI Implementer | Classification |
-| :--- | :--- |
-| Silently passes unit/shape tests while causing target/preprocessing leakage, missing entity `.shift(1)` causal gates, group/temporal split contamination, 100% test `NaN` collapse via index misalignment, optimizing default 0.5 threshold instead of business profit curve, treating non-intervenable demographic features as operational business levers, omitting baseline model benchmarks, or hardcoding un-normalized blend weights | **Blocking Defect** (MUST include `Why This Would Be Missed` and code remediation). |
-| Produces an immediate syntax error, shape crash, missing import, or failing test assertion with an obvious single-line fix | **Suggestion Only** (NEVER mark as Blocking Defect). |
-| Modeling or consulting requirement violates mathematical, statistical, or hardware bounds, or lacks target business data with zero viable in-scope paths | **`STATUS: INFEASIBLE`** (takes overall status precedence; include `Infeasibility Proof`). |
-
----
+Assume the implementer is an AI coding agent operating in headless CI that writes production code and tests directly from ticket text without exploratory manual inspection. `"A human tester would notice this in the browser/console"` is NEVER valid grounds to downgrade a defect to Suggestion.
+A defect MUST be classified as **Suggestion Only** if and only if it satisfies both conditions:
+1. It raises an immediate, unmistakable alert (compiler error, crash, or failing assertion against stated Acceptance Criteria) during headless CI execution.
+2. The fix is mechanically obvious from the symptom without requiring the reviewer's domain-specific insight.
+Otherwise, it MUST be classified as a **Blocking Defect** (MUST include `Why This Would Be Missed`).
+*(Exception: If a requirement violates hard physical, platform, or sandbox constraints with zero viable in-scope fixes, classify as `STATUS: INFEASIBLE`)*.
 
 ## 3. Mandatory Audit Checklist
 

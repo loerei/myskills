@@ -18,13 +18,12 @@ Audits whether the Directive Artifact (DA) specifies the optimal structural, bou
   - **Parameter Seams & Utility Placement**: Inject operational policies (timeouts, `AbortSignal`, buffer limits) as caller parameters down the call chain (never hardcode leaf constants). Place extracted domain-agnostic utilities (`watchdogs`, `retry`) at common ancestor scope (`src/utils/`, `src/common/`). Do not introduce speculative plugin registries or multi-tenant layers.
   - **Zero-Loss Specification**: Provide concrete type/interface signatures or diffs where prose would drift; omit synthetic code blocks when declarative criteria are already deterministic.
 - **Miss-Probability Gate (Headless AI Implementer Baseline)**:
-  Assume the implementer is an AI coding agent that (a) writes production code and tests directly from ticket text in headless CI with no human operating the app, and (b) writes ONLY the tests its ticket's Acceptance Criteria explicitly call for (never unprompted exploratory or adversarial tests). `"A human tester would notice this in the browser/console"` is NEVER valid grounds to downgrade a defect to Suggestion:
-
-| Defect Behavior for Headless AI Implementer | Classification |
-| :--- | :--- |
-| Silently missed (plausible wrong output, state drift, race condition) OR raises an error whose generalized fix across the class requires architectural/domain insight not obvious from the error message | **Blocking Defect** (MUST include `Why This Would Be Missed`). |
-| Raises an immediate compiler error, uncaught stack trace, or failing assertion against stated Acceptance Criteria AND the generalized fix is obvious from the symptom | **Suggestion Only** (NEVER mark as Blocking Defect). |
-| Requirement violates hard platform, sandbox, protocol, or physical bounds with zero viable in-scope fixes | **`STATUS: INFEASIBLE`** (takes overall status precedence; include `Infeasibility Proof` and `Alternative Architectural Paths`). |
+  Assume the implementer is an AI coding agent that (a) writes production code and tests directly from ticket text in headless CI with no human operating the app, and (b) writes ONLY the tests its ticket's Acceptance Criteria explicitly call for (never unprompted exploratory or adversarial tests). `"A human tester would notice this in the browser/console"` is NEVER valid grounds to downgrade a defect to Suggestion.
+  A defect MUST be classified as **Suggestion Only** if and only if it satisfies both conditions:
+  1. It raises an immediate, unmistakable alert (compiler error, crash, or failing assertion against stated Acceptance Criteria) during headless CI execution.
+  2. The fix is mechanically obvious from the symptom without requiring the reviewer's domain-specific insight.
+  Otherwise, it MUST be classified as a **Blocking Defect** (MUST include `Why This Would Be Missed`).
+  *(Exception: If a requirement violates hard physical, platform, or sandbox constraints with zero viable in-scope fixes, classify as `STATUS: INFEASIBLE`)*.
 
 ## 2. Mandatory Audit Checklist
 

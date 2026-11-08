@@ -23,7 +23,7 @@
 
 ---
 
-## 2. The 7 Universal Forms of Redundancy
+## 2. The 8 Universal Forms of Redundancy
 
 | Redundancy Form | Definition & Anti-Pattern | How to Fix |
 | :--- | :--- | :--- |
@@ -34,6 +34,7 @@
 | Synonym Stacking | Chaining multiple near-identical adjectives, adverbs, or qualifiers to emphasize importance ("strict, absolute, mandatory, and non-negotiable"). | Use a single unambiguous keyword (`MUST`, `MUST NOT`). |
 | Reference Over-Specification | Itemizing, summarizing, or listing internal sub-topics, case study titles, or contents of a referenced document inside the link sentence. | State only the high-level category of the target file without cataloging its contents. |
 | Cosmetic Granularity & Context Contamination | Adding gratuitous local details or domain jargon to look thorough, inadvertently narrowing a universal directive into a specific sub-case or leaking local repo assumptions to future reader agents. | Strip local context. Formulate directives at the highest level of generality that still provides unambiguous behavioral constraints. |
+| Enumerative Sub-Case Clutter | Cataloging individual symptom examples or special cases across sprawling tables instead of formulating the underlying boolean generative decision function. | Identify the teleological objective and derive the minimal boolean gate. Replace the enumeration with the generative rule. |
 
 ---
 
@@ -305,6 +306,39 @@ Isolate explorer and auditor into separate subagents because authors have confir
 
 ---
 
+### N. Instruction Equivalence & Generative Compression (Occam's Instruction Law)
+
+When defining classifications, gates, or operational policies, derive the underlying boolean generative function instead of cataloging an ad-hoc enumeration of symptoms or special cases. If a simpler, more generalized formulation reproduces the decision boundaries with equal or superior quality toward the teleological objective, the old instruction set MUST be replaced.
+
+**Bad (The Enumeration Trap — Multi-Row Sprawling Tables):**
+```markdown
+| Defect Behavior for Headless AI Implementer | Classification |
+| :--- | :--- |
+| Silently missed (plausible wrong output, state drift, race condition) OR raises an error whose generalized fix across the class requires architectural/domain insight not obvious from the error message | **Blocking Defect** |
+| Produces an immediate compiler error, uncaught stack trace, or failing assertion against stated Acceptance Criteria with an obvious fix; misses intermediate DEBUG logs in transient retry loops that re-raise on exhaustion; or uses best-effort idempotent resource teardown in finally blocks | **Suggestion Only** |
+```
+*(Bloated and brittle: Every domain reviewer attempts to add its own concrete examples like `catch {} without propagation`, `PII leak`, `stdout pollution`, creating the false assumption that unlisted defects are excused).*
+
+**Good (Truth Table — 2-Axis Decomposition):**
+```markdown
+| Alert Raised in Headless CI | Fix Obvious Without Domain Knowledge | Classification |
+| :---: | :---: | :--- |
+| True | True | Suggestion Only |
+| True | False | Blocking Defect |
+| False | Any | Blocking Defect |
+```
+
+**Best (Generative Compression — Unified 2-Condition Invariant):**
+```markdown
+A defect MUST be classified as **Suggestion Only** if and only if it satisfies both conditions:
+1. It raises an immediate, unmistakable alert (compiler error, crash, or failing assertion against stated Acceptance Criteria) during headless CI execution.
+2. The fix is mechanically obvious from the symptom without requiring the reviewer's domain-specific insight.
+Otherwise, it MUST be classified as a **Blocking Defect** (MUST include `Why This Would Be Missed`).
+```
+*(Zero domain pollution, zero enum maintenance overhead, and 100% decision consistency across all reviewer domains).*
+
+---
+
 ## 5. Noise Checklist (What to Cut)
 
 - [ ] Fluff adjectives: `robust`, `seamless`, `powerful`, `atomic`, `crash-resilient`, `intelligent`
@@ -319,3 +353,4 @@ Isolate explorer and auditor into separate subagents because authors have confir
 - [ ] Implementation trivia: internal algorithms, memory caches, languages, or threading models
 - [ ] Decorative bullet titles: pseudo-titles forced onto bullet items without taxonomy or routing value
 - [ ] Theatrical and hollow headers: section headers or sub-headers wrapping 1–2 trivial sentences
+- [ ] Enumerative sub-case clutter: sprawling lists of examples when a 2-condition generative boolean gate defines the boundary

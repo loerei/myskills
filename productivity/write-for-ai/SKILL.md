@@ -28,13 +28,14 @@ Text written for AI must directly drive decisions, constraints, or routing. It s
 17. **Operational rationale vs. motivational fluff (The Drop Test).** Distinguish between behavioral mechanisms vs. human history:
     - **Motivational fluff (MUST CUT):** Explaining past creation history, author preferences, or external business/cost savings (e.g. "compress images to save bandwidth and improve user UX"). AI models execute instructions; they do not need justification.
     - **Operational rationale (PRESERVE IF IT PASSES DROP TEST):** Stating the underlying failure mode, downstream blast radius, or anti-bias mechanism that guides agent decisions during out-of-distribution edge cases (e.g. "run auditor in clean-slate context because authors have confirmation bias and overlook own bugs"). If dropping the rationale causes an agent to misjudge intent in ambiguous edge cases or revert to default LLM bias, it is a vital decision signal and MUST be preserved.
+18. **Instruction equivalence & generative compression (Occam's Instruction Law).** If an instruction or set of instructions can be reproduced by a simpler or more generalized formulation with equivalent or superior execution quality toward the teleological objective, the old instruction set MUST be replaced by that simpler formulation. Derive the underlying boolean generative function or state invariant instead of cataloging an ad-hoc enumeration of sub-cases.
 
 ## Workflows
 
 ### 1. Deslop & Optimize Existing Text
 1. Read as the AI model to assess decision value.
 2. Strip buzzwords, marketing claims, and Latinate verbs.
-3. Eliminate redundancy: schema duplication, circular naming, hedging, motivational fluff (preserve operational rationale that passes Drop Test), synonym stacking, and reference over-specification.
+3. Eliminate redundancy: schema duplication, circular naming, hedging, motivational fluff (preserve operational rationale that passes Drop Test), synonym stacking, reference over-specification, and enumerative sub-case clutter (apply generative compression).
 4. Test each sentence: if removing it does not change AI execution, delete it.
 5. Present Original -> Deslopped with concise rationale for cuts.
 

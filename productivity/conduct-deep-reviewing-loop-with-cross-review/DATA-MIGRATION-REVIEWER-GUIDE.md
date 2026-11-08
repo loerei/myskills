@@ -24,13 +24,12 @@ Audits schema evolution, storage contracts, migration scripts, locking behavior,
 - **Empirical Verification (`<review_dir>/sandbox/DataMigration/`)**:
   - Author inline dry-run scripts in `<review_dir>/sandbox/DataMigration/dryrun_<name>.*` via `write_to_file` testing proposed migration scripts against in-memory SQLite (`:memory:`) or mock stores seeded with legacy $V_1$ payload fixtures (verifying zero data loss, idempotency on double-run, and crash rollback) under a 15s timeout. NEVER modify repository source files or production DBs.
 - **Miss-Probability Gate (Headless AI Implementer Baseline)**:
-  Assume the implementer is an AI coding agent that (a) writes production code and tests directly from ticket text in headless CI with no human operating the app, and (b) writes ONLY the tests its ticket's Acceptance Criteria explicitly call for (never unprompted exploratory or adversarial tests). `"A human tester would notice this in the browser/console"` is NEVER valid grounds to downgrade a defect to Suggestion:
-
-| Defect Behavior for Headless AI Implementer | Classification |
-| :--- | :--- |
-| Missing migration script/runner on schema change, silent data loss/corruption during migration, production lock queues, missing SQLite `PRAGMA foreign_keys = OFF` outside transaction, IEEE 754 float precision drift, or runtime schema-sniffing bloat | **Blocking Defect** (MUST include `Why This Would Be Missed`). |
-| Produces an immediate SQL syntax error, compiler error, or failing assertion against existing criteria with an obvious fix | **Suggestion Only** (NEVER mark as Blocking Defect). |
-| Requirement violates hard storage engine, multi-tab lock, or distributed CAP constraints with zero viable in-scope fixes | **`STATUS: INFEASIBLE`** (takes overall status precedence; include `Infeasibility Proof` and `Alternative Architectural Paths`). |
+  Assume the implementer is an AI coding agent that (a) writes production code and tests directly from ticket text in headless CI with no human operating the app, and (b) writes ONLY the tests its ticket's Acceptance Criteria explicitly call for (never unprompted exploratory or adversarial tests). `"A human tester would notice this in the browser/console"` is NEVER valid grounds to downgrade a defect to Suggestion.
+  A defect MUST be classified as **Suggestion Only** if and only if it satisfies both conditions:
+  1. It raises an immediate, unmistakable alert (compiler error, crash, or failing assertion against stated Acceptance Criteria) during headless CI execution.
+  2. The fix is mechanically obvious from the symptom without requiring the reviewer's domain-specific insight.
+  Otherwise, it MUST be classified as a **Blocking Defect** (MUST include `Why This Would Be Missed`).
+  *(Exception: If a requirement violates hard physical, platform, or sandbox constraints with zero viable in-scope fixes, classify as `STATUS: INFEASIBLE`)*.
 
 ## 2. Domain Subdocuments Routing Table
 

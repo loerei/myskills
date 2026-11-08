@@ -16,13 +16,12 @@ Audits authentication, authorization boundaries, input parsing, secret hygiene, 
 - **Fix Pre-Verification & Miss-Probability Gate (Headless AI Implementer Baseline)**:
   - Verify on disk that referenced middleware, crypto APIs, schemas, and target locations exist and that producer/consumer boundaries are updated symmetrically.
 
-  Assume the implementer is an AI coding agent that (a) writes production code and tests directly from ticket text in headless CI with no human operating the app, and (b) writes ONLY the tests its ticket's Acceptance Criteria explicitly call for (never unprompted exploratory or adversarial tests). `"A human tester would notice this in the browser/console"` is NEVER valid grounds to downgrade a defect to Suggestion:
-
-| Defect Behavior for Headless AI Implementer | Classification |
-| :--- | :--- |
-| Silently passes functional tests while leaving an exploit vector (BOLA/IDOR, mass assignment, DOM XSS, IPC shell injection, RLS owner bypass, SSRF, prompt-injected tool calls, plaintext secrets) OR raises an error whose secure generalized fix is non-obvious | **Blocking Defect** (MUST include `Why This Would Be Missed`). |
-| Produces an immediate compiler/type error or failing assertion against existing criteria with an obvious fix | **Suggestion Only** (NEVER mark as Blocking Defect). |
-| Security requirement violates hard OS sandbox, browser origin, or platform capability bounds with zero in-scope fixes | **`STATUS: INFEASIBLE`** (takes overall status precedence; include `Infeasibility Proof` and `Alternative Architectural Paths`). |
+  Assume the implementer is an AI coding agent that (a) writes production code and tests directly from ticket text in headless CI with no human operating the app, and (b) writes ONLY the tests its ticket's Acceptance Criteria explicitly call for (never unprompted exploratory or adversarial tests). `"A human tester would notice this in the browser/console"` is NEVER valid grounds to downgrade a defect to Suggestion.
+  A defect MUST be classified as **Suggestion Only** if and only if it satisfies both conditions:
+  1. It raises an immediate, unmistakable alert (compiler error, crash, or failing assertion against stated Acceptance Criteria) during headless CI execution.
+  2. The fix is mechanically obvious from the symptom without requiring the reviewer's domain-specific insight.
+  Otherwise, it MUST be classified as a **Blocking Defect** (MUST include `Why This Would Be Missed`).
+  *(Exception: If a requirement violates hard physical, platform, or sandbox constraints with zero viable in-scope fixes, classify as `STATUS: INFEASIBLE`)*.
 
 ## 2. Mandatory Audit Checklist
 
