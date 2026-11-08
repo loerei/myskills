@@ -121,7 +121,8 @@ When `ROUND_REVISION_NEEDED` occurs under `!PA` / `!WA`:
   `> "Paused per !PA request. Verified mutations were applied directly to target DA(s). Round trace archived to /tmp/deep-review-trace-<short_title>/round-<NN>/. Please check API quota or inspect diff against <da_stem>.bak.md. Send 'C' to remove backup files and proceed to Round {N+1}, '<N>C' (e.g. '5C') to execute up to N rounds continuously before the next quota check pause, or request rollback to revert mutations and halt."`
 - **Upon receiving `"C"` or `"<N>C"`**:
   1. **Parse Multi-Round Continuous Budget $N$**:
-     - Plain `"C"` (or `"1C"`): Runs 1 iteration before pausing again on the next mutation (sets remaining auto-advance budget $B = 0$).
+     - Budget commands are evaluated freshly per prompt (zero sticky inheritance).
+     - Plain `"C"` (or `"1C"`): Runs exactly 1 iteration before pausing again on the next mutation (strictly sets remaining auto-advance budget $B = 0$, overriding any previous count).
      - `"<N>C"` (e.g. `2C`, `3C`, `5C`, `10C`, case-insensitive `<N>c` / `<N>C` where $N \ge 1$): Sets remaining continuous budget $B = N - 1$.
   2. If `<review_dir>/Context.bak.md` exists: delete sibling `<da_stem>.bak.md` files for any deleted DAs, and delete `<review_dir>/Context.bak.md`.
   3. Delete sibling `<da_stem>.bak.md` files for all active target DAs in `Context.md` and any orphaned `.bak.md` files.
