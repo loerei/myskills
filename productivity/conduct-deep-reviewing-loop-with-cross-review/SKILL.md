@@ -91,6 +91,13 @@ Call `invoke_subagent` with `TypeName: "review_host"`, `Role: "Review Host & Cri
 - **Round N+1**:
   `You are Review Host & Critical Gate. Review Workspace: <review_dir>. Target DA(s): <da_path(s)>. System Rules: AGENTS.md. Execution Protocol: REVIEW-HOST-GUIDE.md. Gating Standards: HOW-TO-GATE.md. Context: <review_dir>/Context.md. State: <review_dir>/host/State.md. FIRST read the listed files, then execute review round per guides. If your context is compacted during execution: Upon receiving resuming command, check your progress by checking subagents, reports and host files and resume if unfinished, conclude and report if finished. DO NOT create a new round. Re-read REVIEW-HOST-GUIDE.md and HOW-TO-GATE.md.`
 
+#### 2C. In-Flight Host Interruption & Resume Protocol [FOR LAYER 1 ONLY]
+When an active round is interrupted mid-execution (e.g. server restart, process compaction, or user commands resume like `"Resume"`, `"Continue"`, `"Tell Host to Resume"` while a host is running or idle):
+1. Locate the active Layer 2 Host conversation ID.
+2. Send the canonical Resume Message to the active Host via `send_message`:
+   `"Please resume as instructed in REVIEW-HOST-GUIDE.md. Check your progress by checking subagents, reports and host files and resume if unfinished, conclude and report if finished. DO NOT create a new round."`
+3. Await Host completion without creating a new round or modifying `.bak.md` files. Only if the host is confirmed unrecoverable or permanently destroyed may Layer 1 clean unmutated scratch files and respawn a fresh Host for the current round per Step 2B.
+
 ### Step 3: Archive Round Trace & Handle Host Verdict [FOR LAYER 1 ONLY]
 
 #### 3A. Mandatory Post-Round Teardown & Chronological Trace Archival
