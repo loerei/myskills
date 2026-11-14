@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 
 /**
- * Audit Policy Coverage Script (Wrapper)
+ * Audit Catalog & Policy Health Script (Wrapper)
  * Calls runPolicyAudit engine from src/audit.js.
  */
 
@@ -22,8 +22,9 @@ try {
 }
 
 const args = process.argv.slice(2);
-const autoAdd = args.includes('--add') || args.includes('-a');
-const autoPrune = args.includes('--prune') || args.includes('-p');
+if (args.some(arg => ['--add', '-a', '--prune', '-p'].includes(arg))) {
+  console.warn('[!] Note: Table 1 auto-add/prune flags were removed; running catalog & policy audit.');
+}
 
-const result = runPolicyAudit({ sourceRoot: repoRoot, config, autoAdd, autoPrune });
+const result = runPolicyAudit({ sourceRoot: repoRoot, config });
 process.exit(result.exitCode);

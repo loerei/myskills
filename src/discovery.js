@@ -66,6 +66,64 @@ export function loadSkillCatalog(baseDir, validCategories = OFFICIAL_CATEGORIES)
 }
 
 /**
+ * Parse YAML frontmatter fields (`name`, `description`) from a skill's SKILL.md.
+ * @param {string} skillDir
+ * @returns {{ exists: boolean, hasFrontmatter: boolean, name: string, description: string, error: string|null }}
+ */
+export function parseSkillFrontmatter(skillDir) {
+  const skillFile = path.join(skillDir, 'SKILL.md');
+  if (!fs.existsSync(skillFile)) {
+    return { exists: false, hasFrontmatter: false, name: '', description: '', error: 'Missing SKILL.md' };
+  }
+
+  let content;
+  try {
+    content = fs.readFileSync(skillFile, 'utf-8');
+  } catch (e) {
+    return { exists: true, hasFrontmatter: false, name: '', description: '', error: `Unreadable SKILL.md: ${e.message}` };
+  }
+
+  const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
+  if (!match) {
+    return { exists: true, hasFrontmatter: false, name: '', description: '', error: 'Missing YAML frontmatter block' };
+  }
+
+  const fmLines = match[1].split(/\r?\n/);
+  let name = '';
+  let description = '';
+  let collectingDesc = false;
+  const descLines = [];
+
+  for (const line of fmLines) {
+    if (collectingDesc) {
+      if (/^[a-zA-Z0-9_-]+:/.test(line)) {
+        collectingDesc = false;
+      } else {
+        if (line.trim()) descLines.push(line.trim());
+        continue;
+      }
+    }
+
+    if (line.startsWith('name:')) {
+      name = line.slice('name:'.length).trim().replace(/^['"]|['"]$/g, '');
+    } else if (line.startsWith('description:')) {
+      const val = line.slice('description:'.length).trim();
+      if (val === '>' || val === '|' || val === '') {
+        collectingDesc = true;
+      } else {
+        description = val.replace(/^['"]|['"]$/g, '');
+      }
+    }
+  }
+
+  if (descLines.length > 0) {
+    description = descLines.join(' ');
+  }
+
+  return { exists: true, hasFrontmatter: true, name, description, error: null };
+}
+
+/**
  * Loads all skills with name, category, and description from frontmatter.
  * @param {string} baseDir 
  * @param {string[]} [validCategories=OFFICIAL_CATEGORIES]
@@ -86,44 +144,7 @@ export function listSkillsDetailed(baseDir, validCategories = OFFICIAL_CATEGORIE
       }
     }
 
-    let description = '';
-    const skillFile = path.join(skill.srcPath, 'SKILL.md');
-    if (fs.existsSync(skillFile)) {
-      try {
-        const content = fs.readFileSync(skillFile, 'utf-8');
-        const match = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-        if (match) {
-          const fmLines = match[1].split(/\r?\n/);
-          let collectingDesc = false;
-          const descLines = [];
-
-          for (const line of fmLines) {
-            if (collectingDesc) {
-              if (/^[a-zA-Z0-9_-]+:/.test(line)) {
-                break;
-              }
-              if (line.trim()) {
-                descLines.push(line.trim());
-              }
-            } else if (line.startsWith('description:')) {
-              const val = line.slice('description:'.length).trim();
-              if (val === '>' || val === '|' || val === '') {
-                collectingDesc = true;
-              } else {
-                description = val.replace(/^['"]|['"]$/g, '');
-                break;
-              }
-            }
-          }
-
-          if (descLines.length > 0) {
-            description = descLines.join(' ');
-          }
-        }
-      } catch {
-        /* ignore unreadable or malformed frontmatter */
-      }
-    }
+    const { description } = parseSkillFrontmatter(skill.srcPath);
 
     results.push({
       name,

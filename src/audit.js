@@ -1,261 +1,167 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { OFFICIAL_CATEGORIES, findSkillDirectories, parseSkillFrontmatter } from './discovery.js';
 
-export const CATEGORY_ROW_MAP = {
-  design: 'Design & Frontend UI',
-  engineering: 'Engineering & Development',
-  quality: 'Code Quality & CI/CD',
-  productivity: 'Productivity & Management',
-  personal: 'Content & Notes'
-};
+export { OFFICIAL_CATEGORIES };
 
-export const OFFICIAL_CATEGORIES = Object.keys(CATEGORY_ROW_MAP);
-
-function escapeRegex(str) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
+const STALE_POLICY_TERMS = [
+  { label: 'subagent_rules', pattern: /\bsubagent_rules\b/ },
+  { label: 'Table 1', pattern: /\bTable 1\b/ },
+  { label: 'view_file', pattern: /\bview_file\b/ },
+  { label: 'grep_search', pattern: /\bgrep_search\b/ },
+  { label: 'list_dir', pattern: /\blist_dir\b/ },
+  { label: 'replace_file_content', pattern: /\breplace_file_content\b/ },
+  { label: 'multi_replace_file_content', pattern: /\bmulti_replace_file_content\b/ },
+  { label: 'get_session_details', pattern: /\bget_session_details\b/ },
+  { label: 'reverseSteps', pattern: /\breverseSteps\b/ },
+  { label: 'conversationStepsOnly', pattern: /\bconversationStepsOnly\b/ }
+];
 
 /**
- * Discovers all skill directories in repoRoot containing SKILL.md strictly within whitelisted categories.
- * @param {string} repoRoot
+ * Scan configured categories for all skill directories without deduplicating,
+ * so duplicate directory names across categories can be reported.
+ * @param {string} sourceRoot
  * @param {string[]} categories
- * @returns {string[]}
+ * @returns {Array<{ name: string, dir: string }>}
  */
-export function findSkillDirectories(repoRoot, categories = OFFICIAL_CATEGORIES) {
-  const results = [];
-  for (const cat of categories) {
-    const catDir = path.join(repoRoot, cat);
-    if (!fs.existsSync(catDir) || !fs.statSync(catDir).isDirectory()) continue;
-    const entries = fs.readdirSync(catDir, { withFileTypes: true });
-    for (const entry of entries) {
-      if (!entry.isDirectory() || entry.name.startsWith('.') || entry.name.startsWith('_')) continue;
-      const skillDir = path.join(catDir, entry.name);
-      if (fs.existsSync(path.join(skillDir, 'SKILL.md'))) {
-        results.push(skillDir);
+function collectRawSkills(sourceRoot, categories) {
+  const dirs = [];
+  const hasCategories = Array.isArray(categories) && categories.some(cat => fs.existsSync(path.join(sourceRoot, cat)));
+
+  if (hasCategories) {
+    for (const cat of categories) {
+      const catDir = path.join(sourceRoot, cat);
+      if (fs.existsSync(catDir) && fs.statSync(catDir).isDirectory()) {
+        findSkillDirectories(catDir, dirs);
       }
     }
+  } else {
+    findSkillDirectories(sourceRoot, dirs);
   }
-  return results;
+
+  return dirs.map(dir => ({ name: path.basename(dir), dir }));
 }
 
 /**
- * Parses policy markdown file content to extract documented skills by category rows.
- * @param {string} content 
- * @returns {{documentedSkills: Set<string>, rowSkillsMap: Map<string, string[]>}}
+ * Check a policy markdown file for existence and stale tool/rule references.
+ * @param {string} filePath
+ * @param {string} sourceRoot
+ * @returns {{ relPath: string, missing: boolean, staleTerms: string[] }}
  */
-export function parsePolicySkillsByRow(content) {
-  const documentedSkills = new Set();
-  const rowSkillsMap = new Map();
-
-  for (const [category, rowTitle] of Object.entries(CATEGORY_ROW_MAP)) {
-    const rowRegex = new RegExp(`\\|\\s*\\*\\*${escapeRegex(rowTitle)}\\*\\*\\s*\\|[^\\|]*\\|([^\\n\\r]*)`, 'i');
-    const match = content.match(rowRegex);
-    if (match) {
-      const skillsCol = match[1];
-      const matches = skillsCol.match(/`([a-zA-Z0-9_-]+)`/g) || [];
-      const skills = matches.map(m => m.replaceAll('`', ''));
-      rowSkillsMap.set(category, skills);
-      skills.forEach(s => documentedSkills.add(s));
-    }
+function inspectPolicyFile(filePath, sourceRoot) {
+  const relPath = path.relative(sourceRoot, filePath);
+  if (!fs.existsSync(filePath)) {
+    return { relPath, missing: true, staleTerms: [] };
   }
 
-  return { documentedSkills, rowSkillsMap };
+  const content = fs.readFileSync(filePath, 'utf-8');
+  const staleTerms = STALE_POLICY_TERMS
+    .filter(term => term.pattern.test(content))
+    .map(term => term.label);
+
+  return { relPath, missing: false, staleTerms };
 }
 
 /**
- * Parses policy markdown file content to extract documented skills (backward compatible).
- * @param {string} content
- * @returns {Set<string>}
+ * Audit skill catalog health (valid SKILL.md frontmatter and no duplicate names)
+ * and policy file integrity (existence and absence of stale references).
+ * @param {{ sourceRoot: string, config?: object }} options
+ * @returns {{ success: boolean, exitCode: number, skillCount: number, duplicates: Array, frontmatterErrors: Array, policyErrors: Array, checkedPolicies: string[] }}
  */
-export function parsePolicySkills(content) {
-  return parsePolicySkillsByRow(content).documentedSkills;
-}
-
-/**
- * Inserts missing skills into the Task-Specific Workflows / Table 1 of policyContent.
- */
-export function insertMissingSkillsToPolicy(policyContent, missingSkillsWithCategory) {
-  let updatedContent = policyContent;
-  let addedCount = 0;
-
-  for (const { skill, category } of missingSkillsWithCategory) {
-    const rowTitle = CATEGORY_ROW_MAP[category] || CATEGORY_ROW_MAP.productivity;
-    const rowRegex = new RegExp(`(\\|\\s*\\*\\*${escapeRegex(rowTitle)}\\*\\*\\s*\\|[^\\|]*\\|)([^\\n\\r]*)`, 'i');
-    const match = updatedContent.match(rowRegex);
-
-    if (match) {
-      const rowHeaderAndCol2 = match[1];
-      let skillsCol = match[2].trimEnd();
-
-      // Check idempotency (prevent duplicate insertion)
-      const existingMatches = skillsCol.match(/`([a-zA-Z0-9_-]+)`/g) || [];
-      const existingSkills = new Set(existingMatches.map(m => m.replaceAll('`', '')));
-      if (!existingSkills.has(skill)) {
-        if (skillsCol.endsWith('|')) {
-          const contentBeforePipe = skillsCol.slice(0, -1).trimEnd();
-          const newCellContent = contentBeforePipe.length > 0 
-            ? `${contentBeforePipe}, \`${skill}\` |` 
-            : ` \`${skill}\` |`;
-          updatedContent = updatedContent.replace(match[0], `${rowHeaderAndCol2}${newCellContent}`);
-          addedCount++;
-        }
-      }
-    }
-  }
-
-  return { updatedContent, addedCount };
-}
-
-/**
- * Prunes orphan / obsolete skills from Table 1 of policyContent.
- * @param {string} policyContent
- * @param {Set<string>} orphanSkillsSet
- * @returns {{updatedContent: string, prunedCount: number, prunedList: Array<{skill: string, category: string}>}}
- */
-export function pruneOrphanSkillsFromPolicy(policyContent, orphanSkillsSet) {
-  let updatedContent = policyContent;
-  let prunedCount = 0;
-  const prunedList = [];
-
-  for (const [category, rowTitle] of Object.entries(CATEGORY_ROW_MAP)) {
-    const rowRegex = new RegExp(`(\\|\\s*\\*\\*${escapeRegex(rowTitle)}\\*\\*\\s*\\|[^\\|]*\\|)([^\\n\\r]*)`, 'i');
-    const match = updatedContent.match(rowRegex);
-
-    if (match) {
-      const rowHeaderAndCol2 = match[1];
-      const skillsCol = match[2];
-      const matches = skillsCol.match(/`([a-zA-Z0-9_-]+)`/g) || [];
-      const currentSkills = matches.map(m => m.replaceAll('`', ''));
-
-      const remainingSkills = currentSkills.filter(skill => {
-        if (orphanSkillsSet.has(skill)) {
-          prunedCount++;
-          prunedList.push({ skill, category });
-          return false;
-        }
-        return true;
-      });
-
-      if (currentSkills.length !== remainingSkills.length) {
-        const newCellContent = remainingSkills.length > 0
-          ? ` ${remainingSkills.map(s => `\`${s}\``).join(', ')} |`
-          : ` |`;
-        updatedContent = updatedContent.replace(match[0], `${rowHeaderAndCol2}${newCellContent}`);
-      }
-    }
-  }
-
-  return { updatedContent, prunedCount, prunedList };
-}
-
-/**
- * Runs policy coverage audit across root policy and platform deltas.
- */
-export function runPolicyAudit({ sourceRoot, config, autoAdd = false, autoPrune = false }) {
-  const policyFileName = config.policy?.rootFile || 'AGENTS.md';
-  const rootPolicyPath = path.join(sourceRoot, policyFileName);
-
-  if (!fs.existsSync(rootPolicyPath)) {
-    console.error(`[-] Error: Root policy file ${policyFileName} not found at ${rootPolicyPath}`);
-    return { success: false, exitCode: 1 };
-  }
-
+export function runPolicyAudit({ sourceRoot, config = {} }) {
   const categories = config.categories || OFFICIAL_CATEGORIES;
-  const skillDirs = findSkillDirectories(sourceRoot, categories);
-  const repoSkillsMap = new Map();
-  for (const dir of skillDirs) {
-    const name = path.basename(dir);
-    const category = path.basename(path.dirname(dir));
-    repoSkillsMap.set(name, category);
-  }
+  const rootFileName = config.policy?.rootFile || 'AGENTS.md';
+  const rawSkills = collectRawSkills(sourceRoot, categories);
 
-  const repoSkills = Array.from(repoSkillsMap.keys()).sort((a, b) => a.localeCompare(b));
-  const repoSkillsSet = new Set(repoSkills);
+  const byName = new Map();
+  const frontmatterErrors = [];
 
-  // Determine policy files to check and update
-  const policyFilesToAudit = [rootPolicyPath];
-  const platforms = config.platforms || [];
-  for (const p of platforms) {
-    const sourceDir = p.sourceDir || p.name;
-    const deltaPath = path.join(sourceRoot, sourceDir, policyFileName);
-    if (fs.existsSync(deltaPath)) {
-      policyFilesToAudit.push(deltaPath);
+  for (const { name, dir } of rawSkills) {
+    if (!byName.has(name)) {
+      byName.set(name, []);
     }
-  }
+    byName.get(name).push(dir);
 
-  // Perform initial audit on root policy
-  const rootContent = fs.readFileSync(rootPolicyPath, 'utf-8');
-  const { documentedSkills: rootDocumentedSkills } = parsePolicySkillsByRow(rootContent);
-  const missingSkills = repoSkills.filter(skill => !rootDocumentedSkills.has(skill));
-  const orphanSkills = Array.from(rootDocumentedSkills).filter(skill => !repoSkillsSet.has(skill));
-
-  console.log('==================================================');
-  console.log('            POLICY SKILL COVERAGE AUDIT           ');
-  console.log('==================================================');
-  console.log(`[+] Total skills found in repository: ${repoSkills.length}`);
-  console.log(`[+] Total skills documented in ${policyFileName}: ${rootDocumentedSkills.size}`);
-
-  if (missingSkills.length === 0 && orphanSkills.length === 0) {
-    console.log(`\n[✔] SUCCESS: 100% of custom skills are documented and zero orphan skills found in ${policyFileName}!`);
-    return { success: true, exitCode: 0, missingSkills: [], orphanSkills: [] };
-  }
-
-  if (!autoAdd && !autoPrune) {
-    if (missingSkills.length > 0) {
-      console.error(`\n[❌] ERROR: Found ${missingSkills.length} skill(s) missing from ${policyFileName} table:\n`);
-      missingSkills.forEach(s => console.error(`  - ${s} (category: ${repoSkillsMap.get(s)})`));
-      console.log(`\n[i] Run 'agents audit --add' to automatically insert missing skills into policy tables.`);
-    }
-
-    if (orphanSkills.length > 0) {
-      console.error(`\n[⚠️] WARNING: Found ${orphanSkills.length} orphan/obsolete skill(s) in ${policyFileName} table (not in repo):\n`);
-      orphanSkills.forEach(s => console.error(`  - ${s}`));
-      console.log(`\n[i] Run 'agents audit --prune' to automatically remove obsolete skills from policy tables.`);
-    }
-
-    return { success: false, exitCode: 1, missingSkills, orphanSkills };
-  }
-
-  let totalAdded = 0;
-  let totalPruned = 0;
-
-  // Auto-Prune Mode
-  if (autoPrune && orphanSkills.length > 0) {
-    console.log(`\n[+] Auto-pruning ${orphanSkills.length} orphan skill(s) from policy tables...`);
-    const orphanSkillsSet = new Set(orphanSkills);
-
-    for (const filePath of policyFilesToAudit) {
-      const content = fs.readFileSync(filePath, 'utf-8');
-      const { updatedContent, prunedCount } = pruneOrphanSkillsFromPolicy(content, orphanSkillsSet);
-      if (prunedCount > 0) {
-        fs.writeFileSync(filePath, updatedContent, 'utf-8');
-        const relPath = path.relative(sourceRoot, filePath);
-        console.log(`  [-] Updated ${relPath} (-${prunedCount} orphan skill entries)`);
-        totalPruned += prunedCount;
+    const fm = parseSkillFrontmatter(dir);
+    const relDir = path.relative(sourceRoot, dir);
+    if (fm.error) {
+      frontmatterErrors.push({ skill: relDir, reason: fm.error });
+    } else {
+      const missingFields = [];
+      if (!fm.name) missingFields.push('name');
+      if (!fm.description) missingFields.push('description');
+      if (missingFields.length > 0) {
+        frontmatterErrors.push({
+          skill: relDir,
+          reason: `Empty or missing YAML frontmatter field(s): ${missingFields.join(', ')}`
+        });
       }
     }
   }
 
-  // Auto-Add Mode
-  if (autoAdd && missingSkills.length > 0) {
-    console.log(`\n[+] Auto-inserting ${missingSkills.length} missing skill(s) into policy tables...`);
-    const missingSkillsWithCategory = missingSkills.map(skill => ({
-      skill,
-      category: repoSkillsMap.get(skill)
-    }));
-
-    for (const filePath of policyFilesToAudit) {
-      const content = fs.readFileSync(filePath, 'utf-8');
-      const { updatedContent, addedCount } = insertMissingSkillsToPolicy(content, missingSkillsWithCategory);
-      if (addedCount > 0) {
-        fs.writeFileSync(filePath, updatedContent, 'utf-8');
-        const relPath = path.relative(sourceRoot, filePath);
-        console.log(`  [+] Updated ${relPath} (+${addedCount} skill entries)`);
-        totalAdded += addedCount;
-      }
+  const duplicates = [];
+  for (const [name, dirs] of byName.entries()) {
+    if (dirs.length > 1) {
+      duplicates.push({
+        name,
+        paths: dirs.map(d => path.relative(sourceRoot, d))
+      });
     }
   }
 
-  console.log(`\n[✔] SUCCESS: Policy files updated! (+${totalAdded} added, -${totalPruned} pruned).`);
-  return { success: true, exitCode: 0, totalAdded, totalPruned };
+  const policyTargets = [path.join(sourceRoot, rootFileName)];
+  for (const platform of config.platforms || []) {
+    if (!platform.sourceDir) continue;
+    const platformDir = path.join(sourceRoot, platform.sourceDir);
+    if (fs.existsSync(platformDir) && fs.statSync(platformDir).isDirectory()) {
+      policyTargets.push(path.join(platformDir, rootFileName));
+    }
+  }
+
+  const policyErrors = [];
+  const checkedPolicies = [];
+
+  for (const policyPath of policyTargets) {
+    const result = inspectPolicyFile(policyPath, sourceRoot);
+    checkedPolicies.push(result.relPath);
+    if (result.missing) {
+      policyErrors.push({ file: result.relPath, reason: 'Policy file not found' });
+    } else if (result.staleTerms.length > 0) {
+      policyErrors.push({
+        file: result.relPath,
+        reason: `Contains stale reference(s): ${result.staleTerms.join(', ')}`
+      });
+    }
+  }
+
+  console.log(`\n[*] Catalog & Policy Audit (${sourceRoot})`);
+  console.log(`    Skills scanned: ${rawSkills.length} (${byName.size} unique)`);
+  console.log(`    Policies checked: ${checkedPolicies.join(', ')}`);
+
+  for (const dup of duplicates) {
+    console.log(`  [!] Duplicate skill "${dup.name}": ${dup.paths.join(' | ')}`);
+  }
+  for (const err of frontmatterErrors) {
+    console.log(`  [!] Frontmatter error in ${err.skill}: ${err.reason}`);
+  }
+  for (const err of policyErrors) {
+    console.log(`  [!] Policy error in ${err.file}: ${err.reason}`);
+  }
+
+  const hasFailures = duplicates.length > 0 || frontmatterErrors.length > 0 || policyErrors.length > 0;
+  if (!hasFailures) {
+    console.log('[+] Audit passed: all skills have valid frontmatter, zero duplicates, and all policy files are clean.\n');
+  } else {
+    console.log('[-] Audit failed: resolve the catalog or policy errors above.\n');
+  }
+
+  return {
+    success: !hasFailures,
+    exitCode: hasFailures ? 1 : 0,
+    skillCount: rawSkills.length,
+    duplicates,
+    frontmatterErrors,
+    policyErrors,
+    checkedPolicies
+  };
 }
