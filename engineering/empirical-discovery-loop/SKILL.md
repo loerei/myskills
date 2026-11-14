@@ -9,22 +9,19 @@ Runs an autonomous loop where an Explorer investigates ground truth, drafts find
 
 ## Directives
 
-1. **Role Separation & Subagent Nesting**: The Main Agent defines and spawns an `explorer` subagent (with `EnableSubagentTools: true` and `EnableWriteTools: true`). The Explorer executes exploration and delegates audit to an independent clean-slate Auditor subagent. The Explorer NEVER self-audits.
-2. **Ground-Truth Execution**: NEVER guess deeper dynamics from surface summaries. All claims deeper than surface observations require executable scripts or tests against raw data or runtime systems.
-3. **Adversarial Code Audit**: Auditors MUST inspect the Explorer's scratch scripts, but MUST NEVER trust them uncritically. Treat the Explorer's script as suspect code: audit it line by line for logical bugs, sample leakage, silent data drops (e.g. dropna, unhandled sentinel values), or flawed formulas. The script serves as the primary artifact to explain the exact root cause of any numerical discrepancy.
-4. **Three-Way Auditor Dispositions**: For every claim in the draft, the Auditor MUST assign one of three explicit dispositions:
+1. **Role Separation & Subagent Nesting**: Main Agent defines and spawns `explorer` (`EnableSubagentTools: true`, `EnableWriteTools: true`). `explorer` investigates ground truth and delegates auditing to a clean-slate `auditor` subagent. `explorer` NEVER self-audits.
+2. **Ground-Truth Execution**: NEVER guess deeper dynamics from surface summaries. Deeper claims MUST be backed by executable scripts or tests in `.scratch/` against `<ground_truth>`.
+3. **Adversarial Code Audit**: Auditors MUST treat `explorer` `.scratch/` scripts as suspect code: inspect line by line for logic bugs, sample leakage, silent drops (e.g. `dropna`, unhandled sentinel values), or flawed formulas, and verify numbers independently against `<ground_truth>`.
+4. **Three-Way Dispositions**: Auditors MUST assign one disposition to every claim in `<target_doc_path>`:
 
-| Disposition | Trigger Condition | Required Action |
-| :--- | :--- | :--- |
-| `REVISE` | Claim is directionally valid, but contains numerical discrepancies, indexing errors, or script bugs. | Explorer fixes `.scratch/` scripts, updates numbers in draft, and re-invokes Auditor. |
-| `REJECT` | Claim is methodologically flawed, duplicates `<known_baseline>`, or provides zero operational value towards `<objective>`. | Explorer permanently deletes claim from draft document. |
-| `VERIFY` | Claim and supporting numbers are 100% reproducible against ground truth and provide actionable value towards `<objective>`. | Explorer retains claim in document for final delivery. |
+| Disposition & Trigger | Explorer Action |
+| :--- | :--- |
+| `REVISE`: Directionally valid, but has numerical errors, indexing mistakes, or script bugs | Fix `.scratch/` scripts, correct numbers in `<target_doc_path>`, and re-invoke `auditor` |
+| `REJECT`: Methodologically flawed, duplicates `<known_baseline>`, or adds zero value toward `<objective>` | Delete claim permanently from `<target_doc_path>` |
+| `VERIFY`: 100% reproducible against `<ground_truth>` and delivers actionable value toward `<objective>` | Retain claim in `<target_doc_path>` for delivery |
 
-5. **Hard Completion Gate**: The Explorer MUST NOT declare completion or deliver findings to the Main Agent while any claim remains in `REVISE` status. Every claim must either be verified or pruned.
-6. **All-Rejected Exit Hatch**: If all proposed claims in the draft are rejected by the Auditor (due to invalidity, duplication, or lack of value towards `<objective>`), the Explorer MUST prune the draft and report to the Main Agent: "No new meaningful discoveries found." NEVER invent or retain low-value filler claims to avoid an empty report.
-7. **Context Framing Mandate**: When passing supplementary context, domain knowledge, or baseline materials to the Explorer, the Main Agent MUST frame them strictly under `Known baseline` ("What is already known" or "What is currently claimed"). NEVER frame supplementary materials as answers or conclusions for the Explorer to echo. The Explorer treats known context as a baseline to challenge against ground truth, never as predetermined facts to parrot.
-
----
+5. **Hard Completion & Exit Hatch**: `explorer` MUST NOT report completion while any claim remains `REVISE`. If all claims are `REJECT`ed, prune the draft and report `"No new meaningful discoveries found."` (NEVER retain filler claims).
+6. **Context Framing**: Pass `<known_baseline>` strictly as `"What is already known/claimed"` to challenge against ground truth, NEVER as predetermined conclusions to confirm.
 
 ## Workflow
 
@@ -35,49 +32,25 @@ flowchart TD
     
     subgraph LOOP["Autonomous Explorer-Auditor Loop (Background)"]
         SpawnExplorer --> Explore["3. Explorer investigates ground truth & writes .scratch/ scripts"]
-        Explore --> Draft["4. Explorer authors draft discovery document"]
-        Draft --> SpawnAuditor["5. Explorer invokes clean-slate Auditor via invoke_subagent"]
-        SpawnAuditor --> AuditExec["6. Auditor audits code + verifies against ground truth"]
+        Explore --> Draft["4. Explorer drafts findings at <target_doc_path>"]
+        Draft --> SpawnAuditor["5. Explorer invokes clean-slate auditor via invoke_subagent"]
+        SpawnAuditor --> AuditExec["6. Auditor inspects scripts & verifies against ground truth"]
         AuditExec --> AuditVerdict{"Auditor Dispositions?"}
         
-        AuditVerdict -->|"Has REVISE claims"| Amend["7. Explorer fixes scripts & updates numbers"] --> SpawnAuditor
-        AuditVerdict -->|"Has REJECT claims"| Prune["8. Explorer deletes rejected/bloated claims"] --> CheckRemaining{"Any verified claims left?"}
+        AuditVerdict -->|"Has REVISE claims"| Amend["7. Explorer fixes scripts & updates draft"] --> SpawnAuditor
+        AuditVerdict -->|"Has REJECT claims"| Prune["8. Explorer deletes rejected claims"] --> CheckRemaining{"Any claims left?"}
         
         CheckRemaining -->|"Yes"| AuditVerdict
-        CheckRemaining -->|"No (All claims rejected)"| EmptyReport["9. All-Rejected Exit Hatch:<br/>Report 'No new meaningful discoveries found'"]
-        AuditVerdict -->|"All claims VERIFIED"| FinalDoc["10. Explorer finalizes verified document"]
+        CheckRemaining -->|"No (All rejected)"| EmptyReport["9. Report 'No new meaningful discoveries found.'"]
+        AuditVerdict -->|"All claims VERIFY"| FinalDoc["10. Finalize <target_doc_path>"]
     end
     
-    FinalDoc --> ReportMain["11. Explorer delivers verified finding to Main Agent"]
+    FinalDoc --> ReportMain["11. Deliver verified findings to Main Agent"]
     EmptyReport --> ReportMain
 ```
 
-### 1. Main Agent Track (Task Dispatch)
-1. **Define Subagent Type**: If `explorer` is not registered, call `define_subagent`:
-   - `Name`: `"explorer"`
-   - `Description`: `"Investigator running autonomous exploration and managing adversarial auditing"`
-   - `EnableSubagentTools`: `true`
-   - `EnableWriteTools`: `true`
-2. **Dispatch Explorer**: Invoke `explorer` using the Explorer Prompt Pattern. Supply `<objective>`, `<known_baseline>`, `<target_scope>`, `<ground_truth>`, and `<target_doc_path>`. Package attached reference materials strictly under `Known baseline` as "What is already known/claimed", never as expected conclusions to validate.
-3. **Await Final Artifact**: The Main Agent avoids intermediate scratch scripts and debugging churn, receiving only the final verified document or the "no new discoveries" report.
-
-### 2. Explorer Track (Autonomous Loop Host)
-1. **Investigate Ground Truth**: Write diagnostic scripts in `.scratch/` directly querying raw data or runtime behavior. Avoid speculative deduction when code can be executed.
-2. **Draft Finding Document**: Record observations at `<target_doc_path>` with exact formulas, sample slices, empirical evidence, and operational significance.
-3. **Invoke Auditor Subagent**: Invoke an independent `auditor` subagent using the Auditor Prompt Pattern. Pass `<objective>`, `<known_baseline>`, `<target_doc_path>`, and `<ground_truth>`.
-4. **Resolve Claims**:
-   - For `REVISE` claims: Inspect code-level root causes flagged by Auditor, fix `.scratch/` scripts, update numbers in `<target_doc_path>`, and re-invoke Auditor.
-   - For `REJECT` claims: Delete them immediately from `<target_doc_path>`.
-   - If ALL claims are rejected: Conclude the loop and report to Main Agent: "No new meaningful discoveries found."
-   - When all retained claims achieve `VERIFY`: Finalize document and deliver to Main Agent.
-
-### 3. Auditor Track (Adversarial Code & Value Audit)
-1. **Inspect Claims & Code**: Read `<target_doc_path>` to extract claims, formulas, and sample criteria. Inspect the Explorer's scripts in `.scratch/` as suspect code for unintended filters (e.g. silent dropna), unhandled sentinel values, indexing bugs, or formula drift.
-2. **Verify Against Ground Truth**: Run independent verification scripts in `.scratch/` directly against `<ground_truth>`.
-3. **Assign Dispositions**: Assign `REVISE`, `REJECT`, or `VERIFY` to every individual claim per Directive 4.
-4. **Emit Audit Report**: Output table of claims with dispositions, code-level root causes for revisions, and explicit justifications for rejections.
-
----
+1. **Main Agent**: If `explorer` is unregistered, call `define_subagent` (`Name: "explorer"`, `Description: "Investigator running autonomous exploration and managing adversarial auditing"`, `EnableSubagentTools: true`, `EnableWriteTools: true`). Invoke `explorer` with `<objective>`, `<known_baseline>`, `<target_scope>`, `<ground_truth>`, and `<target_doc_path>`, then await the final report without intermediate script churn.
+2. **Explorer & Auditor**: Execute the loop above using the verbatim prompt contracts below; `auditor` concludes with a per-claim status table (`VERIFY`, `REVISE`, `REJECT`) listing exact code-level causes for revisions and justifications for rejections.
 
 ## Role Prompts
 
