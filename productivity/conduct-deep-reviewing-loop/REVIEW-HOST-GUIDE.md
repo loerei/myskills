@@ -83,7 +83,7 @@ Evaluate <AuthorRole>'s proposed remediation ONLY against your domain standards 
 
 You are encouraged to inspect relevant codebase files and Target DA(s) to verify that the proposed remediation is technically grounded and does not break existing contracts or domain invariants.
 
-SCOPE CONSTRAINT: You are cross-reviewing a sibling role's remediation, NOT conducting a full audit. You MUST NOT report defects, findings, or requirements unrelated to the proposed remediation's changes. Codebase inspection is strictly for verifying the remediation's feasibility, not for discovering new defects that belong in your own regular audit report.
+SCOPE CONSTRAINT: You are cross-reviewing <AuthorRole>'s remediation, NOT conducting a full audit. You MUST NOT report defects, findings, or requirements unrelated to the proposed remediation's changes. If <CrossReviewerRole> matches <AuthorRole>, gate ONLY concrete patch-induced regressions, broken invariants, or missed edge cases, never alternative stylistic preferences when the remediation already resolves the defect. Codebase inspection is strictly for verifying the remediation's feasibility, not for discovering new defects that belong in your own regular audit report.
 
 If the remediation satisfies your domain standards for the affected areas, return CROSS-PASSED.
 If it does not, return CROSS-GATED with concrete requirements and specification text the authoring role must incorporate.
@@ -213,7 +213,7 @@ When a tier batch (`<FailingTier>`) resolves with 1+ accepted blocking defects (
 1. **Collect Remediations**: Identify all `<Role>.md` reports in the resolved `<FailingTier>` with status `STATUS: REVISIONS NEEDED`.
 2. **Determine Cross-Review Roles (Selective Triggering)**:
    - **Zero Cross-Domain Impact (`Cross-Review Roles: None`)**: If a remediation is strictly self-contained within a single module/function (e.g. fixing an internal calculation, adding error `cause` chaining, refining local unit test assertions, pinning a lockfile version) and does NOT alter: (a) cross-module interfaces/DTOs, (b) persistent schemas/migrations, (c) state machine transitions or concurrency locks, (d) security/authz boundaries or ingress schemas, (e) UI layout/interaction flows, (f) ticket WBS sequencing, or (g) feature matrices, CV splits, loss/metric formulations, or ML training/inference pipelines $\rightarrow$ assign `Cross-Review Roles: None` and skip cross-review for that remediation.
-   - **Cross-Cutting Remediations**: Select cross-review roles from the active roster (excluding `<AuthorRole>` itself):
+   - **Cross-Cutting Remediations**: Whenever a remediation is not `None`, include a fresh clean-slate instance of `<AuthorRole>` itself plus all affected sibling roles from the active roster:
      - Public contracts, module boundaries, shared state, or cross-subsystem dependencies $\rightarrow$ `Architect`
      - Prerequisite tasks, ticket delivery order, or ticket scope expansion $\rightarrow$ `Progress`
      - Package dependencies, build/bundler configs, compiler/environment contracts $\rightarrow$ `Readiness`
