@@ -2,7 +2,7 @@
 
 My AI agent skills and global policies.
 
-(Just personal take,) at least when comparing to Claude or GPT, Gemini models are badly RLHFed toward sycophancy and unnecessary fluff, plus [Antigravity system instructions](gemini/raw_system_instructions.v2.8.0.md) is mostly a mess (might even be the main problem here since I don't think the ones on [gemini.google.com](https://gemini.google.com) are as bad.). In short, the models are directed toward "doing whatever it takes to make the user wow and happy" (about how good the model is, not about how good the actual result is, sadly). Which is why I have a [delta version of `AGENTS.md`](gemini/AGENTS.md).
+(Just personal take,) at least when comparing to Claude or GPT, Gemini models are badly RLHFed toward sycophancy and unnecessary fluff, plus the legacy [Antigravity system instructions](gemini/System_Instruction.md) were historically a mess (might even be the main problem here since I don't think the ones on [gemini.google.com](https://gemini.google.com) are as bad.). In short, the models are directed toward "doing whatever it takes to make the user wow and happy" (about how good the model is, not about how good the actual result is, sadly). Which is why I have a [delta version of `AGENTS.md`](gemini/AGENTS.md).
 
 This repo is ~~fully~~ mostly written by Antigravity (including this README). So pardon the fluff if there is any, I'm ~~actively and pathetically~~ trying to reduce that on the user's end.
 
@@ -105,10 +105,7 @@ How I link `agents` CLI globally so I can run it from any terminal:
   agents read policy.git_workflow  # Print raw content of policy subdoc to stdout
   agents read skill.tdd            # Print raw content of tdd/SKILL.md to stdout
   agents read skill.writing-great-skills/GLOSSARY # Print raw content of auxiliary skill subdoc
-  agents audit                     # Check if 100% of skills are documented in AGENTS.md
-  agents audit --add               # Auto-insert missing skills into AGENTS.md & deltas
-  agents audit --prune             # Auto-prune orphan/obsolete skills from AGENTS.md & deltas
-  agents audit -a -p               # Full 2-way sync (add missing + prune orphans)
+  agents audit                     # Validate skill frontmatter, duplicate names, and policy files
   ```
 
 ---
