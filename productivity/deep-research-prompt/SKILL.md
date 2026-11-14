@@ -105,8 +105,7 @@ Path: `<file_path_2>`
 
 ---
 
-## Workflow
+## Execution
 
-1. **Analyze Requirements**: Identify research domain, problem objective (`<objective>`), known baseline (`<known_baseline>`), target unknowns (`<target_scope>`), deliverable type (modify, create, or evaluate), and relevant baseline files.
-2. **Draft Prompt File**: Populate Output Template. Ensure no leading questions or micro-questionnaires exist, known baseline (`<known_baseline>`) is clearly demarcated from target unknowns (`<target_scope>`), and the anti-hallucination exit hatch is included. Inline all required reference files into the bundle.
-3. **Verify Bundle**: Check that reference files are fully inlined, deliverable contracts require concrete patches or content, and instructions leave solution discovery fully autonomous.
+1. **Analyze Requirements**: Identify the research domain, `<objective>`, `<known_baseline>`, `<target_scope>`, deliverable type (modify, create, or evaluate), and baseline files to inline.
+2. **Draft & Verify Bundle**: Populate the template at the target path (e.g. `.scratch/research_prompt_<topic>.md`), ensuring `<known_baseline>` is framed strictly as baseline context to challenge, no leading questions exist, the anti-hallucination exit hatch is included, baseline files are inlined completely, and deliverables require concrete patches or content.
