@@ -15,7 +15,7 @@ Uhhh, don't read the "I" below this line as me, thats just embarrassing.
 ### Custom Skill Categories
 I group my custom skills into 5 main categories:
 
-- **`design/`**: UI/UX taste, design systems, styling, typography (e.g., `design-taste-frontend`, `brandkit`, `minimalist-skill`).
+- **`design/`**: UI hierarchy, visual restraint, and UX interaction patterns (`ui-design`, `ux-interaction`).
 - **`engineering/`**: TDD, debugging, domain modeling, refactoring, architecture (e.g., `tdd`, `diagnose`, `improve-codebase-architecture`).
 - **`quality/`**: SonarQube/SonarCloud remediation, benchmark testing, git guardrails (e.g., `sonar-remediation`, `sonarcloud-ci-workflow`).
 - **`productivity/`**: Workflows, PR generation, issue triage, reviewer loops, skill management (e.g., `conduct-reviewing-loop`, `write-pr`, `write-for-ai`, `manage-custom-skills`).
@@ -27,7 +27,6 @@ Besides my own custom skills, I integrate and maintain upstream skills from the 
 - **Matt Pocock Skills** ([`mattpocock/skills`](https://github.com/mattpocock/skills)): TypeScript & JS development workflows (`tdd`, `codebase-design`, `domain-modeling`, `migrate-to-shoehorn`, `setup-ts-deep-modules`).
 - **Ponytail Suite** ([`DietrichGebert/ponytail`](https://github.com/DietrichGebert/ponytail)): Agent task performance metrics, debt analysis, and reviewing (`ponytail`, `ponytail-audit`, `ponytail-debt`, `ponytail-gain`, `ponytail-review`).
 - **Watch / Video Analysis** ([`bradautomates/claude-video`](https://github.com/bradautomates/claude-video)): Frame extraction and transcript processing (`watch`).
-- **UI & Taste Suite** ([`leonxlnx/taste-skill`](https://github.com/leonxlnx/taste-skill)): Frontend design taste systems (`gpt-tasteskill`, `design-taste-frontend`, `stitch-design-taste`, `taste-skill`).
 
 ### Platform Overrides
 - **`gemini/`**: My platform-specific policy delta (`gemini/AGENTS.md`) and audit receipts for Google Antigravity / Gemini.

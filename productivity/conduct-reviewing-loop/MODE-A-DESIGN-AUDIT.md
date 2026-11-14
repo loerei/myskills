@@ -20,7 +20,7 @@ You are <Domain> Reviewer #<N>. Audit the proposed <Artifact Type> draft.
 1. Target Artifact Draft: `<draft_path>`
 2. Repository Guidelines & Rules: `AGENTS.md`
 3. Reviewer Discipline & Output Protocol: [REVIEWER-DESIGN-AUDIT.md](file:///<repo-root>/.agents/skills/conduct-reviewing-loop/REVIEWER-DESIGN-AUDIT.md)
-4. Task-Specific Domain Skills: `<task_domain_skill_paths>` (e.g., /write-a-skill, /write-for-ai, /tdd, /design-taste-frontend)
+4. Task-Specific Domain Skills: `<task_domain_skill_paths>` (e.g., /write-a-skill, /write-for-ai, /tdd, /ui-design)
 
 ### Dynamic Task Audit Checklist:
 1. **User Requirements**: <Synthesized ticket/feature requirements and constraints>
