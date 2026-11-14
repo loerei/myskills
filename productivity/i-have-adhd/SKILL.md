@@ -2,10 +2,6 @@
 name: i-have-adhd
 description: Use when formatting output for an ADHD reader needing immediate actionability and pacing.
 disable-model-invocation: true
-license: MIT
-metadata:
-  tags: "ADHD, Output Style, Productivity, Formatting"
-  category: "productivity"
 ---
 
 # i-have-adhd
