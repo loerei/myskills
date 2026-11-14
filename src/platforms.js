@@ -29,7 +29,6 @@ export function loadConfig(configPath) {
       platform.baseDir = expand(platform.baseDir);
       platform.agentsDest = expand(platform.agentsDest);
       platform.skillsDir = expand(platform.skillsDir);
-      platform.subagentRulesDir = expand(platform.subagentRulesDir);
     }
   }
   return config;
@@ -61,7 +60,7 @@ export function resolvePlatformSource(platform, file, sourceRoot) {
  * @param {object} options 
  * @returns {object}
  */
-export function syncPlatformGlobals(platform, skillCatalog, { sourceRoot, subagentRulesDir, dryRun = false, allowPrune = false }) {
+export function syncPlatformGlobals(platform, skillCatalog, { sourceRoot, dryRun = false, allowPrune = false }) {
   const result = { platform: platform.name, synced: false, changes: [], errors: [] };
   
   if (!fs.existsSync(platform.baseDir)) {
@@ -158,18 +157,6 @@ export function syncPlatformGlobals(platform, skillCatalog, { sourceRoot, subage
       } catch (e) {
         result.errors.push(`Failed to sync skill ${name}: ${e.message}`);
       }
-    }
-  }
-  
-  // 3. Sync Subagent Rules
-  if (subagentRulesDir && platform.subagentRulesDir && fs.existsSync(subagentRulesDir)) {
-    try {
-      const cp = copyRecursiveIfDifferent(subagentRulesDir, platform.subagentRulesDir, { dryRun });
-      if (cp.changed) {
-        result.changes.push({ type: 'subagent_rules', changes: cp.files });
-      }
-    } catch (e) {
-      result.errors.push(`Failed to sync subagent rules: ${e.message}`);
     }
   }
   

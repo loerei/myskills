@@ -24,7 +24,6 @@
       "baseDir": "~/.gemini",
       "agentsDest": "~/.gemini/AGENTS.md",
       "skillsDir": "~/.gemini/config/skills",
-      "subagentRulesDir": "~/.gemini/config/subagent_rules",
       "syncFiles": [
         "AGENTS.md"
       ]
@@ -35,7 +34,6 @@
       "baseDir": "~/.claude",
       "agentsDest": "~/.claude/CLAUDE.md",
       "skillsDir": "~/.claude/skills",
-      "subagentRulesDir": "~/.claude/subagent_rules",
       "syncFiles": [
         "AGENTS.md"
       ]
@@ -46,7 +44,6 @@
       "baseDir": "~/.cursor",
       "agentsDest": "~/.cursor/rules/AGENTS.md",
       "skillsDir": "~/.cursor/skills",
-      "subagentRulesDir": "~/.cursor/subagent_rules",
       "syncFiles": [
         "AGENTS.md"
       ]

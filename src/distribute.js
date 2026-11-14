@@ -31,11 +31,10 @@ export function executeDistribution({
   }
 
   const sourceRoot = path.resolve(projectRoot);
-  const subagentRulesDir = path.join(sourceRoot, 'subagent_rules');
   const skillCatalog = loadSkillCatalog(sourceRoot);
 
   const platformResults = (config.platforms || []).map(platform =>
-    syncPlatformGlobals(platform, skillCatalog, { sourceRoot, subagentRulesDir, dryRun, allowPrune })
+    syncPlatformGlobals(platform, skillCatalog, { sourceRoot, dryRun, allowPrune })
   );
 
   const initTarget = init || Boolean(config.mattPocockInstall);
