@@ -21,6 +21,9 @@ Use this matrix as both a lookup reference and an audit checklist:
 | **Cosmetic Granularity (Scope Narrowing)** | Do not add narrow technical sub-cases just to look thorough. Formulate directives at the highest level of generality that enforces the boundary. | `STRICT BAN: Never guess multivariate trends from univariate statistics when querying data.` | `Do not stop at CLI output and guess deeper; all deeper claims require empirical proof.` |
 | **Cross-Repo Context Contamination** | Never leak local filenames, dataset names, or repo jargon into shared rules. Write from the standpoint of an agent in an unfamiliar repo. | `Before modifying parser, check telemetry in Client.csv and Record.csv for schema drift.` | `Before modifying parser, inspect local schema definitions and test fixtures for schema changes.` |
 | **Lossy Compression (Stylistic Paraphrasing)** | Never shorten a rule if doing so drops a condition (`more generalized OR more concise`), narrows set mappings (`1-to-1` vs. `N-to-M`), weakens `MUST`, or breaks variable binding. | `If a prompt can be replaced by a shorter rule, replace it.` *(drops `instruction set`, `more generalized`, and quality check)* | `If an instruction or instruction set can be reproduced by another instruction or instruction set that is more generalized or more concise with similar or better quality, the old instruction or instruction set MUST be replaced by that simpler instruction or instruction set.` |
+| **Runtime & Path Lock-In** | Cut host-specific built-in tool IDs (`view_file`, `write_to_file`, `grep_search`) and hardcoded layout paths in portable skills; use capability phrasing and relative/variable asset paths while keeping contract-pinned APIs exact. | `Call view_file on subdocs and run pwsh repo/scripts/run.ps1.` | `Read matching subdocs with your native file-reading tool and run pwsh <skill_dir>/scripts/run.ps1.` |
+| **Cross-Doc Protocol Drift** | Repair broken contracts across linked files before tightening prose: align status enums, caller/callee prerequisites, handoff templates, and strip spurious YAML frontmatter on non-skill guides. | Caller expects `STATUS: REVISIONS NEEDED` + setup preamble; guide has YAML frontmatter and outputs `ROUND_REVISION_NEEDED`. | Remove subdoc YAML frontmatter; align prerequisite call, handoff template, and exact `STATUS: REVISIONS NEEDED` enum. |
+| **Recall-Lossy Checklist Compression** | Never collapse explicit audit defect signatures or minimal `BAD`/`GOOD` pairs into vague umbrella rules (`"ensure security/UX"`). Compress decision gates; keep defect anchors. | `Audit inputs, tokens, and file paths for security vulnerabilities.` | `Reject JWT headers trusting alg: "none", Math.random() session tokens, and path.join() without resolved root containment check.` |
 
 ---
 
@@ -33,6 +36,7 @@ Use this matrix as both a lookup reference and an audit checklist:
 | **System / Agent Rule** | Behavioral constraint | What MUST / NEVER happen under this condition? | Polite hedging (`try to`), motivational fluff/history (preserve operational rationale passing Drop Test) |
 | **SKILL.md Frontmatter** | Router gate / Trigger | When to load this skill? (`Use when...` in 10–15 words) | Feature summaries (What), benefits (Why), slash command mentions |
 | **Tool Error Message** | Agent recovery | What failed and what exact command/action fixes it? | Generic failures (`Something went wrong`), internal stack traces without recovery steps |
+| **Audit / Reviewer Guide** | Defect recall & verdict | Which scope is isolated, which subdocs load per condition, what concrete defect signatures fail review, and what output schema/status to emit? | Vague `"check quality/security"` summaries, narrative filler, non-matching subdocs loaded out of regime |
 
 ---
 
@@ -188,4 +192,22 @@ A defect MUST be classified as **Suggestion Only** if and only if it satisfies b
 1. It raises an immediate, unmistakable alert (compiler error, crash, or failing test assertion) during automated CI execution.
 2. The fix is mechanically obvious from the symptom without requiring domain-specific architectural insight.
 Otherwise, it MUST be classified as a **Blocking Defect** (and state why automated checks would miss it).
+```
+
+### I. Recall Preservation in Audit Checklists vs. Decision-Gate Compression
+
+Apply Occam's Instruction Law differently by role:
+- **Gating / Routing Rules (Case Study H):** Compress sub-case lists into general invariants so unlisted items do not act as loopholes.
+- **Audit Checklists & Subdocuments:** Keep explicit failure signatures and minimal `BAD`/`GOOD` contrasts as attention triggers; generalizing them into high-level categories causes auditors to overlook real defects.
+
+**Bad (Over-Compressed Audit Checklist - Collapses Recall):**
+```markdown
+- Ensure JWT tokens, session IDs, and file access paths follow security best practices.
+```
+
+**Good (Preserved Failure Signatures - High Recall):**
+```markdown
+- Reject JWT verification trusting `decoded.header.alg` (allowlist `RS256`/`EdDSA` only; block `alg: "none"`).
+- Reject `Math.random()` for session IDs or nonces (require CSPRNG such as `crypto.randomBytes`).
+- Reject `path.join(baseDir, userInput)` without normalizing via `path.resolve` and asserting `target.startsWith(safeBase + path.sep)`.
 ```
