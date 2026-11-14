@@ -1,6 +1,6 @@
 <#
 .SYNOPSIS
-    Archives a completed round of conduct-deep-reviewing-loop-with-cross-review into the external trace vault.
+    Archives a completed round of conduct-deep-reviewing-loop into the external trace vault.
 .DESCRIPTION
     Zero-parse, atomic round archival:
     - Moves reports/, host/trace/, and sandbox/ to /tmp/deep-review-trace-<short_title>/round-<NN>/.
