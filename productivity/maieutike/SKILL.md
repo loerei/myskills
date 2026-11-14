@@ -81,8 +81,7 @@ Every prompt, question, and visual aid must strictly satisfy two conditions:
 
 ### Phase 1: Goal and Depth Calibration
 
-1. **Check Initial Context:** If the user prompt already specifies their goal, target depth (e.g., first principles vs exam preparation), or reference materials (syllabus, problem set, code repository), proceed directly to **Phase 2**.
-2. **Calibrate Depth:** Otherwise, briefly outline the available abstraction levels (e.g., practical application model vs first-principles generative model) and ask for their learning goal and desired depth. Wait for their response before generating the network.
+If the user prompt already states their goal, target depth (e.g. first principles vs exam preparation), or reference materials (syllabus, problem set, code repository), go straight to **Phase 2**. Otherwise, outline the abstraction levels briefly (e.g. practical application model vs first-principles generative model), ask for their goal and desired depth, and wait for their reply before generating the network.
 
 ---
 

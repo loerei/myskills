@@ -1,60 +1,28 @@
 ---
 name: run-benchmark
-description: >
-  Execute and analyze multi-variant A/B/C benchmark tests against codebases. Use when running benchmarks, comparing prompt variations, spawning dry-run subagents, or compiling benchmark metrics using chronicle-mcp.
+description: Use when running multi-variant A/B/C benchmarks, spawning dry-run subagents, or compiling benchmark reports.
 ---
 
 # Run Benchmark
 
-## Quick Start
+## Workflow
 
-1. Parse the prompt variants from the benchmark suite.
-2. Spawn dry-run subagents for each variant.
-3. Fetch full session details and compile comparisons.
-
-## Workflows
-
-### 1. Spawning Subagents
-You MUST spawn one subagent per prompt variant. The subagents MUST run in a dry-run environment.
-
-* Use `invoke_subagent` with:
-  - `TypeName`: `"self"`
-  - `Workspace`: `"branch"` (prevents file locks and race conditions)
-  - `Prompt`: The exact prompt text from the benchmark sheet.
-
-### 2. Guarding the Dry-Run
-Ensure every prompt contains:
-- Strict Dry-Run Prefix:
-  `[DRY RUN ONLY - NO MCP SERVERS ALLOWED - NO GLOBAL DOCS - DO NOT CALL WRITE/PATCH/EDIT TOOLS - PROJECT ROOT: <path>] [RULE: Only output the proposed diff. Do NOT write or patch any files on disk.]`
-
-### 3. Collecting and Saving Logs
-Once all subagents in a set complete, you MUST retrieve and save their session logs.
-
-* **Save Session Log**:
-  Call `chronicle` (`get_session_benchmarks` / `query_transcript` with `output`) using:
-  - `sessionId`: The subagent's conversation ID.
-  - `output`: Path to save the markdown log (e.g. `<benchmark-dir>/logs/task1-a.md`).
-
-### 4. Compiling Benchmark Report
-Generate or update the consolidated benchmark table (e.g. `benchmark-report.md`).
-
-* **Table Structure Requirement**:
-  - **Rows**: Metrics (Task Achievement, Agent Steps, Tool Calls, Execution Time, Cumulative Input, Peak Context).
-  - **Columns**: Prompt Variants on the left, Delta columns on the right.
-    Format: `| Metric | Baseline (A) | Variant (B) | Variant (C) | Delta (B vs A) | Delta (C vs A) |`
-  - **Task Achievement Metric**:
-    - For individual task tables: Record `1` (Succeeded - modified correct file & logic) or `0` (Failed - modified wrong file/project or wrong logic).
-    - For the consolidated summary table: Calculate the average success rate percentage (e.g. `71.4% (5/7)`).
-  - **Delta Calculations**:
-    - Delta (%) = `((Variant - A) / A) * 100` (formatted with a bold `-%` or `+%` value).
-    - For Time and Tokens, also include the multiplier (e.g. `13.6x` fewer/faster).
-
-* **Visual Line Chart (Optional)**:
-  If the project includes a chart script, update it with the new task's metrics and run it to regenerate the comparison chart.
+1. **Spawn Isolated Dry-Run Subagents**: Parse prompt variants from the benchmark suite and spawn one subagent per variant via `invoke_subagent`:
+   - `TypeName`: `"self"`
+   - `Workspace`: `"branch"` (prevents file locks and race conditions)
+   - `Prompt`: Prefix every benchmark sheet prompt verbatim with:
+     `[DRY RUN ONLY - NO MCP SERVERS ALLOWED - NO GLOBAL DOCS - DO NOT CALL WRITE/PATCH/EDIT TOOLS - PROJECT ROOT: <path>] [RULE: Only output the proposed diff. Do NOT write or patch any files on disk.]`
+2. **Collect Session Logs**: Once all subagents finish, call `chronicle` (`get_session_benchmarks` / `query_transcript` with `sessionId` and `output`) to save each subagent log (e.g. `<benchmark-dir>/logs/task1-a.md`).
+3. **Compile Benchmark Report**: Update the consolidated report (e.g. `benchmark-report.md`):
+   - **Table Columns**: `| Metric | Baseline (A) | Variant (B) | Variant (C) | Delta (B vs A) | Delta (C vs A) |`
+   - **Rows**: `Task Achievement`, `Agent Steps`, `Tool Calls`, `Execution Time`, `Cumulative Input`, `Peak Context`.
+   - **Task Achievement**: Per task record `1` (modified correct file & logic) or `0` (wrong file/project or wrong logic); in summary tables report average percentage (e.g. `71.4% (5/7)`).
+   - **Deltas**: Compute `((Variant - A) / A) * 100` with bold `-%` or `+%`; include multiplier (e.g. `13.6x`) for Time and Tokens.
+   - **Chart (Optional)**: If the project includes a chart script, update metrics and regenerate the comparison chart.
 
 ## Failure Recovery
 
-| Issue | Root Cause | Action |
-| :--- | :--- | :--- |
-| Subagent modifies target repository | Forgot `DRY RUN` prefix or failed to check tools | Run `git restore <file>` in target repository immediately. Discard session and re-run. |
-| Chronicle MCP error: "Cannot bind parameter" | Passed snake_case parameter (`session_id`) | Call the tool using camelCase parameter (`sessionId`). |
+| Failure / Condition | Recovery Action |
+| :--- | :--- |
+| Subagent modifies target repo (missing `DRY RUN` prefix or tool guard) | Run `git restore <file>` immediately, discard session, and re-run. |
+| `chronicle` returns `"Cannot bind parameter"` on `session_id` | Re-call using camelCase `sessionId`. |
