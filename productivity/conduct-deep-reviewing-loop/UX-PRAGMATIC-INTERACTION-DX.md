@@ -9,7 +9,7 @@
 - [ ] **Actionable Validation & Error Feedback**: Keep submit/action triggers responsive and display clear, contextual validation messages explaining why an input or action is blocked rather than silently failing or leaving dead, unclickable controls without explanation.
 
 ### 2. Physical Focus Retention (Preventing `document.body` Eviction)
-- [ ] **Modal & Overlay Unmount Focus Return**: Confirm that when a modal dialog, drawer, or popover closes and unmounts, focus returns deterministically to its invoking trigger element (or a designated surviving container if the trigger itself unmounted) so keyboard/gamepad `Tab` and `Space` navigation never resets to `document.body`.
+- [ ] **Modal & Overlay Unmount Focus Return**: For **new blocking modal dialogs**, prefer native `<dialog>` with `showModal()` (which handles top-layer promotion, `Esc`, and return focus to the invoking trigger without manual focus traps), and use native `popover` for light-dismiss non-modal overlays. For non-modal drawers, custom/existing UI primitives, or cases where the invoking trigger itself unmounts, confirm focus returns deterministically to its invoking trigger element (or a designated surviving container) so keyboard/gamepad `Tab` and `Space` navigation never resets to `document.body`.
 - [ ] **Active List Item Deletion Focus Handoff**: When the user deletes or removes the currently focused item in a dynamic list (e.g. deleting an active save slot, row, or card), synchronously transfer focus to the adjacent surviving item (`items[index + 1] ?? items[index - 1]`) or the empty-state fallback container via a lightweight ref lookup. Never allow unmount to drop focus to `document.body`, and strictly reject post-render `setTimeout(() => document.querySelector(...))` focus hacks.
 - [ ] **In-Flight Async Button Focus Retention**: For focused buttons initiating async jobs, block duplicate activations via a pending state guard and `aria-disabled="true"` (rather than native HTML `disabled` when preserving active focus matters, since native `disabled` causes Chromium/browsers to blur the active element and dump focus to `document.body`).
 - [ ] **Native Control Simplicity**: Standard clickable controls (filter pills, category bars, tabs, badges, toolbars, and list rows built with native `<button>`, `<a>`, or `<input>` elements) rely on native browser `Tab`/`Shift+Tab` and pointer/keyboard activation without custom arrow-key state machines or ref-map boilerplate.
@@ -19,7 +19,7 @@
   1. **Parent Target Filtering (Mandatory when children include native checkboxes, radio inputs, links, or submit buttons)**: The parent container's click/keydown handler ignores events whose target matches an interactive descendant (`event.target.closest('button, a, input, select, textarea, [role="button"], [data-interactive]')`), preserving both native browser default behavior and document bubbling.
   2. **Preventable Event Contracts (Valid for custom non-native `type="button"` actions)**: The child action invokes `event.preventDefault()` and the parent handler exits early when `event.defaultPrevented` is true. NEVER prescribe `event.preventDefault()` on native checkboxes, radio buttons, links, or submit buttons where it cancels the browser's native toggle/navigation action.
 - [ ] **Immutable Entity Keys & React Render Hygiene**: Enforce stable domain entity IDs (`key={item.id}`) on all dynamic collections; strictly reject volatile array index keys (`key={index}`) that corrupt child state and force unnecessary DOM remounts on insertion/deletion/reordering. Avoid redundant `useEffect` mirror-state synchronization when values can be derived during render.
-- [ ] **Vector Icon Clarity & Canonical Tooltips**: Require clean vector SVGs (`currentColor`, explicit dimensions, and `aria-hidden="true"` when paired with text). Strictly reject raw emoji characters (`📁`, `⚙️`, `🗑️`, `⭐`) as UI icons. Allow icon-only buttons ONLY for universally recognized canonical actions (close, trash delete, settings gear, search, copy) paired with `aria-label` and a hover/focus tooltip (`title` or tooltip primitive); require visible text labels on ambiguous domain actions.
+- [ ] **Vector Icon Clarity & Canonical Tooltips**: Require clean vector SVGs (`currentColor`, explicit dimensions, and `aria-hidden="true"` when paired with text). Strictly reject raw emoji characters (`📁`, `⚙️`, `🗑️`, `⭐`) as UI icons. Allow icon-only buttons ONLY for universally recognized canonical actions (close, trash delete, settings gear, search, copy) paired with `aria-label` and a keyboard- and touch-accessible tooltip (`popover="hint"` or accessible tooltip primitive — NEVER rely on native `title` alone, which is unreachable by keyboard and touch); require visible text labels on ambiguous domain actions.
 - [ ] **Extensible & Maintainable Component Contracts**: Verify shared/reusable UI primitives expose clean, minimal TypeScript prop interfaces without boolean prop explosion, support Controlled (`value` + `onChange`) or Uncontrolled (`defaultValue`) contracts where appropriate, forward `ref` when host consumers need DOM access, and deterministically clean up timers, observers, and listeners on unmount.
 
 ## Concrete Anti-Patterns
@@ -154,8 +154,9 @@ function ToolbarBad({ onOpen, onRebase, onDelete }: { onOpen: () => void; onReba
   );
 }
 
-// GOOD: Vector SVG bound to currentColor, visible text on domain action, and aria-label + tooltip on canonical icon-only button
+// GOOD: Vector SVG bound to currentColor, visible text on domain action, and aria-label + accessible tooltip on canonical icon-only button
 function ToolbarSafe({ onOpen, onRebase, onDelete }: { onOpen: () => void; onRebase: () => void; onDelete: () => void }) {
+  const tipId = useId();
   return (
     <div>
       <button type="button" onClick={onOpen}>
@@ -166,14 +167,15 @@ function ToolbarSafe({ onOpen, onRebase, onDelete }: { onOpen: () => void; onReb
         <svg width="16" height="16" fill="currentColor" aria-hidden="true"><use href="#icon-git-branch" /></svg>
         <span>Rebase Branch</span>
       </button>
-      <button type="button" aria-label="Delete item" title="Delete item" onClick={onDelete}>
+      <button type="button" aria-label="Delete item" {...({ interestfor: tipId } as any)} onClick={onDelete}>
         <svg width="16" height="16" fill="currentColor" aria-hidden="true"><use href="#icon-trash" /></svg>
       </button>
+      <span id={tipId} popover="hint" role="tooltip">Delete item</span>
     </div>
   );
 }
 ```
-- **Acceptance Criterion**: *Given* the toolbar renders, *when* inspected in the DOM, *then* icons use `<svg aria-hidden="true" fill="currentColor">` with zero raw emojis, non-canonical domain actions display visible text labels, and canonical icon-only buttons expose `aria-label` and hover/focus tooltips.
+- **Acceptance Criterion**: *Given* the toolbar renders, *when* inspected in the DOM, *then* icons use `<svg aria-hidden="true" fill="currentColor">` with zero raw emojis, non-canonical domain actions display visible text labels, and canonical icon-only buttons expose `aria-label` and a keyboard/touch-accessible tooltip (`popover="hint"` or tooltip primitive, not `title` alone).
 
 ### Anti-Pattern 5: Indiscriminate `stopPropagation()` Event Swallowing
 
@@ -211,6 +213,6 @@ function TableRowSafe({ item, onSelectRow, onDelete }: { item: { id: string }; o
 - **Focus Drop to `document.body` on Unmount**: Return focus to the invoking trigger when closing modals/popovers, and hand off focus to the adjacent surviving item (`index + 1` or `index - 1`) when deleting an actively focused list item.
 - **Double Submission & Async Blur**: Guard in-flight triggers via state flags and `aria-disabled="true"` rather than native HTML `disabled`.
 - **Inconsistent Emoji Rendering**: Replace raw emoji characters with vector SVGs bound to `currentColor`.
-- **Ambiguous Icon-Only Controls**: Require visible text labels on domain actions; require `aria-label` + hover/focus tooltips on canonical icon-only controls.
+- **Ambiguous Icon-Only Controls**: Require visible text labels on domain actions; require `aria-label` + keyboard/touch-accessible tooltips (never `title` alone) on canonical icon-only controls.
 - **Swallowed Global Shortcuts & Dismiss Events**: Ban `stopPropagation()`; use parent `event.target.closest(...)` filtering or custom `defaultPrevented` coordination.
 - **State Corruption on List Mutation**: Use immutable entity keys (`key={item.id}`) instead of volatile array indices (`key={index}`) or post-render `querySelector` timers.

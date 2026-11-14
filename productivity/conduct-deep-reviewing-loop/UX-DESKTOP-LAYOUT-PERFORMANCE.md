@@ -11,7 +11,7 @@ Audits Cumulative Layout Shift (CLS) prevention, desktop window resize resilienc
 - [ ] **Flex/Grid Overflow & Long-String Truncation (`min-width: 0`)**: On desktop apps displaying user file paths, save slots, logs, or game titles, verify flex and grid children set `min-width: 0` (and `overflow: hidden; text-overflow: ellipsis; white-space: nowrap` or `overflow-wrap: anywhere`) so long unbroken strings never blow out container widths or push action buttons off-window when the desktop window is resized within its supported `minWidth`.
 - [ ] **Modal & Panel Scroll Containment**: Confirm desktop modals, sidebars, and popovers bound their maximum height relative to the window (`max-height`, `overflow-y: auto`) with fixed headers/footers so long lists or settings panels remain scrollable without clipping action buttons outside the window frame.
 - [ ] **Data Fetching & Loading Hierarchy (Top Progress Line / Spinner vs. Skeleton)**: To prevent layout jumps without causing jarring skeleton shimmer flashes on fast local/desktop loads ($<200\text{ms}$), default to slim top-edge progress lines or lightweight inline spinners over heavy skeleton blocks, unless explicit skeleton placeholders are established by codebase convention.
-- [ ] **Empty In-Flow Container Hierarchy (3-Tier Precedence)**: When containers dynamically appear or clear their contents (e.g. empty toolbars, contextual action bars), follow the 3-tier precedence: (1) `Context.md` directives > (2) existing codebase conventions > (3) Default: smooth animated accordion transitions (e.g. grid `0fr -> 1fr` row expansion with opacity easing, respecting `prefers-reduced-motion: reduce`) rather than abrupt non-animated display toggles, strictly preserving error recovery controls in `catch` blocks.
+- [ ] **Empty In-Flow Container Hierarchy (3-Tier Precedence)**: When containers dynamically appear or clear their contents (e.g. empty toolbars, contextual action bars), follow the 3-tier precedence: (1) `Context.md` directives > (2) existing codebase conventions > (3) Default: smooth animated accordion transitions (preferring native `<details>` + `interpolate-size: allow-keywords` / `::details-content` where progressive enhancement fits, or `grid-template-rows: 0fr -> 1fr` when cross-browser animated height is required) rather than abrupt non-animated display toggles, opting into motion via `@media (prefers-reduced-motion: no-preference)` and strictly preserving error recovery controls in `catch` blocks.
 - [ ] **Scrollbar & Stacking Stability**: Verify overlays and dynamic panes reserve stable scrollbar gutters (`scrollbar-gutter: stable`) to eliminate horizontal layout jumps without custom JS padding hacks, and use verified design system elevation tokens (`--zIndex-*`) or local stacking context isolation (`isolation: isolate`) rather than magic integer z-indices.
 - [ ] **Declarative Transitions & Reflow Prevention**: Verify dynamic elements transitioning between states use declarative CSS transitions/animations (`onTransitionEnd`, `@starting-style`, `transition-behavior: allow-discrete`) rather than brittle `setTimeout` chains, and batch all DOM geometry reads before scheduling writes in `requestAnimationFrame()`.
 
@@ -133,27 +133,38 @@ export async function runWithStalenessWatchdog(
 ### Anti-Pattern 4: Abrupt Display Toggling & Imperative `setTimeout` Unmount
 
 ```css
-/* GOOD: Smooth grid 0fr -> 1fr accordion with prefers-reduced-motion (zero JS reflow loop) */
+/* GOOD: Opt in to height/opacity motion only under prefers-reduced-motion: no-preference */
+/* Option A (Progressive enhancement): native intrinsic size interpolation (Chrome/Edge 129+, instant toggle elsewhere) */
+:root {
+  interpolate-size: allow-keywords;
+}
 .collapsible-slot {
-  display: grid;
-  grid-template-rows: 0fr;
+  block-size: 0;
   opacity: 0;
-  transition: grid-template-rows 200ms ease, opacity 150ms ease;
+  overflow: hidden;
 }
 .collapsible-slot[data-expanded="true"] {
-  grid-template-rows: 1fr;
+  block-size: auto;
   opacity: 1;
 }
-.collapsible-inner { overflow: hidden; }
-@media (prefers-reduced-motion: reduce) {
-  .collapsible-slot { transition: none; }
+@media (prefers-reduced-motion: no-preference) {
+  .collapsible-slot {
+    transition: block-size 200ms ease, opacity 150ms ease;
+  }
+}
+
+/* Option B (Cross-browser animated height): grid-template-rows 0fr -> 1fr with opt-in motion */
+@media (prefers-reduced-motion: no-preference) {
+  .collapsible-grid-slot {
+    transition: grid-template-rows 200ms ease, opacity 150ms ease;
+  }
 }
 ```
-- **Acceptance Criterion**: *Given* a dynamic toolbar or drawer slot, *when* it expands or collapses, *then* height transitions via `grid-template-rows` (or instantaneously under `prefers-reduced-motion: reduce`) without `setTimeout` unmount timers or interleaved DOM read-after-write loops, while keeping Retry controls mounted on error states.
+- **Acceptance Criterion**: *Given* a dynamic toolbar or drawer slot, *when* it expands or collapses, *then* height transitions via `interpolate-size: allow-keywords` (or cross-browser `grid-template-rows: 0fr -> 1fr`) only under `prefers-reduced-motion: no-preference` without `setTimeout` unmount timers, stalled `transitionend` listeners when `getAnimations()` is empty, or interleaved DOM read-after-write loops, while keeping Retry controls mounted on error states.
 
 ## Failure Modes & Mitigations
 
-- **Cumulative Layout Shifts (`CLS > 0`)**: Reserve intrinsic dimensions (`contain-intrinsic-size`, `aspect-ratio`, calibrated virtualizer `estimateSize`) on dynamic media/lists and use smooth `0fr -> 1fr` grid transitions on collapsible in-flow slots.
+- **Cumulative Layout Shifts (`CLS > 0`)**: Reserve intrinsic dimensions (`contain-intrinsic-size`, `aspect-ratio`, calibrated virtualizer `estimateSize`) on dynamic media/lists and use opt-in `interpolate-size: allow-keywords` or `0fr -> 1fr` transitions on collapsible in-flow slots.
 - **Desktop Flex/Grid Text Blowout**: Add `min-width: 0` and `text-overflow: ellipsis` on flexible text columns and `flex-shrink: 0` on adjacent action toolbars.
 - **Optimistic State Drift**: Pair optimistic mutations with automatic error rollback and background revalidation; never apply optimistic UI to destructive writes.
 - **Wall-Clock Timeout Killing Healthy Jobs**: Use rolling staleness watchdogs reset by forward progress deltas (`processed > lastProcessed`) via `performance.now()`.

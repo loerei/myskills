@@ -15,7 +15,7 @@ Audits multi-viewport responsive layout adaptation (`@media` / `@container` from
 ### 2. Visual Stability & Layout Shift Protections (CLS)
 - [ ] **Dimension Reservations**: Verify dynamic images, embeds, and async lazy-loaded elements reserve explicit width/height dimensions, intrinsic `aspect-ratio` boxes, or `contain-intrinsic-size` to guarantee visual layout stability (`CLS = 0`).
 - [ ] **Data Fetching & Loading Hierarchy**: Default to slim top-edge progress lines, inline spinners, or dimension-matched skeletons according to codebase convention without causing layout shifts when content resolves.
-- [ ] **Empty In-Flow Container Hierarchy (3-Tier Precedence)**: Follow (1) `Context.md` directives > (2) existing codebase conventions > (3) Default: smooth animated accordion transitions (grid `0fr -> 1fr` with `prefers-reduced-motion: reduce`) rather than abrupt display toggles, preserving error recovery controls in `catch` blocks.
+- [ ] **Empty In-Flow Container Hierarchy (3-Tier Precedence)**: Follow (1) `Context.md` directives > (2) existing codebase conventions > (3) Default: smooth animated accordion transitions (`interpolate-size: allow-keywords` / `<details>` `::details-content` for progressive enhancement, or `grid-template-rows: 0fr -> 1fr` for cross-browser height animation, opting into transitions via `@media (prefers-reduced-motion: no-preference)`) rather than abrupt display toggles, preserving error recovery controls in `catch` blocks.
 - [ ] **Scrollbar & Stacking Stability**: Reserve stable scrollbar gutters (`scrollbar-gutter: stable`) on scrollable viewports and use verified elevation tokens (`--zIndex-*`) or `isolation: isolate` rather than magic z-indices.
 
 ### 3. Micro-Interaction Responsiveness, Optimistic UI & Staleness Timeouts
@@ -136,4 +136,4 @@ export async function runWithStalenessWatchdog(
 - **Unreachable Hover-Only Controls on Touchscreens**: Provide `@media (hover: none)` fallbacks or explicit menu triggers for hover-revealed actions.
 - **Fat-Finger Mis-Taps**: Enforce $\ge 44\times 44\text{px}$ hit targets under `@media (pointer: coarse)` with `touch-action: manipulation`.
 - **Horizontal Scroll Overflow at `320px`**: Use `minmax(min(100%, <min_card_width>), 1fr)` and `min-width: 0` on flex/grid children.
-- **Cumulative Layout Shifts (`CLS > 0`)**: Reserve intrinsic dimensions (`aspect-ratio`, `contain-intrinsic-size`) and use smooth `0fr -> 1fr` grid transitions.
+- **Cumulative Layout Shifts (`CLS > 0`)**: Reserve intrinsic dimensions (`aspect-ratio`, `contain-intrinsic-size`) and use opt-in `interpolate-size: allow-keywords` or `0fr -> 1fr` transitions under `@media (prefers-reduced-motion: no-preference)`.

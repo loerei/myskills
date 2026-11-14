@@ -5,7 +5,7 @@ Audits Cross-Site Scripting (XSS), untrusted HTML/Markdown/SVG rendering, `postM
 ## Domain Audit Checklist
 
 ### 1. DOM XSS & Untrusted Content Rendering
-- [ ] **HTML / Markdown Sanitization**: Reject passing unvetted strings into `dangerouslySetInnerHTML`, `innerHTML`, `outerHTML`, `document.write`, `v-html`, or `{@html}` without passing through a strict allowlist sanitizer (`DOMPurify.sanitize(html, { USE_PROFILES: { html: true } })`).
+- [ ] **HTML / Markdown Sanitization & Trusted Types**: Reject passing unvetted strings into `dangerouslySetInnerHTML`, `innerHTML`, `outerHTML`, `document.write`, `v-html`, or `{@html}`. Prefer the native Sanitizer API (`Element.setHTML()` / `Document.parseHTML()`, checking `'setHTML' in Element.prototype`) first, lazy-loading `DOMPurify.sanitize(html, { USE_PROFILES: { html: true }, ALLOW_ARIA_ATTR: false, ALLOW_DATA_ATTR: false, KEEP_CONTENT: false })` only when native support is missing; enforce Trusted Types (`require-trusted-types-for 'script'`) for DOM-sink defense in depth (passing `RETURN_TRUSTED_TYPE: true` in fallback paths).
 - [ ] **SVG & XML Active-Content Defense (Canonicalize Before Sanitize)**: Treat untrusted SVG/XML files and icons as executable code. Reject raw buffers containing null bytes (`0x00`) or unexpected UTF-16 BOMs before decoding, decode numeric entities (`&#x...;`, decoding `&amp;` last) before scanning, and strip/reject `<script>`, `<foreignObject>`, inline `on*` attributes, `<!ENTITY` declarations, and external `href`/`xlink:href` (`javascript:`, `data:`).
 - [ ] **URI Scheme Injection in Links & Media**: Verify dynamic `<a href={url}>`, `<iframe src={url}>`, and `<img src={url}>` bindings parse URLs and reject `javascript:`, `data:text/html`, and `vbscript:` protocols.
 
@@ -32,8 +32,26 @@ export function UserBio({ rawHtml, websiteUrl }: { rawHtml: string; websiteUrl: 
   );
 }
 
-// GOOD: Sanitize HTML with DOMPurify and enforce http/https protocol allowlist on URLs
-import DOMPurify from "dompurify";
+// GOOD: Prefer native Element.setHTML() first, lazy-load DOMPurify fallback only when missing, and allowlist http/https URLs
+let domPurifyPromise: Promise<typeof import("dompurify")["default"]> | undefined;
+
+async function renderSanitizedHtml(el: HTMLElement, rawHtml: string) {
+  const elements = ["p", "b", "i", "strong", "em", "a"];
+  const attributes = ["href", "rel", "target"];
+  if ("setHTML" in Element.prototype) {
+    el.setHTML(rawHtml, { sanitizer: { elements, attributes } });
+    return;
+  }
+  domPurifyPromise ??= import("dompurify").then((m) => m.default ?? m);
+  const DOMPurify = await domPurifyPromise;
+  el.innerHTML = DOMPurify.sanitize(rawHtml, {
+    ALLOWED_TAGS: [...elements, "#text"],
+    ALLOWED_ATTR: attributes,
+    ALLOW_ARIA_ATTR: false,
+    ALLOW_DATA_ATTR: false,
+    KEEP_CONTENT: false,
+  });
+}
 
 function toSafeHttpUrl(raw: string): string {
   try {
@@ -45,10 +63,14 @@ function toSafeHttpUrl(raw: string): string {
 }
 
 export function UserBioSafe({ rawHtml, websiteUrl }: { rawHtml: string; websiteUrl: string }) {
-  const cleanHtml = DOMPurify.sanitize(rawHtml, { USE_PROFILES: { html: true } });
+  const bioRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (bioRef.current) void renderSanitizedHtml(bioRef.current, rawHtml);
+  }, [rawHtml]);
+
   return (
     <div>
-      <div dangerouslySetInnerHTML={{ __html: cleanHtml }} />
+      <div ref={bioRef} />
       <a href={toSafeHttpUrl(websiteUrl)} target="_blank" rel="noopener noreferrer">Visit Website</a>
     </div>
   );
@@ -85,6 +107,6 @@ window.addEventListener("message", (event) => {
 
 | Failure Mode | Root Cause | Mitigation |
 | :--- | :--- | :--- |
-| **Stored DOM / SVG XSS** | Rendering user-supplied HTML or SVG containing `<script>`, `<foreignObject>`, or entity-encoded `onload=` handlers. | Sanitize HTML/SVG via DOMPurify or decode numeric entities before rejecting active SVG elements/attributes. |
+| **Stored DOM / SVG XSS** | Rendering user-supplied HTML or SVG containing `<script>`, `<foreignObject>`, or entity-encoded `onload=` handlers. | Sanitize HTML via native `Element.setHTML()` (with lazy `DOMPurify` fallback) + Trusted Types CSP; canonicalize and reject active SVG elements/attributes. |
 | **Cross-Origin State Hijack** | `message` listener processes `event.data` without checking `event.origin`. | Check `TRUSTED_ORIGINS.has(event.origin)` on the first line of the handler. |
 | **OAuth Token Phishing via Open Redirect** | Redirect handler checks `url.startsWith("/")` which passes `//attacker.com`. | Reject paths starting with `//` or `/\`, or parse with `new URL(input, window.origin)` and assert `parsed.origin === window.origin`. |
