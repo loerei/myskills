@@ -29,7 +29,7 @@ flowchart TD
     Skip --> Cleanup
     ManualMerge --> Cleanup
     
-    Cleanup --> Sync["4. Sync: agents audit -a -p && agents distribute"]
+    Cleanup --> Sync["4. Sync: agents audit && agents distribute"]
     Sync --> Git["5. Commit & Push myskills"]
 ```
 
@@ -41,7 +41,7 @@ flowchart TD
 | **Apply new skill** | `node sync-upstream.js --apply <skill_name> --action add --category <category>` |
 | **Overwrite local skill** | `node sync-upstream.js --apply <skill_name> --action overwrite` |
 | **Clear pending queue** | `node sync-upstream.js --clear` |
-| **Audit & Distribute** | `agents audit -a -p && agents distribute` |
+| **Audit & Distribute** | `agents audit && agents distribute` |
 
 ## Triage Rules for Modified Skills
 

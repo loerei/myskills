@@ -13,7 +13,7 @@ Author skills in the central `myskills/` source catalog, then distribute them to
 flowchart TD
     Start["Skill Request"] --> Source["1. Edit Source SKILL.md in myskills/<category>/<name>/"]
     Source --> Distribute["2. Sync Workspaces: agents distribute"]
-    Distribute --> Audit["3. Sync Table 1 Policy: agents audit -a -p"]
+    Distribute --> Audit["3. Validate Catalog & Policy: agents audit"]
     Audit --> Git["4. Commit & Push myskills"]
 ```
 
@@ -24,7 +24,7 @@ flowchart TD
    - Find source path: `agents info skill.<skill-name>` (or `agents where` for root).
    - Read skill stdout: `agents read skill.<skill-name>`.
 3. **Distribution**: Run `agents distribute` (or `agents distribute -t .` for current repo only) to sync changes to workspaces and IDE configs (`~/.gemini`, `~/.claude`, `~/.cursor`).
-4. **Policy Audit**: Run `agents audit -a -p` after adding, renaming, or deleting skills to sync `Table 1` in `AGENTS.md`.
+4. **Catalog & Policy Audit**: Run `agents audit` after adding, renaming, or deleting skills to validate frontmatter, duplicates, and policy files.
 
 ## Categories & Frontmatter
 
@@ -49,5 +49,4 @@ description: <Concrete capability>. Use when [specific triggers].
 | :--- | :--- |
 | `agents distribute` | Sync all skills to all registered project workspaces and IDEs |
 | `agents distribute -t <path>` | Sync skills to a specific project directory |
-| `agents audit` | Check policy coverage without modifying files |
-| `agents audit -a -p` | Add missing skills to Table 1 and prune deleted skills from `AGENTS.md` |
+| `agents audit` | Validate skill frontmatter, duplicate names, and policy files |

@@ -59,5 +59,5 @@ description: Use when [specific triggers].
 3. **Present Plan**: Review draft with user and incorporate feedback.
 4. **Audit & Distribute**:
    - Write files to `<category>/<skill-name>/`.
-   - Update Table 1 in `AGENTS.md` and run `agents audit -a -p`. If audit reports missing Table 1 coverage, add skill to `AGENTS.md` and re-run until passing.
+   - Run `agents audit` to verify valid `SKILL.md` frontmatter, no duplicate names, and clean policy files.
    - Run `agents distribute` to sync all registered workspaces and IDE configs.

@@ -12,7 +12,7 @@ Author policies in the central `myskills/` catalog, then distribute them to acti
 ```mermaid
 flowchart TD
     Start["Policy Edit Request"] --> Edit["1. Edit Source: AGENTS.md or <platform>/AGENTS.md"]
-    Edit --> Audit["2. Sync Table 1 Catalog: agents audit -a -p"]
+    Edit --> Audit["2. Validate Policy & Catalog: agents audit"]
     Audit --> Distribute["3. Deploy to IDEs & Workspaces: agents distribute"]
     Distribute --> Git["4. Commit & Push myskills Repo"]
 ```
@@ -27,5 +27,5 @@ flowchart TD
    - Locate target paths: `agents info policy.general` or `agents info policy.<platform>`.
    - Print raw subdoc content: `agents read policy.<subdocname>`.
 4. **Distribution & Audit**:
-   - Run `agents audit -a -p` to sync Table 1 skill catalogs in `AGENTS.md`.
+   - Run `agents audit` to validate skill frontmatter and policy files.
    - Run `agents distribute` to deploy policy deltas across all IDE home configs and project workspaces.
