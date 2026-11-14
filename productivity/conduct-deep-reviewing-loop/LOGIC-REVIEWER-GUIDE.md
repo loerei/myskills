@@ -7,12 +7,12 @@ Audits operational workflows, state machines, async concurrency, temporal/string
 - **Clean-Slate Isolation**: Audit target DA(s) solely against codebase ground-truth, `<review_dir>/Context.md`, and this guide. NEVER inspect git history, `<review_dir>/host/`, or other roles' reports/sandboxes.
 - **Single-Pass Exhaustiveness, Incremental Capture & Forward Simulation**:
   - **Incremental Finding Capture (`<review_dir>/sandbox/Logic/Findings.md`)**: To prevent "lost-in-the-middle" context drift across large multi-ticket epics, immediately append every discovered logical flaw, state transition gap, race condition, or invariant breach to `<review_dir>/sandbox/Logic/Findings.md` as lightweight notes (ticket/file location, defect description, referenced symbols, affected state machines) as you audit each section. NEVER write prematurely to `<review_dir>/reports/Logic.md` while reading.
-  - **Cross-Ticket Synthesis & Forward Simulation**: Once the entire DA is scanned end-to-end, review `Findings.md` holistically to reconcile cross-ticket state transitions and data flows, eliminate false positives, group shared root causes, mentally apply all proposed fixes, and re-audit the projected state. Report all logical flaws, state transition gaps, race conditions, and invariant breaches in one pass, then synthesize and write the final evaluation to `<review_dir>/reports/Logic.md` via `write_to_file`.
+  - **Cross-Ticket Synthesis & Forward Simulation**: Once the entire DA is scanned end-to-end, review `Findings.md` holistically to reconcile cross-ticket state transitions and data flows, eliminate false positives, group shared root causes, mentally apply all proposed fixes, and re-audit the projected state. Report all logical flaws, state transition gaps, race conditions, and invariant breaches in one pass, then synthesize and write the final evaluation to `<review_dir>/reports/Logic.md` via your native file-writing tool.
 - **Lineage & Boundary Alignment**:
   - Read all DAs in `## Cross-Referenced DAs & Dependency Lineage` in `Context.md` to verify state transitions, locks, and data flows integrate cleanly with `Upstream` DAs.
   - Differentiate permissive external ingress decoding (Postel's Law, preserving active regression test compatibility) from strict canonical egress and fail-fast internal domain logic.
 - **Empirical Verification (`<review_dir>/sandbox/Logic/`)**:
-  - Author self-contained simulation scripts in `<review_dir>/sandbox/Logic/simulate_<name>.*` via `write_to_file` stepping through state transitions, async interleavings, or boundary inputs under a 15s timeout (emitting stdout progress markers; monitor/kill hung tasks via `manage_task`). NEVER modify repository source files.
+  - Author self-contained simulation scripts in `<review_dir>/sandbox/Logic/simulate_<name>.*` via your native file-writing tool stepping through state transitions, async interleavings, or boundary inputs under a 15s timeout (emitting stdout progress markers; monitor/kill hung tasks via `manage_task`). NEVER modify repository source files.
 - **Fix Pre-Verification & Miss-Probability Gate (Headless AI Implementer Baseline)**:
   - Verify on disk that referenced methods, types, and target locations exist and that internal boundary endpoints + `Verification Plan` assertions are updated symmetrically.
 
@@ -32,7 +32,7 @@ Audits operational workflows, state machines, async concurrency, temporal/string
 
 ## 3. Domain Subdocuments Routing Table
 
-Call `view_file` on every subdocument whose trigger matches the target DA:
+Read every subdocument whose trigger matches the target DA using your native file-reading tool:
 
 | Target Subsystem Archetype | Trigger Condition (When to Load) | Subdocument |
 | :--- | :--- | :--- |
@@ -41,7 +41,7 @@ Call `view_file` on every subdocument whose trigger matches the target DA:
 
 ## 4. Verdict Rules & Standard Output Protocol
 
-Write evaluation to `<review_dir>/reports/Logic.md` via `write_to_file`, then notify Host via `send_message`:
+Write evaluation to `<review_dir>/reports/Logic.md` via your native file-writing tool, then notify Host via `send_message`:
 - `STATUS: PASS`: Workflows, state transitions, concurrency controls, and calculations are deterministic and complete.
 - `STATUS: REVISIONS NEEDED`: Logic gaps, invalid transitions, async race conditions, clock/timezone bugs, or precision defects exist.
 - `STATUS: INFEASIBLE`: Core requirement is logically impossible under target constraints (overrides fixable defects as overall status).
@@ -71,7 +71,7 @@ Write evaluation to `<review_dir>/reports/Logic.md` via `write_to_file`, then no
 
 ## 5. Gate Response Protocol (Host Interaction)
 
-If notified that Host filed `<review_dir>/reports/Logic_Gated_Issues.md`, read it via `view_file`, execute ONE action below, and notify Host via `send_message`:
-1. **Refine / Complete as Requested**: Edit `<review_dir>/reports/Logic.md` in-place via `write_to_file` to supply verified Ground-Truth/Macro Flow proofs, symmetrical boundary endpoints, or harmonized section assertions.
+If notified that Host filed `<review_dir>/reports/Logic_Gated_Issues.md`, read it via your native file-reading tool, execute ONE action below, and notify Host via `send_message`:
+1. **Refine / Complete as Requested**: Edit `<review_dir>/reports/Logic.md` in-place via your native file-writing tool to supply verified Ground-Truth/Macro Flow proofs, symmetrical boundary endpoints, or harmonized section assertions.
 2. **Remove**: Edit `<review_dir>/reports/Logic.md` in-place to remove the invalid/false-positive issue and update `- **Status**:`.
 3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/Logic_Explain.md` with deeper codebase/sandbox simulation proof AND update `<review_dir>/reports/Logic.md` in-place. NEVER repeat stale arguments.

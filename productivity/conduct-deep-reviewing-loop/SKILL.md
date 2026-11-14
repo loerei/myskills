@@ -48,7 +48,7 @@ flowchart TD
      3. Truncate to maximum 25 characters and trim leading/trailing hyphens.
      4. If empty, fallback to `default`. MUST NOT contain `#`.
    - Bind `<review_dir>` = `.scratch/deep-review-<short_title>`. Never fallback to plain `.scratch/deep-review/`.
-   - Bind `<trace_vault>` = `/tmp/deep-review-trace-<short_title>` (physically outside `<repo-root>` during active rounds so subagent `grep_search`, `find_by_name`, and `list_dir` calls inside `<repo-root>` cannot leak prior rounds).
+   - Bind `<trace_vault>` = `/tmp/deep-review-trace-<short_title>` (physically outside `<repo-root>` during active rounds so subagent codebase-search, file-find, and directory-listing calls inside `<repo-root>` cannot leak prior rounds).
 
 2. **Directory & Trace Vault Initialization**:
    - Create or purge `<repo-root>/<review_dir>/host/`, `<repo-root>/<review_dir>/host/trace/`, `<repo-root>/<review_dir>/reports/`, and `<repo-root>/<review_dir>/sandbox/`.
@@ -108,11 +108,11 @@ Immediately upon receiving completion from `review_host` for Round $N$:
 1. Read `<review_dir>/host/Analyzation.md` and `<review_dir>/host/State.md`.
 2. Terminate `review_host` via `manage_subagents(Action="kill")` (cascading termination to all Layer 3 subagents).
 3. Archive Round $N$ into `/tmp/deep-review-trace-<short_title>/round-<NN>/`:
-   Run the bundled archival script (atomically snapshots target DAs, moves reports/trace/sandbox, preserves pre-mutation `.bak.md` in `da-pre-mutation/`, respects `!PA` retention, and purges `host/Analyzation.md`):
+   Run the bundled archival script relative to `<skill_dir>` (`.agents/skills/conduct-deep-reviewing-loop` in distributed projects, `skills/conduct-deep-reviewing-loop` in standalone plugin checkouts, or `productivity/conduct-deep-reviewing-loop` in central `myskills`; atomically snapshots target DAs, moves reports/trace/sandbox, preserves pre-mutation `.bak.md` in `da-pre-mutation/`, respects `!PA` retention, and purges `host/Analyzation.md`):
    ```bash
-   pwsh productivity/conduct-deep-reviewing-loop/scripts/archive-round.ps1 -ReviewDir <review_dir> -Target <target_da_or_dir> -Round <N> [-Pause]
+   pwsh <skill_dir>/scripts/archive-round.ps1 -ReviewDir <review_dir> -Target <target_da_or_dir> -Round <N> [-Pause]
    # Or cross-platform Node.js:
-   node productivity/conduct-deep-reviewing-loop/scripts/archive-round.mjs --review-dir <review_dir> --target <target_da_or_dir> --round <N> [--pause]
+   node <skill_dir>/scripts/archive-round.mjs --review-dir <review_dir> --target <target_da_or_dir> --round <N> [--pause]
    ```
 
 #### 3B. Verdict Routing Table

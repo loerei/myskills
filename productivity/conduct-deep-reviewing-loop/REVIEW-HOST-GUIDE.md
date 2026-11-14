@@ -40,6 +40,7 @@
 ## 2. Subagent Prompt Templates
 
 ### 2A. Primary Reviewer Prompt Template
+- **Prerequisite (`reviewer` Type)**: If `reviewer` is not registered in the active session, call `define_subagent` with `Name: "reviewer"`, `EnableWriteTools: true`, `EnableMCPTools: true`, `EnableSubagentTools: false` before invoking Layer 3 reviewers or cross-reviewers.
 Host MUST summon Layer 3 subagents using this exact invariant template across all rounds:
 
 ```text
@@ -55,13 +56,13 @@ Execution Sequence:
 1. Read Domain Context (<review_dir>/Context.md) FIRST to identify active modifiers (!PA, !SP, !NC, !A11Y, !MOBILE), continuity regime, UX/UI regime & form factor, declared archetypes, and scope boundaries.
 2. Read Target DA(s) to understand the proposed design.
 3. Read your Review Guide (<guide_path>).
-4. Selective Subdoc Loading: Cross-reference your Review Guide's Routing Table with Context.md and Target DA(s). Call view_file ONLY on subguides whose trigger conditions actually match.
+4. Selective Subdoc Loading: Cross-reference your Review Guide's Routing Table with Context.md and Target DA(s). Read ONLY subguides whose trigger conditions actually match using your native file-reading tool.
 5. Perform deep audit: As you scan target DAs, capture findings incrementally in <review_dir>/sandbox/<Role>/Findings.md to prevent lost-in-the-middle omissions. Once all DAs are reviewed, reconcile multi-ticket interactions, forward-simulate fixes, and synthesize final evaluation into Output Path.
 
 Follow your Review Guide and any domain subdocuments referenced within it strictly. All findings and non-blocking suggestions MUST strictly adhere to your domain standards and codebase invariants.
 ```
 
-- **Dynamic Guide Resolution**: Resolve `<guide_path>` dynamically relative to the active skill location (`.agents/skills/<skill-name>/<Role>-REVIEWER-GUIDE.md` in distributed projects or `productivity/<skill-name>/<Role>-REVIEWER-GUIDE.md` in central `myskills`).
+- **Dynamic Guide Resolution**: Resolve `<guide_path>` dynamically relative to the active skill location (`.agents/skills/<skill-name>/<Role>-REVIEWER-GUIDE.md` in distributed projects, `skills/<skill-name>/<Role>-REVIEWER-GUIDE.md` in standalone plugin checkouts, or `productivity/<skill-name>/<Role>-REVIEWER-GUIDE.md` in central `myskills`).
 - **Tool Metadata & Banned Calling Tokens**: Specify neutral metadata (`toolAction: "Summoning reviewer"`, `toolSummary: "Domain review"`). NEVER include tokens: `Round`, `Sweep`, `Targeted`, `Re-verify`, `Re-audit`, `Fix`, `Pass`, `Iteration`, `Previous round`.
 
 ### 2B. Cross-Reviewer Prompt Template
@@ -165,7 +166,7 @@ Host executes Layer 3 reviewers in dependency order across the active selected r
   - Set `PassCount` to the parsed integer from `Current PassCount` in `host/State.md` (fallback to `1` if missing/malformed) and run Full DAG across all active roles on static snapshot $S_N$.
 
 ### Step 3: Subagent Execution & Batch Invocation
-- Parallel roles within the same DAG tier MUST be launched simultaneously in a single `invoke_subagent` call using §2A.
+- Parallel roles within the same DAG tier MUST be launched simultaneously via parallel `invoke_subagent` calls in the same turn using §2A.
 - Initialize `PendingTierRoles`, set `ProbeCount[role] = 0`, and arm a 600s liveness timer via `schedule(DurationSeconds=600, Prompt="Check on reviewers liveness", TimerCondition="any")`.
 - **Asynchronous Reactive Wakeup Handling**:
   - If `<review_dir>/reports/<Role>.md` exists on disk: remove `<Role>` from `PendingTierRoles`.
@@ -209,7 +210,7 @@ Evaluate Layer 3 reports strictly per **tier batch** after `PendingTierRoles` is
 *(Skipped when `Context.md` sets `Cross-Review: DISABLED` via `!NCR`, transitioning straight to Step 5 Early Suspension.)*
 
 When a tier batch (`<FailingTier>`) resolves with 1+ accepted blocking defects (`STATUS: REVISIONS NEEDED`), validate remediations against cross-domain standards before Early Suspension (Step 5) or DA Mutation (Step 7):
-1. **Collect Remediations**: Identify all `<Role>.md` reports in the resolved `<FailingTier>` with status `REVISION NEEDED`.
+1. **Collect Remediations**: Identify all `<Role>.md` reports in the resolved `<FailingTier>` with status `STATUS: REVISIONS NEEDED`.
 2. **Determine Cross-Review Roles (Selective Triggering)**:
    - **Zero Cross-Domain Impact (`Cross-Review Roles: None`)**: If a remediation is strictly self-contained within a single module/function (e.g. fixing an internal calculation, adding error `cause` chaining, refining local unit test assertions, pinning a lockfile version) and does NOT alter: (a) cross-module interfaces/DTOs, (b) persistent schemas/migrations, (c) state machine transitions or concurrency locks, (d) security/authz boundaries or ingress schemas, (e) UI layout/interaction flows, (f) ticket WBS sequencing, or (g) feature matrices, CV splits, loss/metric formulations, or ML training/inference pipelines $\rightarrow$ assign `Cross-Review Roles: None` and skip cross-review for that remediation.
    - **Cross-Cutting Remediations**: Select cross-review roles from the active roster (excluding `<AuthorRole>` itself):
@@ -304,7 +305,7 @@ Notify Host via message when done.
 ## Gated Issues
 1. **[Issue Title]**:
    - **Target Section**: `<Section_Name>`
-   - **Gate Failure Classification**: `Ungrounded Fix Proposal` | `Asymmetric Boundary Contract` | `Cross-Section Contradiction` | `Inter-Role Remediation Conflict` | `False-Positive Upstream Unreadiness` | `Premature Downstream Coupling` | `Speculative Over-Engineering` | `Spec-Induced Regression` | `Ungrounded Infeasibility Claim` | `Ad-Hoc Runtime Migration Bloat` | `Invented Protocol Verdict` | `Defensive Fallback Bloat` | `Ambient Fault Masking` | `Ad-Hoc Runtime Flag Bloat` | `Hot-Path Telemetry Overhead` | `Ad-Hoc Configuration & Runtime Shim Bloat` | `Unlabeled or Ambiguous Icon` | `Ad-Hoc Z-Index Escalation` | `Monolithic Acceptance Criteria Bloat` | `Propagation Suppression` | `Post-Render Focus Hacks` | `Callee Masking / Downstream Patching` | `Obvious Implementation Signal` | `False-Positive Plan Decomposition` | `False-Positive Continuous Phasing Demand` | `False-Positive Intermediate Boot Demand` | `False-Positive Application Rule on Library/SDK` | `False-Positive Enterprise WCAG Demand` | `False-Positive Mobile/Responsive Demand on Desktop App`
+   - **Gate Failure Classification**: `Ungrounded Fix Proposal` | `Asymmetric Boundary Contract` | `Cross-Section Contradiction` | `Inter-Role Remediation Conflict` | `False-Positive Upstream Unreadiness` | `Premature Downstream Coupling` | `Speculative Over-Engineering` | `Spec-Induced Regression` | `Ungrounded Infeasibility Claim` | `Ad-Hoc Runtime Migration Bloat` | `Invented Protocol Verdict` | `Defensive Fallback Bloat` | `Ambient Fault Masking` | `Ad-Hoc Runtime Flag Bloat` | `Hot-Path Telemetry Overhead` | `Ad-Hoc Configuration & Runtime Shim Bloat` | `Unlabeled or Ambiguous Icon` | `Ad-Hoc Z-Index Escalation` | `Monolithic Acceptance Criteria Bloat` | `Propagation Suppression` | `Post-Render Focus Hacks` | `Callee Masking / Downstream Patching` | `Obvious Implementation Signal` | `False-Positive Plan Decomposition` | `False-Positive Continuous Phasing Demand` | `False-Positive Intermediate Boot Demand` | `False-Positive Application Rule on Library/SDK` | `False-Positive Enterprise WCAG Demand` | `False-Positive Mobile/Responsive Demand on Desktop App` | `False-Positive Enterprise Telemetry Demand` | `Implementation Trivia`
    - **Gate Rationale**: <Exact technical reason why issue failed the gate without proposing fix code>
 ```
 

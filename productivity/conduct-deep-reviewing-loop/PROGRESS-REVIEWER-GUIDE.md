@@ -7,7 +7,7 @@ Audits whether the Directive Artifact (DA) establishes an incremental, dependenc
 - **Clean-Slate Isolation**: Audit target DA(s) solely against codebase ground-truth, `<review_dir>/Context.md`, and this guide. NEVER inspect git history, `<review_dir>/host/`, or other roles' reports/sandboxes.
 - **Single-Pass Exhaustiveness, Incremental Capture & Forward Simulation**:
   - **Incremental Finding Capture (`<review_dir>/sandbox/Progress/Findings.md`)**: To prevent "lost-in-the-middle" context drift across large multi-ticket epics, immediately append every discovered WBS gap, dependency cycle, unsequenced step, or horizontal slicing defect to `<review_dir>/sandbox/Progress/Findings.md` as lightweight notes (ticket/file location, defect description, affected dependencies, proposed restructuring) as you audit each section. NEVER write prematurely to `<review_dir>/reports/Progress.md` while reading.
-  - **Cross-Ticket Synthesis & Forward Simulation**: Once the entire DA is scanned end-to-end, review `Findings.md` holistically to reconcile cross-ticket execution ordering, eliminate false positives, group shared root causes, mentally apply all proposed transformations, and re-audit the projected ticket DAG. Report all WBS, sequencing, and slicing defects in one pass, then synthesize and write the final evaluation to `<review_dir>/reports/Progress.md` via `write_to_file`.
+  - **Cross-Ticket Synthesis & Forward Simulation**: Once the entire DA is scanned end-to-end, review `Findings.md` holistically to reconcile cross-ticket execution ordering, eliminate false positives, group shared root causes, mentally apply all proposed transformations, and re-audit the projected ticket DAG. Report all WBS, sequencing, and slicing defects in one pass, then synthesize and write the final evaluation to `<review_dir>/reports/Progress.md` via your native file-writing tool.
 - **Lineage & Operational Continuity Alignment**:
   - Read all DAs in `## Cross-Referenced DAs & Dependency Lineage` in `Context.md` so target tickets do not duplicate or invert `Upstream` milestones.
   - Read `## Operational Continuity` in `<review_dir>/Context.md` and enforce the matching phasing/slicing model:
@@ -50,7 +50,7 @@ Always load `PROG-COMMON-WBS.md`, plus the subdocument matching `## Operational 
 
 ## 4. Verdict Rules & Standard Output Protocol
 
-Write evaluation to `<review_dir>/reports/Progress.md` via `write_to_file`, then notify Host via `send_message`:
+Write evaluation to `<review_dir>/reports/Progress.md` via your native file-writing tool, then notify Host via `send_message`:
 - `STATUS: PASS`: WBS is dependency-sound, properly sliced for its continuity mode, and incrementally verifiable.
 - `STATUS: REVISIONS NEEDED`: Monolithic multi-gate plans, forward/circular dependencies, mixed $S+B$ steps, or missing verification gates exist.
 - `STATUS: INFEASIBLE`: Core ticket/phase premise violates hard platform constraints (takes overall status precedence).
@@ -84,7 +84,7 @@ Write evaluation to `<review_dir>/reports/Progress.md` via `write_to_file`, then
 
 ## 5. Gate Response Protocol (Host Interaction)
 
-If notified that Host filed `<review_dir>/reports/Progress_Gated_Issues.md`, read it via `view_file`, execute ONE action below, and notify Host via `send_message`:
-1. **Refine / Complete as Requested**: Edit `<review_dir>/reports/Progress.md` in-place via `write_to_file` to supply verified Ground-Truth/Macro Flow proofs, symmetrical boundary updates, or harmonized section assertions.
+If notified that Host filed `<review_dir>/reports/Progress_Gated_Issues.md`, read it via your native file-reading tool, execute ONE action below, and notify Host via `send_message`:
+1. **Refine / Complete as Requested**: Edit `<review_dir>/reports/Progress.md` in-place via your native file-writing tool to supply verified Ground-Truth/Macro Flow proofs, symmetrical boundary updates, or harmonized section assertions.
 2. **Remove**: Edit `<review_dir>/reports/Progress.md` in-place to remove the invalid/false-positive issue (e.g. demanding vertical slicing on `!NC` or decomposing a cohesive single-run plan) and update `- **Status**:`.
 3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/Progress_Explain.md` with deeper codebase dependency evidence AND update `<review_dir>/reports/Progress.md` in-place. NEVER repeat stale arguments.

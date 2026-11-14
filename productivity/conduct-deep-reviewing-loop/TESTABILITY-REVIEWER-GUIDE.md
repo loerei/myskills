@@ -7,7 +7,7 @@ Audits module test seams, mock-to-contract fidelity, anti-tautology, determinism
 - **Clean-Slate Isolation**: Audit target DA(s) solely against codebase ground-truth, `<review_dir>/Context.md`, and this guide. NEVER inspect git history, `<review_dir>/host/`, or other roles' reports/sandboxes.
 - **Single-Pass Exhaustiveness, Incremental Capture & Forward Simulation**:
   - **Incremental Finding Capture (`<review_dir>/sandbox/Testability/Findings.md`)**: To prevent "lost-in-the-middle" context drift across large multi-ticket epics, immediately append every discovered missing test seam, tautological test, mock drift hazard, flaky pattern, or unverified acceptance criterion to `<review_dir>/sandbox/Testability/Findings.md` as lightweight notes (ticket/file location, defect description, referenced symbols, missing fixtures/seams) as you audit each section. NEVER write prematurely to `<review_dir>/reports/Testability.md` while reading.
-  - **Cross-Ticket Synthesis & Forward Simulation**: Once the entire DA is scanned end-to-end, review `Findings.md` holistically to reconcile cross-ticket test harness consistency and seam availability, eliminate false positives, group shared root causes, mentally apply all proposed fixes, and re-audit the projected state. Report all missing test seams, tautological/self-fulfilling tests, mock drift hazards, flaky patterns, and unverified acceptance criteria in one pass, then synthesize and write the final evaluation to `<review_dir>/reports/Testability.md` via `write_to_file`.
+  - **Cross-Ticket Synthesis & Forward Simulation**: Once the entire DA is scanned end-to-end, review `Findings.md` holistically to reconcile cross-ticket test harness consistency and seam availability, eliminate false positives, group shared root causes, mentally apply all proposed fixes, and re-audit the projected state. Report all missing test seams, tautological/self-fulfilling tests, mock drift hazards, flaky patterns, and unverified acceptance criteria in one pass, then synthesize and write the final evaluation to `<review_dir>/reports/Testability.md` via your native file-writing tool.
 - **Lineage & Operational Continuity Alignment**:
   - Read all DAs in `## Cross-Referenced DAs & Dependency Lineage` in `Context.md` to align test runners, fixtures, and contract boundaries with `Upstream` DAs.
   - Read `## Operational Continuity` in `<review_dir>/Context.md`:
@@ -15,7 +15,7 @@ Audits module test seams, mock-to-contract fidelity, anti-tautology, determinism
     - `NON_CONTINUOUS_INTERMEDIATE` (`!NC0` / `!NCI`): Enforce headless unit/contract tests and mock schema parity only; BAN demanding E2E browser harnesses, UI rendering tests, or live app execution.
 - **Empirical Verification (`<review_dir>/sandbox/Testability/`)**:
   - Run existing project test suites in non-interactive CI mode (`npx vitest run`, `npm test -- --watchAll=false`, `pytest -q`) under a 30s timeout to verify runner baseline.
-  - Author inline mock/seam verification harnesses in `<review_dir>/sandbox/Testability/harness_<name>.*` via `write_to_file` and execute under a 15s timeout (monitor/kill hung tasks via `manage_task`). NEVER modify repository source files.
+  - Author inline mock/seam verification harnesses in `<review_dir>/sandbox/Testability/harness_<name>.*` via your native file-writing tool and execute under a 15s timeout (monitor/kill hung tasks via `manage_task`). NEVER modify repository source files.
 - **Fix Pre-Verification & Miss-Probability Gate (Headless AI Implementer Baseline)**:
   - Verify on disk that referenced test utilities, interfaces, and target locations exist and that boundary contracts remain symmetrical.
 
@@ -36,7 +36,7 @@ Audits module test seams, mock-to-contract fidelity, anti-tautology, determinism
 
 ## 3. Domain Subdocuments Routing Table
 
-Call `view_file` on every subdocument whose trigger matches the target DA:
+Read every subdocument whose trigger matches the target DA using your native file-reading tool:
 
 | Target Subsystem Archetype | Trigger Condition (When to Load) | Subdocument |
 | :--- | :--- | :--- |
@@ -46,7 +46,7 @@ Call `view_file` on every subdocument whose trigger matches the target DA:
 
 ## 4. Verdict Rules & Standard Output Protocol
 
-Write evaluation to `<review_dir>/reports/Testability.md` via `write_to_file`, then notify Host via `send_message`:
+Write evaluation to `<review_dir>/reports/Testability.md` via your native file-writing tool, then notify Host via `send_message`:
 - `STATUS: PASS`: Test seams, anti-tautology safeguards, determinism, and 100% verification coverage are complete.
 - `STATUS: REVISIONS NEEDED`: Untestable modules, tautological test specs, unvalidated mocks, compound un-assertable criteria, flaky sleeps, or coverage gaps exist.
 - `STATUS: INFEASIBLE`: Verification is impossible under target platform/sandbox constraints (overrides fixable defects as overall status).
@@ -76,7 +76,7 @@ Write evaluation to `<review_dir>/reports/Testability.md` via `write_to_file`, t
 
 ## 5. Gate Response Protocol (Host Interaction)
 
-If notified that Host filed `<review_dir>/reports/Testability_Gated_Issues.md`, read it via `view_file`, execute ONE action below, and notify Host via `send_message`:
-1. **Refine / Complete as Requested**: Edit `<review_dir>/reports/Testability.md` in-place via `write_to_file` to supply verified Ground-Truth/Macro Flow proofs, symmetrical boundary updates, or harmonized section assertions.
+If notified that Host filed `<review_dir>/reports/Testability_Gated_Issues.md`, read it via your native file-reading tool, execute ONE action below, and notify Host via `send_message`:
+1. **Refine / Complete as Requested**: Edit `<review_dir>/reports/Testability.md` in-place via your native file-writing tool to supply verified Ground-Truth/Macro Flow proofs, symmetrical boundary updates, or harmonized section assertions.
 2. **Remove**: Edit `<review_dir>/reports/Testability.md` in-place to remove the invalid/false-positive issue (e.g. demanding E2E browser tests under `!NC0`) and update `- **Status**:`.
 3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/Testability_Explain.md` with deeper codebase/sandbox harness proof AND update `<review_dir>/reports/Testability.md` in-place. NEVER repeat stale arguments.

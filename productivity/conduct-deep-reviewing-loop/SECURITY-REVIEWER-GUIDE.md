@@ -7,7 +7,7 @@ Audits authentication, authorization boundaries, input parsing, secret hygiene, 
 - **Clean-Slate Isolation**: Audit target DA(s) solely against codebase ground-truth, `<review_dir>/Context.md`, and this guide. NEVER inspect git history, `<review_dir>/host/`, or other roles' reports/sandboxes.
 - **Single-Pass Exhaustiveness, Incremental Capture & Forward Simulation**:
   - **Incremental Finding Capture (`<review_dir>/sandbox/Security/Findings.md`)**: To prevent "lost-in-the-middle" context drift across large multi-ticket epics, immediately append every discovered security, authz, secret leak, or input validation defect to `<review_dir>/sandbox/Security/Findings.md` as lightweight notes (ticket/file location, defect description, referenced symbols, threat vectors) as you audit each section. NEVER write prematurely to `<review_dir>/reports/Security.md` while reading.
-  - **Cross-Ticket Synthesis & Forward Simulation**: Once the entire DA is scanned end-to-end, review `Findings.md` holistically to reconcile cross-ticket trust boundaries and authorization flows, eliminate false positives, group shared root causes, mentally apply all proposed fixes, and re-audit the projected state. Report all security, authz, and validation defects in one pass, then synthesize and write the final evaluation to `<review_dir>/reports/Security.md` via `write_to_file`.
+  - **Cross-Ticket Synthesis & Forward Simulation**: Once the entire DA is scanned end-to-end, review `Findings.md` holistically to reconcile cross-ticket trust boundaries and authorization flows, eliminate false positives, group shared root causes, mentally apply all proposed fixes, and re-audit the projected state. Report all security, authz, and validation defects in one pass, then synthesize and write the final evaluation to `<review_dir>/reports/Security.md` via your native file-writing tool.
 - **Context-Driven Threat Model & Lineage Alignment**:
   - Read `## Security Scope & Threat Model Tier` in `<review_dir>/Context.md`. If `Security Status: NO_SECURITY_BOUNDARY` is declared and verified against the DA, return `STATUS: PASS` immediately.
   - Ground demands in the declared architecture: do NOT demand remote cloud enterprise auth on purely local/offline desktop utilities if it contradicts project architecture.
@@ -33,7 +33,7 @@ Audits authentication, authorization boundaries, input parsing, secret hygiene, 
 
 ## 3. Domain Subdocuments Routing Table
 
-Inspect `## Security Scope & Threat Model Tier` in `Context.md` and call `view_file` on all matching subdocuments:
+Inspect `## Security Scope & Threat Model Tier` in `Context.md` and read all matching subdocuments using your native file-reading tool:
 
 | Threat Model Tier / Archetype | Trigger Condition (When to Load) | Subdocument |
 | :--- | :--- | :--- |
@@ -50,7 +50,7 @@ Inspect `## Security Scope & Threat Model Tier` in `Context.md` and call `view_f
 
 ## 4. Verdict Rules & Standard Output Protocol
 
-Write evaluation to `<review_dir>/reports/Security.md` via `write_to_file`, then notify Host via `send_message`:
+Write evaluation to `<review_dir>/reports/Security.md` via your native file-writing tool, then notify Host via `send_message`:
 - `STATUS: PASS`: All applicable security controls, trust boundaries, and input validations are complete.
 - `STATUS: REVISIONS NEEDED`: Any vulnerability, missing authz/validation guard, or credential exposure exists.
 - `STATUS: INFEASIBLE`: Requirement violates hard OS/browser/platform security boundaries (overrides fixable defects as overall status).
@@ -80,7 +80,7 @@ Write evaluation to `<review_dir>/reports/Security.md` via `write_to_file`, then
 
 ## 5. Gate Response Protocol (Host Interaction)
 
-If notified that Host filed `<review_dir>/reports/Security_Gated_Issues.md`, read it via `view_file`, execute ONE action below, and notify Host via `send_message`:
-1. **Refine / Complete as Requested**: Edit `<review_dir>/reports/Security.md` in-place via `write_to_file` to supply verified Ground-Truth/Macro Flow proofs, symmetrical boundary endpoints, or harmonized section assertions.
+If notified that Host filed `<review_dir>/reports/Security_Gated_Issues.md`, read it via your native file-reading tool, execute ONE action below, and notify Host via `send_message`:
+1. **Refine / Complete as Requested**: Edit `<review_dir>/reports/Security.md` in-place via your native file-writing tool to supply verified Ground-Truth/Macro Flow proofs, symmetrical boundary endpoints, or harmonized section assertions.
 2. **Remove**: Edit `<review_dir>/reports/Security.md` in-place to remove the invalid/false-positive issue and update `- **Status**:`.
 3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/Security_Explain.md` with deeper codebase/sandbox proof AND update `<review_dir>/reports/Security.md` in-place. NEVER repeat stale arguments.

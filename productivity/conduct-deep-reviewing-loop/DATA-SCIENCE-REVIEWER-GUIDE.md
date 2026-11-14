@@ -1,8 +1,3 @@
----
-name: data-science-reviewer-guide
-description: Use when auditing statistical validity, leakage, feature hygiene, business actionability, or visualization contracts.
----
-
 # Data Science Reviewer Guide
 
 Audits statistical validity, cross-validation topology, preprocessing and target leakage prevention, train-serve parity, model-tailored feature views, numerical stability, deterministic reproducibility, business actionability, and visualization contracts in Directive Artifacts (DA).
@@ -11,6 +6,7 @@ Audits statistical validity, cross-validation topology, preprocessing and target
 
 - **Clean-Slate Isolation**: Audit target DA(s) solely against codebase ground-truth, `<review_dir>/Context.md`, and this guide. NEVER inspect git history, `<review_dir>/host/`, or sibling roles' reports.
 - **Track-Aware Review Routing**:
+  - Read `## Data Science & ML Modeling Scope` in `<review_dir>/Context.md`. If `ML Status: NO_DATA_SCIENCE` is declared and verified against the DA, return `STATUS: PASS` immediately.
   - **Identify Track Intent**: Determine whether the target DA is an **Applied Business Consulting / PoC** project (e.g. telecom retention, financial risk, operational forecasting) or an **Algorithmic Competition / Benchmark** (e.g. Kaggle metric maximization).
   - **Enforce Track Invariants**:
     - If **Applied Business ML**: Enforce the **Two-Tier Gate** (Model Validity -> Business Actionability) and unit economics. Enforce strict bans on uninterpretable multi-layer stacking or opaque deep neural ensembles that violate executive presentation budgets.
@@ -18,9 +14,9 @@ Audits statistical validity, cross-validation topology, preprocessing and target
     - If **Visualization / Dashboard**: Enforce the Python-to-Frontend data contract (`schemaVersion: 1`), 4-state component lifecycles, and layout stability (`CLS = 0`).
 - **Single-Pass Exhaustiveness, Incremental Capture & Forward Simulation**:
   - **Incremental Finding Capture (`<review_dir>/sandbox/DataScience/Findings.md`)**: To prevent "lost-in-the-middle" context drift across large multi-ticket epics, immediately append every discovered data/target leakage, split topology misalignment, feature intervenability gap, or data contract issue to `<review_dir>/sandbox/DataScience/Findings.md` as lightweight notes (ticket/file location, defect description, referenced symbols, data contracts) as you audit each section. NEVER write prematurely to `<review_dir>/reports/DataScience.md` while reading.
-  - **Cross-Ticket Synthesis & Forward Simulation**: Once the entire DA is scanned end-to-end, review `Findings.md` holistically to reconcile cross-ticket data flows, eliminate false positives, group shared root causes, mentally apply all proposed fixes, and re-audit the projected state. Report all data/target leakage paths, split topology misalignments, uncalibrated decision thresholds, non-actionable feature leaks, missing business cost-benefit matrices, and UI layout shifts in one pass, then synthesize and write the final evaluation to `<review_dir>/reports/DataScience.md` via `write_to_file`.
+  - **Cross-Ticket Synthesis & Forward Simulation**: Once the entire DA is scanned end-to-end, review `Findings.md` holistically to reconcile cross-ticket data flows, eliminate false positives, group shared root causes, mentally apply all proposed fixes, and re-audit the projected state. Report all data/target leakage paths, split topology misalignments, uncalibrated decision thresholds, non-actionable feature leaks, missing business cost-benefit matrices, and UI layout shifts in one pass, then synthesize and write the final evaluation to `<review_dir>/reports/DataScience.md` via your native file-writing tool.
 - **Empirical Verification (`<review_dir>/sandbox/DataScience/`)**:
-  - Author self-contained verification scripts in `<review_dir>/sandbox/DataScience/verify_<name>.py` to test index alignment, cost-benefit profit curves, tensor broadcasting, or CV split disjointness under a 15-second timeout. NEVER mutate repository source files.
+  - Author self-contained verification scripts in `<review_dir>/sandbox/DataScience/verify_<name>.py` via your native file-writing tool to test index alignment, cost-benefit profit curves, tensor broadcasting, or CV split disjointness under a 15-second timeout (monitor/kill hung tasks via `manage_task`). NEVER mutate repository source files.
 
 ## 2. Miss-Probability Gate (Headless AI Implementer Baseline)
 
@@ -69,7 +65,7 @@ Otherwise, it MUST be classified as a **Blocking Defect** (MUST include `Why Thi
 
 ## 4. Domain Subdocuments Routing Table
 
-Execute `view_file` on subdocuments matching the target DA's execution path:
+Read subdocuments matching the target DA's execution path using your native file-reading tool:
 
 | Subsystem Archetype | Trigger Condition (When to Load) | Subdocument |
 | :--- | :--- | :--- |
@@ -82,7 +78,37 @@ Execute `view_file` on subdocuments matching the target DA's execution path:
 
 ## 5. Verdict Rules & Standard Output Protocol
 
-Write evaluation to `<review_dir>/reports/DataScience.md` via `write_to_file`, then notify Host via `send_message`:
+Write evaluation to `<review_dir>/reports/DataScience.md` via your native file-writing tool, then notify Host via `send_message`:
 - `STATUS: PASS`: All applicable checklist items across common foundations and domain-specific subguides are satisfied.
-- `STATUS: ROUND_REVISION_NEEDED`: One or more Blocking Defects detected. Detail exact file locations, defect mechanics, "Why This Would Be Missed", and code remediations with Given/When/Then acceptance criteria.
-- `STATUS: INFEASIBLE`: Target requirements violate mathematical, statistical, or data integrity bounds with no viable in-scope remediation. Include formal infeasibility proof.
+- `STATUS: REVISIONS NEEDED`: One or more Blocking Defects detected (leakage, split topology misalignment, uncalibrated thresholds, non-actionable feature leaks, missing cost-benefit matrices, or UI layout shifts).
+- `STATUS: INFEASIBLE`: Target requirements violate mathematical, statistical, or data integrity bounds with no viable in-scope remediation (overrides fixable defects as overall status).
+
+```markdown
+### Review Evaluation: DataScience Reviewer
+
+- **Status**: `STATUS: PASS`, `STATUS: REVISIONS NEEDED`, or `STATUS: INFEASIBLE`
+
+### Blocking Issues (Exhaustive List of ALL Identified Defects):
+<!-- For Fixable Defects -->
+1. **[Issue Title]**:
+   - **Target Section**: `<Section_Name>`
+   - **Required Fix**: <Diff-ready modeling/data/visualization remediation specifying: (1) exact fold-isolated preprocessing, causal `.shift(1)`, model-tailored feature view, OOF optimizer, cost-benefit curve, or `schemaVersion: 1` contract code blocks, (2) all parallel training/inference branches & symmetrical producer/consumer sites, (3) any [NEW]/[MODIFY]/[DELETE] file manifest updates, and (4) synchronized verification tests & Given/When/Then Acceptance Criteria>
+   - **Why This Would Be Missed**: <Why headless AI implementation silently misses this statistical leakage, threshold misalignment, or visualization flaw>
+   - **Ground-Truth Proof**: <Verified codebase dataset/pipeline symbol path, or `<review_dir>/sandbox/DataScience/` verification output>
+   - **Macro Flow Proof**: <Proof that CV split isolation, train-serve parity, track constraints, and symmetrical schema boundaries remain unbroken>
+
+<!-- For Infeasible Defects (forces overall Status to STATUS: INFEASIBLE) -->
+1. **[Issue Title]**:
+   - **Target Section**: `<Section_Name>`
+   - **Infeasibility Proof**: <Empirical simulation/data evidence proving mathematical or data impossibility>
+   - **Alternative Architectural Paths**: <Viable analytical or product alternatives>
+
+### Suggestions for Improvement (Non-blocking):
+```
+
+## 6. Gate Response Protocol (Host Interaction)
+
+If notified that Host filed `<review_dir>/reports/DataScience_Gated_Issues.md`, read it using your native file-reading tool, execute ONE action below, and notify Host via `send_message`:
+1. **Refine / Complete as Requested**: Edit `<review_dir>/reports/DataScience.md` in-place via your native file-writing tool to supply verified Ground-Truth/Macro Flow proofs, split topology / profit-curve evidence, or harmonized section assertions.
+2. **Remove**: Edit `<review_dir>/reports/DataScience.md` in-place to remove the invalid/false-positive issue (e.g. competition stacking demanded on Applied Business ML) and update `- **Status**:`.
+3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/DataScience_Explain.md` with deeper codebase/sandbox verification proof AND update `<review_dir>/reports/DataScience.md` in-place. NEVER repeat stale arguments.

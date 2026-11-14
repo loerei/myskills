@@ -7,7 +7,7 @@ Audits telemetry, error context preservation, crash boundaries, CLI stream hygie
 - **Clean-Slate Isolation**: Audit target DA(s) solely against codebase ground-truth, `<review_dir>/Context.md`, and this guide. NEVER inspect git history, `<review_dir>/host/`, or other roles' reports/sandboxes.
 - **Single-Pass Exhaustiveness, Incremental Capture & Forward Simulation**:
   - **Incremental Finding Capture (`<review_dir>/sandbox/Observability/Findings.md`)**: To prevent "lost-in-the-middle" context drift across large multi-ticket epics, immediately append every discovered error swallowing, missing context/redaction, stream pollution, or telemetry flaw to `<review_dir>/sandbox/Observability/Findings.md` as lightweight notes (ticket/file location, defect description, referenced symbols, logger/metric sites) as you audit each section. NEVER write prematurely to `<review_dir>/reports/Observability.md` while reading.
-  - **Cross-Ticket Synthesis & Forward Simulation**: Once the entire DA is scanned end-to-end, review `Findings.md` holistically to reconcile cross-ticket telemetry flows, eliminate false positives, group shared root causes, mentally apply all proposed fixes, and re-audit the projected state. Report all error swallowing, missing context/redaction, stream pollution, and telemetry/flag governance flaws in one pass, then synthesize and write the final evaluation to `<review_dir>/reports/Observability.md` via `write_to_file`.
+  - **Cross-Ticket Synthesis & Forward Simulation**: Once the entire DA is scanned end-to-end, review `Findings.md` holistically to reconcile cross-ticket telemetry flows, eliminate false positives, group shared root causes, mentally apply all proposed fixes, and re-audit the projected state. Report all error swallowing, missing context/redaction, stream pollution, and telemetry/flag governance flaws in one pass, then synthesize and write the final evaluation to `<review_dir>/reports/Observability.md` via your native file-writing tool.
 - **Archetype Grounding & Lineage Alignment**:
   - Read `## Observability Scope & Monitoring Archetype` in `<review_dir>/Context.md`. If `Observability Status: NO_OBSERVABILITY` is declared and verified against the DA, return `STATUS: PASS` immediately.
   - Strictly match requirements to the declared archetype (`PIPELINE_ANALYTICAL_BATCH`, `INTERACTIVE_CLI_DEVUTIL`, `SERVER_SERVICE_API`, `CLIENT_DESKTOP_NATIVE`, `CLIENT_FRONTEND_WEB`, `LIBRARY_SDK_PACKAGE`):
@@ -26,7 +26,7 @@ Audits telemetry, error context preservation, crash boundaries, CLI stream hygie
 
 ## 2. Domain Subdocuments Routing Table
 
-Inspect `## Observability Scope & Monitoring Archetype` in `Context.md` and call `view_file` on all matching subdocuments:
+Inspect `## Observability Scope & Monitoring Archetype` in `Context.md` and read all matching subdocuments using your native file-reading tool:
 
 | Monitoring Archetype | Trigger Condition (When to Load) | Mandatory Subdocuments |
 | :--- | :--- | :--- |
@@ -41,7 +41,7 @@ Inspect `## Observability Scope & Monitoring Archetype` in `Context.md` and call
 
 ## 3. Verdict Rules & Standard Output Protocol
 
-Write evaluation to `<review_dir>/reports/Observability.md` via `write_to_file`, then notify Host via `send_message`:
+Write evaluation to `<review_dir>/reports/Observability.md` via your native file-writing tool, then notify Host via `send_message`:
 - `STATUS: PASS`: Error context, redaction, crash capture, stream hygiene, health probes, and flag lifecycles satisfy all applicable archetype rules.
 - `STATUS: REVISIONS NEEDED`: Any blocking observability or feature flag defect exists under the active archetype subdocuments.
 - `STATUS: INFEASIBLE`: Requirement violates hard platform/sandbox constraints (overrides fixable defects as overall status).
@@ -71,7 +71,7 @@ Write evaluation to `<review_dir>/reports/Observability.md` via `write_to_file`,
 
 ## 4. Gate Response Protocol (Host Interaction)
 
-If notified that Host filed `<review_dir>/reports/Observability_Gated_Issues.md`, read it via `view_file`, execute ONE action below, and notify Host via `send_message`:
-1. **Refine / Complete as Requested**: Edit `<review_dir>/reports/Observability.md` in-place via `write_to_file` to supply verified Ground-Truth/Macro Flow proofs, relative post-rollout flag TTLs, or symmetrical boundary updates.
+If notified that Host filed `<review_dir>/reports/Observability_Gated_Issues.md`, read it via your native file-reading tool, execute ONE action below, and notify Host via `send_message`:
+1. **Refine / Complete as Requested**: Edit `<review_dir>/reports/Observability.md` in-place via your native file-writing tool to supply verified Ground-Truth/Macro Flow proofs, relative post-rollout flag TTLs, or symmetrical boundary updates.
 2. **Remove**: Edit `<review_dir>/reports/Observability.md` in-place to remove cross-tier false positives (e.g. server tracing demanded on a CLI tool or analytical pipeline) and update `- **Status**:`.
 3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/Observability_Explain.md` with deeper codebase evidence AND update `<review_dir>/reports/Observability.md` in-place. NEVER repeat stale arguments.

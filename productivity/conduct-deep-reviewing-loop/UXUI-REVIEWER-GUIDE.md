@@ -7,7 +7,7 @@ Audits target-audience interaction flows, physical focus retention, layout stabi
 - **Clean-Slate Isolation**: Audit target DA(s) solely against codebase ground-truth, `<review_dir>/Context.md`, this guide, and the **exact 2 matching subdocuments** loaded from §2. NEVER inspect git history, `<review_dir>/host/`, or other roles' reports/sandboxes.
 - **Single-Pass Exhaustiveness, Incremental Capture & Forward Simulation**:
   - **Incremental Finding Capture (`<review_dir>/sandbox/UXUI/Findings.md`)**: To prevent "lost-in-the-middle" context drift across large multi-ticket epics, immediately append every discovered UI friction, missing state, unmount focus drop, layout shift, or event suppression defect to `<review_dir>/sandbox/UXUI/Findings.md` as lightweight notes (ticket/file location, defect description, referenced symbols, affected components/views) as you audit each section. NEVER write prematurely to `<review_dir>/reports/UXUI.md` while reading.
-  - **Cross-Ticket Synthesis & Forward Simulation**: Once the entire DA is scanned end-to-end, review `Findings.md` holistically to reconcile cross-ticket UX flows and component hierarchies, eliminate false positives, group shared root causes, mentally apply all proposed fixes, and re-audit the projected state. Report all UI friction, missing states, unmount focus drops, layout shifts, front-end architectural debt, and event suppression defects in one pass, then synthesize and write the final evaluation to `<review_dir>/reports/UXUI.md` directly via `write_to_file` (NEVER write helper `.js`/`.py` scripts in `sandbox/UXUI/` to generate or regex-edit your report).
+  - **Cross-Ticket Synthesis & Forward Simulation**: Once the entire DA is scanned end-to-end, review `Findings.md` holistically to reconcile cross-ticket UX flows and component hierarchies, eliminate false positives, group shared root causes, mentally apply all proposed fixes, and re-audit the projected state. Report all UI friction, missing states, unmount focus drops, layout shifts, front-end architectural debt, and event suppression defects in one pass, then synthesize and write the final evaluation to `<review_dir>/reports/UXUI.md` directly via your native file-writing tool (NEVER write helper `.js`/`.py` scripts in `sandbox/UXUI/` to generate or regex-edit your report).
 - **Grounded Code Remediations & Atomic Acceptance Criteria (Zero Semantic Loss)**:
   - Deliver every `Required Fix` using **concrete, grounded code** — JSX/TSX/HTML markup, TypeScript event/focus/state handlers (`event.target.closest(...)`, synchronous unmount focus handoff, optimistic rollback, staleness watchdogs), and structural/tokenized CSS (`isolation: isolate`, `min-width: 0`, `text-overflow: ellipsis`, `prefers-reduced-motion: reduce`, `aspect-ratio`, `scrollbar-gutter: stable`, and verified `--zIndex-*` / theme tokens) — paired with single-responsibility **Acceptance Criteria (Given/When/Then)**.
   - **Ban Invented Tokens & Magic-Pixel Geometry Guessing**: Because `UXUI` operates without a live visual viewport, NEVER fabricate design token names not verified on disk (`Ground-Truth Proof`) and NEVER guess arbitrary pixel coordinates or magic layout offsets (`margin-top: -13px`, `width: calc(100% - 247px)`).
@@ -31,9 +31,9 @@ Audits target-audience interaction flows, physical focus retention, layout stabi
 
 ## 2. Domain Subdocuments Routing Table (Strict Physical Context Isolation)
 
-Read `## UX/UI & Accessibility Regime` in `<review_dir>/Context.md` (`UX/UI Regime` and `Form Factor`). To prevent cross-regime context contamination, call `view_file` **ONLY** on the **1 matching Interaction subdocument** AND the **1 matching Layout/Form-Factor subdocument** below — **NEVER read non-matching subdocuments**:
+Read `## UX/UI & Accessibility Regime` in `<review_dir>/Context.md` (`UX/UI Regime` and `Form Factor`). To prevent cross-regime context contamination, use your native file-reading tool to read **ONLY** the **1 matching Interaction subdocument** AND the **1 matching Layout/Form-Factor subdocument** below — **NEVER read non-matching subdocuments**:
 
-| Axis in `Context.md` | Declared Mode in `Context.md` | Subdocument to Load (`view_file`) |
+| Axis in `Context.md` | Declared Mode in `Context.md` | Subdocument to Load |
 | :--- | :--- | :--- |
 | **1. Interaction & DX Regime** *(Pick 1)* | `UX/UI Regime: PRAGMATIC_PRODUCT_UX` *(Default)* | [`UX-PRAGMATIC-INTERACTION-DX.md`](UX-PRAGMATIC-INTERACTION-DX.md) |
 | **1. Interaction & DX Regime** *(Pick 1)* | `UX/UI Regime: STRICT_ACCESSIBILITY_COMPLIANCE` (`!A11Y` / `!WCAG`) | [`UX-STRICT-ACCESSIBILITY-WCAG.md`](UX-STRICT-ACCESSIBILITY-WCAG.md) |
@@ -42,7 +42,7 @@ Read `## UX/UI & Accessibility Regime` in `<review_dir>/Context.md` (`UX/UI Regi
 
 ## 3. Verdict Rules & Standard Output Protocol
 
-Write evaluation to `<review_dir>/reports/UXUI.md` via `write_to_file`, then notify Host via `send_message`:
+Write evaluation to `<review_dir>/reports/UXUI.md` via your native file-writing tool, then notify Host via `send_message`:
 - `STATUS: PASS`: Interface flows, physical focus retention, layout stability, front-end DX, and active-subdocument requirements are complete.
 - `STATUS: REVISIONS NEEDED`: Missing form/loading/error states, unmount focus eviction to `document.body`, raw emojis, unlabeled icon-only buttons, magic z-indices, `stopPropagation()`, volatile `key={index}`, destructive optimistic UI, or defects under the active loaded subdocuments exist.
 - `STATUS: INFEASIBLE`: UI requirement violates hard platform/browser constraints (overrides fixable defects as overall status).
@@ -72,7 +72,7 @@ Write evaluation to `<review_dir>/reports/UXUI.md` via `write_to_file`, then not
 
 ## 4. Gate Response Protocol (Host Interaction)
 
-If notified that Host filed `<review_dir>/reports/UXUI_Gated_Issues.md`, read it via `view_file`, execute ONE action below directly via `write_to_file` (never via helper scripts in `sandbox/UXUI/`), and notify Host via `send_message`:
-1. **Refine / Complete as Requested**: Edit `<review_dir>/reports/UXUI.md` in-place via `write_to_file` to replace any unverified magic-pixel geometry or invented tokens with grounded codebase tokens, supply verified component proofs on disk, decompose compound criteria, or replace unsafe `preventDefault()` demands on native controls with parent target filtering.
+If notified that Host filed `<review_dir>/reports/UXUI_Gated_Issues.md`, read it via your native file-reading tool, execute ONE action below directly via your native file-writing tool (never via helper scripts in `sandbox/UXUI/`), and notify Host via `send_message`:
+1. **Refine / Complete as Requested**: Edit `<review_dir>/reports/UXUI.md` in-place via your native file-writing tool to replace any unverified magic-pixel geometry or invented tokens with grounded codebase tokens, supply verified component proofs on disk, decompose compound criteria, or replace unsafe `preventDefault()` demands on native controls with parent target filtering.
 2. **Remove**: Edit `<review_dir>/reports/UXUI.md` in-place to remove the invalid/false-positive issue (e.g. out-of-regime or out-of-form-factor demands, or optimistic UI demanded on destructive writes) and update `- **Status**:`.
 3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/UXUI_Explain.md` with deeper codebase evidence AND update `<review_dir>/reports/UXUI.md` in-place. NEVER repeat stale arguments.

@@ -7,7 +7,7 @@ Audits whether the Directive Artifact (DA) specifies the optimal structural, bou
 - **Clean-Slate Isolation**: Audit target DA(s) solely against codebase ground-truth, `<review_dir>/Context.md`, and this guide. NEVER inspect git history, `<review_dir>/host/`, or other roles' reports/sandboxes.
 - **Single-Pass Exhaustiveness, Incremental Capture & Forward Simulation**:
   - **Incremental Finding Capture (`<review_dir>/sandbox/Architect/Findings.md`)**: To prevent "lost-in-the-middle" context drift across large multi-ticket epics, immediately append every discovered defect or architectural discrepancy to `<review_dir>/sandbox/Architect/Findings.md` as lightweight notes (ticket/file location, defect description, referenced symbols, symmetrical sites) as you audit each section. NEVER write prematurely to `<review_dir>/reports/Architect.md` while reading.
-  - **Cross-Ticket Synthesis & Forward Simulation**: Once the entire DA is scanned end-to-end, review `Findings.md` holistically to reconcile cross-ticket interactions, eliminate false positives, group shared root causes, mentally apply all proposed fixes, and re-audit the projected state to catch and bundle any 2nd-order defects. Report all blocking defects in one pass (NEVER stop at the first defect or drip-feed across rounds), then synthesize and write the final evaluation to `<review_dir>/reports/Architect.md` via `write_to_file`.
+  - **Cross-Ticket Synthesis & Forward Simulation**: Once the entire DA is scanned end-to-end, review `Findings.md` holistically to reconcile cross-ticket interactions, eliminate false positives, group shared root causes, mentally apply all proposed fixes, and re-audit the projected state to catch and bundle any 2nd-order defects. Report all blocking defects in one pass (NEVER stop at the first defect or drip-feed across rounds), then synthesize and write the final evaluation to `<review_dir>/reports/Architect.md` via your native file-writing tool.
 - **Lineage & Boundary Alignment**: Read all DAs in `## Cross-Referenced DAs & Dependency Lineage` in `Context.md`:
   - `Upstream` (`Implemented` or `Unimplemented`): Adhere strictly to upstream types/schemas/seams; reject spec drift and reject duplicating upstream scope.
   - `Downstream`: Expose clean extension seams without coupling to downstream logic.
@@ -38,7 +38,7 @@ Audits whether the Directive Artifact (DA) specifies the optimal structural, bou
 
 ## 3. Domain Subdocuments Routing Table
 
-Call `view_file` on every subdocument whose trigger matches the target DA:
+Read every subdocument whose trigger matches the target DA using your native file-reading tool:
 
 | Target Subsystem Archetype | Trigger Condition (When to Load) | Subdocument |
 | :--- | :--- | :--- |
@@ -53,7 +53,7 @@ Call `view_file` on every subdocument whose trigger matches the target DA:
 
 ## 4. Verdict Rules & Standard Output Protocol
 
-Write evaluation to `<review_dir>/reports/Architect.md` via `write_to_file`, then notify Host via `send_message`:
+Write evaluation to `<review_dir>/reports/Architect.md` via your native file-writing tool, then notify Host via `send_message`:
 - `STATUS: PASS`: Architecture, boundaries, and data structures are optimal and complete.
 - `STATUS: REVISIONS NEEDED`: Blocking structural, state, boundary, or complexity defects exist.
 - `STATUS: INFEASIBLE`: Core premise violates hard platform/technical constraints (overrides fixable defects as overall status).
@@ -83,7 +83,7 @@ Write evaluation to `<review_dir>/reports/Architect.md` via `write_to_file`, the
 
 ## 5. Gate Response Protocol (Host Interaction)
 
-If notified that Host filed `<review_dir>/reports/Architect_Gated_Issues.md`, read it via `view_file`, execute ONE action below, and notify Host via `send_message`:
-1. **Refine / Complete as Requested**: Edit `<review_dir>/reports/Architect.md` in-place via `write_to_file` to supply verified Ground-Truth/Macro Flow proofs, symmetrical boundary endpoints, or harmonized section assertions (if converting an ungrounded impasse to fixable, update status to `STATUS: REVISIONS NEEDED`).
+If notified that Host filed `<review_dir>/reports/Architect_Gated_Issues.md`, read it via your native file-reading tool, execute ONE action below, and notify Host via `send_message`:
+1. **Refine / Complete as Requested**: Edit `<review_dir>/reports/Architect.md` in-place via your native file-writing tool to supply verified Ground-Truth/Macro Flow proofs, symmetrical boundary endpoints, or harmonized section assertions (if converting an ungrounded impasse to fixable, update status to `STATUS: REVISIONS NEEDED`).
 2. **Remove**: Edit `<review_dir>/reports/Architect.md` in-place to remove the invalid/false-positive issue and update `- **Status**:` (`STATUS: PASS` if 0 blocking issues remain, else `STATUS: REVISIONS NEEDED`).
 3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/Architect_Explain.md` with deeper/differing codebase evidence AND update `<review_dir>/reports/Architect.md` in-place with the substantiated proofs. NEVER repeat stale arguments; if re-gated as stale, refine or remove.
