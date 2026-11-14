@@ -10,7 +10,7 @@ Surface architectural friction and propose **deepening opportunities** to transf
 
 ## Directives
 
-1. **Architecture Vocabulary**: MUST use exact terms from [`codebase-design`](../codebase-design/SKILL.md) (*module, interface, depth, seam, adapter, leverage, locality*); NEVER substitute *component, service, API, boundary*.
+1. **Architecture Vocabulary**: MUST use exact terms from [`make-the-change-easy`](../make-the-change-easy/REFERENCE.md) (*module, interface, depth, seam, adapter, leverage, locality*); NEVER substitute *component, service, API, boundary*.
 2. **Domain Terms & ADRs**: MUST consult `CONTEXT.md` for domain terminology and `docs/adr/` for existing architectural decisions before scanning.
 3. **Temp Report Generation**: MUST write the visual HTML report to the OS temporary directory (`$TMPDIR` or `%TEMP%`) with filename `architecture-review-<timestamp>.html`. NEVER write review HTML files into the repo.
 4. **Visual Centricity**: Every candidate in the report MUST have side-by-side Before/After diagrams per [HTML-REPORT.md](HTML-REPORT.md).
@@ -39,9 +39,8 @@ Surface architectural friction and propose **deepening opportunities** to transf
 - Present top recommendation and ask user which candidate to explore.
 
 ### 3. Grilling & Refinement Loop
-- Run [`grilling`](../grilling/SKILL.md) to stress-test the chosen candidate (constraints, dependencies, test survival).
-- Update domain terminology in `CONTEXT.md` via [`domain-modeling`](../domain-modeling/SKILL.md).
-- If exploring alternative interfaces, apply the parallel sub-agent pattern in [DESIGN-IT-TWICE.md](../codebase-design/DESIGN-IT-TWICE.md).
+- Stress-test the chosen candidate by interviewing the user one question at a time via `ask_question` (constraints, dependencies, test survival).
+- If exploring alternative interfaces, use [`design-an-interface`](../../productivity/design-an-interface/SKILL.md) (Design It Twice pattern).
 - If a candidate is rejected with a permanent technical rationale, offer to record it as an ADR.
 
 ---

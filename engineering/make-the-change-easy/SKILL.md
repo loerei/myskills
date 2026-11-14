@@ -28,7 +28,7 @@ Before inspecting target files, establish the ideal structural shape for the inc
 ### 2. Inspect & Execute 4-Axis Audit
 Read target files and trace execution paths against audit rules in [REFERENCE.md](REFERENCE.md):
 - **Maintainability (Locality)**: Check if logic is concentrated in a deep module or scattered across callers (Cohesion Order).
-- **Extensibility (Seams & Adapters)**: Identify missing seams or hardcoded external dependencies. Classify dependencies per [`DEEPENING.md`](../codebase-design/DEEPENING.md).
+- **Extensibility (Seams & Adapters)**: Identify missing seams or hardcoded external dependencies. Classify dependencies per [`DEEPENING.md`](DEEPENING.md).
 - **Debuggability (Test Surface)**: Verify if existing tests validate through clean interfaces or rely on brittle implementation mocks.
 - **Updatability (Shallowness & Deletion Test)**: Run the *Deletion Test* — determine if adding the change directly creates pass-through wrappers or state leakage.
 - **Completion Criterion**: All 4 axes evaluated with specific file/line evidence.
@@ -61,3 +61,4 @@ Render the Change Readiness Report strictly using the template in [REFERENCE.md]
 ## Subdoc Reference
 
 - **Architectural Glossary, 15 Tidying Patterns, Decision Gates & Report Template**: see [REFERENCE.md](REFERENCE.md).
+- **Deepening & Dependency Categories**: see [DEEPENING.md](DEEPENING.md).
