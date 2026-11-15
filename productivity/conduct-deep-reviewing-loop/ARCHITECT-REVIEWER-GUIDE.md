@@ -35,6 +35,7 @@ Audits whether the Directive Artifact (DA) specifies the optimal structural, bou
 6. **Parameter Seams & Governance Decoupling**: Are timeouts/limits injected via parameters and operational watchdogs decoupled from domain codecs/parsers?
 7. **Bootstrap Lifecycle Isolation**: Are schema migrations and config validation isolated to startup bootstrap rather than scattered as runtime fallback shims?
 8. **Frontend Composition Seams**: Are presentational views pure, using compound components/slots instead of $>5$ boolean layout props, with global `window`/`document` listeners isolated in root providers?
+9. **Module Cohesion & Strategy Decomposition**: Are polymorphic strategies, formats, or domain variants isolated in dedicated sibling modules rather than bundled into a monolithic file or inlined directly into coordinating facades and package entrypoints?
 
 ## 3. Domain Subdocuments Routing Table
 

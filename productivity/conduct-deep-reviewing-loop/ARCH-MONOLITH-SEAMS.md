@@ -8,6 +8,7 @@ Audits package visibility, internal facade contracts, dependency DAG acyclicity,
 - [ ] **Package Visibility**: Ensure domain entities and internal repositories maintain module-private visibility (e.g. Go `internal/`, Java package-private, Rust crate privacy). Reject direct cross-domain imports reaching into foreign data access layers or private structs.
 - [ ] **API Abstraction & DTO Demarcation**: Verify inter-module communication occurs exclusively through explicit public Interfaces or Application Services using immutable Data Transfer Objects (DTOs). Reject shared in-memory mutable state across distinct modules.
 - [ ] **Third-Party SDK Anti-Corruption Layer (ACL)**: Reject importing third-party vendor SDK clients, raw response types, or vendor-specific exceptions (e.g. Stripe, OpenAI, AWS, Supabase SDKs) directly into core domain services or UI components. Encapsulate external vendor SDKs behind domain-owned Port/Adapter interfaces that translate vendor payloads and rate-limit headers (`Retry-After`) into canonical domain DTOs and typed domain errors.
+- [ ] **Module Cohesion & Strategy Decomposition**: Verify that distinct domain variants, formats, codecs, or polymorphic strategies are isolated into dedicated, cohesive module files. Reject directive artifacts that bundle multiple domain strategies into a single monolithic file or inline heavy domain logic directly into coordinating facades and package entrypoints. Entrypoints MUST remain thin routers or export facades.
 
 ### 2. Dependency DAG Topology & Decomposition Thresholds
 - [ ] **Circular Dependency Analysis**: Verify module dependency graphs are strictly acyclic at both compile-time and runtime levels.
@@ -186,8 +187,32 @@ class OrderProcessor {
 }
 ```
 
+### Anti-Pattern 7: Monolithic Strategy Bundling & Heavy Entrypoint Barrels
+
+```typescript
+// BAD: Inlining all polymorphic strategy variants directly into the package entrypoint
+// src/codecs/schema/index.ts (400+ lines handling multiple format branches)
+export function extractSchema(strategy: string, data: unknown) {
+  if (strategy === 'format-a') { /* 100 lines of format-a logic */ }
+  if (strategy === 'format-b') { /* 100 lines of format-b logic */ }
+}
+
+// GOOD: Dedicated sibling modules coordinated by a thin dispatcher facade
+// src/codecs/schema/format-a.ts, src/codecs/schema/format-b.ts
+// src/codecs/schema/index.ts (thin router facade)
+import { extractFormatA } from './format-a.js';
+import { extractFormatB } from './format-b.js';
+
+const EXTRACTORS: Record<string, ExtractorFn> = { 'format-a': extractFormatA, 'format-b': extractFormatB };
+export function extractSchema(strategy: string, data: unknown) {
+  const fn = EXTRACTORS[strategy] ?? extractGeneric;
+  return fn(data);
+}
+```
+
 ## Failure Modes & Mitigations
 
 - **Cascading Module Refactoring**: Enforce module-private visibility on internal repositories and expose public DTO facades.
 - **Inflexible Consumer Coupling & Test-Resistant Constants**: Extract operational flags and timeouts into injected caller `options` and constructor parameters so unit tests can run with millisecond thresholds.
 - **Domain Smuggling via Proximity Placement**: Elevate generic utilities buried inside domain folders to package-root shared directories (`src/utils/`, `src/common/`).
+- **Strategy Monoliths & Heavy Entrypoints**: Decompose polymorphic strategies, formats, and driver variants into dedicated sibling files coordinated by thin router facades.
