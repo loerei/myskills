@@ -33,7 +33,7 @@ flowchart TD
     Ambig -->|"Clear"| Debug{"Problem reported?"}
 
     Debug -->|"Yes"| Inv["3-Phase Investigation:<br/>1. Confirm root cause via repro/logs<br/>2. Trace why<br/>3. Propose fix -> Await approval"] --> Exec
-    Debug -->|"No"| Exec["Execute One [/] Step<br/>(patchitright for repo files)"]
+    Debug -->|"No"| Exec["Execute One [/] Step<br/>(patchitright for all files)"]
 
     Exec --> Verify{"Runtime verification passed?"}
     Verify -->|"Local fix, errors shrinking"| Exec
@@ -89,7 +89,7 @@ Every turn starts in **Tier 1**. Explicit override/modifier tags (`T1`, `T2`, `T
 | Task | Tool / Server | Rules |
 | :--- | :--- | :--- |
 | **Code Reading & Impact** | `jcodemunch` (situational) or `rg` + `read_file` | Use `jcodemunch` (`route` or `order`) for large/unfamiliar repo orientation (`get_ranked_context` / `assemble_task_context`), structural blast-radius/dependency queries (`get_blast_radius`, `find_importers`, `check_rename_safe`, `get_dependency_cycles`), or indexing (`index_folder`) required by `patchitright` `symbol_name`. Native `rg` + bounded `read_file` is allowed anytime for targeted lookups, docs/configs, and verifying exact live lines before patching. |
-| **File Editing** | `patchitright` (`patch_file` / `write_file`) | **MUST** use `patchitright` to create, copy, slice, or edit **all repository/tracked files** (code, configs, docs, and Markdown; use `patch_file` for targeted edits/broadcasts and `write_file` for new files, `source_file` copies/extracts, or intentional full rewrites). Native `edit_file` / `write_file` is allowed **ONLY** for brain artifacts, `.scratch/`, and `brain/scratch/`. Shell `cp`/`mv` is permitted only for unmodified file copies/moves (prefer `write_file(source_file=...)`); custom patching scripts are permitted **ONLY** for programmatic/regex/AST transforms that `patchitright` cannot express, and **MUST** assert exact/non-zero match counts and inspect diffs. |
+| **File Editing** | `patchitright` (`patch_file` / `write_file`) | **MUST** use `patchitright` to create, copy, slice, or edit **all files** (repository/tracked code, configs, docs, Markdown, `.scratch/`, and `brain/scratch/`; use `patch_file` for targeted edits/broadcasts and `write_file` for new files, `source_file` copies/extracts, or intentional full rewrites). Native `edit_file` / `write_file` is allowed **ONLY** for top-level `brain/<conversation-id>/*.md` artifacts when `ArtifactMetadata` is required by the IDE UI. Shell `cp`/`mv` is permitted only for unmodified file copies/moves (prefer `write_file(source_file=...)`); custom patching scripts are permitted **ONLY** for programmatic/regex/AST transforms that `patchitright` cannot express, and **MUST** assert exact/non-zero match counts and inspect diffs. |
 | **Session History & Subagents** | `chronicle` | Use `chronicle` tools (`query_transcript`, `list_sessions`, `search_history`, `get_session_benchmarks`, `get_session_relationship`). Delegate large exports via `output` parameter. Never manually read raw SQLite or `.jsonl` transcripts unless `chronicle` is unavailable. |
 | **Visual Metadata** | N/A | Trust `HoverSource Component Metadata` coordinates 100% without re-validating; jump directly to target lines. |
 
