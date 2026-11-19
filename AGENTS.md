@@ -5,7 +5,7 @@
 > This document (`AGENTS.md`) defines repository-specific workflow and safety constraints.
 >
 > 1. **Repository Priority:** When platform defaults conflict with this document, follow this document.
-> 2. **Outcome-Driven Pacing:** User prompts define session objectives, not mandates for single-turn closure. Multi-turn progression (investigation -> plan review -> incremental execution -> verification) is expected. Unadorned prompts default to Tier 1 and never authorize source edits.
+> 2. **Outcome-Driven Pacing:** User prompts define session objectives, not mandates for single-turn closure. Multi-turn progression (investigation -> plan review -> incremental execution -> verification) is expected. Unadorned prompts default to Tier 2 and never authorize source edits.
 > 3. **Universal Invariant Fidelity:** When authoring rules, skills, or subagent prompts:
 >    - **Occam's Instruction Law:** Replace any instruction or instruction set with a simpler or more generalized one that achieves equal or better quality.
 >    - **No Lossy Compression:** Never drop conditions, quantifiers, `MUST` imperatives, set mappings (`1-to-1` vs `N-to-M`), or exact variable-binding noun phrases.
@@ -20,10 +20,10 @@
 flowchart TD
     Start["Turn Start<br/>(Check repo-root AGENTS.md; repo overrides global)"] --> Ctx{"Context truncated?"}
     Ctx -->|"Yes"| Recover["Context Recovery Protocol"] --> Tier
-    Ctx -->|"No"| Tier{"Tier Gate (Default: T1)"}
+    Ctx -->|"No"| Tier{"Tier Gate (Default: T2)"}
 
-    Tier -->|"Question / '?' / [T1]"| T1["Tier 1: Read & Debate<br/>STRICT WRITE BAN"] --> Report
-    Tier -->|"Diagnostics in .scratch/, .devutil/,<br/>brain/scratch/ or [T2]"| T2["Tier 2: Diagnostics & Repro"] --> Report
+    Tier -->|"No-op / answer-only prompt or [T1]"| T1["Tier 1: Read & Debate<br/>STRICT WRITE BAN"] --> Report
+    Tier -->|"Default (diagnostics / scripts) or [T2]"| T2["Tier 2: Diagnostics & Scripts"] --> Report
     Tier -->|"Repo edit / Git / State change"| Approved{"EXPLICIT_APPROVAL<br/>or [T3]?"}
     Approved -->|"No"| Block["STOP: Present Plan & Await Approval"] --> Report
     Approved -->|"Yes"| T3["Tier 3: Check Plan or Active Ticket/PRD"]
@@ -61,16 +61,16 @@ flowchart TD
 
 ## Phase 1A: 3-Tier Execution Framework
 
-Every turn starts in **Tier 1**. Explicit override/modifier tags (`T1`, `T2`, `T3`, `SQ`, case-insensitive, with or without brackets) apply immediately:
+Every turn starts in **Tier 2**. Explicit override/modifier tags (`T1`, `T2`, `T3`, `SQ`, case-insensitive, with or without brackets) apply immediately:
 
 | Tier / Tag | Scope & Permitted Actions | Hard Boundaries |
 | :--- | :--- | :--- |
-| **Tier 1 / `T1`** | Read files, search, analyze, debate, propose plans. Default for questions, proposals, and prompts ending in `?`. | **STRICT WRITE BAN** on repo files, git state, and PRs. `T1` also bans `brain/scratch/` writes. |
-| **Tier 2 / `T2`** | Run tests/builds, write repro harnesses and diagnostic tools in `.scratch/`, `.devutil/`, or `brain/scratch/`. | `.scratch/` must be in `.gitignore` (add if missing). `.devutil/` tools must be English, accept CLI args, and include `README.md` (promote `.scratch/` tools only when evaluated/approved). Clean temp source instrumentation before Tier 3 commits. |
-| **Tier 3 / `T3`** | Repo source edits, `git commit`/`push`, PR actions, branch deletion. | Requires **`EXPLICIT_APPROVAL = TRUE`** (`"Approve"`, `"Proceed"`, `"Execute plan"`, direct edit command after a plan, or `T3`). Praise (`"looks good"`), open questions, hypotheticals, or silence keep Tier 1. |
+| **Tier 1 / `T1`** | Read files, search, analyze, debate, propose plans. Triggered ONLY by explicit `T1` tag or prompts implying zero-action / immediate answer. | **STRICT WRITE BAN** on repo files, git state, PRs, `.scratch/`, `.devutil/`, and `brain/scratch/`. |
+| **Tier 2 / `T2`** | Default for unadorned prompts. Run tests/builds, write repros and tools in `.scratch/`, `.devutil/<tool-name>/`, or `brain/scratch/`. | `.scratch/` must be in `.gitignore` (add if missing). **NEVER** inline multi-step or multi-line PowerShell/shell scripts in `run_command`; write a script file (e.g. Python) via `patchitright` and execute it. For project-universal, repeatable utilities, create `.devutil/<tool-name>/` (English, CLI args, `README.md`) and report it briefly at turn end. Clean temp source instrumentation before Tier 3 commits. |
+| **Tier 3 / `T3`** | Repo source edits, `git commit`/`push`, PR actions, branch deletion. | Requires **`EXPLICIT_APPROVAL = TRUE`** (`"Approve"`, `"Proceed"`, `"Execute plan"`, direct edit command after a plan, or `T3`). Praise (`"looks good"`), open questions, hypotheticals, or silence stay in Tier 2 (never authorize Tier 3). |
 | **`SQ`** | Skill discovery modifier. | Run `agents list -c <category>` (or `agents list`) and read matching `SKILL.md` files before responding or calling tools. |
 
-**Tier 3 Protocol:** Present technical plan in Tier 1 (unless `T3` tag is present) -> STOP and await explicit approval -> execute and verify runtime evidence after each step.
+**Tier 3 Protocol:** Present technical plan before editing (unless `T3` tag is present) -> STOP and await explicit approval -> execute and verify runtime evidence after each step.
 
 ---
 
