@@ -17,7 +17,7 @@ Execute well-specified tickets directly from their `What to Build` deliverables 
    - After all `## What to Build` deliverables are `[x]`, verify and check off any remaining cross-cutting `## Acceptance Criteria` items before committing.
 4. **Targeted Seam Exploration**: Inspect only the codebase seams and tests relevant to the active ticket.
 5. **Pre-Flight Spec Drift Check**: Before writing code, check for `Reviewed-At-Commit` in the parent PRD or ticket header. When present, run `git log --oneline <sha>..HEAD -- <touched-paths>`. If commits landed in overlapping scope after spec review, inspect their diff and reconcile live defaults, protocols, and handlers before coding (preserve newer live behavior unless it directly contradicts a core ticket requirement; escalate to the user on semantic contradiction).
-6. **Considerate Porting on Migrations**: When migrating or replacing an existing file or UI component, read the live implementation and its paired stylesheets/tests first. Treat inline code snippets in tickets as structural intent, never as authorization to drop existing CSS selectors, defaults, or live behaviors not explicitly marked `INTENTIONALLY_CHANGED` in the spec.
+6. **Considerate Porting on Migrations**: When migrating or replacing an existing file or UI component (including `[NEW]` deliverables declaring `Replaces: <legacy-file-path(s)>`), read the live legacy implementation and its paired stylesheets/tests first. Treat inline code snippets in tickets as structural intent, never as authorization to drop existing CSS selectors, secondary data fields, localization/i18n lookups, defaults, or live behaviors not explicitly marked `INTENTIONALLY_CHANGED` in the spec.
 
 ## Workflow
 

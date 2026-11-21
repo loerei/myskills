@@ -36,6 +36,7 @@ Audits whether the Directive Artifact (DA) specifies the optimal structural, bou
 7. **Bootstrap Lifecycle Isolation**: Are schema migrations and config validation isolated to startup bootstrap rather than scattered as runtime fallback shims?
 8. **Frontend Composition Seams**: Are presentational views pure, using compound components/slots instead of $>5$ boolean layout props, with global `window`/`document` listeners isolated in root providers?
 9. **Module Cohesion & Strategy Decomposition**: Are polymorphic strategies, formats, or domain variants isolated in dedicated sibling modules rather than bundled into a monolithic file or inlined directly into coordinating facades and package entrypoints?
+10. **`PARITY_MIGRATION` Decommissioning & Seam/Field Parity**: When `Context.md` declares `Change Mode: PARITY_MIGRATION`, does every `[DELETE]` or replaced module/controller/binder have 100% of its exported capabilities, cross-cutting runtime seams (e.g. i18n/localization bindings, theme/shortcut listeners, IPC/event subscriptions), and consumed/rendered data fields mapped 1-to-1 to replacement seams in `[NEW]`/`[MODIFY]` deliverables (with `Replaces: <legacy-file-path(s)>` cited on `[NEW]` replacement deliverables, or omissions explicitly declared `INTENTIONALLY_CHANGED`)?
 
 ## 3. Domain Subdocuments Routing Table
 

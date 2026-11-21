@@ -18,7 +18,7 @@ Audit criteria for offline upgrades/refactors, local/desktop/CLI applications, g
 
 ### 3. Direct Atomic Cutover & Clean Decommissioning
 - [ ] **Ban on 24/7 Dual-Write / Expand-Contract Shims**: Reject reviewer feedback demanding multi-deploy dual-write pipelines, shadow-read phases, or temporary runtime backward-compatibility adapters. Systems upgraded offline must execute clean, direct cutovers via startup/deployment migration scripts without transitional runtime shims in domain code.
-- [ ] **Explicit Legacy Decommissioning**: Ensure old subsystems, obsolete files, and legacy dead code have dedicated, scheduled deletion steps immediately upon completion of the replacement subsystem.
+- [ ] **Explicit Legacy Decommissioning & Replacement Lineage**: Ensure old subsystems, obsolete files, and legacy dead code have dedicated, scheduled deletion steps (`[DELETE]`) immediately upon completion of the replacement subsystem. Under `PARITY_MIGRATION`, every `[NEW]` deliverable replacing legacy code MUST declare `Replaces: <legacy-file-path(s)>` in its ticket (so isolated ticket implementers inspect the exact legacy files on disk), and `[DELETE]` steps are valid ONLY after 100% of the retired files' capabilities, cross-cutting binders (e.g. i18n/localization, shortcuts, theme), and data fields are wired in upstream replacement tickets.
 
 ### 4. Headless Atomic Verification & Single-Turn Sizing
 - [ ] **Self-Contained Ticket Verification**: Every ticket MUST deliver isolated, automated verification (unit tests, headless integration fixtures, migration dry-runs, or CLI test runners) that passes in headless CI, regardless of whether the complete application can boot or render. BANS deferring test coverage to the final milestone ("Big-Bang Integration").

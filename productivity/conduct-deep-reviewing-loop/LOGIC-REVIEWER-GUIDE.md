@@ -29,6 +29,7 @@ Audits operational workflows, state machines, async concurrency, temporal/string
 2. **State Machine Integrity**: Are all `(CurrentState, Event)` permutations explicitly handled, rejecting illegal transitions and isolating side effects (network/IPC/emails) until after state transitions commit?
 3. **Async & Multithreaded Concurrency**: Are out-of-order async responses guarded via `AbortController`/sequence IDs, shared mutations serialized across `await` boundaries, `Promise.all` partial failures cleaned up, and multithreaded locks acquired in deterministic order?
 4. **Temporal, Numerical & Unicode Precision**: Are elapsed durations measured via monotonic clocks (`performance.now()`), recurring schedules bound to IANA timezones, financial values computed in exact integers/decimals, and user/file strings normalized (`NFC`)?
+5. **`PARITY_MIGRATION` Selector, Field & Localization Parity**: When `Context.md` declares `Change Mode: PARITY_MIGRATION`, do replacement selectors, view-models, filters, and component snippets preserve all secondary data fields, fallback branches, and dynamic localization/i18n dictionary lookups from the retired/replaced modules on disk (rejecting inline code snippets that drop secondary fields or hardcode literal sample strings where an active i18n/locale seam exists, unless marked `INTENTIONALLY_CHANGED`)?
 
 ## 3. Domain Subdocuments Routing Table
 
