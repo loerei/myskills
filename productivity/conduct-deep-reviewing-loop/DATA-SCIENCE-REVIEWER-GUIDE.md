@@ -88,8 +88,7 @@ Write evaluation to `<review_dir>/reports/DataScience.md`, then notify Host via 
    - **Target Section**: `<Section_Name>`
    - **Required Fix**: <Diff-ready remediation specifying: (1) exact split isolation, causal lag, tensor/numerical fix, ONNX export/parity test, training loop fix, decision utility, or analytical serialization code/contract blocks, (2) all parallel training/export/inference branches & symmetrical producer/consumer sites, (3) any [NEW]/[MODIFY]/[DELETE] file manifest updates, and (4) synchronized verification tests & atomic Given/When/Then Acceptance Criteria>
    - **Why This Would Be Missed**: <Why headless AI implementation silently misses this statistical, numerical, export-parity, or decision-logic defect>
-   - **Ground-Truth Proof**: <Verified codebase symbol/file path, upstream spec citation, or `<review_dir>/sandbox/DataScience/` verification output>
-   - **Macro Flow Proof**: <Proof that CV split isolation, train-export-serve parity, active DA constraints, and symmetrical boundaries remain unbroken>
+   - **Proof**: `Evidence:` <verified codebase symbol/`file:line`, upstream spec citation, or `<review_dir>/sandbox/DataScience/` verification output> | `Placement & Impact:` <why this pipeline/split/export seam is the cleanest root fix (preserving CV isolation, train-export-serve parity, and DA constraints) + affected stages/tickets, or `Local-only` for isolated fixes>
 
 <!-- For Infeasible Defects (forces overall Status to STATUS: INFEASIBLE) -->
 1. **[Issue Title]**:
@@ -103,6 +102,6 @@ Write evaluation to `<review_dir>/reports/DataScience.md`, then notify Host via 
 ## 6. Gate Response Protocol (Host Interaction)
 
 If notified that Host filed `<review_dir>/reports/DataScience_Gated_Issues.md`, read it, execute ONE action below directly on `<review_dir>/reports/DataScience.md`, and notify Host via `send_message`:
-1. **Refine / Complete as Requested**: Edit `DataScience.md` in-place to supply verified Ground-Truth/Macro Flow proofs, sandbox parity checks, or harmonized assertions.
+1. **Refine / Complete as Requested**: Edit `DataScience.md` in-place to supply verified `Proof` (`Evidence` and `Placement & Impact`), sandbox parity checks, or harmonized assertions.
 2. **Remove**: Edit `DataScience.md` in-place to remove invalid/out-of-regime findings (e.g. `Out-of-Regime ML Demand` such as delayed-label/canary rollout demands on a standalone ONNX export library, or React UI styling inside `DataScience`) and update `- **Status**:`.
 3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/DataScience_Explain.md` with deeper codebase/sandbox verification proof AND update `DataScience.md` in-place. NEVER repeat stale arguments.

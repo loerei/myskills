@@ -66,8 +66,7 @@ Write evaluation to `<review_dir>/reports/Readiness.md`, then notify Host via `s
    - **Target Section**: `<Section_Name>`
    - **Required Fix**: <Diff-ready readiness remediation specifying: (1) exact config/manifest/signature blocks, (2) all symmetrical producer/consumer sites across PRD/tickets, (3) any [NEW]/[MODIFY]/[DELETE] file manifest or Blocked-by prerequisite additions, and (4) synchronized Verification Command & Acceptance Criteria updates>
    - **Why This Would Be Missed**: <Why headless AI implementation silently misses this or why symptom does not reveal generalized fix>
-   - **Ground-Truth Proof**: <Verified codebase/lockfile path, upstream spec citation, or `<review_dir>/sandbox/Readiness/` probe output>
-   - **Macro Flow Proof**: <Proof that initialization order, build pipeline, and symmetrical boundaries remain valid>
+   - **Proof**: `Evidence:` <verified codebase/lockfile `file:line`, upstream spec citation, or `<review_dir>/sandbox/Readiness/` probe output> | `Placement & Impact:` <why this config/build/seam placement is the cleanest root fix + affected build/runtime/ticket boundaries, or `Local-only` for isolated leaf fixes>
 
 <!-- For Infeasible Defects (forces overall Status to STATUS: INFEASIBLE) -->
 1. **[Issue Title]**:
@@ -81,6 +80,6 @@ Write evaluation to `<review_dir>/reports/Readiness.md`, then notify Host via `s
 ## 5. Gate Response Protocol (Host Interaction)
 
 If notified that Host filed `<review_dir>/reports/Readiness_Gated_Issues.md`, read it, execute ONE action below directly on `<review_dir>/reports/Readiness.md`, and notify Host via `send_message`:
-1. **Refine / Complete as Requested**: Edit `Readiness.md` in-place to supply verified Ground-Truth/Macro Flow proofs, symmetrical boundary endpoints, or harmonized section assertions.
+1. **Refine / Complete as Requested**: Edit `Readiness.md` in-place to supply verified `Proof` (`Evidence` and `Placement & Impact`), symmetrical boundary endpoints, or harmonized section assertions.
 2. **Remove**: Edit `Readiness.md` in-place to remove the invalid/false-positive issue (e.g. flagging upstream-scheduled files) and update `- **Status**:`.
 3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/Readiness_Explain.md` with deeper codebase/sandbox probe proof AND update `Readiness.md` in-place. NEVER repeat stale arguments.

@@ -63,8 +63,7 @@ Write evaluation to `<review_dir>/reports/Testability.md`, then notify Host via 
    - **Target Section**: `<Section_Name>`
    - **Required Fix**: <Diff-ready testability remediation specifying: (1) exact DI seam/interface/fixture code blocks, (2) all symmetrical component/module & test file sites, (3) any [NEW]/[MODIFY]/[DELETE] test file manifest updates, and (4) synchronized test suite descriptions & atomic Acceptance Criteria>
    - **Why This Would Be Missed**: <Why headless AI implementation writes a self-fulfilling, drifting, or flaky test without this constraint>
-   - **Ground-Truth Proof**: <Verified codebase interface/runner path, or `<review_dir>/sandbox/Testability/` harness output>
-   - **Macro Flow Proof**: <Proof that seam injection, symmetrical boundaries, and `Verification Plan` assertions align across the DA>
+   - **Proof**: `Evidence:` <verified codebase interface/runner `file:line`, or `<review_dir>/sandbox/Testability/` harness output> | `Placement & Impact:` <why this test seam/fixture placement is the cleanest root fix + affected suites/tickets, or `Local-only` for isolated test fixes>
 
 <!-- For Infeasible Defects (forces overall Status to STATUS: INFEASIBLE) -->
 1. **[Issue Title]**:
@@ -78,6 +77,6 @@ Write evaluation to `<review_dir>/reports/Testability.md`, then notify Host via 
 ## 5. Gate Response Protocol (Host Interaction)
 
 If notified that Host filed `<review_dir>/reports/Testability_Gated_Issues.md`, read it, execute ONE action below directly on `<review_dir>/reports/Testability.md`, and notify Host via `send_message`:
-1. **Refine / Complete as Requested**: Edit `Testability.md` in-place to supply verified Ground-Truth/Macro Flow proofs, symmetrical boundary updates, or harmonized section assertions.
+1. **Refine / Complete as Requested**: Edit `Testability.md` in-place to supply verified `Proof` (`Evidence` and `Placement & Impact`), symmetrical boundary updates, or harmonized section assertions.
 2. **Remove**: Edit `Testability.md` in-place to remove the invalid/false-positive issue (e.g. demanding E2E browser tests under `!NC0`) and update `- **Status**:`.
 3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/Testability_Explain.md` with deeper codebase/sandbox harness proof AND update `Testability.md` in-place. NEVER repeat stale arguments.

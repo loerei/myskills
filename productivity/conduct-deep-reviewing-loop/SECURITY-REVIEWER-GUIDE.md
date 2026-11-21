@@ -65,8 +65,7 @@ Write evaluation to `<review_dir>/reports/Security.md`, then notify Host via `se
    - **Target Section**: `<Section_Name>`
    - **Required Fix**: <Diff-ready security remediation specifying: (1) exact authz/schema/sanitization/CSP code blocks, (2) all parallel endpoints/branches & symmetrical producer/consumer sites, (3) any [NEW]/[MODIFY]/[DELETE] file manifest updates, and (4) synchronized adversarial test & Acceptance Criteria updates>
    - **Why This Would Be Missed**: <Why headless AI implementation silently misses this vulnerability or why symptom does not reveal generalized fix>
-   - **Ground-Truth Proof**: <Verified codebase/upstream file path and symbol, or non-colliding target landing location>
-   - **Macro Flow Proof**: <Proof that authz lifecycle, trust boundaries, background worker compatibility, and symmetrical endpoints remain unbroken>
+   - **Proof**: `Evidence:` <verified codebase/upstream `file:line` and symbol, or non-colliding target path> | `Placement & Impact:` <why this trust/ingress boundary placement is the highest-leverage root fix (not a leaf band-aid) + affected endpoints/workers/tickets, or `Local-only` for isolated leaf fixes>
 
 <!-- For Infeasible Defects (forces overall Status to STATUS: INFEASIBLE) -->
 1. **[Issue Title]**:
@@ -80,6 +79,6 @@ Write evaluation to `<review_dir>/reports/Security.md`, then notify Host via `se
 ## 5. Gate Response Protocol (Host Interaction)
 
 If notified that Host filed `<review_dir>/reports/Security_Gated_Issues.md`, read it, execute ONE action below directly on `<review_dir>/reports/Security.md`, and notify Host via `send_message`:
-1. **Refine / Complete as Requested**: Edit `Security.md` in-place to supply verified Ground-Truth/Macro Flow proofs, symmetrical boundary endpoints, or harmonized section assertions.
+1. **Refine / Complete as Requested**: Edit `Security.md` in-place to supply verified `Proof` (`Evidence` and `Placement & Impact`), symmetrical boundary endpoints, or harmonized section assertions.
 2. **Remove**: Edit `Security.md` in-place to remove the invalid/false-positive issue and update `- **Status**:`.
 3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/Security_Explain.md` with deeper codebase/sandbox proof AND update `Security.md` in-place. NEVER repeat stale arguments.

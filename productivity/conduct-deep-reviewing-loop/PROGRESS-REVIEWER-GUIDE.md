@@ -70,8 +70,7 @@ Write evaluation to `<review_dir>/reports/Progress.md`, then notify Host via `se
    - **Technical Rationale**: <Why restructuring is required for dependency soundness or continuity alignment>
    - **Why This Would Be Missed**: <Why headless AI implementation hits a deadlock, forward dependency, or big-bang failure>
    - **Required Transformation**: <Diff-ready WBS transformation specifying: (1) exact split/merged/reordered steps or tickets, (2) symmetrical interface, Blocked-by DAG, and [NEW]/[MODIFY]/[DELETE] file manifest updates across PRD and sibling tickets, and (3) synchronized Verification Command & Acceptance Criteria updates>
-   - **Ground-Truth Proof**: <Verified codebase/spec paths and non-colliding target locations>
-   - **Macro Flow Proof**: <Proof that the resulting phase/ticket DAG is acyclic and verifiable>
+   - **Proof**: `Evidence:` <verified codebase/spec paths and non-colliding target locations> | `Placement & Impact:` <why this WBS restructuring/seam staging ($S \to B$) is the highest-leverage, minimum-debt sequence + proof that the resulting phase/ticket DAG is acyclic and verifiable>
 
 <!-- For Infeasible WBS Defects (forces overall Status to STATUS: INFEASIBLE) -->
 1. **[IMPASSE] <Issue Title>**:
@@ -79,7 +78,7 @@ Write evaluation to `<review_dir>/reports/Progress.md`, then notify Host via `se
    - **Technical Rationale**: <Why the ticket/phase premise is impossible>
    - **Infeasibility Proof**: <Empirical proof of hard platform constraint>
    - **Alternative Architectural Paths**: <Viable pivot options>
-   - **Macro Flow Proof**: <Impact on milestone dependency DAG>
+   - **DAG Impact**: <Impact on milestone dependency DAG>
 
 ### Suggestions for Improvement (Non-blocking):
 ```
@@ -87,6 +86,6 @@ Write evaluation to `<review_dir>/reports/Progress.md`, then notify Host via `se
 ## 5. Gate Response Protocol (Host Interaction)
 
 If notified that Host filed `<review_dir>/reports/Progress_Gated_Issues.md`, read it, execute ONE action below directly on `<review_dir>/reports/Progress.md`, and notify Host via `send_message`:
-1. **Refine / Complete as Requested**: Edit `Progress.md` in-place to supply verified Ground-Truth/Macro Flow proofs, symmetrical boundary updates, or harmonized section assertions.
+1. **Refine / Complete as Requested**: Edit `Progress.md` in-place to supply verified `Proof` (`Evidence` and `Placement & Impact`), symmetrical boundary updates, or harmonized section assertions.
 2. **Remove**: Edit `Progress.md` in-place to remove the invalid/false-positive issue (e.g. demanding vertical slicing on `!NC` or decomposing a cohesive single-run plan) and update `- **Status**:`.
 3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/Progress_Explain.md` with deeper codebase dependency evidence AND update `Progress.md` in-place. NEVER repeat stale arguments.

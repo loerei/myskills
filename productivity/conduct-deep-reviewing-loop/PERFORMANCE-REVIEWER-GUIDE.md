@@ -59,8 +59,7 @@ Write evaluation to `<review_dir>/reports/Performance.md`, then notify Host via 
    - **Target Section**: `<Section_Name>`
    - **Required Fix**: <Diff-ready performance remediation specifying: (1) exact $O(1)$/batching/indexing/bounding code blocks and numeric thresholds, (2) all parallel hot-path branches & symmetrical sites, (3) any [NEW]/[MODIFY]/[DELETE] file manifest updates, and (4) synchronized test & Acceptance Criteria updates>
    - **Why This Would Be Missed**: <Why small-fixture headless CI tests miss this bottleneck or leak>
-   - **Ground-Truth Proof**: <Verified codebase symbol/schema path, or `<review_dir>/sandbox/Performance/` benchmark delta>
-   - **Macro Flow Proof**: <Proof that initialization order, symmetrical boundary endpoints, and dependent DA sections remain valid>
+   - **Proof**: `Evidence:` <verified codebase symbol/schema `file:line`, or `<review_dir>/sandbox/Performance/` benchmark delta> | `Placement & Impact:` <why this hot-path/batching/indexing seam is the highest-leverage, minimum-complexity fix + affected callers/tickets, or `Local-only` for isolated leaf fixes>
 
 <!-- For Infeasible Defects (forces overall Status to STATUS: INFEASIBLE) -->
 1. **[Issue Title]**:
@@ -74,6 +73,6 @@ Write evaluation to `<review_dir>/reports/Performance.md`, then notify Host via 
 ## 5. Gate Response Protocol (Host Interaction)
 
 If notified that Host filed `<review_dir>/reports/Performance_Gated_Issues.md`, read it, execute ONE action below directly on `<review_dir>/reports/Performance.md`, and notify Host via `send_message`:
-1. **Refine / Complete as Requested**: Edit `Performance.md` in-place to supply verified Ground-Truth/Macro Flow proofs, benchmark evidence, or symmetrical boundary updates.
+1. **Refine / Complete as Requested**: Edit `Performance.md` in-place to supply verified `Proof` (`Evidence` and `Placement & Impact`), benchmark evidence, or symmetrical boundary updates.
 2. **Remove**: Edit `Performance.md` in-place to remove speculative micro-optimizations on cold/tiny paths and update `- **Status**:`.
 3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/Performance_Explain.md` with deeper codebase/sandbox benchmark proof AND update `Performance.md` in-place. NEVER repeat stale arguments.

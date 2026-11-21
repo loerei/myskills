@@ -65,8 +65,7 @@ Write evaluation to `<review_dir>/reports/DataMigration.md`, then notify Host vi
    - **Target Section**: `<Section_Name>`
    - **Required Fix**: <Diff-ready persistence remediation specifying: (1) exact migration script/DDL/schema/transactional code blocks, (2) all parallel read/write/delete branches & symmetrical producer/consumer sites, (3) any [NEW]/[MODIFY]/[DELETE] file manifest or Blocked-by updates, and (4) synchronized test & Acceptance Criteria updates>
    - **Why This Would Be Missed**: <Why headless AI implementation silently misses this data/locking hazard>
-   - **Ground-Truth Proof**: <Verified codebase schema/migration path, or `<review_dir>/sandbox/DataMigration/` dry-run output>
-   - **Macro Flow Proof**: <Proof that bootstrap order, transaction boundaries, and symmetrical endpoints remain valid>
+   - **Proof**: `Evidence:` <verified codebase schema/migration `file:line`, or `<review_dir>/sandbox/DataMigration/` dry-run output> | `Placement & Impact:` <why this startup migration/transactional seam is the cleanest minimum-debt fix (not a runtime shim) + affected read/write/bootstrap boundaries, or `Local-only` for isolated leaf fixes>
 
 <!-- For Infeasible Defects (forces overall Status to STATUS: INFEASIBLE) -->
 1. **[Issue Title]**:
@@ -80,6 +79,6 @@ Write evaluation to `<review_dir>/reports/DataMigration.md`, then notify Host vi
 ## 4. Gate Response Protocol (Host Interaction)
 
 If notified that Host filed `<review_dir>/reports/DataMigration_Gated_Issues.md`, read it, execute ONE action below directly on `<review_dir>/reports/DataMigration.md`, and notify Host via `send_message`:
-1. **Refine / Complete as Requested**: Edit `DataMigration.md` in-place to supply verified Ground-Truth/Macro Flow proofs, symmetrical boundary endpoints, or harmonized section assertions.
+1. **Refine / Complete as Requested**: Edit `DataMigration.md` in-place to supply verified `Proof` (`Evidence` and `Placement & Impact`), symmetrical boundary endpoints, or harmonized section assertions.
 2. **Remove**: Edit `DataMigration.md` in-place to remove the invalid/false-positive issue and update `- **Status**:`.
 3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/DataMigration_Explain.md` with deeper codebase/sandbox dry-run proof AND update `DataMigration.md` in-place. NEVER repeat stale arguments.

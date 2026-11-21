@@ -57,8 +57,7 @@ Write evaluation to `<review_dir>/reports/Observability.md`, then notify Host vi
    - **Target Section**: `<Section_Name>`
    - **Required Fix**: <Diff-ready observability remediation specifying: (1) exact logging, error chaining, stream routing, metric, or flag lifecycle code/config blocks, (2) all parallel handlers & symmetrical sites, (3) any [NEW]/[MODIFY]/[DELETE] file manifest updates, and (4) synchronized test & Acceptance Criteria updates>
    - **Why This Would Be Missed**: <Why headless AI implementation silently misses this operational blind spot>
-   - **Ground-Truth Proof**: <Verified codebase logger/collector path, upstream spec citation, or non-colliding target symbol>
-   - **Macro Flow Proof**: <Proof that diagnostic context, stream hygiene, and symmetrical boundary endpoints remain unbroken>
+   - **Proof**: `Evidence:` <verified codebase logger/collector `file:line`, upstream spec citation, or non-colliding target symbol> | `Placement & Impact:` <why this diagnostic/flag seam is the cleanest minimum-overhead placement + affected handlers/tickets, or `Local-only` for isolated leaf fixes>
 
 <!-- For Infeasible Defects (forces overall Status to STATUS: INFEASIBLE) -->
 1. **[Issue Title]**:
@@ -72,6 +71,6 @@ Write evaluation to `<review_dir>/reports/Observability.md`, then notify Host vi
 ## 4. Gate Response Protocol (Host Interaction)
 
 If notified that Host filed `<review_dir>/reports/Observability_Gated_Issues.md`, read it, execute ONE action below directly on `<review_dir>/reports/Observability.md`, and notify Host via `send_message`:
-1. **Refine / Complete as Requested**: Edit `Observability.md` in-place to supply verified Ground-Truth/Macro Flow proofs, relative post-rollout flag TTLs, or symmetrical boundary updates.
+1. **Refine / Complete as Requested**: Edit `Observability.md` in-place to supply verified `Proof` (`Evidence` and `Placement & Impact`), relative post-rollout flag TTLs, or symmetrical boundary updates.
 2. **Remove**: Edit `Observability.md` in-place to remove cross-tier false positives (e.g. server tracing demanded on a CLI tool or analytical pipeline) and update `- **Status**:`.
 3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/Observability_Explain.md` with deeper codebase evidence AND update `Observability.md` in-place. NEVER repeat stale arguments.

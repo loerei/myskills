@@ -73,8 +73,7 @@ Write evaluation to `<review_dir>/reports/Edgecase.md`, then notify Host via `se
    - **Target Section**: `<Section_Name>`
    - **Required Fix**: <Diff-ready boundary remediation specifying: (1) exact upstream ingress parser, cleanup hook, or guard code blocks, (2) all parallel execution branches & symmetrical caller/callee sites, (3) any [NEW]/[MODIFY]/[DELETE] file manifest updates, and (4) synchronized test & Acceptance Criteria updates>
    - **Why This Would Be Missed**: <Why headless AI implementation silently misses this edge case or why symptom does not reveal generalized fix>
-   - **Ground-Truth Proof**: <Verified codebase/upstream symbol path, or `<review_dir>/sandbox/Edgecase/` probe output>
-   - **Macro Flow Proof**: <Proof that fix is placed at the highest viable ingress boundary/caller (not leaf masking) and preserves module lifecycle>
+   - **Proof**: `Evidence:` <verified codebase/upstream `file:line` and symbol, or `<review_dir>/sandbox/Edgecase/` probe output> | `Placement & Impact:` <why this ingress/caller/lifecycle boundary is the highest-leverage root fix (not downstream leaf masking) + affected callers/tickets, or `Local-only` for isolated leaf fixes>
 
 <!-- For Infeasible Defects (forces overall Status to STATUS: INFEASIBLE) -->
 1. **[Issue Title]**:

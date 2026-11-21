@@ -58,8 +58,7 @@ Write evaluation to `<review_dir>/reports/Logic.md`, then notify Host via `send_
    - **Target Section**: `<Section_Name>`
    - **Required Fix**: <Diff-ready logic remediation specifying: (1) exact state machine, concurrency, or algorithmic code blocks, (2) all parallel state/error branches & symmetrical caller/callee sites, (3) any [NEW]/[MODIFY]/[DELETE] file manifest updates, and (4) synchronized test & Acceptance Criteria updates>
    - **Why This Would Be Missed**: <Why headless AI implementation silently misses this flaw or why symptom does not reveal generalized fix>
-   - **Ground-Truth Proof**: <Verified codebase/upstream symbol path, or `<review_dir>/sandbox/Logic/` simulation counter-example>
-   - **Macro Flow Proof**: <Proof that initialization order, symmetrical boundary endpoints, and dependent DA sections remain valid>
+   - **Proof**: `Evidence:` <verified codebase/upstream `file:line` and symbol, or `<review_dir>/sandbox/Logic/` simulation counter-example> | `Placement & Impact:` <why this state/concurrency/logic seam is the highest-leverage, minimum-debt root fix (not a local band-aid) + affected callers/tickets, or `Local-only` for isolated leaf fixes>
 
 <!-- For Infeasible Defects (forces overall Status to STATUS: INFEASIBLE) -->
 1. **[Issue Title]**:
@@ -73,6 +72,6 @@ Write evaluation to `<review_dir>/reports/Logic.md`, then notify Host via `send_
 ## 5. Gate Response Protocol (Host Interaction)
 
 If notified that Host filed `<review_dir>/reports/Logic_Gated_Issues.md`, read it, execute ONE action below directly on `<review_dir>/reports/Logic.md`, and notify Host via `send_message`:
-1. **Refine / Complete as Requested**: Edit `Logic.md` in-place to supply verified Ground-Truth/Macro Flow proofs, symmetrical boundary endpoints, or harmonized section assertions.
+1. **Refine / Complete as Requested**: Edit `Logic.md` in-place to supply verified `Proof` (`Evidence` and `Placement & Impact`), symmetrical boundary endpoints, or harmonized section assertions.
 2. **Remove**: Edit `Logic.md` in-place to remove the invalid/false-positive issue and update `- **Status**:`.
 3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/Logic_Explain.md` with deeper codebase/sandbox simulation proof AND update `Logic.md` in-place. NEVER repeat stale arguments.
