@@ -17,6 +17,7 @@ Clean and tighten human-facing technical documentation by stripping corporate sl
 6. **Ground claims in verifiable facts**: Replace vague claims (`extreme scalability`) with concrete architectural facts or benchmarks (`processes 5,000 reqs/sec with p99 < 20ms`, `uses an in-memory ring buffer`).
 7. **Minimal Diffs in documentation**: Update only the targeted sections or paragraphs. NEVER rephrase, restructure, or rewrite unaffected sections.
 8. **Preserve domain and API terms**: Keep exact commands, flag names, types, configuration keys, and error names unchanged.
+9. **Match the reader's context, not the author's**: Keep a detail ONLY if the target reader has the context to understand why it matters. Cut unshared internals, jargon above the reader's domain, and effort-showing details added to sound thorough or impressive when a simpler statement already carries the full meaning.
 
 | Keep (Technical Signal) | Cut (Corporate Slop) |
 | :--- | :--- |
@@ -27,6 +28,7 @@ Clean and tighten human-facing technical documentation by stripping corporate sl
 | Direct headers and immediate technical substance | Header echoing and tautological introductory sentences |
 | Exact types, defaults, and concrete parameter descriptions | Circular parameter names (`timeout: The timeout value`) |
 | Targeted edits to requested sections | Full-document rewrites or rephrasing of unaffected sections |
+| Signal matched to the reader's context and decision needs | Author-centric internals, unshared jargon, or detail-dumping to sound impressive |
 
 ## Workflows
 
