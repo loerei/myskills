@@ -4,23 +4,23 @@ Audits operational workflows, state machines, async concurrency, temporal/string
 
 ## 1. Core Review Protocol & Constraints
 
-- **Clean-Slate Isolation**: Audit target DA(s) solely against codebase ground-truth, `<review_dir>/Context.md`, and this guide. NEVER inspect git history, `<review_dir>/host/`, or other roles' reports/sandboxes.
+- **Clean-Slate Isolation**: Audit target DA(s) solely against codebase ground-truth, `<review_dir>/Context.md`, declared `Upstream` DAs, this guide, and matching §3 subdocuments. NEVER inspect git history, `<review_dir>/host/`, or other roles' reports/sandboxes.
 - **Single-Pass Exhaustiveness, Incremental Capture & Forward Simulation**:
-  - **Incremental Finding Capture (`<review_dir>/sandbox/Logic/Findings.md`)**: To prevent "lost-in-the-middle" context drift across large multi-ticket epics, immediately append every discovered logical flaw, state transition gap, race condition, or invariant breach to `<review_dir>/sandbox/Logic/Findings.md` as lightweight notes (ticket/file location, defect description, referenced symbols, affected state machines) as you audit each section. NEVER write prematurely to `<review_dir>/reports/Logic.md` while reading.
-  - **Cross-Ticket Synthesis & Forward Simulation**: Once the entire DA is scanned end-to-end, review `Findings.md` holistically to reconcile cross-ticket state transitions and data flows, eliminate false positives, group shared root causes, mentally apply all proposed fixes, and re-audit the projected state. Report all logical flaws, state transition gaps, race conditions, and invariant breaches in one pass, then synthesize and write the final evaluation to `<review_dir>/reports/Logic.md` via your native file-writing tool.
+  - **Incremental Capture (`<review_dir>/sandbox/Logic/Findings.md`)**: To prevent lost-in-the-middle drift across large epics, immediately append each discovered logical flaw, state transition gap, race condition, or invariant breach (ticket/file location, defect, referenced symbols, affected state machines) as lightweight notes while reading. NEVER write prematurely to `<review_dir>/reports/Logic.md`.
+  - **Synthesis & Forward Simulation**: After scanning the entire DA end-to-end, review `Findings.md` to reconcile cross-ticket state transitions and data flows, eliminate false positives, group shared root causes, mentally apply all proposed fixes, and re-audit the projected state. Report all logic, concurrency, and precision defects in one pass directly to `<review_dir>/reports/Logic.md` via your native file-writing tool (reserve `sandbox/Logic/` scripts strictly for Empirical Verification simulations, never for generating or editing reports).
 - **Lineage & Boundary Alignment**:
   - Read all DAs in `## Cross-Referenced DAs & Dependency Lineage` in `Context.md` to verify state transitions, locks, and data flows integrate cleanly with `Upstream` DAs.
   - Differentiate permissive external ingress decoding (Postel's Law, preserving active regression test compatibility) from strict canonical egress and fail-fast internal domain logic.
 - **Empirical Verification (`<review_dir>/sandbox/Logic/`)**:
-  - Author self-contained simulation scripts in `<review_dir>/sandbox/Logic/simulate_<name>.*` via your native file-writing tool stepping through state transitions, async interleavings, or boundary inputs under a 15s timeout (emitting stdout progress markers; monitor/kill hung tasks via `manage_task`). NEVER modify repository source files.
+  - Author self-contained simulation scripts in `<review_dir>/sandbox/Logic/simulate_<name>.*` stepping through state transitions, async interleavings, or boundary inputs under a 15s timeout (emitting stdout progress markers; monitor/kill hung tasks via `manage_task`). NEVER modify repository source files.
 - **Fix Pre-Verification & Miss-Probability Gate (Headless AI Implementer Baseline)**:
   - Verify on disk that referenced methods, types, and target locations exist and that internal boundary endpoints + `Verification Plan` assertions are updated symmetrically.
 
   Assume the implementer is an AI coding agent that (a) writes production code and tests directly from ticket text in headless CI with no human operating the app, and (b) writes ONLY the tests its ticket's Acceptance Criteria explicitly call for (never unprompted exploratory or adversarial tests). `"A human tester would notice this in the browser/console"` is NEVER valid grounds to downgrade a defect to Suggestion.
-  A defect MUST be classified as **Suggestion Only** if and only if it satisfies both conditions:
+  For in-scope defects (excluding optional non-blocking suggestions), classify as **Suggestion Only** if and only if both conditions hold:
   1. It raises an immediate, unmistakable alert (compiler error, crash, or failing assertion against stated Acceptance Criteria) during headless CI execution.
   2. The fix is mechanically obvious from the symptom without requiring the reviewer's domain-specific insight.
-  Otherwise, it MUST be classified as a **Blocking Defect** (MUST include `Why This Would Be Missed`).
+  Otherwise, classify as a **Blocking Defect** (MUST include `Why This Would Be Missed`).
   *(Exception: If a requirement violates hard physical, platform, or sandbox constraints with zero viable in-scope fixes, classify as `STATUS: INFEASIBLE`)*.
 
 ## 2. Mandatory Audit Checklist
@@ -29,7 +29,7 @@ Audits operational workflows, state machines, async concurrency, temporal/string
 2. **State Machine Integrity**: Are all `(CurrentState, Event)` permutations explicitly handled, rejecting illegal transitions and isolating side effects (network/IPC/emails) until after state transitions commit?
 3. **Async & Multithreaded Concurrency**: Are out-of-order async responses guarded via `AbortController`/sequence IDs, shared mutations serialized across `await` boundaries, `Promise.all` partial failures cleaned up, and multithreaded locks acquired in deterministic order?
 4. **Temporal, Numerical & Unicode Precision**: Are elapsed durations measured via monotonic clocks (`performance.now()`), recurring schedules bound to IANA timezones, financial values computed in exact integers/decimals, and user/file strings normalized (`NFC`)?
-5. **`PARITY_MIGRATION` Selector, Field & Localization Parity**: When `Context.md` declares `Change Mode: PARITY_MIGRATION`, do replacement selectors, view-models, filters, and component snippets preserve all secondary data fields, fallback branches, and dynamic localization/i18n dictionary lookups from the retired/replaced modules on disk (rejecting inline code snippets that drop secondary fields or hardcode literal sample strings where an active i18n/locale seam exists, unless marked `INTENTIONALLY_CHANGED`)?
+5. **Brownfield Selector, Field & Localization Parity**: On existing products (`Change Mode: PARITY_MIGRATION` or `EXISTING_PRODUCT_FEATURE`), do replacement or new selectors, view-models, filters, and component snippets preserve all secondary data fields, fallback branches, and dynamic localization/i18n dictionary lookups from the retired/existing modules on disk (rejecting inline code snippets that drop secondary fields or hardcode literal sample strings where an active i18n/locale seam exists, unless marked `INTENTIONALLY_CHANGED`)?
 
 ## 3. Domain Subdocuments Routing Table
 
@@ -42,9 +42,9 @@ Read every subdocument whose trigger matches the target DA using your native fil
 
 ## 4. Verdict Rules & Standard Output Protocol
 
-Write evaluation to `<review_dir>/reports/Logic.md` via your native file-writing tool, then notify Host via `send_message`:
-- `STATUS: PASS`: Workflows, state transitions, concurrency controls, and calculations are deterministic and complete.
-- `STATUS: REVISIONS NEEDED`: Logic gaps, invalid transitions, async race conditions, clock/timezone bugs, or precision defects exist.
+Write evaluation to `<review_dir>/reports/Logic.md`, then notify Host via `send_message`:
+- `STATUS: PASS`: Zero Blocking Defects under §2 checklist and loaded §3 subdocuments.
+- `STATUS: REVISIONS NEEDED`: One or more Blocking Defects exist under §2 checklist or loaded §3 subdocuments.
 - `STATUS: INFEASIBLE`: Core requirement is logically impossible under target constraints (overrides fixable defects as overall status).
 
 ```markdown
@@ -72,7 +72,7 @@ Write evaluation to `<review_dir>/reports/Logic.md` via your native file-writing
 
 ## 5. Gate Response Protocol (Host Interaction)
 
-If notified that Host filed `<review_dir>/reports/Logic_Gated_Issues.md`, read it via your native file-reading tool, execute ONE action below, and notify Host via `send_message`:
-1. **Refine / Complete as Requested**: Edit `<review_dir>/reports/Logic.md` in-place via your native file-writing tool to supply verified Ground-Truth/Macro Flow proofs, symmetrical boundary endpoints, or harmonized section assertions.
-2. **Remove**: Edit `<review_dir>/reports/Logic.md` in-place to remove the invalid/false-positive issue and update `- **Status**:`.
-3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/Logic_Explain.md` with deeper codebase/sandbox simulation proof AND update `<review_dir>/reports/Logic.md` in-place. NEVER repeat stale arguments.
+If notified that Host filed `<review_dir>/reports/Logic_Gated_Issues.md`, read it, execute ONE action below directly on `<review_dir>/reports/Logic.md`, and notify Host via `send_message`:
+1. **Refine / Complete as Requested**: Edit `Logic.md` in-place to supply verified Ground-Truth/Macro Flow proofs, symmetrical boundary endpoints, or harmonized section assertions.
+2. **Remove**: Edit `Logic.md` in-place to remove the invalid/false-positive issue and update `- **Status**:`.
+3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/Logic_Explain.md` with deeper codebase/sandbox simulation proof AND update `Logic.md` in-place. NEVER repeat stale arguments.

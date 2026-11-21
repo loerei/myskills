@@ -4,25 +4,25 @@ Audits statistical validity, cross-validation topology, leakage prevention, tens
 
 ## 1. Core Review Protocol & Constraints
 
-- **Clean-Slate Isolation**: Audit target DA(s) solely against codebase ground-truth, `<review_dir>/Context.md`, this guide, and matching subdocuments. NEVER inspect git history, `<review_dir>/host/`, or other roles' reports/sandboxes.
+- **Clean-Slate Isolation**: Audit target DA(s) solely against codebase ground-truth, `<review_dir>/Context.md`, declared `Upstream` DAs, this guide, and matching §4 subdocuments. NEVER inspect git history, `<review_dir>/host/`, or other roles' reports/sandboxes.
 - **Regime & Subsystem Isolation**:
   - Read `## Data Science & ML Modeling Scope` in `<review_dir>/Context.md`. If `ML Status: NO_DATA_SCIENCE` is declared and verified against the DA, return `STATUS: PASS` immediately.
   - Read `DS-COMMON-FOUNDATIONS.md` plus ONLY the subdocuments matching declared `Objective Regime` (`MODEL_AND_INFERENCE_ENGINEERING`, `PRODUCTION_DECISION_ML`, `COMPETITIVE_BENCHMARK`, `RESEARCH_AND_EDA`) and `Active Subsystems` (`CUSTOM_DL_AND_ONNX`, `TABULAR_AND_STRUCTURED_ML`, `EDA_AND_REPORTING`) in §4. NEVER apply `PRODUCTION_DECISION_ML` live rollout/utility rules to standalone `MODEL_AND_INFERENCE_ENGINEERING` libraries, enforce `COMPETITIVE_BENCHMARK` ensembling over declared `DA Constraints`, or audit frontend DOM/React UI rules owned by `UXUI`.
   - Read all DAs in `## Cross-Referenced DAs & Dependency Lineage` to keep preprocessing schemas, feature contracts, serialized artifacts, and evaluation metrics synchronized with `Upstream` DAs.
 - **Single-Pass Exhaustiveness, Incremental Capture & Forward Simulation**:
-  - **Incremental Finding Capture (`<review_dir>/sandbox/DataScience/Findings.md`)**: Immediately append every discovered leakage path, split mismatch, tensor/index/numerical bug, ONNX/export defect, training-loop bug, objective misalignment, or reporting/epistemic flaw to `<review_dir>/sandbox/DataScience/Findings.md` (ticket/section, defect description, symbols, affected contracts) as you scan. NEVER write prematurely to `<review_dir>/reports/DataScience.md` while reading.
-  - **Cross-Ticket Synthesis & Forward Simulation**: Review `Findings.md` holistically to reconcile end-to-end data/training/serving flows, eliminate false positives, group shared root causes, mentally simulate all proposed fixes, and emit all accepted findings in one pass to `<review_dir>/reports/DataScience.md` via your native file-writing tool.
+  - **Incremental Capture (`<review_dir>/sandbox/DataScience/Findings.md`)**: Immediately append each discovered leakage path, split mismatch, tensor/index/numerical bug, ONNX/export defect, training-loop bug, objective misalignment, or reporting/epistemic flaw (ticket/section, defect, symbols, affected contracts) as lightweight notes while reading. NEVER write prematurely to `<review_dir>/reports/DataScience.md`.
+  - **Synthesis & Forward Simulation**: Review `Findings.md` to reconcile end-to-end data/training/serving flows, eliminate false positives, group shared root causes, mentally simulate all proposed fixes, and emit all accepted findings in one pass directly to `<review_dir>/reports/DataScience.md` via your native file-writing tool (reserve `sandbox/DataScience/` scripts strictly for Empirical Verification checks, never for generating or editing reports).
 - **Empirical Verification (`<review_dir>/sandbox/DataScience/`)**:
-  - Author self-contained verification scripts in `<review_dir>/sandbox/DataScience/verify_<name>.py` via your native file-writing tool to test split disjointness, index alignment, tensor shapes, ONNX runtime equivalence, or utility curves under a 15-second timeout (monitor/kill hung tasks cleanly). NEVER mutate repository source files.
+  - Author self-contained verification scripts in `<review_dir>/sandbox/DataScience/verify_<name>.*` to test split disjointness, index alignment, tensor shapes, ONNX runtime equivalence, or utility curves under a 15-second timeout (monitor/kill hung tasks cleanly). NEVER mutate repository source files.
 - **Fix Pre-Verification**: Verify on disk that referenced ML frameworks, opset/Execution Provider APIs, schemas, and target paths exist and that train/export/serve or producer/consumer boundaries update symmetrically.
 
 ## 2. Miss-Probability Gate (Headless AI Implementer Baseline)
 
 Assume the implementer is an AI coding agent that (a) writes production code and tests directly from ticket text in headless CI with no human inspecting outputs interactively, and (b) writes ONLY the tests its ticket's Acceptance Criteria explicitly call for (never unprompted exploratory or adversarial tests). `"A human analyst or tester would notice this later"` is NEVER valid grounds to downgrade a defect to Suggestion.
-A defect MUST be classified as **Suggestion Only** if and only if it satisfies both conditions:
+For in-scope defects (excluding optional non-blocking suggestions), classify as **Suggestion Only** if and only if both conditions hold:
 1. It raises an immediate, unmistakable alert (compiler error, crash, or failing assertion against stated Acceptance Criteria) during headless CI execution.
 2. The fix is mechanically obvious from the symptom without requiring the reviewer's domain-specific insight.
-Otherwise, it MUST be classified as a **Blocking Defect** (MUST include `Why This Would Be Missed`).
+Otherwise, classify as a **Blocking Defect** (MUST include `Why This Would Be Missed`).
 *(Exception: If a requirement violates hard mathematical, physical, platform, or data-integrity bounds with zero viable in-scope fixes, classify as `STATUS: INFEASIBLE`)*.
 
 ## 3. Mandatory Audit Checklist
@@ -72,9 +72,9 @@ Load `DS-COMMON-FOUNDATIONS.md` plus ONLY the subdocuments matching `## Data Sci
 
 ## 5. Verdict Rules & Standard Output Protocol
 
-Write evaluation to `<review_dir>/reports/DataScience.md` via your native file-writing tool, then notify Host via `send_message`:
-- `STATUS: PASS`: All applicable foundation and active-subdocument invariants are satisfied.
-- `STATUS: REVISIONS NEEDED`: One or more Blocking Defects exist under active subdocuments.
+Write evaluation to `<review_dir>/reports/DataScience.md`, then notify Host via `send_message`:
+- `STATUS: PASS`: Zero Blocking Defects under §3 checklist and loaded §4 subdocuments.
+- `STATUS: REVISIONS NEEDED`: One or more Blocking Defects exist under §3 checklist or loaded §4 subdocuments.
 - `STATUS: INFEASIBLE`: Target requirements violate mathematical, statistical, platform, or data-integrity bounds with no viable in-scope fix (overrides fixable defects as overall status).
 
 ```markdown
@@ -102,7 +102,7 @@ Write evaluation to `<review_dir>/reports/DataScience.md` via your native file-w
 
 ## 6. Gate Response Protocol (Host Interaction)
 
-If notified that Host filed `<review_dir>/reports/DataScience_Gated_Issues.md`, read it via your native file-reading tool, execute ONE action below, and notify Host via `send_message`:
-1. **Refine / Complete as Requested**: Edit `<review_dir>/reports/DataScience.md` in-place via your native file-writing tool to supply verified Ground-Truth/Macro Flow proofs, sandbox parity checks, or harmonized assertions.
-2. **Remove**: Edit `<review_dir>/reports/DataScience.md` in-place to remove invalid/out-of-regime findings (e.g. `Out-of-Regime ML Demand` such as delayed-label/canary rollout demands on a standalone ONNX export library, or React UI styling inside `DataScience`) and update `- **Status**:`.
-3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/DataScience_Explain.md` with deeper codebase/sandbox verification proof AND update `<review_dir>/reports/DataScience.md` in-place. NEVER repeat stale arguments.
+If notified that Host filed `<review_dir>/reports/DataScience_Gated_Issues.md`, read it, execute ONE action below directly on `<review_dir>/reports/DataScience.md`, and notify Host via `send_message`:
+1. **Refine / Complete as Requested**: Edit `DataScience.md` in-place to supply verified Ground-Truth/Macro Flow proofs, sandbox parity checks, or harmonized assertions.
+2. **Remove**: Edit `DataScience.md` in-place to remove invalid/out-of-regime findings (e.g. `Out-of-Regime ML Demand` such as delayed-label/canary rollout demands on a standalone ONNX export library, or React UI styling inside `DataScience`) and update `- **Status**:`.
+3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/DataScience_Explain.md` with deeper codebase/sandbox verification proof AND update `DataScience.md` in-place. NEVER repeat stale arguments.
