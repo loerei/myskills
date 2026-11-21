@@ -16,13 +16,15 @@ Execute well-specified tickets directly from their `What to Build` deliverables 
    - Implement and unit-test that deliverable via TDD, run verification commands, then mark the deliverable `[x]` and simultaneously mark `[x]` on every `## Acceptance Criteria` item proven by those tests.
    - After all `## What to Build` deliverables are `[x]`, verify and check off any remaining cross-cutting `## Acceptance Criteria` items before committing.
 4. **Targeted Seam Exploration**: Inspect only the codebase seams and tests relevant to the active ticket.
+5. **Pre-Flight Spec Drift Check**: Before writing code, check for `Reviewed-At-Commit` in the parent PRD or ticket header. When present, run `git log --oneline <sha>..HEAD -- <touched-paths>`. If commits landed in overlapping scope after spec review, inspect their diff and reconcile live defaults, protocols, and handlers before coding (preserve newer live behavior unless it directly contradicts a core ticket requirement; escalate to the user on semantic contradiction).
+6. **Considerate Porting on Migrations**: When migrating or replacing an existing file or UI component, read the live implementation and its paired stylesheets/tests first. Treat inline code snippets in tickets as structural intent, never as authorization to drop existing CSS selectors, defaults, or live behaviors not explicitly marked `INTENTIONALLY_CHANGED` in the spec.
 
 ## Workflow
 
 ```mermaid
 flowchart TD
     Start["Ticket Path / Issue ID"] --> Fetch["1. Read Local Ticket + PRD (or run fetch-ticket.js)"]
-    Fetch --> Inspect["2. Inspect relevant codebase seams & tests"]
+    Fetch --> Inspect["2. Inspect touched seams, tests & spec drift (git log <sha>..HEAD)"]
     Inspect --> Confirm{"3. Present briefing & ask: Implement?"}
     Confirm -->|"User Approves / T3"| Preflight["4. Ensure [ ] on What to Build deliverable headers"]
     Confirm -->|"Clarifications / No"| Stop["Address feedback"]
@@ -39,7 +41,7 @@ flowchart TD
 
 1. **Fetch & Brief**:
    - Read the local ticket and parent `PRD.md` directly (or for remote-only issues, run `node <skill-dir>/scripts/fetch-ticket.js <ticket-number-or-url>` to pull `.scratch/tickets/ticket_<number>.md` and `prd_<parent>.md`).
-   - Inspect touched seams and tests, then present a concise briefing (`Ticket`, `Parent PRD`, `Touched Seams`, `Deliverables & Acceptance Criteria`) and ask `"Implement Ticket #<number>?"` (skip confirmation when dispatched autonomously by `implement-with-subagents`).
+   - Inspect touched seams and tests (running `git log --oneline <sha>..HEAD -- <touched-paths>` when `Reviewed-At-Commit` is recorded, and reading live files + paired stylesheets before porting/replacing them), then present a concise briefing (`Ticket`, `Parent PRD`, `Touched Seams`, `Spec Drift` if any, `Deliverables & Acceptance Criteria`) and ask `"Implement Ticket #<number>?"` (skip confirmation when dispatched autonomously by `implement-with-subagents`).
 2. **Execute & Verify**:
    - Normalize `## What to Build` deliverables to GFM task-list items (`- [ ] 1. <Deliverable>`) if missing.
    - Advance one `[/]` deliverable at a time: write tests alongside minimal code edits, run verification, mark the deliverable `[x]`, and check off (`[x]`) satisfied `## Acceptance Criteria` items.

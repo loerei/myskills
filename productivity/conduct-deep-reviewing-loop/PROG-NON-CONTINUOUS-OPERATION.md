@@ -10,7 +10,7 @@ Audit criteria for offline upgrades/refactors, local/desktop/CLI applications, g
 
 ### 2. Operational Targets: Final Cutover (`!NC`) vs Intermediate Stepping Stone (`!NC0` / `!NCI`)
 - [ ] **Terminal System Cutover & Data Migration (`NON_CONTINUOUS_OPERATION` / `!NC`)**:
-  - The codebase must be fully operational after the epic concludes. The final milestone/tickets MUST deliver complete end-to-end cutovers, bootable application verification, and legacy dead-code decommissioning.
+  - The codebase must be fully operational after the epic concludes. The final milestone/tickets MUST deliver complete end-to-end cutovers, bootable application verification (for UI epics, including a real-runtime render, CSP/protocol, and computed-style smoke check rather than headless DOM unit tests alone), and legacy dead-code decommissioning.
   - When evolving persistent schemas, **sequential migration scripts/runners ($V_1 \to V_2$) preserving existing data are mandatory**, executed as a direct atomic cutover at startup/upgrade without 24/7 multi-deploy dual-write shims.
 - [ ] **Downstream Handoff Contract (`NON_CONTINUOUS_INTERMEDIATE` / `!NC0` / `!NCI`)**:
   - The codebase does NOT need to operate during OR after the epic (e.g. foundational schema extraction, tooling migration, or intermediate stepping stone).

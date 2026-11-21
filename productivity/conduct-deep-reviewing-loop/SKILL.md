@@ -65,6 +65,9 @@ flowchart TD
        - If `!NC0` or `!NCI` is present, or prompt explicitly specifies intermediate stepping stone / non-operational after epic: declare `Operational Continuity: NON_CONTINUOUS_INTERMEDIATE` with concise technical justification.
        - If `!NC` is present, or prompt/architecture explicitly specifies non-continuous/offline upgrades (e.g. offline refactors, single-instance local/desktop/CLI version upgrades where versions $N$ and $N+1$ do not run side-by-side, or isolated rewrite branches; must be operational after the epic and preserve data via sequential migration scripts when schemas evolve): declare `Operational Continuity: NON_CONTINUOUS_OPERATION` with concise technical justification.
        - Otherwise (live 24/7 continuous services requiring side-by-side $N$ & $N+1$ zero-downtime rollout): declare `Operational Continuity: CONTINUOUS_OPERATION` (default).
+     - `## Change Mode & Baseline`: Record `Baseline Commit: <git rev-parse HEAD>` and `Reviewed Scope: <target paths / source directories>`, and inspect invocation prompt (`!PARITY`, `!GREENFIELD`) plus target DA scope to declare `Change Mode`:
+       - If `!PARITY` is present, or target DA migrates, ports, or refactors an existing working surface: declare `Change Mode: PARITY_MIGRATION` (existing behavior, defaults, DOM/CSS contracts, and visible controls default to `PRESERVE` unless explicitly listed as `INTENTIONALLY_CHANGED` in the DA).
+       - If `!GREENFIELD` is present, or target DA builds a new surface/feature with no existing parity baseline: declare `Change Mode: GREENFIELD`.
      - `## UX/UI & Accessibility Regime`: Inspect invocation prompt (`!A11Y` / `!WCAG`, `!MOBILE` / `!RESPONSIVE`), target DA scope, and product/platform archetype to declare BOTH `UX/UI Regime` and `Form Factor`:
        - **`UX/UI Regime`**:
          - If `!A11Y` or `!WCAG` is present, or prompt/architecture explicitly targets an ADA/EAA/Section 508/WCAG-mandated product (e.g. Enterprise B2B SaaS, Public-Sector/GovTech, FinTech/Banking, Healthcare, Education, public E-Commerce storefront, or shared UI Component Library / Design System): declare `UX/UI Regime: STRICT_ACCESSIBILITY_COMPLIANCE` with concise technical justification (routes `UXUI` to `UX-STRICT-ACCESSIBILITY-WCAG.md`).
@@ -75,7 +78,7 @@ flowchart TD
      - `## Cross-Domain Remediation Review`: Inspect invocation prompt for `!NCR` (case-insensitive):
        - If `!NCR` is present: declare `Cross-Review: DISABLED` (Host skips Step 4B Cross-Domain Remediation Review).
        - Otherwise: declare `Cross-Review: ENABLED` (default).
-     - `## Active Modifiers` (e.g. `!PA`, `!SP<N>`, `!NC`, `!NCR`, `!A11Y`, `!MOBILE`), codebase rules (`AGENTS.md`), task domain skills, user criteria, and static `SP` threshold.
+     - `## Active Modifiers` (e.g. `!PA`, `!SP<N>`, `!NC`, `!PARITY`, `!NCR`, `!A11Y`, `!MOBILE`), codebase rules (`AGENTS.md`), task domain skills, user criteria, and static `SP` threshold.
    - Copy `<repo-root>/<review_dir>/Context.md` to `/tmp/deep-review-trace-<short_title>/00-initial-context/Context.md`.
 
 ### Step 2: Spawn Review Host & Critical Gate (Layer 2)
@@ -121,7 +124,7 @@ Immediately upon receiving completion from `review_host` for Round $N$:
 | :--- | :--- |
 | `ROUND_REVISION_NEEDED` | • If Host updated `Context.md` for WBS restructuring, re-read `<review_dir>/Context.md` to bind active DA paths.<br>• **If `!PA` / `!WA` active**: If remaining continuous budget $B > 0$, delete working tree `.bak.md` files, decrement $B \leftarrow B - 1$, log auto-advance in `Chain of Actions.md`, and immediately spawn a fresh Layer 2 Host for Round $N+1$ per Step 2B without halting. If $B = 0$ (budget exhausted or default), retain `<da_stem>.bak.md` backups on disk, output quota pause message, halt turn, and await `"C"`, `"<N>C"`, or rollback (see **Pause Gate Protocol**).<br>• **If no pause tag**: Immediately spawn a fresh Layer 2 Host for Round $N+1$ per Step 2B. |
 | `ROUND_PASS` | Immediately spawn a fresh Layer 2 Host for the next Full Sweep round on the unchanged DA per Step 2B. |
-| `FINAL_PASS` | Copy verified target DA(s) to `/tmp/deep-review-trace-<short_title>/final-verified-da/`. Purge `<repo-root>/<review_dir>/*`. Present verified DA(s) and report trace vault path `/tmp/deep-review-trace-<short_title>/` to user. |
+| `FINAL_PASS` | Stamp `Reviewed-At-Commit: <Baseline Commit SHA>` and `Change Mode: <PARITY_MIGRATION \| GREENFIELD>` (from `Context.md`) into the metadata header of the primary target DA (e.g. `PRD.md` or standalone plan), copy verified target DA(s) to `/tmp/deep-review-trace-<short_title>/final-verified-da/`, purge `<repo-root>/<review_dir>/*`, and present verified DA(s) plus trace vault path `/tmp/deep-review-trace-<short_title>/` to user. |
 | `PLAN_INFEASIBLE` | Purge `<repo-root>/<review_dir>/*`. Present `Technical Impasse Analysis` and `Alternative Architectural Paths` from archived `Analyzation.md` along with trace vault path `/tmp/deep-review-trace-<short_title>/`, and halt loop. |
 | `ABORTED_MUTATION_FAILURE` | Purge `<repo-root>/<review_dir>/*`. Report filesystem failure details from archived `Analyzation.md` along with trace vault path `/tmp/deep-review-trace-<short_title>/`, and halt loop. |
 
@@ -156,6 +159,7 @@ When `ROUND_REVISION_NEEDED` occurs under `!PA` / `!WA`:
 | `!PA` / `!WA` / `!PA<N>` | Pre-review pause gate: retains `<da_stem>.bak.md` on `ROUND_REVISION_NEEDED` and halts turn awaiting `"C"`, `"<N>C"` (executes $N$ rounds continuously before the next quota check pause), or rollback. If `!PA<N>` is specified at invocation (e.g. `!PA5`), initializes the continuous execution budget to $N$ rounds before pausing. |
 | `!NC` | Set operational continuity to `NON_CONTINUOUS_OPERATION` (offline upgrades/refactors, local/desktop apps, isolated rewrite branches; must be operational after the epic and migrate existing data via sequential migration scripts without 24/7 dual-write shims). Default is `CONTINUOUS_OPERATION`. |
 | `!NC0` / `!NCI` | Set operational continuity to `NON_CONTINUOUS_INTERMEDIATE` (intermediate stepping stone / scaffolding; does not need to operate during OR after this epic). |
+| `!PARITY` / `!GREENFIELD` | Force `Change Mode` to `PARITY_MIGRATION` (preserve existing behavior, defaults, and DOM/CSS contracts unless listed as `INTENTIONALLY_CHANGED`) or `GREENFIELD` (new surface with no parity baseline). Auto-detected from target DA scope if omitted. |
 | `!A11Y` / `!WCAG` | Set UX/UI regime to `STRICT_ACCESSIBILITY_COMPLIANCE` (loads `UX-STRICT-ACCESSIBILITY-WCAG.md`). Default is `PRAGMATIC_PRODUCT_UX` (`UX-PRAGMATIC-INTERACTION-DX.md`). |
 | `!MOBILE` / `!RESPONSIVE` | Set UX/UI form factor to `CROSS_DEVICE_RESPONSIVE` (loads `UX-MOBILE-RESPONSIVE-PERFORMANCE.md`). Default for desktop/Electron/Tauri apps is `DESKTOP_ONLY` (`UX-DESKTOP-LAYOUT-PERFORMANCE.md`). |
 | `!NCR` | Disable Step 4B Cross-Domain Remediation Review (`Cross-Review: DISABLED` in `Context.md`). Default is enabled. |
