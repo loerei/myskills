@@ -109,9 +109,9 @@ Every turn starts in **Tier 2**. Explicit override/modifier tags (`T1`, `T2`, `T
 
 - **PRD / Ticket Carve-Out:** When executing against an active PRD/ticket set or ticket orchestrator (e.g. `implement-with-subagents`, `implement-a-ticket`), track state directly in that ticket/PRD workflow instead of forcing a duplicate `implementation_plan.md`.
 - **Standalone Plan State Machine (`implementation_plan.md`):**
-  - Embed status directly on file headers and test commands: `[ ]` Pending, `[/]` In-Progress (STRICT LIMIT: max ONE `[/]` active), `[x]` Completed (only after runtime verification).
+  - Embed GFM task-list status directly on file entries and test commands: `- [ ]` Pending, `- [/]` In-Progress (STRICT LIMIT: max ONE `[/]` active), `- [x]` Completed (only after runtime verification).
   - MUST NOT create standalone progress sections (`## Execution Steps`, `## Steps`, `## Tasks`).
-  - **Living Artifacts:** On same-goal follow-ups, append new `[ ]` items in-place. On distinct new goals, archive the finished plan (`plan_archived_<topic>.md`) before creating a new `implementation_plan.md`. Append to `walkthrough.md` cumulatively; never overwrite verified history.
+  - **Living Artifacts:** On same-goal follow-ups, append new `- [ ]` items in-place. On distinct new goals, archive the finished plan (`plan_archived_<topic>.md`) before creating a new `implementation_plan.md`. Append to `walkthrough.md` cumulatively; never overwrite verified history.
 
 ```markdown
 # [Goal Description]
@@ -123,8 +123,8 @@ Brief summary of the problem, context, and objective.
 
 ## Proposed Changes
 ### [Component / Module Name]
-#### [ ] [MODIFY|NEW|DELETE] [file_basename.ext](file:///absolute/path/to/file_basename.ext)
-- Specific changes or rationale.
+- [ ] **[MODIFY|NEW|DELETE]** [file_basename.ext](file:///absolute/path/to/file_basename.ext)
+  - Specific changes or rationale.
 
 ## Verification Plan
 ### Automated Tests

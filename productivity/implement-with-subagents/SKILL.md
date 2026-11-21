@@ -54,7 +54,7 @@ Directives:
    - Read Target Ticket and Parent Spec directly from disk. Do not assume or guess specifications.
    - Zero Re-Planning: Do NOT create an `implementation_plan.md`. Use the ticket file itself as your live plan.
    - Autonomous execution: Start implementation immediately. Do NOT ask for user confirmation or briefing approval.
-   - Pre-flight checkboxing: Before coding, if the deliverable headers (`### 1. ...` / `### <Deliverable>`) under `## What to Build` in the Target Ticket lack `[ ]` checkboxes, add `[ ]` to each deliverable header (`### [ ] 1. ...`).
+   - Pre-flight checkboxing: Before coding, if the deliverables under `## What to Build` in the Target Ticket (e.g. `### 1. <Deliverable>`) lack GFM task-list checkboxes (`- [ ]`), convert each deliverable header/entry to `- [ ] 1. <Deliverable>`.
    - Two-layer TDD progression (`What to Build` -> `Acceptance Criteria`): Advance `## What to Build` deliverables sequentially (`[ ]` -> `[/]` -> `[x]`, max 1 active `[/]`). For each deliverable, write/update tests alongside code, run verification, mark the deliverable `[x]`, and simultaneously mark `[x]` on the `## Acceptance Criteria` items proven by those tests. Verify and mark `[x]` on any remaining cross-cutting `## Acceptance Criteria` items before committing.
    - Scope isolation: Focus strictly on this ticket. Do NOT inspect, query, or attempt to implement other tickets in the PRD.
    - Use the configured repository file-edit tool (e.g. MCP `patchitright`) for code edits.

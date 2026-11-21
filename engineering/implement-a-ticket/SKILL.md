@@ -10,7 +10,7 @@ Execute well-specified tickets directly from their `What to Build` deliverables 
 ## Directives
 
 1. **Zero Re-Planning**: NEVER generate `implementation_plan.md`; use the ticket file itself as the live execution plan.
-2. **Pre-Flight Deliverable Checkboxes**: Before writing code, inspect `## What to Build` in the ticket file. If its deliverable headers (`### 1. ...` / `### <Deliverable>`) lack `[ ]` checkboxes, add `[ ]` to each deliverable header (`### [ ] 1. ...`) so mid-ticket checkpoints record exact module-level progress.
+2. **Pre-Flight Deliverable Checkboxes**: Before writing code, inspect `## What to Build` in the ticket file. If its deliverables (e.g. `### 1. <Deliverable>` or numbered items) lack GFM task-list checkboxes (`- [ ]`), convert each deliverable header/entry to `- [ ] 1. <Deliverable>` so mid-ticket checkpoints record exact module-level progress in valid GFM syntax.
 3. **Two-Layer Single-Step Progression (`What to Build` -> `Acceptance Criteria`)**:
    - Mark at most **one** `## What to Build` deliverable `[/]` at a time.
    - Implement and unit-test that deliverable via TDD, run verification commands, then mark the deliverable `[x]` and simultaneously mark `[x]` on every `## Acceptance Criteria` item proven by those tests.
@@ -41,7 +41,7 @@ flowchart TD
    - Read the local ticket and parent `PRD.md` directly (or for remote-only issues, run `node <skill-dir>/scripts/fetch-ticket.js <ticket-number-or-url>` to pull `.scratch/tickets/ticket_<number>.md` and `prd_<parent>.md`).
    - Inspect touched seams and tests, then present a concise briefing (`Ticket`, `Parent PRD`, `Touched Seams`, `Deliverables & Acceptance Criteria`) and ask `"Implement Ticket #<number>?"` (skip confirmation when dispatched autonomously by `implement-with-subagents`).
 2. **Execute & Verify**:
-   - Normalize `## What to Build` deliverable headers to include `[ ]` if missing.
+   - Normalize `## What to Build` deliverables to GFM task-list items (`- [ ] 1. <Deliverable>`) if missing.
    - Advance one `[/]` deliverable at a time: write tests alongside minimal code edits, run verification, mark the deliverable `[x]`, and check off (`[x]`) satisfied `## Acceptance Criteria` items.
 3. **Commit, Close & Handoff**:
    - Commit atomically: `git commit -m "<type>(<scope>): <summary> (closes #<number>)"`.
