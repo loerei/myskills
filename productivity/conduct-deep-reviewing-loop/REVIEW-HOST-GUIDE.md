@@ -53,7 +53,7 @@ Sandbox Directory: <review_dir>/sandbox/<Role>/
 Output Path: <review_dir>/reports/<Role>.md
 
 Execution Sequence:
-1. Read Domain Context (<review_dir>/Context.md) FIRST to identify active modifiers (!PA, !SP, !NC, !PARITY, !A11Y, !MOBILE), continuity regime, change mode (PARITY_MIGRATION vs. GREENFIELD), UX/UI regime & form factor, declared archetypes, and scope boundaries.
+1. Read Domain Context (<review_dir>/Context.md) FIRST to identify active modifiers (!PA, !SP, !NC, !PARITY, !A11Y, !MOBILE), continuity regime, change mode (PARITY_MIGRATION vs. EXISTING_PRODUCT_FEATURE vs. GREENFIELD), UX/UI regime & form factor, declared archetypes, and scope boundaries.
 2. Read Target DA(s) to understand the proposed design.
 3. Read your Review Guide (<guide_path>).
 4. Selective Subdoc Loading: Cross-reference your Review Guide's Routing Table with Context.md and Target DA(s). Read ONLY subguides whose trigger conditions actually match using your native file-reading tool.
