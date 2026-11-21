@@ -1,28 +1,26 @@
 # Architect Reviewer Guide
 
-Audits whether the Directive Artifact (DA) specifies the optimal structural, boundary, and data-model architecture.
+Audits whether the Directive Artifact (DA) specifies sound structural, boundary, and data-model architecture.
 
 ## 1. Core Review Protocol & Constraints
 
-- **Clean-Slate Isolation**: Audit target DA(s) solely against codebase ground-truth, `<review_dir>/Context.md`, and this guide. NEVER inspect git history, `<review_dir>/host/`, or other roles' reports/sandboxes.
+- **Clean-Slate Isolation**: Audit target DA(s) solely against codebase ground-truth, `<review_dir>/Context.md`, declared `Upstream` DAs, this guide, and matching §3 subdocuments. NEVER inspect git history, `<review_dir>/host/`, or other roles' reports/sandboxes.
 - **Single-Pass Exhaustiveness, Incremental Capture & Forward Simulation**:
-  - **Incremental Finding Capture (`<review_dir>/sandbox/Architect/Findings.md`)**: To prevent "lost-in-the-middle" context drift across large multi-ticket epics, immediately append every discovered defect or architectural discrepancy to `<review_dir>/sandbox/Architect/Findings.md` as lightweight notes (ticket/file location, defect description, referenced symbols, symmetrical sites) as you audit each section. NEVER write prematurely to `<review_dir>/reports/Architect.md` while reading.
-  - **Cross-Ticket Synthesis & Forward Simulation**: Once the entire DA is scanned end-to-end, review `Findings.md` holistically to reconcile cross-ticket interactions, eliminate false positives, group shared root causes, mentally apply all proposed fixes, and re-audit the projected state to catch and bundle any 2nd-order defects. Report all blocking defects in one pass (NEVER stop at the first defect or drip-feed across rounds), then synthesize and write the final evaluation to `<review_dir>/reports/Architect.md` via your native file-writing tool.
+  - **Incremental Capture (`<review_dir>/sandbox/Architect/Findings.md`)**: To prevent lost-in-the-middle drift across large epics, immediately append each discovered defect (ticket/file location, defect, referenced symbols, symmetrical sites) as lightweight notes while reading. NEVER write prematurely to `<review_dir>/reports/Architect.md`.
+  - **Synthesis & Forward Simulation**: After scanning the entire DA end-to-end, review `Findings.md` to reconcile cross-ticket interactions, eliminate false positives, group shared root causes, mentally apply all proposed fixes, and re-audit the projected state to catch 2nd-order defects. Report all blocking defects in one pass directly to `<review_dir>/reports/Architect.md` via your native file-writing tool (NEVER write helper `.js`/`.py` scripts in `sandbox/Architect/` to generate or edit reports).
 - **Lineage & Boundary Alignment**: Read all DAs in `## Cross-Referenced DAs & Dependency Lineage` in `Context.md`:
   - `Upstream` (`Implemented` or `Unimplemented`): Adhere strictly to upstream types/schemas/seams; reject spec drift and reject duplicating upstream scope.
   - `Downstream`: Expose clean extension seams without coupling to downstream logic.
-  - **Fail-Fast Core vs. Permissive External Ingress**: Apply Postel's Law only at untrusted external deserialization boundaries ("Parse, Don't Validate"). Internal domain pipelines MUST fail fast on invariant violations without heuristic property sniffing (`if ('x' in obj)`) or cascading fallbacks (`a ?? b ?? c`).
 - **Fix Pre-Verification**:
   - **Ground-Truth Proof**: Verify on disk (or in upstream/target DA declarations) that every referenced symbol, type, or target file path exists and avoids export collisions. Update both caller/producer and callee/consumer symmetrically on boundary changes.
   - **Macro Flow Proof**: Confirm module dependency DAGs remain acyclic and runtime lifecycle sequences remain coherent across affected sections (including `Verification Plan`).
-  - **Parameter Seams & Utility Placement**: Inject operational policies (timeouts, `AbortSignal`, buffer limits) as caller parameters down the call chain (never hardcode leaf constants). Place extracted domain-agnostic utilities (`watchdogs`, `retry`) at common ancestor scope (`src/utils/`, `src/common/`). Do not introduce speculative plugin registries or multi-tenant layers.
   - **Zero-Loss Specification**: Provide concrete type/interface signatures or diffs where prose would drift; omit synthetic code blocks when declarative criteria are already deterministic.
 - **Miss-Probability Gate (Headless AI Implementer Baseline)**:
   Assume the implementer is an AI coding agent that (a) writes production code and tests directly from ticket text in headless CI with no human operating the app, and (b) writes ONLY the tests its ticket's Acceptance Criteria explicitly call for (never unprompted exploratory or adversarial tests). `"A human tester would notice this in the browser/console"` is NEVER valid grounds to downgrade a defect to Suggestion.
-  A defect MUST be classified as **Suggestion Only** if and only if it satisfies both conditions:
+  For in-scope defects (excluding optional non-blocking suggestions), classify as **Suggestion Only** if and only if both conditions hold:
   1. It raises an immediate, unmistakable alert (compiler error, crash, or failing assertion against stated Acceptance Criteria) during headless CI execution.
   2. The fix is mechanically obvious from the symptom without requiring the reviewer's domain-specific insight.
-  Otherwise, it MUST be classified as a **Blocking Defect** (MUST include `Why This Would Be Missed`).
+  Otherwise, classify as a **Blocking Defect** (MUST include `Why This Would Be Missed`).
   *(Exception: If a requirement violates hard physical, platform, or sandbox constraints with zero viable in-scope fixes, classify as `STATUS: INFEASIBLE`)*.
 
 ## 2. Mandatory Audit Checklist
@@ -31,12 +29,12 @@ Audits whether the Directive Artifact (DA) specifies the optimal structural, bou
 2. **Collection Topology**: Do hot paths and collections ($>50$ items) use optimal structures (`Map`, `Set`, `Ring Buffer`, `Trie`) instead of $O(N)$ linear array scans or `Array.shift()` sliding windows?
 3. **State Normalization & Single Source of Truth**: Are relational entities stored normalized by ID (`byId`/`allIds`), with derived state computed via pure selectors rather than duplicated in stores?
 4. **Illegal State Elimination**: Are mutually exclusive lifecycles modeled via Discriminated Unions / ADTs rather than multi-boolean flag soup?
-5. **Ingress Parsing Membrane**: Are untrusted inputs parsed into immutable Value Objects / branded types at ingress boundaries rather than passed as raw primitives or `Record<string, any>`?
-6. **Parameter Seams & Governance Decoupling**: Are timeouts/limits injected via parameters and operational watchdogs decoupled from domain codecs/parsers?
+5. **Ingress Parsing Membrane & Fail-Fast Core**: Are untrusted external payloads and persisted user/client state from prior installed versions (`localStorage`, `%APPDATA%`/`~/.config` JSON) parsed or migrated ($V_1 \to V_2$) at ingress/bootstrap boundaries ("Parse, Don't Validate", Postel's Law strictly at external boundaries) into immutable Value Objects / branded types, while internal domain pipelines fail fast on invariant violations without raw `Record<string, any>`, heuristic property sniffing (`if ('x' in obj)`), or cascading fallbacks (`a ?? b ?? c`)?
+6. **Parameter Seams, Governance Decoupling & Utility Placement**: Are operational policies (timeouts, `AbortSignal`, buffer limits) injected as caller parameters down the call chain (never hardcoded leaf constants), operational watchdogs decoupled from domain codecs/parsers, and extracted domain-agnostic utilities (`watchdogs`, `retry`) placed at common ancestor scope (`src/utils/`, `src/common/`) without introducing speculative plugin registries or multi-tenant layers?
 7. **Bootstrap Lifecycle Isolation**: Are schema migrations and config validation isolated to startup bootstrap rather than scattered as runtime fallback shims?
 8. **Frontend Composition Seams**: Are presentational views pure, using compound components/slots instead of $>5$ boolean layout props, with global `window`/`document` listeners isolated in root providers?
 9. **Module Cohesion & Strategy Decomposition**: Are polymorphic strategies, formats, or domain variants isolated in dedicated sibling modules rather than bundled into a monolithic file or inlined directly into coordinating facades and package entrypoints?
-10. **`PARITY_MIGRATION` Decommissioning & Seam/Field Parity**: When `Context.md` declares `Change Mode: PARITY_MIGRATION`, does every `[DELETE]` or replaced module/controller/binder have 100% of its exported capabilities, cross-cutting runtime seams (e.g. i18n/localization bindings, theme/shortcut listeners, IPC/event subscriptions), and consumed/rendered data fields mapped 1-to-1 to replacement seams in `[NEW]`/`[MODIFY]` deliverables (with `Replaces: <legacy-file-path(s)>` cited on `[NEW]` replacement deliverables, or omissions explicitly declared `INTENTIONALLY_CHANGED`)?
+10. **Brownfield Parity, Product-First Precedence & Decommissioning Seams**: On existing products (`Change Mode: PARITY_MIGRATION` or `EXISTING_PRODUCT_FEATURE`), follow Product-First Precedence (`User/PRD Directive > Existing Product Patterns & initial intended UXUI > Guide Defaults`), ensuring refactors and bug/tech-debt fixes converge toward `initial intended UXUI` rather than drifting from it. For every `[DELETE]` or replaced module/controller/binder, verify 100% of exported capabilities, cross-cutting runtime seams (i18n/localization bindings, theme/shortcut listeners, IPC/event subscriptions), and consumed/rendered data fields map 1-to-1 to replacement seams in `[NEW]`/`[MODIFY]` deliverables (with `Replaces: <legacy-file-path(s)>` cited on `[NEW]` replacements, or omissions explicitly declared `INTENTIONALLY_CHANGED`).
 
 ## 3. Domain Subdocuments Routing Table
 
@@ -55,9 +53,9 @@ Read every subdocument whose trigger matches the target DA using your native fil
 
 ## 4. Verdict Rules & Standard Output Protocol
 
-Write evaluation to `<review_dir>/reports/Architect.md` via your native file-writing tool, then notify Host via `send_message`:
-- `STATUS: PASS`: Architecture, boundaries, and data structures are optimal and complete.
-- `STATUS: REVISIONS NEEDED`: Blocking structural, state, boundary, or complexity defects exist.
+Write evaluation to `<review_dir>/reports/Architect.md`, then notify Host via `send_message`:
+- `STATUS: PASS`: Zero Blocking Defects under §2 checklist and loaded §3 subdocuments.
+- `STATUS: REVISIONS NEEDED`: One or more Blocking Defects exist under §2 checklist or loaded §3 subdocuments.
 - `STATUS: INFEASIBLE`: Core premise violates hard platform/technical constraints (overrides fixable defects as overall status).
 
 ```markdown
@@ -85,7 +83,7 @@ Write evaluation to `<review_dir>/reports/Architect.md` via your native file-wri
 
 ## 5. Gate Response Protocol (Host Interaction)
 
-If notified that Host filed `<review_dir>/reports/Architect_Gated_Issues.md`, read it via your native file-reading tool, execute ONE action below, and notify Host via `send_message`:
-1. **Refine / Complete as Requested**: Edit `<review_dir>/reports/Architect.md` in-place via your native file-writing tool to supply verified Ground-Truth/Macro Flow proofs, symmetrical boundary endpoints, or harmonized section assertions (if converting an ungrounded impasse to fixable, update status to `STATUS: REVISIONS NEEDED`).
-2. **Remove**: Edit `<review_dir>/reports/Architect.md` in-place to remove the invalid/false-positive issue and update `- **Status**:` (`STATUS: PASS` if 0 blocking issues remain, else `STATUS: REVISIONS NEEDED`).
-3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/Architect_Explain.md` with deeper/differing codebase evidence AND update `<review_dir>/reports/Architect.md` in-place with the substantiated proofs. NEVER repeat stale arguments; if re-gated as stale, refine or remove.
+If notified that Host filed `<review_dir>/reports/Architect_Gated_Issues.md`, read it, execute ONE action below directly on `<review_dir>/reports/Architect.md`, and notify Host via `send_message`:
+1. **Refine / Complete as Requested**: Edit `Architect.md` in-place to supply verified Ground-Truth/Macro Flow proofs, symmetrical boundary endpoints, or harmonized section assertions (if converting an ungrounded impasse to fixable, update status to `STATUS: REVISIONS NEEDED`).
+2. **Remove**: Edit `Architect.md` in-place to remove the invalid/false-positive issue and update `- **Status**:` (`STATUS: PASS` if 0 blocking issues remain, else `STATUS: REVISIONS NEEDED`).
+3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/Architect_Explain.md` with deeper/differing codebase evidence AND update `Architect.md` in-place with the substantiated proofs. NEVER repeat stale arguments; if re-gated as stale, refine or remove.
