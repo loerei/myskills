@@ -10,7 +10,7 @@ Execute well-specified tickets directly from their `What to Build` deliverables 
 ## Directives
 
 1. **Zero Re-Planning**: NEVER generate `implementation_plan.md`; use the ticket file itself as the live execution plan.
-2. **Pre-Flight Deliverable Checkboxes**: Before writing code, inspect `## What to Build` in the ticket file. If its deliverables (e.g. `### 1. <Deliverable>` or numbered items) lack GFM task-list checkboxes (`- [ ]`), convert each deliverable header/entry to `- [ ] 1. <Deliverable>` so mid-ticket checkpoints record exact module-level progress in valid GFM syntax.
+2. **Pre-Flight Deliverable Checkboxes**: Before writing code, inspect `## What to Build` in the ticket file. If its deliverables (e.g. `### 1. <Deliverable>` or file entries) lack GFM task-list checkboxes (`- [ ]`), convert each deliverable header/entry to `- [ ] 1. <Deliverable>` (anchoring `[NEW|MODIFY|DELETE]` target file paths inline) so mid-ticket checkpoints record exact file/module progress in valid GFM syntax.
 3. **Two-Layer Single-Step Progression (`What to Build` -> `Acceptance Criteria`)**:
    - Mark at most **one** `## What to Build` deliverable `[/]` at a time.
    - Implement and unit-test that deliverable via TDD, run verification commands, then mark the deliverable `[x]` and simultaneously mark `[x]` on every `## Acceptance Criteria` item proven by those tests.

@@ -19,7 +19,7 @@ Synthesize conversation context and codebase understanding into a local Epic dir
    - Present the testing seams and numbered ticket breakdown (`Key & Title`, `Blocked by`, `What it delivers`) to the user and confirm granularity and blocking edges before writing files.
 3. **Write Local `PRD.md` and `tickets/*.md`**:
    - Write `docs/specs/<NN>-<epic-slug>/PRD.md` and one file per ticket under `docs/specs/<NN>-<epic-slug>/tickets/<key>-<slug>.md` using the templates below.
-   - **Dual-Layer Checkbox Invariant**: Every ticket MUST include valid GFM task-list checkboxes (`- [ ]`) on **both** `## What to Build` deliverables (`- [ ] 1. <Deliverable>`) and `## Acceptance Criteria` items (`- [ ] <Criterion>`) so execution agents track step-by-step build progress and test verification in-place without a separate `implementation_plan.md`.
+   - **Dual-Layer Checkbox & Unified File-Entry Invariant**: Every ticket MUST include valid GFM task-list checkboxes (`- [ ]`) on **both** `## What to Build` deliverables (`- [ ] 1. **[NEW|MODIFY|DELETE]** [file.ext](file:///...)`) and `## Acceptance Criteria` items (`- [ ] <Criterion>`). Embed target file paths and `[NEW|MODIFY|DELETE]` tags directly on the `## What to Build` deliverable entries; NEVER create a separate `## Target Files` section that duplicates `## What to Build`.
    - **Prototype Snippet Rule**: Avoid fragile line numbers; inline concise decision-encoding snippets (state machines, schemas, type contracts, reducers) when they specify contracts more accurately than prose.
 4. **Downstream Handoff**:
    - Do not publish directly from this skill. Hand off to `conduct-deep-reviewing-loop` for specification auditing or `gitpublish-prd-and-tickets` to sync `PRD.md` and `tickets/*.md` to GitHub Issues.
@@ -69,12 +69,12 @@ ready-for-agent
 - `<upstream-key>` — <Upstream Title> (or `None — can start immediately`)
 
 ## What to Build
-End-to-end behavior and concrete deliverables for this slice. Every deliverable MUST start with a GFM task-list checkbox (`- [ ]`):
+End-to-end behavior and concrete file/module deliverables for this slice. Every deliverable MUST start with a GFM task-list checkbox (`- [ ]`) and anchor its target file(s) inline (do NOT create a separate `## Target Files` section):
 
-- [ ] 1. <First Deliverable / Module / Seam>
+- [ ] 1. **[NEW|MODIFY|DELETE]** [`src/path/to/file.ts`](file:///absolute/path/to/src/path/to/file.ts) — <Deliverable / Module Title>
   - Contract, state transitions, and edge-case rules.
-- [ ] 2. <Second Deliverable / Module / Seam>
-  - Contract, state transitions, and edge-case rules.
+- [ ] 2. **[NEW|MODIFY|DELETE]** [`src/path/to/file.test.ts`](file:///absolute/path/to/src/path/to/file.test.ts) — <Test Suite Title>
+  - Behavioral test cases and boundary assertions.
 
 ## Acceptance Criteria
 - [ ] <Concrete, testable behavioral or structural assertion 1>
