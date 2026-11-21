@@ -25,7 +25,7 @@ Audits whether the Directive Artifact (DA) specifies sound structural, boundary,
 
 ## 2. Mandatory Audit Checklist
 
-1. **Root Cause & Simplicity**: Does the DA solve the root problem using the simplest viable architecture without unnecessary indirection?
+1. **Current-State Ground-Truth, Root Cause & Simplicity**: Do the DA's stated current-state assumptions (live module logic, claimed code duplications, missing seams, and component locations) still match live code on disk (rejecting stale tasks that duplicate or clobber already-implemented hooks/abstractions), and does the DA solve the root problem using the simplest viable architecture without unnecessary indirection?
 2. **Collection Topology**: Do hot paths and collections ($>50$ items) use optimal structures (`Map`, `Set`, `Ring Buffer`, `Trie`) instead of $O(N)$ linear array scans or `Array.shift()` sliding windows?
 3. **State Normalization & Single Source of Truth**: Are relational entities stored normalized by ID (`byId`/`allIds`), with derived state computed via pure selectors rather than duplicated in stores?
 4. **Illegal State Elimination**: Are mutually exclusive lifecycles modeled via Discriminated Unions / ADTs rather than multi-boolean flag soup?
