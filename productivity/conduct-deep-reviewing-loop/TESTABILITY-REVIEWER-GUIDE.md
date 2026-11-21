@@ -33,6 +33,7 @@ Audits module test seams, mock-to-contract fidelity, anti-tautology, determinism
 3. **Specification Atomicity**: Is every Acceptance Criterion decomposed into a single-responsibility Given-When-Then assertion or state matrix row independently verifiable by a single test?
 4. **Determinism & Handle Teardown**: Are hardcoded sleeps (`sleep(5000)`) and unseeded randomness banned, and are all timers, sockets, file descriptors, and listeners cleaned up in `afterEach`/`finally` hooks?
 5. **100% Verification Coverage**: Does the Verification Plan map every Acceptance Criterion, migration script ($V_1 \to V_2$), and edge case to an explicit automated test command?
+6. **Brownfield Test-Case & Contract Parity**: When a DA modifies, replaces (`Replaces: <legacy-file>`), or schedules `[DELETE]` on existing modules or test suites, does the replacement test suite carry forward 100% of the existing behavioral assertions, edge cases, fallback branches, secondary data fields, and DOM selector/i18n contract checks from the legacy tests on disk (excluding only behaviors explicitly marked `INTENTIONALLY_CHANGED`)?
 
 ## 3. Domain Subdocuments Routing Table
 
