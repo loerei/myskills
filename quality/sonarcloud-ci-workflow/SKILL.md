@@ -15,7 +15,7 @@ For property templates, workflow YAML, PR check commands, and CI troubleshooting
    - Add `sonar.coverage.exclusions=**/*` on free plans to bypass coverage gate requirements.
 3. **Write `.github/workflows/sonarcloud.yml`**:
    - Match the repository's default branch trigger (`main` or `master`).
-   - **Static Analysis (Fast)**: Omit dependency installation; run checkout (`fetch-depth: 0`) and `SonarSource/sonarqube-scan-action@v5.0.0`. NEVER use deprecated `SonarSource/sonarcloud-github-action`.
+   - **Static Analysis (Fast)**: Omit dependency installation; run checkout (`fetch-depth: 0`) and `SonarSource/sonarqube-scan-action@v6`. NEVER use deprecated `SonarSource/sonarcloud-github-action` or outdated `v5` scanner actions.
    - **Coverage Analysis**: Enable Node caching (`cache: 'npm'`), run builds before tests in monorepos, and use `npm install` instead of `npm ci` when platform-specific native binaries cause `EBADPLATFORM` errors.
 4. **Disable Automatic Analysis**: In SonarCloud Administration -> **Analysis Method**, toggle **Automatic Analysis** **OFF**.
 5. **Verify & Troubleshoot**:

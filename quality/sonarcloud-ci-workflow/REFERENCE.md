@@ -13,9 +13,9 @@ sonar.projectKey=<org>_<repo>
 sonar.projectName=<ProjectName>
 sonar.sources=src,native
 sonar.tests=tests
-sonar.test.inclusions=tests/**/*.test.ts,tests/**/*.spec.ts
-sonar.exclusions=node_modules/**,dist/**,build/**,build_output/**,tests/**,**/*.test.ts,**/*.spec.ts
-sonar.cpd.exclusions=tests/**,**/*.test.ts,**/*.spec.ts
+sonar.test.inclusions=src/**/*.test.ts,src/**/*.test.tsx,tests/**/*.test.js
+sonar.exclusions=node_modules/**,dist/**,build/**,build_output/**,tests/**,**/*.test.ts,**/*.test.tsx,**/*.spec.ts,**/*.spec.tsx
+sonar.cpd.exclusions=tests/**,**/*.test.ts,**/*.test.tsx,**/*.spec.ts,**/*.spec.tsx
 sonar.javascript.lcov.reportPaths=coverage/lcov.info
 ```
 
@@ -43,7 +43,7 @@ jobs:
         with:
           fetch-depth: 0 # Disable shallow clone for accurate git history
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v5.0.0
+        uses: SonarSource/sonarqube-scan-action@v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -80,7 +80,7 @@ jobs:
       - name: Run Tests & Coverage
         run: npm run test:coverage
       - name: SonarQube Scan
-        uses: SonarSource/sonarqube-scan-action@v5.0.0
+        uses: SonarSource/sonarqube-scan-action@v6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -99,13 +99,14 @@ You must disable SonarCloud's built-in Automatic Analysis to avoid duplicate ana
 
 ---
 
-## 4. Verification using GitHub CLI
+## 4. Verification using GitHub CLI & SonarQube CLI
 
 To verify Quality Gate checks on local PRs, prevent dummy token auth failures:
 
 ```powershell
 # Safe PR status check
 $env:GITHUB_TOKEN=$null; gh pr checks <pr_number>
+sonar quality-gate status --pull-request <pr_number> --format json
 ```
 
 ---

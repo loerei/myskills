@@ -1,28 +1,37 @@
 # Sonar Remediation Reference & Rule Cookbook
 
-## 1. MCP Tool Parameter Reference
+## 1. CLI & API Reference (`sonarqube-cli`)
 
-| MCP Tool (`sonarcloud:` / `sonarqube:`) | Required Arguments & Constraints |
+All commands use the `sonar` binary directly (authenticated via `sonar auth login` in OS Keychain; no Docker or MCP container required).
+
+| Task | `sonar` CLI Command |
 | :--- | :--- |
-| `search_my_sonarqube_projects` / `search_sonar_projects` | None |
-| `search_sonar_issues_in_projects` / `search_sonar_issues` | `projects: ["<key>"]`, `issueStatuses: ["OPEN"]`. Add `pullRequestId` / `pullRequest` for PR scope; add `files: ["<key>:<relPath>"]` for file scope. |
-| `search_duplicated_files`, `get_duplications` | `projectKey: "<key>"`, `key: "<fileKey>"`, optional `pullRequest: "<id>"` |
-| `get_component_measures` | `projectKey: "<key>"` (`projectKey`, NOT `component`), `metricKeys: [...]` |
-| `show_rule` / `get_rule_details` | `key: "<ruleKey>"` |
-| `get_project_quality_gate_status` / `get_quality_gate_status` | `projectKey: "<key>"` |
+| **Auth Check** | `sonar auth status` |
+| **Quality Gate + Breakdown** | `sonar quality-gate status [--branch <name> \| --pull-request <id>] --format json` |
+| **List Issues** | `sonar list issues -p <key> --statuses OPEN [--branch <name> \| --pull-request <id>] [--file '<relPath>'] [--new-code] --format json` |
+| **Search Filtered Issues** | `sonar api get "/api/issues/search?componentKeys=<key>&statuses=OPEN[&pullRequest=<id>][&types=BUG,VULNERABILITY]&ps=100"` |
+| **Component Measures** | `sonar api get "/api/measures/component?component=<key>&metricKeys=<keys>[&pullRequest=<id>]"` |
+| **Duplications** | `sonar api get "/api/duplications/show?key=<key>:<relPath>[&pullRequest=<id>]"` |
+| **Security Hotspots** | `sonar api get "/api/hotspots/search?projectKey=<key>&status=TO_REVIEW[&pullRequest=<id>]"` |
+| **Rule Details** | `sonar api get "/api/rules/show?key=<ruleKey>"` |
+| **Transition Issue** | `sonar api post "/api/issues/do_transition" --data '{"issue":"<issueKey>","transition":"accept\|falsepositive","comment":"<reason>"}'` |
 
 ## 2. Rule Remediation Matrix
 
-Before calling `change_sonar_issue_status` to flag `"accept"` or `"falsepositive"`, MUST search for the exact issue key using `search_sonar_issues` / `search_sonar_issues_in_projects` with `issueStatuses: ["OPEN"]`.
+Before calling `sonar api post "/api/issues/do_transition"` to transition `"accept"` or `"falsepositive"`, MUST verify the exact issue key with `sonar quality-gate status`, `sonar list issues`, or `sonar api get "/api/issues/search?..."` (`statuses=OPEN`).
 
 | Rule Keys & Category | Action & Rationale |
 | :--- | :--- |
-| `S3776` (Cognitive Complexity) | Flag `accept`. NEVER split functions solely for `S3776`; structural splits require `improve-codebase-architecture`. |
-| `S2004` (Function Nesting) | Flag `accept`. Deep nesting in UI/search/event closures is intentional design. |
-| `S8786` (Path Regex Backtracking) | Flag `accept`. Filesystem path/filename lengths are OS-bounded (260 Windows / 4096 POSIX); no practical ReDoS risk. |
-| `S7744` (Defensive Object Spreads) | Flag `accept`. `{ ...(obj \|\| {}) }` guards against null/undefined at IPC, JSON config, and storage boundaries. |
-| `S7784` (Plain JSON Clone vs Proxy) | Flag `accept` (or use shallow loop). `structuredClone` throws `DataCloneError` on Proxies and keeps prototypes/non-enumerable keys instead of pure JSON. |
-| `css:S7924` (Theme / Contrast) | Flag `accept`. Brand theme tokens override generic WCAG checks. |
+| `S3776` (Cognitive Complexity) | Transition `accept`. NEVER split functions solely for `S3776`; structural splits require `improve-codebase-architecture`. |
+| `S2004` (Function Nesting) | Transition `accept`. Deep nesting in UI/search/event closures is intentional design. |
+| `S8786` (Path Regex Backtracking) | Transition `accept`. Filesystem path/filename lengths are OS-bounded (260 Windows / 4096 POSIX); no practical ReDoS risk. |
+| `S7744` (Defensive Object Spreads) | Transition `accept`. `{ ...(obj \|\| {}) }` guards against null/undefined at IPC, JSON config, and storage boundaries. |
+| `S7784` (Plain JSON Clone vs Proxy) | Transition `accept` (or use shallow loop). `structuredClone` throws `DataCloneError` on Proxies and keeps prototypes/non-enumerable keys instead of pure JSON. |
+| `css:S7924` (Theme / Contrast) | Transition `accept`. Brand theme tokens override generic WCAG checks. |
+| `Web:S7039` (CSP `style-src 'unsafe-inline'`) | Transition `accept` when required by inline style attributes (`@tanstack/react-virtual`, React `style={}`) and `script-src 'self'` stays locked. |
+| `tssecurity:S8475` (Browser Storage) | Transition `accept` on `localStorage` persistence and schema migration boundaries (`Boundary Invariance`). |
+| `S1082` (Non-Interactive Click) | Remove dead no-op `onClick`; transition `accept` on backdrop/row-padding click delegates when keyboard handling lives on the inner control or dialog. |
+| `S2245` (Temp Filename PRNG) | Replace `Math.random()` temp path suffix with `crypto.randomBytes(6).toString('hex')` where `node:crypto` is available. |
 | `S1854`, `S1481`, `S6582`, `S6606`, `S7780`, `S7758`, `S6594`, `S4666`, `S1874` | Fix code using the patterns in Sections 3-7 below. |
 
 ## 3. Preemptive Inspection Checklist (Pre-Scan)
@@ -51,7 +60,7 @@ return { status: order.status, items, primaryItem: order };
 
 1. Run impact analysis (`find_references` / symbol search) to trace static callers.
 2. Check for dynamic string registrations (`ipcMain.handle`, `ipcRenderer.invoke`, REST route strings, config hooks).
-3. If dynamically invoked or externally exported, query the issue key (`issueStatuses: ["OPEN"]`) and flag `"accept"` or `"falsepositive"`.
+3. If dynamically invoked or externally exported, verify the issue key (`statuses=OPEN`) and transition `"accept"` or `"falsepositive"`.
 
 ## 6. JS/TS Refactoring Patterns
 
