@@ -28,7 +28,7 @@ flowchart TD
     EvaluateHealth -->|"Healthy (Pass)"| ReuseSubagent["send_message (Continue Subagent)<br/>Pass next Ticket path + Git mandate"]
     EvaluateHealth -->|"Degraded / Truncated (Fail)"| SpawnNew
     
-    SpawnNew --> WaitSubagent["Subagent reads Ticket file directly<br/>Executes TDD & implementation"]
+    SpawnNew --> WaitSubagent["Subagent reads Ticket file directly<br/>Tracks What to Build + ACs [ ] -> [/] -> [x]"]
     ReuseSubagent --> WaitSubagent
     
     WaitSubagent --> SubagentDone["Subagent Reports:<br/>• Modified files<br/>• Test & build output<br/>• Commit hash"]
@@ -51,8 +51,12 @@ Implement Ticket: <Ticket-Title>
 Directives:
 1. Work on branch: `<branch-name>`.
 2. Execution Mandate:
-   - Read the Target Ticket and Parent Spec files directly from disk. Do not assume or guess specifications.
-   - Follow `implement-a-ticket` / `tdd` workflows.
+   - Read Target Ticket and Parent Spec directly from disk. Do not assume or guess specifications.
+   - Zero Re-Planning: Do NOT create an `implementation_plan.md`. Use the ticket file itself as your live plan.
+   - Autonomous execution: Start implementation immediately. Do NOT ask for user confirmation or briefing approval.
+   - Pre-flight checkboxing: Before coding, if the deliverable headers (`### 1. ...` / `### <Deliverable>`) under `## What to Build` in the Target Ticket lack `[ ]` checkboxes, add `[ ]` to each deliverable header (`### [ ] 1. ...`).
+   - Two-layer TDD progression (`What to Build` -> `Acceptance Criteria`): Advance `## What to Build` deliverables sequentially (`[ ]` -> `[/]` -> `[x]`, max 1 active `[/]`). For each deliverable, write/update tests alongside code, run verification, mark the deliverable `[x]`, and simultaneously mark `[x]` on the `## Acceptance Criteria` items proven by those tests. Verify and mark `[x]` on any remaining cross-cutting `## Acceptance Criteria` items before committing.
+   - Scope isolation: Focus strictly on this ticket. Do NOT inspect, query, or attempt to implement other tickets in the PRD.
    - Use the configured repository file-edit tool (e.g. MCP `patchitright`) for code edits.
    - Run verification commands: `<test-command>` and `<build-command>`.
    - Git commit & push: `<type>(<scope>): <summary> (closes #<ID>)`.

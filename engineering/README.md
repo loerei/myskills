@@ -32,7 +32,6 @@ Model- or user-reachable (rich trigger phrasing so the model can reach for them)
 - **[resolving-merge-conflicts](./resolving-merge-conflicts/SKILL.md)** — Resolve in-progress git merge and rebase conflicts safely.
 - **[tdd](./tdd/SKILL.md)** — Test-driven development using red-green-refactor cycles and unit/integration test suites.
 - **[to-spec](./to-spec/SKILL.md)** — Convert loose requirements or architectural discussions into formal technical specifications.
-- **[to-tickets](./to-tickets/SKILL.md)** — Break specifications down into actionable, tracer-bullet implementation tickets.
 - **[triage](./triage/SKILL.md)** — Triage incoming issues, bug reports, and code feedback systematically.
 - **[wayfinder](./wayfinder/SKILL.md)** — Navigate unfamiliar codebases efficiently to discover symbols, call graphs, and entry points.
 - **[wizard](./wizard/SKILL.md)** — Step-by-step interactive wizard for complex multi-step engineering tasks.

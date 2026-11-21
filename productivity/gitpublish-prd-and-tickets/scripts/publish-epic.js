@@ -60,6 +60,97 @@ if (!targetPath) {
 const env = { ...process.env };
 delete env.GITHUB_TOKEN;
 
+const GITHUB_MAX_BODY_CHARS = 65536;
+const SAFE_CHUNK_CHARS = 63000;
+
+/**
+ * Split content into GitHub-safe chunks (<= 65536 chars), breaking only at '\n' boundaries when possible.
+ */
+function splitBodyForGitHub(content) {
+    if (content.length <= GITHUB_MAX_BODY_CHARS) {
+        return { mainBody: content, overflowComments: [] };
+    }
+
+    const rawChunks = [];
+    let remaining = content;
+    while (remaining.length > SAFE_CHUNK_CHARS) {
+        let splitIdx = remaining.lastIndexOf('\n', SAFE_CHUNK_CHARS);
+        if (splitIdx <= 0) {
+            // Fallback if a single line exceeds SAFE_CHUNK_CHARS
+            splitIdx = SAFE_CHUNK_CHARS;
+            rawChunks.push(remaining.slice(0, splitIdx));
+            remaining = remaining.slice(splitIdx);
+        } else {
+            rawChunks.push(remaining.slice(0, splitIdx));
+            remaining = remaining.slice(splitIdx + 1);
+        }
+    }
+    if (remaining.length > 0) {
+        rawChunks.push(remaining);
+    }
+
+    const totalParts = rawChunks.length;
+    const mainBody = `${rawChunks[0]}\n\n---\n> *Content truncated at GitHub's 65,536-character limit. Continued in ${totalParts - 1} comment(s) below (Part 1/${totalParts}).*\n`;
+    const overflowComments = rawChunks.slice(1).map((chunk, idx) => {
+        const partNum = idx + 2;
+        return `<!-- yumeshelf-overflow-part:${partNum} -->\n### Continuation (Part ${partNum}/${totalParts})\n\n${chunk}`;
+    });
+
+    return { mainBody, overflowComments };
+}
+
+async function syncOverflowComments(issueId, overflowComments, tempDir, filePrefix) {
+    if (overflowComments.length === 0) return;
+    if (isDryRun) {
+        console.log(`  [DRY-RUN COMMENTS] #${issueId}: ${overflowComments.length} overflow comment(s)`);
+        return;
+    }
+
+    let existingOverflowByPart = new Map();
+    try {
+        const viewArgs = ['issue', 'view', String(issueId), '--json', 'comments'];
+        if (repo) viewArgs.push('--repo', repo);
+        const viewOut = await runGh(viewArgs);
+        const parsed = JSON.parse(viewOut || '{}');
+        for (const c of (parsed.comments || [])) {
+            const m = (c.body || '').match(/<!-- yumeshelf-overflow-part:(\d+) -->/);
+            if (m) {
+                const partNum = parseInt(m[1], 10);
+                const idMatch = (c.url || '').match(/issuecomment-(\d+)/);
+                existingOverflowByPart.set(partNum, {
+                    numericId: idMatch ? idMatch[1] : null,
+                    body: c.body
+                });
+            }
+        }
+    } catch (_) {}
+
+    for (let i = 0; i < overflowComments.length; i++) {
+        const partNum = i + 2;
+        const commentBody = overflowComments[i];
+        const existing = existingOverflowByPart.get(partNum);
+        const commentPath = path.join(tempDir, `${filePrefix}.part${partNum}.md`);
+        fs.writeFileSync(commentPath, commentBody, 'utf8');
+
+        if (existing && existing.body.trim() === commentBody.trim()) {
+            continue;
+        }
+        if (existing && existing.numericId) {
+            const endpoint = repo
+                ? `repos/${repo}/issues/comments/${existing.numericId}`
+                : `repos/{owner}/{repo}/issues/comments/${existing.numericId}`;
+            const patchArgs = ['api', '--method', 'PATCH', endpoint, '-F', `body=@${commentPath}`];
+            await runGh(patchArgs);
+            console.log(`  [UPDATED COMMENT Part ${partNum}] #${issueId}`);
+        } else {
+            const commentArgs = ['issue', 'comment', String(issueId), '--body-file', commentPath];
+            if (repo) commentArgs.push('--repo', repo);
+            await runGh(commentArgs);
+            console.log(`  [COMMENTED Part ${partNum}] #${issueId}`);
+        }
+    }
+}
+
 async function runGh(ghArgs) {
     if (isDryRun) {
         return `[DRY-RUN gh ${ghArgs.join(' ')}]`;
@@ -293,8 +384,9 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
             console.log(`[DRY-RUN] Create Parent Issue "${prdTitle}" -> #${finalParentId}`);
         } else {
             console.log(`Creating Parent Issue "${prdTitle}"...`);
+            const { mainBody, overflowComments } = splitBodyForGitHub(prdRawContent);
             const tempPrdPath = path.join(tempDir, 'PRD.md');
-            fs.writeFileSync(tempPrdPath, prdRawContent, 'utf8');
+            fs.writeFileSync(tempPrdPath, mainBody, 'utf8');
 
             const ghArgs = ['issue', 'create', '--title', prdTitle, '--body-file', tempPrdPath, '--label', prdLabels];
             if (repo) ghArgs.push('--repo', repo);
@@ -302,6 +394,9 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
             const idMatch = outUrl.match(/\/issues\/(\d+)$/);
             finalParentId = idMatch ? parseInt(idMatch[1], 10) : null;
             console.log(`Created Parent Issue #${finalParentId}: ${outUrl}`);
+            if (finalParentId) {
+                await syncOverflowComments(finalParentId, overflowComments, tempDir, 'PRD');
+            }
         }
     } else {
         console.log(`Using existing Parent Issue #${finalParentId} (labels: ${prdLabels}).`);
@@ -367,16 +462,19 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
                 compiledBody = compiledBody.replace(/## Epic\n[^\n]+/m, `## Parent\n#${finalParentId} (${prdTitle})\n\n## Epic\n${prdTitle}`);
             }
 
+            const { mainBody, overflowComments } = splitBodyForGitHub(compiledBody);
             if (isDryRun) {
                 console.log(`  [DRY-RUN EDIT] [${t.key}] In-Place Update #${t.existingIssueId}: "${t.title}"`);
+                await syncOverflowComments(t.existingIssueId, overflowComments, tempDir, t.fileName);
             } else {
                 const tempFilePath = path.join(tempDir, t.fileName);
-                fs.writeFileSync(tempFilePath, compiledBody, 'utf8');
+                fs.writeFileSync(tempFilePath, mainBody, 'utf8');
 
                 const ghArgs = ['issue', 'edit', String(t.existingIssueId), '--title', t.title, '--body-file', tempFilePath, '--add-label', ticketLabels];
                 if (repo) ghArgs.push('--repo', repo);
                 await runGh(ghArgs);
                 console.log(`  [UPDATED] #${t.existingIssueId} [${t.key}]: "${t.title}"`);
+                await syncOverflowComments(t.existingIssueId, overflowComments, tempDir, t.fileName);
             }
         });
     }
@@ -391,14 +489,16 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
                 compiledBody = compiledBody.replace(/## Epic\n[^\n]+/m, `## Parent\n#${finalParentId} (${prdTitle})\n\n## Epic\n${prdTitle}`);
             }
 
+            const { mainBody, overflowComments } = splitBodyForGitHub(compiledBody);
             let createdId = null;
             if (isDryRun) {
                 createdId = simCounter++;
                 dynamicLocalMap[t.key] = createdId;
                 console.log(`  [DRY-RUN CREATE] [${t.key}] New Issue #${createdId}: "${t.title}"`);
+                await syncOverflowComments(createdId, overflowComments, tempDir, t.fileName);
             } else {
                 const tempFilePath = path.join(tempDir, t.fileName);
-                fs.writeFileSync(tempFilePath, compiledBody, 'utf8');
+                fs.writeFileSync(tempFilePath, mainBody, 'utf8');
 
                 const ghArgs = ['issue', 'create', '--title', t.title, '--body-file', tempFilePath, '--label', ticketLabels];
                 if (repo) ghArgs.push('--repo', repo);
@@ -407,6 +507,9 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
                 createdId = idMatch ? parseInt(idMatch[1], 10) : null;
                 dynamicLocalMap[t.key] = createdId;
                 console.log(`  [CREATED] #${createdId} [${t.key}]: "${t.title}"`);
+                if (createdId) {
+                    await syncOverflowComments(createdId, overflowComments, tempDir, t.fileName);
+                }
             }
         }
     }
@@ -424,16 +527,19 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
     compiledPrd = compiledPrd.replace(/## Tickets\n\n[\s\S]*?(?=\n## |$)/, `## Tickets\n\n${ticketListMarkdown}`);
     compiledPrd = replaceSemanticKeysInBody(compiledPrd, currentEpicNum, globalRegistry, dynamicLocalMap);
 
+    const { mainBody: prdMainBody, overflowComments: prdOverflow } = splitBodyForGitHub(compiledPrd);
     if (isDryRun) {
         console.log(`[DRY-RUN] Update PRD #${finalParentId} on GitHub.`);
+        await syncOverflowComments(finalParentId, prdOverflow, tempDir, 'PRD_final');
     } else {
         const tempPrdPath = path.join(tempDir, 'PRD_final.md');
-        fs.writeFileSync(tempPrdPath, compiledPrd, 'utf8');
+        fs.writeFileSync(tempPrdPath, prdMainBody, 'utf8');
 
         const ghArgs = ['issue', 'edit', String(finalParentId), '--body-file', tempPrdPath, '--add-label', prdLabels];
         if (repo) ghArgs.push('--repo', repo);
         await runGh(ghArgs);
         console.log(`Successfully updated Parent Issue #${finalParentId} on GitHub.`);
+        await syncOverflowComments(finalParentId, prdOverflow, tempDir, 'PRD_final');
     }
 
     // Cleanup temp directory

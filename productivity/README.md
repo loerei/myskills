@@ -46,7 +46,7 @@ Model- or user-reachable (equipped with rich trigger phrasing so agents can auto
 - **[review](./review/SKILL.md)** — Perform comprehensive code reviews, plan checks, and quality audits.
 - **[scaffold-exercises](./scaffold-exercises/SKILL.md)** — Create exercise directory structures with sections, problems, solutions, and explainers that pass linting.
 - **[to-issues](./to-issues/SKILL.md)** — Break a plan, spec, or PRD into independently-grabbable issues using tracer-bullet vertical slices.
-- **[to-prd](./to-prd/SKILL.md)** — Turn current conversation context into a PRD and publish it to the project issue tracker.
+- **[to-prd-and-tickets](./to-prd-and-tickets/SKILL.md)** — Synthesize conversation context into a local PRD and dependency-ordered tracer-bullet tickets with dual-layer checkboxes (`What to Build` and `Acceptance Criteria`).
 - **[to-questionnaire](./to-questionnaire/SKILL.md)** — Generate structured questionnaires to solicit requirements from users.
 - **[update-mcp](./update-mcp/SKILL.md)** — Update Model Context Protocol (MCP) servers from upstream git repositories, rebuild packages, and resolve file-lock conflicts.
 - **[write-a-bug-report](./write-a-bug-report/SKILL.md)** — Write objective, reproduction-verified bug reports without speculation.
