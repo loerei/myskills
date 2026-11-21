@@ -4,26 +4,29 @@ Audits whether the existing codebase, build system, dependencies, and runtime en
 
 ## 1. Core Review Protocol & Constraints
 
-- **Clean-Slate Isolation**: Audit target DA(s) solely against codebase ground-truth on disk, `<review_dir>/Context.md`, and this guide. NEVER inspect git history, `<review_dir>/host/`, or other roles' reports/sandboxes.
+- **Clean-Slate Isolation**: Audit target DA(s) solely against codebase ground-truth on disk, `<review_dir>/Context.md`, declared `Upstream` DAs, this guide, and matching §3 subdocuments. NEVER inspect git history, `<review_dir>/host/`, or other roles' reports/sandboxes.
 - **Single-Pass Exhaustiveness, Incremental Capture & Forward Simulation**:
-  - **Incremental Finding Capture (`<review_dir>/sandbox/Readiness/Findings.md`)**: To prevent "lost-in-the-middle" context drift across large multi-ticket epics, immediately append every discovered missing dependency, schema incompatibility, build hazard, or unverified path to `<review_dir>/sandbox/Readiness/Findings.md` as lightweight notes (ticket/file location, defect description, referenced symbols, missing packages/configs) as you audit each section. NEVER write prematurely to `<review_dir>/reports/Readiness.md` while reading.
-  - **Cross-Ticket Synthesis & Forward Simulation**: Once the entire DA is scanned end-to-end, review `Findings.md` holistically to reconcile cross-ticket readiness dependencies, eliminate false positives, group shared root causes, mentally apply all proposed fixes, and re-audit the projected state. Report all readiness, dependency, build, and compatibility defects in one pass, then synthesize and write the final evaluation to `<review_dir>/reports/Readiness.md` via your native file-writing tool.
-- **Lineage, Configuration Modernization & Continuity Alignment**:
+  - **Incremental Capture (`<review_dir>/sandbox/Readiness/Findings.md`)**: To prevent lost-in-the-middle drift across large epics, immediately append each discovered missing dependency, schema incompatibility, build hazard, or unverified path (ticket/file location, defect, referenced symbols, missing packages/configs) as lightweight notes while reading. NEVER write prematurely to `<review_dir>/reports/Readiness.md`.
+  - **Synthesis & Forward Simulation**: After scanning the entire DA end-to-end, review `Findings.md` to reconcile cross-ticket readiness dependencies, eliminate false positives, group shared root causes, mentally apply all proposed fixes, and re-audit the projected state. Report all readiness, dependency, build, and compatibility defects in one pass directly to `<review_dir>/reports/Readiness.md` via your native file-writing tool (reserve `sandbox/Readiness/` scripts strictly for Empirical Verification probes, never for generating or editing reports).
+- **Lineage & Operational Continuity Alignment**:
   - Read all DAs in `## Cross-Referenced DAs & Dependency Lineage` in `Context.md`: treat `Upstream` (`Unimplemented`) DAs as authoritative future baselines (NEVER fail readiness for files/symbols scheduled to be created by an upstream DA); verify exact symbol parity for `Upstream` (`Implemented`) DAs.
-  - **Configuration Modernization ($S \to B$) vs. Persisted User State**: For **repo-checked-in configuration files and test fixtures** (`tsconfig.json`, bundler configs, committed JSON fixtures), enforce strict canonical schema validation at boot ("Parse, Don't Validate"), reject runtime dual-format config loaders or key-sniffing fallbacks (`if ('legacyKey' in raw)`), and mandate upgrading those repo files as a prerequisite structural step ($S$) before feature logic ($B$). Conversely, for **persisted user/client state outside the repo** (`localStorage`, user settings JSON in `%APPDATA%`/`~/.config`, or local user databases from prior installed versions), treat boot loading as an external $V_1$ ingress boundary: require an explicit $V_1 \to V_2$ startup migration runner or default-preserving ingress parser so existing user installations never crash or lose settings on upgrade.
-  - **Operational Continuity Alignment** (`## Operational Continuity` in `Context.md`):
-    - `CONTINUOUS_OPERATION`: Enforce zero-downtime deployment readiness and rollback at every ticket.
-    - `NON_CONTINUOUS_OPERATION` (`!NC`): Permit offline deployment during implementation; enforce terminal milestone cutover, migration runner readiness, system bootability, and rollback capability at the terminal milestone only.
-    - `NON_CONTINUOUS_INTERMEDIATE` (`!NC0` / `!NCI`): Enforce compiler baseline, dependency availability, and headless contracts only; BAN demanding end-to-end app bootability (`npm run dev`, GUI shell) or deployment pipelines.
+  - Read `## Operational Continuity` in `<review_dir>/Context.md` and enforce the matching readiness boundary:
+
+| Operational Continuity Mode | Required Readiness Boundary |
+| :--- | :--- |
+| `CONTINUOUS_OPERATION` | Enforce zero-downtime deployment readiness and rollback at every ticket. |
+| `NON_CONTINUOUS_OPERATION` (`!NC`) | Permit offline deployment during implementation; enforce terminal milestone cutover, migration runner readiness, system bootability, and rollback capability at the terminal milestone only. |
+| `NON_CONTINUOUS_INTERMEDIATE` (`!NC0` / `!NCI`) | Enforce compiler baseline, dependency availability, and headless contracts only; BAN demanding end-to-end app bootability (`npm run dev`, GUI shell) or deployment pipelines. |
+
 - **Empirical Verification (`<review_dir>/sandbox/Readiness/`)**:
   - Run non-mutating baseline checks (`tsc --noEmit`, `npm ls`, `pip check`) under a 30s timeout. NEVER run mutating package installs (`npm install`, `pip install`) or edit source/lockfiles.
-  - Author inline import/symbol probes in `<review_dir>/sandbox/Readiness/check_readiness_<name>.*` via your native file-writing tool and execute under a 15s timeout (emitting stdout progress markers; monitor/kill hung background tasks via `manage_task`).
+  - Author inline import/symbol probes in `<review_dir>/sandbox/Readiness/check_readiness_<name>.*` and execute under a 15s timeout (emitting stdout progress markers; monitor/kill hung background tasks via `manage_task`).
 - **Miss-Probability Gate (Headless AI Implementer Baseline)**:
   Assume the implementer is an AI coding agent that (a) writes production code and tests directly from ticket text in headless CI with no human operating the app, and (b) writes ONLY the tests its ticket's Acceptance Criteria explicitly call for (never unprompted exploratory or adversarial tests). `"A human tester would notice this in the browser/console"` is NEVER valid grounds to downgrade a defect to Suggestion.
-  A defect MUST be classified as **Suggestion Only** if and only if it satisfies both conditions:
+  For in-scope defects (excluding optional non-blocking suggestions), classify as **Suggestion Only** if and only if both conditions hold:
   1. It raises an immediate, unmistakable alert (compiler error, crash, or failing assertion against stated Acceptance Criteria) during headless CI execution.
   2. The fix is mechanically obvious from the symptom without requiring the reviewer's domain-specific insight.
-  Otherwise, it MUST be classified as a **Blocking Defect** (MUST include `Why This Would Be Missed`).
+  Otherwise, classify as a **Blocking Defect** (MUST include `Why This Would Be Missed`).
   *(Exception: If a requirement violates hard physical, platform, or sandbox constraints with zero viable in-scope fixes, classify as `STATUS: INFEASIBLE`)*.
 
 ## 2. Mandatory Audit Checklist
@@ -31,7 +34,7 @@ Audits whether the existing codebase, build system, dependencies, and runtime en
 1. **Dependency & Lockfile Integrity**: Are required packages present and version-pinned in lockfiles without peer conflicts (`npm ls`, `pip check`)?
 2. **Target File & Compiler Baseline**: Do target files/symbols exist on disk (or in upstream DAs), and does the plan preserve a clean compiler baseline without `@ts-ignore`, `any`, or `--skipLibCheck`?
 3. **Module Resolution, Bundler & Stylesheet/CSP Parity**: Do imports, path aliases (`tsconfig.json` + bundler), ESM/CJS boundaries, native addon externalizations (`.node`), stylesheet entrypoint cascade/import ordering (base/shared CSS imported before feature/view overrides), and Dev vs. Prod HTML/CSP/custom-protocol settings (e.g. dev-server HMR inline preamble scripts and custom URI schemes) resolve cleanly across build, test, dev, and prod runtime targets?
-4. **Preparatory Sequencing ($S \to B$) vs. User-State Migration**: Are repo-checked-in config and test fixture upgrades staged as a prerequisite step ($S$) without runtime dual-format shims, while persisted user settings/state on disk preserve upgrade compatibility via $V_1 \to V_2$ startup migration?
+4. **Configuration Modernization ($S \to B$) vs. Persisted User State**: For **repo-checked-in configuration files and test fixtures** (`tsconfig.json`, bundler configs, committed JSON fixtures), enforce strict canonical schema validation at boot ("Parse, Don't Validate"), reject runtime dual-format config loaders or key-sniffing fallbacks (`if ('legacyKey' in raw)`), and stage upgrades as a prerequisite structural step ($S$) before feature logic ($B$). For **persisted user/client state outside the repo** (`localStorage`, user settings JSON in `%APPDATA%`/`~/.config`, or local user databases from prior installed versions), treat boot loading as an external $V_1$ ingress boundary requiring an explicit $V_1 \to V_2$ startup migration runner or default-preserving ingress parser so existing user installs never crash or lose settings on upgrade.
 5. **Cross-Platform Portability**: Are filesystem paths, casing, file locks (`EBUSY` on Windows), and binary ABIs portable across target OS/container environments?
 
 ## 3. Domain Subdocuments Routing Table
@@ -47,9 +50,9 @@ Read every subdocument whose trigger matches the target DA using your native fil
 
 ## 4. Verdict Rules & Standard Output Protocol
 
-Write evaluation to `<review_dir>/reports/Readiness.md` via your native file-writing tool, then notify Host via `send_message`:
-- `STATUS: PASS`: Codebase, dependencies, build configs, and runtime prerequisites are verified ready.
-- `STATUS: REVISIONS NEEDED`: Missing dependencies/seams, module/bundler mismatches, cross-platform hazards, or runtime config shims exist.
+Write evaluation to `<review_dir>/reports/Readiness.md`, then notify Host via `send_message`:
+- `STATUS: PASS`: Zero Blocking Defects under §2 checklist and loaded §3 subdocuments.
+- `STATUS: REVISIONS NEEDED`: One or more Blocking Defects exist under §2 checklist or loaded §3 subdocuments.
 - `STATUS: INFEASIBLE`: Hard platform, ABI, or dependency impossibility verified (overrides fixable defects as overall status).
 
 ```markdown
@@ -77,7 +80,7 @@ Write evaluation to `<review_dir>/reports/Readiness.md` via your native file-wri
 
 ## 5. Gate Response Protocol (Host Interaction)
 
-If notified that Host filed `<review_dir>/reports/Readiness_Gated_Issues.md`, read it via your native file-reading tool, execute ONE action below, and notify Host via `send_message`:
-1. **Refine / Complete as Requested**: Edit `<review_dir>/reports/Readiness.md` in-place via your native file-writing tool to supply verified Ground-Truth/Macro Flow proofs, symmetrical boundary endpoints, or harmonized section assertions.
-2. **Remove**: Edit `<review_dir>/reports/Readiness.md` in-place to remove the invalid/false-positive issue (e.g. flagging upstream-scheduled files) and update `- **Status**:`.
-3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/Readiness_Explain.md` with deeper codebase/sandbox probe proof AND update `<review_dir>/reports/Readiness.md` in-place. NEVER repeat stale arguments.
+If notified that Host filed `<review_dir>/reports/Readiness_Gated_Issues.md`, read it, execute ONE action below directly on `<review_dir>/reports/Readiness.md`, and notify Host via `send_message`:
+1. **Refine / Complete as Requested**: Edit `Readiness.md` in-place to supply verified Ground-Truth/Macro Flow proofs, symmetrical boundary endpoints, or harmonized section assertions.
+2. **Remove**: Edit `Readiness.md` in-place to remove the invalid/false-positive issue (e.g. flagging upstream-scheduled files) and update `- **Status**:`.
+3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/Readiness_Explain.md` with deeper codebase/sandbox probe proof AND update `Readiness.md` in-place. NEVER repeat stale arguments.

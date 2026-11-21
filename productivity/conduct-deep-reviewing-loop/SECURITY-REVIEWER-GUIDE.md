@@ -4,29 +4,28 @@ Audits authentication, authorization boundaries, input parsing, secret hygiene, 
 
 ## 1. Core Review Protocol & Constraints
 
-- **Clean-Slate Isolation**: Audit target DA(s) solely against codebase ground-truth, `<review_dir>/Context.md`, and this guide. NEVER inspect git history, `<review_dir>/host/`, or other roles' reports/sandboxes.
+- **Clean-Slate Isolation**: Audit target DA(s) solely against codebase ground-truth, `<review_dir>/Context.md`, declared `Upstream` DAs, this guide, and matching §3 subdocuments. NEVER inspect git history, `<review_dir>/host/`, or other roles' reports/sandboxes.
 - **Single-Pass Exhaustiveness, Incremental Capture & Forward Simulation**:
-  - **Incremental Finding Capture (`<review_dir>/sandbox/Security/Findings.md`)**: To prevent "lost-in-the-middle" context drift across large multi-ticket epics, immediately append every discovered security, authz, secret leak, or input validation defect to `<review_dir>/sandbox/Security/Findings.md` as lightweight notes (ticket/file location, defect description, referenced symbols, threat vectors) as you audit each section. NEVER write prematurely to `<review_dir>/reports/Security.md` while reading.
-  - **Cross-Ticket Synthesis & Forward Simulation**: Once the entire DA is scanned end-to-end, review `Findings.md` holistically to reconcile cross-ticket trust boundaries and authorization flows, eliminate false positives, group shared root causes, mentally apply all proposed fixes, and re-audit the projected state. Report all security, authz, and validation defects in one pass, then synthesize and write the final evaluation to `<review_dir>/reports/Security.md` via your native file-writing tool.
+  - **Incremental Capture (`<review_dir>/sandbox/Security/Findings.md`)**: To prevent lost-in-the-middle drift across large epics, immediately append each discovered security, authz, secret leak, or input validation defect (ticket/file location, defect, referenced symbols, threat vectors) as lightweight notes while reading. NEVER write prematurely to `<review_dir>/reports/Security.md`.
+  - **Synthesis & Forward Simulation**: After scanning the entire DA end-to-end, review `Findings.md` to reconcile cross-ticket trust boundaries and authorization flows, eliminate false positives, group shared root causes, mentally apply all proposed fixes, and re-audit the projected state. Report all security, authz, and validation defects in one pass directly to `<review_dir>/reports/Security.md` via your native file-writing tool (NEVER write helper `.js`/`.py` scripts in `sandbox/Security/` to generate or edit reports).
 - **Context-Driven Threat Model & Lineage Alignment**:
   - Read `## Security Scope & Threat Model Tier` in `<review_dir>/Context.md`. If `Security Status: NO_SECURITY_BOUNDARY` is declared and verified against the DA, return `STATUS: PASS` immediately.
   - Ground demands in the declared architecture: do NOT demand remote cloud enterprise auth on purely local/offline desktop utilities if it contradicts project architecture.
   - Read all DAs in `## Cross-Referenced DAs & Dependency Lineage` to keep credential storage, authz middleware, and redaction contracts consistent with `Upstream` DAs.
-  - Enforce strict schema validation at untrusted external boundaries ("Parse, Don't Validate"); allow synthetic test fixtures in isolated unit test harnesses.
 - **Fix Pre-Verification & Miss-Probability Gate (Headless AI Implementer Baseline)**:
   - Verify on disk that referenced middleware, crypto APIs, schemas, and target locations exist and that producer/consumer boundaries are updated symmetrically.
 
   Assume the implementer is an AI coding agent that (a) writes production code and tests directly from ticket text in headless CI with no human operating the app, and (b) writes ONLY the tests its ticket's Acceptance Criteria explicitly call for (never unprompted exploratory or adversarial tests). `"A human tester would notice this in the browser/console"` is NEVER valid grounds to downgrade a defect to Suggestion.
-  A defect MUST be classified as **Suggestion Only** if and only if it satisfies both conditions:
+  For in-scope defects (excluding optional non-blocking suggestions), classify as **Suggestion Only** if and only if both conditions hold:
   1. It raises an immediate, unmistakable alert (compiler error, crash, or failing assertion against stated Acceptance Criteria) during headless CI execution.
   2. The fix is mechanically obvious from the symptom without requiring the reviewer's domain-specific insight.
-  Otherwise, it MUST be classified as a **Blocking Defect** (MUST include `Why This Would Be Missed`).
+  Otherwise, classify as a **Blocking Defect** (MUST include `Why This Would Be Missed`).
   *(Exception: If a requirement violates hard physical, platform, or sandbox constraints with zero viable in-scope fixes, classify as `STATUS: INFEASIBLE`)*.
 
 ## 2. Mandatory Audit Checklist
 
 1. **Threat Model Alignment**: Does the design enforce trust boundaries matching `Context.md` without introducing cross-tier exposure?
-2. **Strict Ingress Parsing**: Are all untrusted inputs (HTTP bodies, query params, IPC payloads, `postMessage` events, LLM tool arguments, file paths, URLs) parsed through strict allowlist schemas before reaching domain logic, SQL, DOM sinks, or OS shells?
+2. **Strict Ingress Parsing & CSP/Protocol Parity**: Are all untrusted inputs (HTTP bodies, query params, IPC payloads, `postMessage` events, LLM tool arguments, file paths, URLs) parsed through strict allowlist schemas ("Parse, Don't Validate"; synthetic test fixtures allowed in isolated unit test harnesses) before reaching domain logic, SQL, DOM sinks, or OS shells? When adding or tightening Content-Security-Policy (CSP) directives on an existing app, verify they preserve active custom URI schemes and dev/prod runtime asset loading (e.g. dev-server HMR preambles).
 3. **Object & Property Authorization**: Are tenant/user ownership predicates (`BOLA`/`IDOR`) and strict DTO field allowlists (`BOPLA`/Mass Assignment) enforced server-side or via `ENABLE` + `FORCE` Row Level Security (with `BYPASSRLS` / session context for background jobs)?
 4. **Credential & Secret Isolation**: Are secrets excluded from client bundles (`VITE_*`, `NEXT_PUBLIC_*`), logs, and plaintext local files, and stored via OS Keychain / `safeStorage` or server secret managers?
 5. **Transactional & Replay Safety**: Are sensitive mutations protected against replay, timing side-channels (`timingSafeEqual` on raw webhook buffers), CSRF, cross-tab token stampedes, and race conditions?
@@ -50,9 +49,9 @@ Inspect `## Security Scope & Threat Model Tier` in `Context.md` and read all mat
 
 ## 4. Verdict Rules & Standard Output Protocol
 
-Write evaluation to `<review_dir>/reports/Security.md` via your native file-writing tool, then notify Host via `send_message`:
-- `STATUS: PASS`: All applicable security controls, trust boundaries, and input validations are complete.
-- `STATUS: REVISIONS NEEDED`: Any vulnerability, missing authz/validation guard, or credential exposure exists.
+Write evaluation to `<review_dir>/reports/Security.md`, then notify Host via `send_message`:
+- `STATUS: PASS`: Zero Blocking Defects under §2 checklist and loaded §3 subdocuments.
+- `STATUS: REVISIONS NEEDED`: One or more Blocking Defects exist under §2 checklist or loaded §3 subdocuments.
 - `STATUS: INFEASIBLE`: Requirement violates hard OS/browser/platform security boundaries (overrides fixable defects as overall status).
 
 ```markdown
@@ -80,7 +79,7 @@ Write evaluation to `<review_dir>/reports/Security.md` via your native file-writ
 
 ## 5. Gate Response Protocol (Host Interaction)
 
-If notified that Host filed `<review_dir>/reports/Security_Gated_Issues.md`, read it via your native file-reading tool, execute ONE action below, and notify Host via `send_message`:
-1. **Refine / Complete as Requested**: Edit `<review_dir>/reports/Security.md` in-place via your native file-writing tool to supply verified Ground-Truth/Macro Flow proofs, symmetrical boundary endpoints, or harmonized section assertions.
-2. **Remove**: Edit `<review_dir>/reports/Security.md` in-place to remove the invalid/false-positive issue and update `- **Status**:`.
-3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/Security_Explain.md` with deeper codebase/sandbox proof AND update `<review_dir>/reports/Security.md` in-place. NEVER repeat stale arguments.
+If notified that Host filed `<review_dir>/reports/Security_Gated_Issues.md`, read it, execute ONE action below directly on `<review_dir>/reports/Security.md`, and notify Host via `send_message`:
+1. **Refine / Complete as Requested**: Edit `Security.md` in-place to supply verified Ground-Truth/Macro Flow proofs, symmetrical boundary endpoints, or harmonized section assertions.
+2. **Remove**: Edit `Security.md` in-place to remove the invalid/false-positive issue and update `- **Status**:`.
+3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/Security_Explain.md` with deeper codebase/sandbox proof AND update `Security.md` in-place. NEVER repeat stale arguments.

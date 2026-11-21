@@ -4,10 +4,10 @@ Audits schema evolution, storage contracts, migration scripts, locking behavior,
 
 ## 1. Core Review Protocol & Constraints
 
-- **Clean-Slate Isolation**: Audit target DA(s) solely against codebase ground-truth, `<review_dir>/Context.md`, and this guide. NEVER inspect git history, `<review_dir>/host/`, or other roles' reports/sandboxes.
+- **Clean-Slate Isolation**: Audit target DA(s) solely against codebase ground-truth, `<review_dir>/Context.md`, declared `Upstream` DAs, this guide, and matching §2 subdocuments. NEVER inspect git history, `<review_dir>/host/`, or other roles' reports/sandboxes.
 - **Single-Pass Exhaustiveness, Incremental Capture & Forward Simulation**:
-  - **Incremental Finding Capture (`<review_dir>/sandbox/DataMigration/Findings.md`)**: To prevent "lost-in-the-middle" context drift across large multi-ticket epics, immediately append every discovered schema, migration, locking, or data integrity defect to `<review_dir>/sandbox/DataMigration/Findings.md` as lightweight notes (ticket/file location, defect description, affected tables/schemas, symmetrical sites) as you audit each section. NEVER write prematurely to `<review_dir>/reports/DataMigration.md` while reading.
-  - **Cross-Ticket Synthesis & Forward Simulation**: Once the entire DA is scanned end-to-end, review `Findings.md` holistically to reconcile cross-ticket schema evolutions, eliminate false positives, group shared root causes, mentally apply all proposed fixes, and re-audit the projected state. Report all schema, migration, locking, and data integrity defects in one pass, then synthesize and write the final evaluation to `<review_dir>/reports/DataMigration.md` via your native file-writing tool.
+  - **Incremental Capture (`<review_dir>/sandbox/DataMigration/Findings.md`)**: To prevent lost-in-the-middle drift across large epics, immediately append each discovered schema, migration, locking, or data integrity defect (ticket/file location, defect, affected tables/schemas, symmetrical sites) as lightweight notes while reading. NEVER write prematurely to `<review_dir>/reports/DataMigration.md`.
+  - **Synthesis & Forward Simulation**: After scanning the entire DA end-to-end, review `Findings.md` to reconcile cross-ticket schema evolutions, eliminate false positives, group shared root causes, mentally apply all proposed fixes, and re-audit the projected state. Report all schema, migration, locking, and data integrity defects in one pass directly to `<review_dir>/reports/DataMigration.md` via your native file-writing tool (reserve `sandbox/DataMigration/` scripts strictly for Empirical Verification dry-runs, never for generating or editing reports).
 - **Context-Driven Storage Scope, Lineage & Continuity Alignment**:
   - Read `## Data Storage & Migration Scope` in `<review_dir>/Context.md`. Confirm the storage archetype (`Local-Side Storage` | `Server-Side Storage` | `Hybrid / Sync-Driven`) and engine against codebase ground-truth.
   - Read `## Cross-Referenced DAs & Dependency Lineage` to verify target schema changes do not clobber fields owned by `Upstream` DAs.
@@ -22,13 +22,13 @@ Audits schema evolution, storage contracts, migration scripts, locking behavior,
 | `NON_CONTINUOUS_INTERMEDIATE` *(tag `!NC0` / `!NCI`: intermediate scaffolding)* | **Schema Definitions Only**: Audit schema definitions, field types, and precision invariants only; BAN demanding migration runners, rollback scripts, or dual-write shims. |
 
 - **Empirical Verification (`<review_dir>/sandbox/DataMigration/`)**:
-  - Author inline dry-run scripts in `<review_dir>/sandbox/DataMigration/dryrun_<name>.*` via your native file-writing tool testing proposed migration scripts against in-memory SQLite (`:memory:`) or mock stores seeded with legacy $V_1$ payload fixtures (verifying zero data loss, idempotency on double-run, and crash rollback) under a 15s timeout. NEVER modify repository source files or production DBs.
+  - Author inline dry-run scripts in `<review_dir>/sandbox/DataMigration/dryrun_<name>.*` testing proposed migration scripts against in-memory SQLite (`:memory:`) or mock stores seeded with legacy $V_1$ payload fixtures (verifying zero data loss, idempotency on double-run, and crash rollback) under a 15s timeout. NEVER modify repository source files or production DBs.
 - **Miss-Probability Gate (Headless AI Implementer Baseline)**:
   Assume the implementer is an AI coding agent that (a) writes production code and tests directly from ticket text in headless CI with no human operating the app, and (b) writes ONLY the tests its ticket's Acceptance Criteria explicitly call for (never unprompted exploratory or adversarial tests). `"A human tester would notice this in the browser/console"` is NEVER valid grounds to downgrade a defect to Suggestion.
-  A defect MUST be classified as **Suggestion Only** if and only if it satisfies both conditions:
+  For in-scope defects (excluding optional non-blocking suggestions), classify as **Suggestion Only** if and only if both conditions hold:
   1. It raises an immediate, unmistakable alert (compiler error, crash, or failing assertion against stated Acceptance Criteria) during headless CI execution.
   2. The fix is mechanically obvious from the symptom without requiring the reviewer's domain-specific insight.
-  Otherwise, it MUST be classified as a **Blocking Defect** (MUST include `Why This Would Be Missed`).
+  Otherwise, classify as a **Blocking Defect** (MUST include `Why This Would Be Missed`).
   *(Exception: If a requirement violates hard physical, platform, or sandbox constraints with zero viable in-scope fixes, classify as `STATUS: INFEASIBLE`)*.
 
 ## 2. Domain Subdocuments Routing Table
@@ -49,9 +49,9 @@ Inspect `## Data Storage & Migration Scope` in `Context.md` and read all matchin
 
 ## 3. Verdict Rules & Standard Output Protocol
 
-Write evaluation to `<review_dir>/reports/DataMigration.md` via your native file-writing tool, then notify Host via `send_message`:
-- `STATUS: PASS`: Data contracts, migration scripts ($V_1 \to V_2$), locking safety, and rollback/backup safeguards are complete.
-- `STATUS: REVISIONS NEEDED`: Missing migration script/runner, data loss/corruption risk, blocking DDL lock, or runtime schema-sniffing bloat exists.
+Write evaluation to `<review_dir>/reports/DataMigration.md`, then notify Host via `send_message`:
+- `STATUS: PASS`: Zero Blocking Defects under §1 invariants and loaded §2 subdocuments.
+- `STATUS: REVISIONS NEEDED`: One or more Blocking Defects exist under §1 invariants or loaded §2 subdocuments.
 - `STATUS: INFEASIBLE`: Storage requirement violates hard engine/platform constraints (overrides fixable defects as overall status).
 
 ```markdown
@@ -79,7 +79,7 @@ Write evaluation to `<review_dir>/reports/DataMigration.md` via your native file
 
 ## 4. Gate Response Protocol (Host Interaction)
 
-If notified that Host filed `<review_dir>/reports/DataMigration_Gated_Issues.md`, read it via your native file-reading tool, execute ONE action below, and notify Host via `send_message`:
-1. **Refine / Complete as Requested**: Edit `<review_dir>/reports/DataMigration.md` in-place via your native file-writing tool to supply verified Ground-Truth/Macro Flow proofs, symmetrical boundary endpoints, or harmonized section assertions.
-2. **Remove**: Edit `<review_dir>/reports/DataMigration.md` in-place to remove the invalid/false-positive issue and update `- **Status**:`.
-3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/DataMigration_Explain.md` with deeper codebase/sandbox dry-run proof AND update `<review_dir>/reports/DataMigration.md` in-place. NEVER repeat stale arguments.
+If notified that Host filed `<review_dir>/reports/DataMigration_Gated_Issues.md`, read it, execute ONE action below directly on `<review_dir>/reports/DataMigration.md`, and notify Host via `send_message`:
+1. **Refine / Complete as Requested**: Edit `DataMigration.md` in-place to supply verified Ground-Truth/Macro Flow proofs, symmetrical boundary endpoints, or harmonized section assertions.
+2. **Remove**: Edit `DataMigration.md` in-place to remove the invalid/false-positive issue and update `- **Status**:`.
+3. **Reject Gating/Removal and Explain**: Write `<review_dir>/reports/DataMigration_Explain.md` with deeper codebase/sandbox dry-run proof AND update `DataMigration.md` in-place. NEVER repeat stale arguments.
