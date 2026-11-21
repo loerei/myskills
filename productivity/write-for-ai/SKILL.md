@@ -11,10 +11,10 @@ For human-facing documentation (READMEs, API docs, release notes), use the `desl
 
 1. **Instruction equivalence & generative compression (Occam's Instruction Law):** If an instruction or instruction set can be reproduced by another instruction or instruction set that is more generalized or more concise with similar or better quality, the old instruction or instruction set MUST be replaced by that simpler instruction or instruction set. To decide, look strictly at the ultimate objective the instruction or instruction set is aiming for. Before keeping domain-, role-, or context-specific nouns in a rule, test whether the constraint holds outside that context; if yes, state the general relation or decision criterion instead.
 2. **Never sacrifice logical precision for stylistic brevity (No lossy compression):** Do NOT rewrite or shorten an instruction if doing so narrows its scope, drops a condition (`more generalized OR more concise`), weakens an imperative (`MUST`), or alters set mappings (`1-to-1` vs. `N-to-M`). Repeating an exact noun phrase across clauses to maintain strict variable binding is execution signal, NOT stylistic noise. **Checklists vs. Policies:** Compress *gating/routing policies* into general invariants so sub-case lists do not create loopholes, but preserve explicit *audit checklists, concrete defect signatures, and minimal `BAD`/`GOOD` contrasts* as inspection recall anchors instead of collapsing them into vague umbrella directives.
-3. **Apply the Drop Test:** Every sentence or detail must change how the AI selects a tool, sets a parameter, recovers from failure, handles an edge case, or catches a defect during evaluation. If removing it changes nothing in AI execution or judgment, delete it.
+3. **Apply the Drop Test:** Every sentence or detail must change AI execution or judgment (e.g., tool/parameter selection, failure recovery, edge-case handling, output constraints, or defect recall). If removing it changes nothing, delete it.
 4. **State failure modes and recovery actions:** Explicitly state *when* an action fails and *what* the AI must do next.
-5. **Delete triggers instead of banning artifacts:** To stop unwanted behavior caused by an existing prompt, delete the instruction triggering it. Use `NEVER` or `MUST NOT` only to override default LLM biases (e.g., sycophancy, filler, hallucinated APIs, domain-default bleed, unauthorized wrapper scripts) or enforce cross-file/cross-agent isolation where no trigger exists to remove.
-6. **Write with zero repo context:** Assume the AI has no prior knowledge of local repository paths, dataset quirks, or one host IDE's built-in tool names. Use universal examples (e.g., user auth, image resize, CRUD pagination), dynamic/relative paths for bundled assets, and capability wording (e.g., native file-reading/search tools) instead of hardcoded built-in tool names in portable skills.
+5. **Delete triggers instead of banning artifacts:** To stop unwanted behavior caused by an existing prompt, delete the instruction triggering it. Use `NEVER` or `MUST NOT` only to override default LLM biases (e.g., sycophancy, filler, hallucination, domain-default bleed) or enforce hard safety/isolation boundaries where no trigger exists to remove.
+6. **Write with zero ambient context (Portability):** Assume the AI has no prior knowledge of local environment state (paths, private data quirks, prior-session context, or host-specific built-in tool names). Use universal examples, relative/parameterized paths, and capability wording instead of host-locked identifiers in reusable instructions.
 7. **Format for fast parsing:**
    - **Frontmatter `description`:** 10–15 words in `SKILL.md` stating ONLY *when* to trigger the skill (no features, benefits, or slash commands). NEVER add YAML frontmatter to internal subdocuments or guides.
    - **Compact decision tables:** Use 2-column (`| Condition | Action |`) or small truth tables for rule branching, mappings, and enums.
@@ -23,7 +23,7 @@ For human-facing documentation (READMEs, API docs, release notes), use the `desl
 
 | Keep (Execution Signal) | Cut (Zero-Execution Noise) |
 | :--- | :--- |
-| Exact code symbols, domain terms, and contract-pinned API/tool names | Synonym substitutions, or IDE-locked built-in tool names in portable skills |
+| Exact code symbols, domain terms, and contract-pinned API/tool names | Synonym substitutions, or host-locked built-in tool names in reusable instructions |
 | Repeated exact terms that bind variables or preserve scope (`instruction or instruction set`) | Stylistic paraphrasing that drops quantifiers, conditions, or edge-case coverage |
 | Hard imperatives (`MUST`, `NEVER`, `ALWAYS`, `do NOT`) | Hedging and conversational padding (`Please note`, `Make sure to`) |
 | `e.g.` on non-exhaustive lists; concrete failure signatures in audit checklists | Exhaustive sub-case lists in routing/gating policies where a general rule suffices |
@@ -36,7 +36,7 @@ For human-facing documentation (READMEs, API docs, release notes), use the `desl
 ### Edit Existing Text
 1. Classify the target artifact first (`Tool/Param`, `Rule/Workflow`, `Skill`, or `Audit Checklist` per [REFERENCE.md](REFERENCE.md)): verify whether enumerations are *decision gates* (compress to invariants) or *defect-recall anchors* (preserve).
 2. In multi-file specs or skills, repair protocol parity and portability before editing prose: align status enums, caller/callee templates, prerequisite registration steps, dynamic/relative script paths, and strip spurious YAML frontmatter from non-skill subdocs.
-3. **When adding or changing an instruction:** run the candidate through the Core Rules first (Drop Test, Occam's Law, zero repo context, trigger deletion vs. `NEVER`), then choose placement:
+3. **When adding or changing an instruction:** run the candidate through the Core Rules first (Drop Test, Occam's Law, zero ambient context, trigger deletion vs. `NEVER`), then choose placement:
 
 | Condition | Action |
 | :--- | :--- |
