@@ -9,7 +9,7 @@ For human-facing documentation (READMEs, API docs, release notes), use the `desl
 
 ## Core Rules
 
-1. **Instruction equivalence & generative compression (Occam's Instruction Law):** If an instruction or instruction set can be reproduced by another instruction or instruction set that is more generalized or more concise with similar or better quality, the old instruction or instruction set MUST be replaced by that simpler instruction or instruction set. To decide, look strictly at the ultimate objective the instruction or instruction set is aiming for.
+1. **Instruction equivalence & generative compression (Occam's Instruction Law):** If an instruction or instruction set can be reproduced by another instruction or instruction set that is more generalized or more concise with similar or better quality, the old instruction or instruction set MUST be replaced by that simpler instruction or instruction set. To decide, look strictly at the ultimate objective the instruction or instruction set is aiming for. Before keeping domain-, role-, or context-specific nouns in a rule, test whether the constraint holds outside that context; if yes, state the general relation or decision criterion instead.
 2. **Never sacrifice logical precision for stylistic brevity (No lossy compression):** Do NOT rewrite or shorten an instruction if doing so narrows its scope, drops a condition (`more generalized OR more concise`), weakens an imperative (`MUST`), or alters set mappings (`1-to-1` vs. `N-to-M`). Repeating an exact noun phrase across clauses to maintain strict variable binding is execution signal, NOT stylistic noise. **Checklists vs. Policies:** Compress *gating/routing policies* into general invariants so sub-case lists do not create loopholes, but preserve explicit *audit checklists, concrete defect signatures, and minimal `BAD`/`GOOD` contrasts* as inspection recall anchors instead of collapsing them into vague umbrella directives.
 3. **Apply the Drop Test:** Every sentence or detail must change how the AI selects a tool, sets a parameter, recovers from failure, handles an edge case, or catches a defect during evaluation. If removing it changes nothing in AI execution or judgment, delete it.
 4. **State failure modes and recovery actions:** Explicitly state *when* an action fails and *what* the AI must do next.
@@ -33,11 +33,19 @@ For human-facing documentation (READMEs, API docs, release notes), use the `desl
 
 ## Workflows
 
-### Deslop Existing Text
+### Edit Existing Text
 1. Classify the target artifact first (`Tool/Param`, `Rule/Workflow`, `Skill`, or `Audit Checklist` per [REFERENCE.md](REFERENCE.md)): verify whether enumerations are *decision gates* (compress to invariants) or *defect-recall anchors* (preserve).
 2. In multi-file specs or skills, repair protocol parity and portability before editing prose: align status enums, caller/callee templates, prerequisite registration steps, dynamic/relative script paths, and strip spurious YAML frontmatter from non-skill subdocs.
-3. Apply the Core Rules and Keep/Cut table to strip noise and compress redundant rules.
-4. Output `Original -> Deslopped` with a brief rationale for each edit or cut.
+3. **When adding or changing an instruction:** run the candidate through the Core Rules first (Drop Test, Occam's Law, zero repo context, trigger deletion vs. `NEVER`), then choose placement:
+
+| Condition | Action |
+| :--- | :--- |
+| Already covered by existing rules (Drop Test fails) | Add nothing |
+| Shares scope with existing instruction(s) | Extend or generalize the existing instruction(s) in-place |
+| Orthogonal scope with no existing anchor | Add a new rule or section using the matching structure below |
+
+4. **Deslop:** apply the Core Rules and Keep/Cut table to strip noise and compress redundant rules.
+5. Output `Original -> Edited` with a brief rationale for each edit, addition, or cut.
 
 ### Write New AI-Facing Text
 Choose the structure matching the artifact type ([REFERENCE.md](REFERENCE.md) §2):
