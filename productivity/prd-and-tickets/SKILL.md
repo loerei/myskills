@@ -32,7 +32,7 @@ When invoked on an existing `<epic-dir>` (`docs/specs/<NN>-<epic-slug>/`):
 1. **Resolve Baseline Commit**: Read `Reviewed-At-Commit` from `PRD.md`; if missing, run `git log -n 1 --format=%H -- <epic-dir>` (if empty/untracked, skip the `git log` range and inspect live files on disk directly in Step 2).
 2. **Audit Drift & Live Ground Truth**: Run `git log --oneline <baseline>..HEAD -- <touched-paths>` and inspect live files on disk to verify that all referenced paths, symbols, contracts, dependencies, and ticket dependencies still hold against current codebase state (flagging any obsolete, already-implemented, or conflicting specs).
 3. **Audit Template & Invariant Parity**: Diff `PRD.md` and `tickets/*.md` against `## Workflow` (step 3 invariants) and `## Templates`; automatically stage format migration updates wherever the existing spec omits or drifts from current requirements.
-4. **Draft Update Plan -> Approve -> Apply**: If zero drift and zero format/brownfield gaps are found, report `"No updates needed"` with the verified baseline commit and stop without editing. Otherwise, present a compact per-file delta table (`File | Drift / Gap | Proposed Update`) and wait for approval before editing (unless explicit edit approval is active). After applying updates, suggest `/conduct-deep-reviewing-loop` for cross-domain verification.
+4. **Draft Update Plan -> Approve -> Apply**: If zero drift and zero format/brownfield gaps are found, report `"No updates needed"` with the verified baseline commit and stop without editing. Otherwise, present a compact per-file delta table (`File | Drift / Gap | Proposed Update`) and wait for approval before editing (unless explicit edit approval is active).
 
 ## Templates
 
