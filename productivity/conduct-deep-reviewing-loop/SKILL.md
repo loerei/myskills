@@ -17,6 +17,8 @@ Multi-agent review loop using isolated clean-slate domain reviewers, topological
 
 ## Workflow
 
+> **Reference-Only Fast Path (`!REF`):** If `!REF` (case-insensitive) is present in the invocation prompt, **skip Step 1–3** and execute the `!REF [Role(s)]` action under `## Domain Terms and Tag Commands` directly.
+
 ```mermaid
 flowchart TD
     Init["Layer 1: Init <review_dir>, <trace_vault>, & Context.md"] --> SpawnHost["Layer 1: Spawn Clean-Slate Layer 2 Host"]
@@ -152,7 +154,7 @@ When `ROUND_REVISION_NEEDED` occurs under `!PA` / `!WA`:
   1. Remove `!PA` / `!WA` from `## Active Modifiers` in `<review_dir>/Context.md`.
   2. Clean up all `.bak.md` files (same as receiving `"C"`) and autonomously drive subsequent rounds via Step 2B.
 
-## Modifiers
+## Domain Terms and Tag Commands
 
 | Command | Action |
 | :--- | :--- |
@@ -165,3 +167,10 @@ When `ROUND_REVISION_NEEDED` occurs under `!PA` / `!WA`:
 | `!MOBILE` / `!RESPONSIVE` | Set UX/UI form factor to `CROSS_DEVICE_RESPONSIVE` (loads `UX-MOBILE-RESPONSIVE-PERFORMANCE.md`). Default for desktop/Electron/Tauri apps is `DESKTOP_ONLY` (`UX-DESKTOP-LAYOUT-PERFORMANCE.md`). |
 | `!NCR` | Disable Step 4B Cross-Domain Remediation Review (`Cross-Review: DISABLED` in `Context.md`). Default is enabled. |
 | `!FPA` | Instantly kill running subagents and pause execution. |
+
+- **`!REF [Role(s)]` (Reference-Only Query)**: Consult matching reviewer guides and domain subdocuments in `<skill_dir>` as a direct knowledge reference without starting a review loop (Default: `auto-select matching roles`; Timing: `Start-time`).
+  - **Agent Action**:
+    1. Skip Step 1–3 completely (do NOT create `<review_dir>`, `<trace_vault>`, `Context.md`, or spawn `review_host` / Layer 3 subagents).
+    2. Select matching `<Role>-REVIEWER-GUIDE.md` files (from the optional comma-separated `[Role(s)]` argument if provided, otherwise auto-matched to the user's question and codebase).
+    3. Read the selected guides and ONLY their regime/archetype-matching subdocuments via native file-reading tools (never load non-matching subdocs).
+    4. Answer the user's prompt directly, grounding recommendations in those standards and live codebase evidence.
