@@ -171,6 +171,5 @@ When `ROUND_REVISION_NEEDED` occurs under `!PA` / `!WA`:
 - **`!REF [Role(s)]` (Reference-Only Query)**: Consult matching reviewer guides and domain subdocuments in `<skill_dir>` as a direct knowledge reference without starting a review loop (Default: `auto-select matching roles`; Timing: `Start-time`).
   - **Agent Action**:
     1. Skip Step 1–3 completely (do NOT create `<review_dir>`, `<trace_vault>`, `Context.md`, or spawn `review_host` / Layer 3 subagents).
-    2. Select matching `<Role>-REVIEWER-GUIDE.md` files (from the optional comma-separated `[Role(s)]` argument if provided, otherwise auto-matched to the user's question and codebase).
-    3. Read the selected guides and ONLY their regime/archetype-matching subdocuments via native file-reading tools (never load non-matching subdocs).
-    4. Answer the user's prompt directly, grounding recommendations in those standards and live codebase evidence.
+    2. Read `<skill_dir>/REF-ROUTER.md` to select ONLY the matching `<Role>-REVIEWER-GUIDE.md` files and regime/archetype-matching subdocuments (filtered by optional `[Role(s)]` if provided, otherwise auto-matched to the user's question and codebase; never load non-matching subdocs).
+    3. Read those selected files via your native file-reading tool and answer the user's prompt directly, grounding recommendations in those standards and live codebase evidence.
