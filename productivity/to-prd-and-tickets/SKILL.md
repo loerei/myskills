@@ -1,6 +1,6 @@
 ---
 name: to-prd-and-tickets
-description: Use when synthesizing a plan or conversation into a local PRD and dependency-ordered tickets.
+description: Use when creating or migrating local PRDs and dependency-ordered tickets from plans or specs.
 ---
 
 # To PRD and Tickets
@@ -26,12 +26,23 @@ Synthesize conversation context and codebase understanding into a local Epic dir
 4. **Downstream Handoff**:
    - Do not publish directly from this skill. Hand off to `conduct-deep-reviewing-loop` for specification auditing or `gitpublish-prd-and-tickets` to sync `PRD.md` and `tickets/*.md` to GitHub Issues.
 
+## Reconcile / Migrate Existing Specs
+
+When invoked on an existing `<epic-dir>` (`docs/specs/<NN>-<epic-slug>/`):
+1. **Resolve Baseline Commit**: Read `Reviewed-At-Commit` from `PRD.md`; if missing, run `git log -n 1 --format=%H -- <epic-dir>`.
+2. **Audit Drift & Live Ground Truth**: Run `git log --oneline <baseline>..HEAD -- <touched-paths>` and inspect live files on disk to detect deleted/renamed paths, already-implemented hooks or abstractions, changed shared seams (i18n/localization, design tokens, CSS cascade, IPC), uninstalled dependencies, and circular ticket dependencies.
+3. **Audit Brownfield & Format Gaps**: Diff `PRD.md` and `tickets/*.md` against `## Templates` and §3 invariants (`Change Mode`, `## Baseline Parity & Intentional Deltas`, `Scope Guard`, `Replace <legacy> with <new> preserving initial intended UXUI` / `(Replaces: ...)`, Dual-Layer Checkboxes, and terminal real-runtime smoke check).
+4. **Draft Update Plan -> Approve -> Apply**: Present a compact per-file delta table (`File | Drift / Gap | Proposed Update`) and wait for approval before editing (unless explicit edit approval / `T3` is active). After applying updates, suggest `/conduct-deep-reviewing-loop` for cross-domain verification.
+
 ## Templates
 
 ### 1. `docs/specs/<NN>-<epic-slug>/PRD.md`
 
 ```markdown
 # PRD: <Epic Title>
+
+- **Change Mode:** `PARITY_MIGRATION | EXISTING_PRODUCT_FEATURE | GREENFIELD`
+- **Reviewed-At-Commit:** `<HEAD SHA>`
 
 ## Problem Statement
 The user-facing or architectural problem and root causes.
