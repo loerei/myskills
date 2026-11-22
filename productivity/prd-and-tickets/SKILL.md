@@ -1,9 +1,9 @@
 ---
-name: to-prd-and-tickets
+name: prd-and-tickets
 description: Use when creating or migrating local PRDs and dependency-ordered tickets from plans or specs.
 ---
 
-# To PRD and Tickets
+# PRD and Tickets
 
 Synthesize conversation context and codebase understanding into a local Epic directory (`docs/specs/<NN>-<epic-slug>/PRD.md` and `tickets/<key>-<slug>.md`) ready for `conduct-deep-reviewing-loop`, `gitpublish-prd-and-tickets`, and `implement-with-subagents`.
 
@@ -31,8 +31,8 @@ Synthesize conversation context and codebase understanding into a local Epic dir
 When invoked on an existing `<epic-dir>` (`docs/specs/<NN>-<epic-slug>/`):
 1. **Resolve Baseline Commit**: Read `Reviewed-At-Commit` from `PRD.md`; if missing, run `git log -n 1 --format=%H -- <epic-dir>`.
 2. **Audit Drift & Live Ground Truth**: Run `git log --oneline <baseline>..HEAD -- <touched-paths>` and inspect live files on disk to detect deleted/renamed paths, already-implemented hooks or abstractions, changed shared seams (i18n/localization, design tokens, CSS cascade, IPC), uninstalled dependencies, and circular ticket dependencies.
-3. **Audit Brownfield & Format Gaps**: Diff `PRD.md` and `tickets/*.md` against `## Templates` and §3 invariants (`Change Mode`, `## Baseline Parity & Intentional Deltas`, `Scope Guard`, `Replace <legacy> with <new> preserving initial intended UXUI` / `(Replaces: ...)`, Dual-Layer Checkboxes, and terminal real-runtime smoke check).
-4. **Draft Update Plan -> Approve -> Apply**: Present a compact per-file delta table (`File | Drift / Gap | Proposed Update`) and wait for approval before editing (unless explicit edit approval / `T3` is active). After applying updates, suggest `/conduct-deep-reviewing-loop` for cross-domain verification.
+3. **Audit Brownfield & Format Gaps**: Diff `PRD.md` and `tickets/*.md` against `## Templates` and §3 invariants (`Change Mode`, `## Baseline Parity & Intentional Deltas`, `Scope Guard`, `Replace <legacy> with <new> preserving initial intended UXUI` / `(Replaces: ...)`, Dual-Layer Checkboxes, and terminal real-runtime smoke check); automatically stage format migration updates whenever schema or template drift is detected.
+4. **Draft Update Plan -> Approve -> Apply**: Present a compact per-file delta table (`File | Drift / Gap | Proposed Update`) and wait for approval before editing (unless explicit edit approval is active). After applying updates, suggest `/conduct-deep-reviewing-loop` for cross-domain verification.
 
 ## Templates
 
@@ -105,3 +105,10 @@ End-to-end behavior and concrete file/module deliverables for this slice. Every 
 <test-and-typecheck-command>
 ```
 ```
+
+## Domain Terms and Tag Commands
+
+- **`!REC <path>` (Reconcile & Migrate Existing Specs)**: Audit an existing `<epic-dir>` against intervening commits, live code, and current spec templates/invariants, automatically flagging format migrations whenever schema or template drift is detected (Default: `none (requires path or active epic context)`; Timing: `Start-time`).
+  - **Agent Action**:
+    1. Run steps 1–4 of `## Reconcile / Migrate Existing Specs` against `<path>`.
+    2. Output the per-file Update Plan (`File | Drift / Gap | Proposed Update`, covering both code drift and template/brownfield format migrations) and stop for user approval unless explicit edit approval is active.
