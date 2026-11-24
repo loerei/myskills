@@ -65,9 +65,9 @@ High-level architectural and user-facing solution.
 ## Implementation Decisions
 - Modules, interfaces, schemas, state invariants, and API contracts to build or modify.
 
-## Baseline Parity & Intentional Deltas
-- **Preserved (`PRESERVE`)**: Existing behaviors, defaults, DOM/CSS contracts, cross-cutting binders (i18n, shortcuts, theme), and data fields that must remain unchanged.
-- **Intentional Changes (`INTENTIONALLY_CHANGED`)**: Explicit behavioral, visual, or contract deltas authorized by this PRD (omit section only on pure greenfield epics).
+## Intentional Deltas
+> **Default Preserve (`BROWNFIELD`):** All existing observable behavior, contracts, and `initial intended UXUI` default to **PRESERVE**; only deltas explicitly listed below may change (omit section under `GREENFIELD`).
+- **`INTENTIONALLY_CHANGED`**: <Explicit behavioral, visual, or contract deltas authorized by this PRD.>
 
 ## Testing Decisions
 - Target seams, behavioral test philosophy, and prior art in the repository.
