@@ -5,15 +5,15 @@
 ### Standard Full Audit Prompt
 ```markdown
 Analyze the diff file at the Git Hunk level:
-Diff file: <appDataDir>/brain/<conversation-id>/<filename>.diff
+Diff file: <scratch_dir>/<filename>.diff
 Target file: <absolute_path_to_source_file>
 
 Context:
 1. Prototype Goal: <quantified_goal_metrics_feature_perf_bugfix>
-   (If <appDataDir>/brain/<conversation-id>/PR.md exists, read it via read_file as the Goal spec.)
+   (If <scratch_dir>/PR.md exists, read it directly as the Goal spec.)
 2. Bug behavior / Symptoms: <observed_symptoms_and_reproduction_steps>
 
-You may read diffs and source files using read_file / search tools.
+You may read diffs and source files using your file-reading/search tools.
 
 Per-hunk analysis:
 1. Split the diff into Git Hunks (`@@ -L,N +L,M @@` or logical blocks).
@@ -35,12 +35,12 @@ Per-hunk analysis:
 ### `!HU` (Bloat Hunt) Prompt
 ```markdown
 Run a fast BLOAT HUNT pass on:
-Diff file: <appDataDir>/brain/<conversation-id>/<filename>.diff
+Diff file: <scratch_dir>/<filename>.diff
 Target file: <absolute_path_to_source_file>
 
 Context:
 Prototype Goal: <quantified_goal_metrics_feature_perf_bugfix>
-(If <appDataDir>/brain/<conversation-id>/PR.md exists, read it via read_file.)
+(If <scratch_dir>/PR.md exists, read it directly.)
 
 Identify whether this diff is Type U (Unrelated to Goal) or Type 2U (Unrelated Buggy Code) for immediate stripping:
 1. Is this diff required for the Goal? (Yes/No)
@@ -69,8 +69,8 @@ Identify whether this diff is Type U (Unrelated to Goal) or Type 2U (Unrelated B
 ```json
 {
   "targetFile": "path/to/File.ext",
-  "diffFile": "<appDataDir>/brain/<conversation-id>/File.ext.diff",
-  "prGoalSpec": "<appDataDir>/brain/<conversation-id>/PR.md",
+  "diffFile": "<scratch_dir>/File.ext.diff",
+  "prGoalSpec": "<scratch_dir>/PR.md",
   "totalChangedLines": 85,
   "hunks": [
     {
@@ -120,7 +120,7 @@ Identify whether this diff is Type U (Unrelated to Goal) or Type 2U (Unrelated B
 
 ## 3. Consensus Matrix & Synthesis Template
 
-Write aggregated findings to `<appDataDir>/brain/<conversation-id>/subagents_diff_and_bug_analysis.md`:
+Write aggregated findings to `<scratch_dir>/subagents_diff_and_bug_analysis.md`:
 
 ```markdown
 # Multi-Subagent Diff Audit & Bug Analysis Summary
@@ -136,7 +136,7 @@ Write aggregated findings to `<appDataDir>/brain/<conversation-id>/subagents_dif
 
 ## 2. Synthesis & Fix Plan
 
-1. **Goal Specification Anchor**: `<appDataDir>/brain/<conversation-id>/PR.md`
+1. **Goal Specification Anchor**: `<scratch_dir>/PR.md`
 2. **Non-Goal Code / Hunks to Strip (Type U / Type 2U)**: <List diffs/hunks to discard without fixing>
 3. **Clean Goal Code to Retain (Type 0)**: <List clean diffs/hunks contributing to Goal>
 4. **Identified Surgical Fix (Type 1/2/3)**: <Minimal edit required for Goal-relevant findings>

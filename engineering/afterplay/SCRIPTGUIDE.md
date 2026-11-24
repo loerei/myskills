@@ -4,7 +4,7 @@ Invoke helper scripts using `<skill-dir>/scripts/<script>.js` so execution works
 
 ## 1. `scripts/get-pr-description.js`
 
-Fetches PR title, body, metadata, and branch refs from GitHub into `<appDataDir>/brain/<conversation-id>/PR.md` (used in Phase 1 when `!GPR<PR_ID/URL>` is supplied).
+Fetches PR title, body, metadata, and branch refs from GitHub into `<scratch_dir>/PR.md` (used in Phase 1 when `!GPR<PR_ID/URL>` is supplied).
 
 ```sh
 node <skill-dir>/scripts/get-pr-description.js <PR_NUMBER_OR_URL> [options]
@@ -22,7 +22,7 @@ node <skill-dir>/scripts/get-pr-description.js <PR_NUMBER_OR_URL> [options]
 
 ```sh
 # Export PR description to PR.md
-node <skill-dir>/scripts/get-pr-description.js https://github.com/owner/repo/pull/42 -o "<appDataDir>/brain/<conversation-id>/PR.md"
+node <skill-dir>/scripts/get-pr-description.js https://github.com/owner/repo/pull/42 -o "<scratch_dir>/PR.md"
 
 # Export private repo PR metadata as JSON
 node <skill-dir>/scripts/get-pr-description.js 42 -R owner/private-repo -t "<token>" --json -o PR.json
@@ -55,7 +55,7 @@ node <skill-dir>/scripts/export-diffs.js [TARGET_REF] -o <OUTPUT_DIR> [options]
     {
       "targetFile": "<workspace>/src/module/TargetFile.ext",
       "relativePath": "src/module/TargetFile.ext",
-      "diffFile": "<appDataDir>/brain/<conversation-id>/TargetFile.ext.diff",
+      "diffFile": "<scratch_dir>/TargetFile.ext.diff",
       "diffFileName": "TargetFile.ext.diff",
       "status": "UNCHANGED",
       "isUpdated": false,
@@ -67,8 +67,8 @@ node <skill-dir>/scripts/export-diffs.js [TARGET_REF] -o <OUTPUT_DIR> [options]
 
 ```sh
 # Standard per-file diff export
-node <skill-dir>/scripts/export-diffs.js <base-commit> -o "<appDataDir>/brain/<conversation-id>" -C "<workspace>"
+node <skill-dir>/scripts/export-diffs.js <base-commit> -o "<scratch_dir>" -C "<workspace>"
 
 # Incremental update with JSON manifest
-node <skill-dir>/scripts/export-diffs.js origin/main -o "<appDataDir>/brain/<conversation-id>" --update --json
+node <skill-dir>/scripts/export-diffs.js origin/main -o "<scratch_dir>" --update --json
 ```
