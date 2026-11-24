@@ -72,7 +72,7 @@ flowchart TD
 > 7. **Clean & Neutral Artifact Rule (Anti-Anchoring)**: Integrate Mode A draft updates seamlessly as native specifications without past reviewer references, reviewer-based version tags, or meta-changelogs.
 
 > [!WARNING]
-> **Critical Evaluation & Non-Blocking Churn Guard (Main Agent Gatekeeper)**: Evaluate reviewer feedback critically against YAGNI, empirical codebase facts, and repository rules (`AGENTS.md`).
+> **Critical Evaluation & Non-Blocking Churn Guard (Main Agent Gatekeeper)**: Evaluate reviewer feedback critically against YAGNI, empirical codebase facts, repository rules (`AGENTS.md`), and the Mode A rejection criteria in `../conduct-deep-reviewing-loop/HOW-TO-GATE.md` (rejecting `Spec-Induced Regression` that overrides `BROWNFIELD` patterns or `initial intended UXUI` without `INTENTIONALLY_CHANGED`, `Ungrounded Fix Proposal` lacking `Proof` or on-disk verification of APIs/CSS/keys/runner paths, and regime-mismatched Mobile/WCAG/Continuous-Op demands).
 > - **Non-Blocking Churn Guard**: Items listed under `Suggestions for Improvement (Optional / Non-blocking)` do NOT affect `STATUS: PASS`. The Main Agent **MUST NOT** edit the draft plan, modify codebase files, or reset `PassCount` based on non-blocking suggestions unless the user explicitly commands it.
 
 ## Subdoc References
