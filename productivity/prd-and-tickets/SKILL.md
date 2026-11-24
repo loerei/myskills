@@ -49,7 +49,7 @@ When deciding whether a new scope should produce `2+` PRDs, or splitting an exis
 ```markdown
 # PRD: <Epic Title>
 
-- **Change Mode:** `PARITY_MIGRATION | EXISTING_PRODUCT_FEATURE | GREENFIELD`
+- **Change Mode:** `BROWNFIELD | GREENFIELD`
 - **Reviewed-At-Commit:** `<HEAD SHA>`
 - **Upstream Prerequisite:** `<upstream-epic-dir>` *(optional; include when sequentially dependent on a prior PRD)*
 
