@@ -93,7 +93,7 @@ If `review_host` is not registered in the active session, call `define_subagent`
 - `system_prompt`: Reference `REVIEW-HOST-GUIDE.md` and `HOW-TO-GATE.md`.
 
 #### 2B. Invoke Review Host
-Call `invoke_subagent` with `TypeName: "review_host"`, `Role: "Review Host & Critical Gate"`, and exact `Prompt`:
+Call `invoke_subagent` with `TypeName: "review_host"`, `Role: "Review Host & Critical Gate (Round <N>)"` (ONLY when subagent `Role` metadata is UI-only and NOT injected into the subagent's context; otherwise use `"Review Host & Critical Gate"` to keep round numbers hidden from Layer 2/3), and exact `Prompt`:
 - **Round 1**:
   `You are Review Host & Critical Gate. Review Workspace: <review_dir>. Target DA(s): <da_path(s)>. System Rules: AGENTS.md. Execution Protocol: REVIEW-HOST-GUIDE.md. Gating Standards: HOW-TO-GATE.md. Context: <review_dir>/Context.md. FIRST read the listed files, then execute review round per guides. If your context is compacted during execution: Upon receiving resuming command, check your progress by checking subagents, reports and host files and resume if unfinished, conclude and report if finished. DO NOT create a new round. Re-read REVIEW-HOST-GUIDE.md and HOW-TO-GATE.md.`
 - **Round N+1**:
