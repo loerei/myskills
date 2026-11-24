@@ -21,8 +21,8 @@ Synthesize conversation context and codebase understanding into one or more loca
    - Present the PRD boundaries (if `2+`), testing seams, and numbered ticket breakdown (`Key & Title`, `Blocked by`, `What it delivers`) to the user and confirm granularity and blocking edges before writing files.
 3. **Write Local `PRD.md` and `tickets/*.md`**:
    - For each approved Epic, write `docs/specs/<NN>-<epic-slug>/PRD.md` and one file per ticket under `docs/specs/<NN>-<epic-slug>/tickets/<key>-<slug>.md` using the templates below.
-   - **Dual-Layer Checkbox & Unified File-Entry Invariant**: Every ticket MUST include valid GFM task-list checkboxes (`- [ ]`) on **both** `## What to Build` deliverables (`- [ ] 1. **[NEW|MODIFY|DELETE]** [file.ext](file:///...)`) and `## Acceptance Criteria` items (`- [ ] <Criterion>`). Embed target file paths and `[NEW|MODIFY|DELETE]` tags directly on the `## What to Build` deliverable entries; NEVER create a separate `## Target Files` section that duplicates `## What to Build`.
-   - **Brownfield Equivalence & Unasked-Change Guard**: On brownfield or refactor tickets, frame replacement deliverables explicitly as `Replace <legacy> with <new> preserving initial intended UXUI` (and append `(Replaces: [legacy.ext](file:///...))` on `[NEW]` deliverables) so the spec separates underlying implementation changes (DOM to VDOM, file relocation, state store) from invariant user-facing UXUI. Include the standing `Scope Guard` line in `## What to Build` forbidding unrequested edits, restyling, or removals.
+   - **Dual-Layer Checkbox & In-Place File Anchors**: Every ticket MUST include valid GFM task-list checkboxes (`- [ ]`) on **both** `## What to Build` deliverables (`- [ ] 1. **<Deliverable Title>**:`) and `## Acceptance Criteria` items (`- [ ] <Criterion>`). Keep checkbox lines concise by listing target file links (`**[NEW|MODIFY|DELETE]** [file.ext](file:///...)`) on an indented `- **Files:**` sub-bullet directly under each deliverable; NEVER create a separate `## Target Files` section that duplicates `## What to Build`.
+   - **Brownfield Equivalence & Unasked-Change Guard**: On brownfield or refactor tickets, frame replacement deliverables explicitly as `Replace <legacy> with <new> preserving initial intended UXUI` (and append `(Replaces: [legacy.ext](file:///...))` on `[NEW]` entries in `- **Files:**`) so the spec separates underlying implementation changes (DOM to VDOM, file relocation, state store) from invariant user-facing UXUI. Include the standing `Scope Guard` line in `## What to Build` forbidding unrequested edits, restyling, or removals.
    - **Prototype Snippet Rule**: Avoid fragile line numbers; inline concise decision-encoding snippets (state machines, schemas, type contracts, reducers) when they specify contracts more accurately than prose. In brownfield repositories, snippets MUST reuse verified CSS selectors, i18n/localization lookups, and DTO/state fields from disk — NEVER invent placeholder class names or hardcode sample English strings where an active i18n seam exists.
 4. **Downstream Handoff**:
    - Do not publish directly from this skill. Hand off to `conduct-deep-reviewing-loop` for specification auditing or `gitpublish-prd-and-tickets` to sync `PRD.md` and `tickets/*.md` to GitHub Issues.
@@ -97,11 +97,13 @@ ready-for-agent
 ## What to Build
 > **Scope Guard:** Implement only what is explicitly specified; preserve initial intended UXUI and all unmentioned existing behaviors. Do NOT alter, restyle, or remove anything unasked.
 
-End-to-end behavior and concrete file/module deliverables for this slice. Every deliverable MUST start with a GFM task-list checkbox (`- [ ]`) and anchor its target file(s) inline (do NOT create a separate `## Target Files` section):
+End-to-end behavior and concrete file/module deliverables for this slice. Every deliverable MUST start with a short GFM task-list checkbox (`- [ ] 1. **<Title>**:`) followed immediately by an indented `- **Files:**` sub-bullet anchoring its target file(s) (do NOT create a separate `## Target Files` section):
 
-- [ ] 1. **[NEW|MODIFY|DELETE]** [`src/path/to/file.ts`](file:///absolute/path/to/src/path/to/file.ts) — <Deliverable / Module Title> *(if replacing legacy code: `Replace [src/path/to/legacy.ts](file:///...) preserving initial intended UXUI` / `(Replaces: [src/path/to/legacy.ts](file:///...))`)*
-  - Contract, state transitions, and edge-case rules.
-- [ ] 2. **[NEW|MODIFY|DELETE]** [`src/path/to/file.test.ts`](file:///absolute/path/to/src/path/to/file.test.ts) — <Test Suite Title>
+- [ ] 1. **<Deliverable / Module Title>**:
+  - **Files:** **[NEW|MODIFY|DELETE]** [`src/path/to/file.ts`](file:///absolute/path/to/src/path/to/file.ts) *(if replacing legacy code: `(Replaces: [src/path/to/legacy.ts](file:///...))`)*
+  - Contract, state transitions, and edge-case rules *(on brownfield replacements: `Replace <legacy> with <new> preserving initial intended UXUI`)*.
+- [ ] 2. **<Test Suite Title>**:
+  - **Files:** **[NEW|MODIFY|DELETE]** [`src/path/to/file.test.ts`](file:///absolute/path/to/src/path/to/file.test.ts)
   - Behavioral test cases and boundary assertions.
 
 ## Acceptance Criteria

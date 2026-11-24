@@ -28,7 +28,7 @@ flowchart TD
     EvaluateHealth -->|"Healthy (Pass)"| ReuseSubagent["send_message (Continue Subagent)<br/>Pass next Ticket path + Git mandate"]
     EvaluateHealth -->|"Degraded / Truncated (Fail)"| SpawnNew
     
-    SpawnNew --> WaitSubagent["Subagent reads Ticket file directly<br/>Tracks What to Build + ACs [ ] -> [/] -> [x]"]
+    SpawnNew --> WaitSubagent["Subagent reads Ticket file directly<br/>Tracks What to Build + ACs [ ] -> [x]"]
     ReuseSubagent --> WaitSubagent
     
     WaitSubagent --> SubagentDone["Subagent Reports:<br/>• Modified files<br/>• Test & build output<br/>• Commit hash"]
@@ -55,8 +55,8 @@ Directives:
    - Pre-flight spec drift, unasked-change guard & considerate porting: Resolve baseline commit from `Reviewed-At-Commit` in the Parent Spec or Target Ticket, falling back to `git log -n 1 --format=%H -- <spec-dir>` if missing; when a SHA is found, run `git log --oneline <sha>..HEAD -- <touched-paths>` before editing (if untracked/empty, verify touched files and symbols directly on disk), inspect overlapping commits, and reconcile live defaults, protocols, or handlers instead of overwriting newer live behavior (report semantic contradictions to the orchestrator before coding). Implement only what is explicitly specified; do NOT alter, restyle, or remove unasked behaviors. When modifying, migrating, or replacing an existing file/component (including `[NEW]` deliverables declaring `Replaces: <legacy-file-path(s)>`), read the live legacy implementation and paired assets/stylesheets/tests first; underlying implementation layers may change per ticket, while all existing observable behavior, contracts, and `initial intended UXUI` default to **PRESERVE** unless explicitly listed under `INTENTIONALLY_CHANGED` in `PRD.md`.
    - Zero Re-Planning: Do NOT create an `implementation_plan.md`. Use the ticket file itself as your live plan.
    - Autonomous execution: Start implementation immediately. Do NOT ask for user confirmation or briefing approval.
-   - Pre-flight checkboxing: Before coding, if the deliverables under `## What to Build` in the Target Ticket (e.g. `### 1. <Deliverable>`) lack GFM task-list checkboxes (`- [ ]`), convert each deliverable header/entry to `- [ ] 1. <Deliverable>`.
-   - Two-layer TDD progression (`What to Build` -> `Acceptance Criteria`): Advance `## What to Build` deliverables sequentially (`[ ]` -> `[/]` -> `[x]`, max 1 active `[/]`). For each deliverable, write/update tests alongside code, run verification, mark the deliverable `[x]`, and simultaneously mark `[x]` on the `## Acceptance Criteria` items proven by those tests. Verify and mark `[x]` on any remaining cross-cutting `## Acceptance Criteria` items before committing.
+   - Pre-flight checkboxing: Before coding, if the deliverables under `## What to Build` in the Target Ticket (e.g. `### 1. <Deliverable>`) lack GFM task-list checkboxes (`- [ ]`), convert each deliverable header to `- [ ] 1. **<Deliverable>**`.
+   - Two-layer TDD progression (`What to Build` -> `Acceptance Criteria`): Advance `## What to Build` deliverables sequentially without intermediate `[/]` edits (`[ ]` -> `[x]` only after verification). For each deliverable, write/update tests alongside code, run verification, then mark the deliverable `[x]` and simultaneously mark `[x]` on the `## Acceptance Criteria` items proven by those tests. When toggling checkboxes, patch ONLY the minimal unique prefix (or scoped line range) instead of echoing entire lines or paragraphs. Verify and mark `[x]` on any remaining cross-cutting `## Acceptance Criteria` items before committing.
    - Scope isolation: Focus strictly on this ticket. Do NOT inspect, query, or attempt to implement other tickets in the PRD.
    - Use the configured repository file-edit tool (e.g. MCP `patchitright`) for code edits.
    - Run verification commands: `<test-command>` and `<build-command>`.

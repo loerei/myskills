@@ -25,7 +25,7 @@ Universal work breakdown, DAG ordering, and slicing invariants applicable across
 | Code area is stable, deprecated, or will never be touched again. | **Never** | Leave code intact $\rightarrow$ Perform minimal direct change or leave untouched. |
 
 ### 4. Checkbox (`- [ ]`) & Nano Step Granularity
-- [ ] Dual-Layer GFM Checkboxes (`What to Build` + `Acceptance Criteria`): Ensure both `## What to Build` deliverables (`- [ ] 1. **[NEW|MODIFY|DELETE]** [file.ext](...)`) and `## Acceptance Criteria` assertions (`- [ ] ...`) use valid GFM task-list syntax (`- [ ]`, never heading `### [ ]`), with target file tags anchored directly in `## What to Build` rather than duplicated in a separate `## Target Files` section.
+- [ ] Dual-Layer GFM Checkboxes (`What to Build` + `Acceptance Criteria`): Ensure both `## What to Build` deliverables (`- [ ] 1. **<Title>**:` with an indented `- **Files:** **[NEW|MODIFY|DELETE]** [file.ext](...)` sub-bullet directly underneath) and `## Acceptance Criteria` assertions (`- [ ] ...`) use valid GFM task-list syntax (`- [ ]`, never heading `### [ ]`), keeping target file tags anchored inside `## What to Build` rather than duplicated in a separate `## Target Files` section.
 - [ ] Atomic Checkbox Scope: Ensure each `- [ ]` execution step represents a single-turn, atomic modification (a single semantic change or contract addition). Overloaded checkboxes containing multiple disparate tasks MUST be split (`SPLIT_STEP`).
 - [ ] Step Execution Ordering: Verify checkboxes follow an incremental progression: Interface / Seams / Stubs $\rightarrow$ Core Logic $\rightarrow$ Edge Cases $\rightarrow$ Verification. Forward-referencing checkboxes MUST be re-ordered (`REORDER_STEPS`).
 - [ ] Dedicated Verification Steps: Ensure critical state modifications, migrations, or algorithms are immediately followed by explicit verification steps running automated test commands or repro harnesses (`INJECT_VERIFICATION_STEP`).
@@ -50,11 +50,15 @@ GOOD (Tidy First Order):
 BAD (Multi-Concern Step):
 - `- [ ] Implement user avatar upload, write API tests, update profile settings page UI, and fix image cache bug.`
 
-GOOD (Atomic Steps with Discrete Verification):
-- `- [ ] 1. **[MODIFY]** [avatar-storage.ts](file:///.../avatar-storage.ts) — Define AvatarStorage interface and local disk adapter stub` (`SPLIT_STEP`)
-- `- [ ] 2. **[NEW]** [image-pipeline.ts](file:///.../image-pipeline.ts) — Implement image validation and resizing pipeline` (`SPLIT_STEP`)
-- `- [ ] 3. **[NEW]** [image-pipeline.test.ts](file:///.../image-pipeline.test.ts) — Run unit tests verifying image validator against test fixtures` (`INJECT_VERIFICATION_STEP`)
-- `- [ ] 4. **[MODIFY]** [ProfileSettings.tsx](file:///.../ProfileSettings.tsx) — Mount avatar upload component in user profile UI` (`SPLIT_STEP`)
+GOOD (Atomic Steps with Short Checkbox Headers + Indented File Anchors):
+- `- [ ] 1. **Define AvatarStorage interface and local disk adapter stub**:` (`SPLIT_STEP`)
+  - `- **Files:** **[MODIFY]** [avatar-storage.ts](file:///.../avatar-storage.ts)`
+- `- [ ] 2. **Implement image validation and resizing pipeline**:` (`SPLIT_STEP`)
+  - `- **Files:** **[NEW]** [image-pipeline.ts](file:///.../image-pipeline.ts)`
+- `- [ ] 3. **Run unit tests verifying image validator against test fixtures**:` (`INJECT_VERIFICATION_STEP`)
+  - `- **Files:** **[NEW]** [image-pipeline.test.ts](file:///.../image-pipeline.test.ts)`
+- `- [ ] 4. **Mount avatar upload component in user profile UI**:` (`SPLIT_STEP`)
+  - `- **Files:** **[MODIFY]** [ProfileSettings.tsx](file:///.../ProfileSettings.tsx)`
 
 ### Anti-Pattern 3: Monolithic Checkbox Expansion for Multi-Stage System
 BAD (Bundling Staged Systems in Single Plan):
