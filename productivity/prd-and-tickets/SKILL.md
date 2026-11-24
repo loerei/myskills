@@ -1,6 +1,6 @@
 ---
 name: prd-and-tickets
-description: Use when creating or migrating local PRDs and dependency-ordered tickets from plans or specs.
+description: Use when creating, splitting, or reconciling local PRDs and dependency-ordered tickets from specs.
 ---
 
 # PRD and Tickets
@@ -18,6 +18,7 @@ Synthesize conversation context and codebase understanding into a local Epic dir
      - **Vertical tracer-bullet slices (default)**: Cut a narrow, complete, verifiable path through every layer (schema/domain, IPC/API, UI, tests) sized to fit in a single context window. Put prefactoring tickets first ("Make the change easy, then make the easy change").
      - **Wide-refactor exception (`expand-contract`)**: When a mechanical change has a codebase-wide blast radius that cannot land green as a vertical slice, sequence it as: (1) *Expand* (add new alongside old), (2) *Migrate* in blast-radius batches (each batch blocked by Expand, keeping CI green), and (3) *Contract* (remove old form once zero callers remain, blocked by all Migrate batches).
    - Present the testing seams and numbered ticket breakdown (`Key & Title`, `Blocked by`, `What it delivers`) to the user and confirm granularity and blocking edges before writing files.
+   - **Oversized scope check**: If the epic is too broad for one clean review/implementation cycle, evaluate splitting per `## Split Oversized PRD` before writing files.
 3. **Write Local `PRD.md` and `tickets/*.md`**:
    - Write `docs/specs/<NN>-<epic-slug>/PRD.md` and one file per ticket under `docs/specs/<NN>-<epic-slug>/tickets/<key>-<slug>.md` using the templates below.
    - **Dual-Layer Checkbox & Unified File-Entry Invariant**: Every ticket MUST include valid GFM task-list checkboxes (`- [ ]`) on **both** `## What to Build` deliverables (`- [ ] 1. **[NEW|MODIFY|DELETE]** [file.ext](file:///...)`) and `## Acceptance Criteria` items (`- [ ] <Criterion>`). Embed target file paths and `[NEW|MODIFY|DELETE]` tags directly on the `## What to Build` deliverable entries; NEVER create a separate `## Target Files` section that duplicates `## What to Build`.
@@ -30,9 +31,16 @@ Synthesize conversation context and codebase understanding into a local Epic dir
 
 When invoked on an existing `<epic-dir>` (`docs/specs/<NN>-<epic-slug>/`):
 1. **Resolve Baseline Commit**: Read `Reviewed-At-Commit` from `PRD.md`; if missing, run `git log -n 1 --format=%H -- <epic-dir>` (if empty/untracked, skip the `git log` range and inspect live files on disk directly in Step 2).
-2. **Audit Drift & Live Ground Truth**: Run `git log --oneline <baseline>..HEAD -- <touched-paths>` and inspect live files on disk to verify that all referenced paths, symbols, contracts, dependencies, and ticket dependencies still hold against current codebase state (flagging any obsolete, already-implemented, or conflicting specs).
+2. **Audit Drift & Live Ground Truth**: Run `git log --oneline <baseline>..HEAD -- <touched-paths>` and inspect live files on disk to verify that all referenced paths, symbols, contracts, dependencies, and ticket dependencies still hold against current codebase state (flagging any obsolete, already-implemented, or conflicting specs). If `PRD.md` declares a completed `Upstream Prerequisite`, also compare the downstream spec against (a) the upstream PRD's pre-review snapshot in its review-loop trace vault (`/tmp/deep-review-trace-<short_title>/00-initial-context/da-initial/`, falling back to git history if no trace vault exists), (b) the upstream PRD's final post-review state on disk, and (c) the live implemented code, adapting the downstream spec to the upstream's optimized architecture.
 3. **Audit Template & Invariant Parity**: Diff `PRD.md` and `tickets/*.md` against `## Workflow` (step 3 invariants) and `## Templates`; automatically stage format migration updates wherever the existing spec omits or drifts from current requirements.
 4. **Draft Update Plan -> Approve -> Apply**: If zero drift and zero format/brownfield gaps are found, report `"No updates needed"` with the verified baseline commit and stop without editing. Otherwise, present a compact per-file delta table (`File | Drift / Gap | Proposed Update`) and wait for approval before editing (unless explicit edit approval is active).
+
+## Split Oversized PRD
+
+When splitting a large draft or existing `<epic-dir>` into `2+` PRDs:
+1. **Cohesion-First Cut Gate**: NEVER split solely by ticket count or file size. Split ONLY along zero-coupling or light one-way dependency boundaries where each resulting PRD is independently cohesive and optimizable on its own (e.g., independent vertical feature/bounded-context slices or strangler subsystem phases). NEVER freeze unreviewed downstream seams inside an upstream PRD; the upstream PRD MUST remain free to optimize independently during review.
+2. **Cohesion Veto**: If every candidate cut splits tightly coupled logic or requires co-optimizing both parts together, refuse to split, report the coupled seams to the user, and stop without editing.
+3. **Propose -> Approve -> Apply**: Present the split plan (`Epic | Scope | Cross-PRD Dependency`) and wait for approval before writing files (unless explicit edit approval is active). When writing split epics, create sequential epic directories (`docs/specs/<NN>-<slug>/`) with cleanly renumbered tickets, record `Upstream Prerequisite: <upstream-epic-dir>` in any sequentially dependent downstream `PRD.md`, and remind the user to run `!REC <downstream-epic-dir>` after the upstream PRD completes review and implementation.
 
 ## Templates
 
@@ -43,6 +51,7 @@ When invoked on an existing `<epic-dir>` (`docs/specs/<NN>-<epic-slug>/`):
 
 - **Change Mode:** `PARITY_MIGRATION | EXISTING_PRODUCT_FEATURE | GREENFIELD`
 - **Reviewed-At-Commit:** `<HEAD SHA>`
+- **Upstream Prerequisite:** `<upstream-epic-dir>` *(optional; include when sequentially dependent on a prior PRD)*
 
 ## Problem Statement
 The user-facing or architectural problem and root causes.
@@ -112,3 +121,7 @@ End-to-end behavior and concrete file/module deliverables for this slice. Every 
   - **Agent Action**:
     1. Run steps 1–4 of `## Reconcile / Migrate Existing Specs` against `<path>`.
     2. If zero drift or format/brownfield gaps are found, report `"No updates needed"` and stop; otherwise output the per-file Update Plan (`File | Drift / Gap | Proposed Update`, covering both code drift and template/brownfield format migrations) and stop for user approval unless explicit edit approval is active.
+- **`!SPL <path>` (Split Oversized PRD)**: Evaluate and split an oversized `<epic-dir>` into independently cohesive sequential PRDs per `## Split Oversized PRD`, refusing to split if high coupling triggers the Cohesion Veto (Default: `none (requires path or active epic context)`; Timing: `Start-time`).
+  - **Agent Action**:
+    1. Run `## Split Oversized PRD` against `<path>` (applying the Cohesion-First Cut Gate and Cohesion Veto).
+    2. If no low-coupling cut exists, refuse to split, report the coupled seams, and stop; otherwise present the split plan (`Epic | Scope | Cross-PRD Dependency`) and stop for user approval before writing files unless explicit edit approval is active.
