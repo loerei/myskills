@@ -36,7 +36,7 @@ Scan all additions (`+` lines) in the `.diff` and modified source files against 
 ### C. Plan Checklist vs. Diff Incompleteness
 | Defect Type | Indicator | Required Action |
 | :--- | :--- | :--- |
-| Requirement without code | Plan requirement marked complete (`[x]`) with no code in `.diff` | List exact plan items not present in diff |
+| Requirement without code | Plan or ticket item (`[x]` deliverable/AC) with missing or incomplete implementation in diff/files | List exact spec items not present in diff/files |
 | Partial case coverage | Plan specifies 5 cases, diff implements 2 | Detail the 3 missing cases |
 | Missing edge-case handlers | Plan specifies null/empty check, code omits it | Demand guard clauses per plan |
 
@@ -56,6 +56,6 @@ When you find any of the patterns above, format your finding under blocking issu
 ### Blocking Issue: [Anti-Laziness / Incomplete Implementation]
 - **Target Location**: `<path_to_file>:<line_number>`
 - **Detected Pattern**: `[Exact quote of the offending code or comment, e.g. // ...]`
-- **Plan Requirement**: `[Quote the exact section or item from implementation_plan.md]`
+- **Spec Requirement**: `[Quote the exact section, deliverable, or checkbox from the approved spec]`
 - **Required Fix**: `[Concrete instruction specifying what complete logic must be written]`
 ```

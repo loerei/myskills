@@ -1,6 +1,6 @@
 ---
 name: conduct-reviewing-loop
-description: Use when running iterative single-reviewer loops on draft plans (Mode A) or code diffs (Mode B).
+description: Use when iteratively auditing draft plans (Mode A) or spec-backed code (Mode B).
 ---
 
 # Conduct Reviewing Loop
@@ -14,11 +14,11 @@ flowchart TD
     Start["Start Review Loop<br/>(Version = 1, PassCount = 0, SP = !SP or 1)"] --> ModeSelect{"Select Review Mode"}
     
     ModeSelect -->|"Mode A (Pre-Implementation)"| ModeA["Mode A: Design & Plan Audit<br/>(Refine unapproved draft plan/spec)"]
-    ModeSelect -->|"Mode B (Post-Implementation)"| ModeB["Mode B: Implementation Validation<br/>(Audit code .diff against approved plan)"]
+    ModeSelect -->|"Mode B (Post-Implementation)"| ModeB["Mode B: Implementation Validation<br/>(Audit code diff against approved plan/PRD)"]
 
     ModeA --> SynthA["1. Synthesize Criteria & Task Domain Skills"] --> PrepDraftA["2. Identify/Prepare Target Draft"] --> ReadRefA["3. Read MODE-A-DESIGN-AUDIT.md"] --> SavePromptV["4. Save Prompt to scratch/reviewer_prompt_v1.md"]
     
-    ModeB --> SynthB["1. Synthesize Coverage Verification Checklist"] --> GenDiff["2. Generate scratch/patch_changes.diff"] --> ReadRefB["3. Read MODE-B-CODE-VALIDATION.md"] --> SavePromptV
+    ModeB --> SynthB["1. Synthesize Coverage Verification Checklist"] --> GenDiff["2. Generate scratch diff(s)"] --> ReadRefB["3. Read MODE-B-CODE-VALIDATION.md"] --> SavePromptV
     
     SavePromptV --> UserGateV{"5. User Confirms Prompt?<br/>(Keyword: 'Conduct?')"}
     UserGateV -->|"Confirmed ('Conduct?')"| FreezeV["6. Freeze Prompt as Active Prompt"]
@@ -57,14 +57,14 @@ flowchart TD
 | Mode | Target Artifacts | Primary Goal | Reviewer Action | Termination Condition |
 | :--- | :--- | :--- | :--- | :--- |
 | **Mode A: Design & Plan Audit** *(Pre-Implementation)* | Draft `implementation_plan.md`, PRD, Skill RFC | Discover architectural gaps, edge cases, and design flaws before coding | Output numbered edits to the **draft document** | `Final PASS` ($\text{PassCount} = \text{SP}$) or User-Approved Invalid Rationale |
-| **Mode B: Implementation Validation** *(Post-Implementation)* | Approved Plan + `.diff` Artifact + Modified Code/Tests | Verify 100% plan coverage, zero regressions, and full spec compliance | Output numbered missing plan items or defects in the **codebase** | `Final PASS` ($\text{PassCount} = \text{SP}$) or User-Approved Invalid Rationale |
+| **Mode B: Implementation Validation** *(Post-Implementation)* | Approved Plan / PRD + Tickets + Diff Artifact(s) + Modified Code/Tests | Verify 100% spec coverage, zero regressions, zero scope creep, and full compliance | Output numbered missing spec items, parity drifts, or defects in the **codebase** | `Final PASS` ($\text{PassCount} = \text{SP}$) or User-Approved Invalid Rationale |
 
 ### 2. Reviewer Loop Protocol (Blind Protocol & Approval Gate)
 
 > [!IMPORTANT]
 > **Prompt Persistence & Approval Gate Protocol**:
 > 1. **Synthesize Task Domain Skills & Read Templates**: Read `MODE-A-DESIGN-AUDIT.md` (Mode A) or `MODE-B-CODE-VALIDATION.md` (Mode B) using your native file-reading tool. Under `Required Reading` in the synthesized reviewer prompt, include 1-2 matching `<Role>-REVIEWER-GUIDE.md` files from `../conduct-deep-reviewing-loop/` (Mode A, with output/workspace override) or `<skill_dir>/REVIEWER-CODE-VALIDATION.md` + `<skill_dir>/REVIEWER-ANTI-LAZINESS.md` (Mode B), alongside task domain skills. NEVER pass `SKILL.md`, `MODE-A-DESIGN-AUDIT.md`, or `MODE-B-CODE-VALIDATION.md` to Subagents.
-> 2. **Save Prompt & `.diff`**: Save every reviewer prompt to `<scratch_dir>/reviewer_prompt_v<Version>.md`. In Mode B, generate `<scratch_dir>/patch_changes.diff` per `MODE-B-CODE-VALIDATION.md` §3 and re-generate it after each fix round (keeping the approved plan immutable).
+> 2. **Save Prompt & `.diff`**: Save every reviewer prompt to `<scratch_dir>/reviewer_prompt_v<Version>.md`. In Mode B, generate diff artifact(s) per `MODE-B-CODE-VALIDATION.md` §3 and re-generate updated diffs after each fix round (keeping the approved spec immutable).
 > 3. **Initial User Approval Gate (Disambiguated)**: Present `<scratch_dir>/reviewer_prompt_v1.md` to the user and **AWAIT EXPLICIT KEYWORD "Conduct?"** (or *"Conduct review"*) before spawning Reviewer #1. *Do NOT ask using "Approve" or "Proceed" for prompt authorization to prevent lower-tier models from confusing prompt confirmation with direct Tier 3 plan/source approval.*
 > 4. **Immutable Active Prompt Reuse**: Freeze the approved prompt as Active Prompt ($P_{active}$) and reuse it 100% identically for subsequent reviewers (#2, #3... #N), changing only the Reviewer ID.
 > 5. **Prompt Revision Exception (v1 $\rightarrow$ vN)**: Prompt updates (`reviewer_prompt_v<Version>.md`) are permitted ONLY if triggered by `!PU`, explicit user instructions, a newly discovered High-Level Specification, or user-approved exclusions/non-goals (Mode B), all requiring user confirmation (*"Conduct?"*).
@@ -72,7 +72,7 @@ flowchart TD
 > 7. **Clean & Neutral Artifact Rule (Anti-Anchoring)**: Integrate Mode A draft updates seamlessly as native specifications without past reviewer references, reviewer-based version tags, or meta-changelogs.
 
 > [!WARNING]
-> **Critical Evaluation & Non-Blocking Churn Guard (Main Agent Gatekeeper)**: Evaluate reviewer feedback critically against YAGNI, empirical codebase facts, repository rules (`AGENTS.md`), and the Mode A rejection criteria in `../conduct-deep-reviewing-loop/HOW-TO-GATE.md` (rejecting `Spec-Induced Regression` that overrides `BROWNFIELD` patterns or `initial intended UXUI` without `INTENTIONALLY_CHANGED`, `Ungrounded Fix Proposal` lacking `Proof` or on-disk verification of APIs/CSS/keys/runner paths, and regime-mismatched Mobile/WCAG/Continuous-Op demands).
+> **Critical Evaluation & Non-Blocking Churn Guard (Main Agent Gatekeeper)**: Evaluate reviewer feedback critically against YAGNI, empirical codebase facts, repository rules (`AGENTS.md`), and rejection criteria in `../conduct-deep-reviewing-loop/HOW-TO-GATE.md` (Mode A) or `REVIEWER-CODE-VALIDATION.md` (Mode B) — rejecting `Spec-Induced Regression` that overrides `BROWNFIELD` patterns or `initial intended UXUI` without `INTENTIONALLY_CHANGED`, `Ungrounded Fix Proposal` lacking `Proof` or on-disk verification of APIs/CSS/keys/runner paths, and regime-mismatched Mobile/WCAG/Continuous-Op demands.
 > - **Non-Blocking Churn Guard**: Items listed under `Suggestions for Improvement (Optional / Non-blocking)` do NOT affect `STATUS: PASS`. The Main Agent **MUST NOT** edit the draft plan, modify codebase files, or reset `PassCount` based on non-blocking suggestions unless the user explicitly commands it.
 
 ## Subdoc References

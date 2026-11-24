@@ -5,36 +5,35 @@
 > This document contains prompt synthesis templates and orchestration protocols for the Main Agent.  
 > **NEVER** pass this file or its path under `Required Reading` to Subagent Reviewers. Subagents must be given [REVIEWER-CODE-VALIDATION.md](REVIEWER-CODE-VALIDATION.md) and [REVIEWER-ANTI-LAZINESS.md](REVIEWER-ANTI-LAZINESS.md).
 
-Templates, checklist builders, and .diff artifact protocols for validating codebase implementation against an approved plan.
+Templates, checklist builders, and diff artifact protocols for validating codebase implementation against an approved plan or PRD/ticket set.
 
 ---
 
 ## 1. Mode B: Post-Implementation Coverage Validation Prompt Template
 
-Use when creating `scratch/reviewer_prompt_v1.md` to audit actual code changes against an APPROVED plan:
+Use when creating `scratch/reviewer_prompt_v1.md` to audit actual code changes against an APPROVED spec (`implementation_plan.md`, or `PRD.md` + `tickets/*.md`):
 
 ```markdown
-You are Implementation Coverage Validator #<N>. Audit the codebase implementation against the approved Implementation Plan.
+You are Implementation Coverage Validator #<N>. Audit the codebase implementation against the approved Specification.
 
 ### Audit Goal:
-Verify that 100% of the features, safety guarantees, edge-case fixes, and schema definitions specified in the approved plan are accurately, completely, and correctly implemented in the real codebase. Do NOT invent new requirements or alter the approved implementation plan.
+Verify that 100% of the features, safety guarantees, edge-case fixes, schema definitions, and `BROWNFIELD` parity boundaries (`## Intentional Deltas`) specified in the approved spec are accurately, completely, and correctly implemented in the real codebase — with zero unasked scope creep. Do NOT invent new requirements or alter the approved specification.
 
-### Required Reading (MUST read using your native file-reading or search tools):
-1. Approved Implementation Plan: `<plan_path>`
-2. Diff Artifact: `<diff_path>` (e.g. `<scratch_dir>/patch_changes.diff`)
-3. Key Codebase Implementation Files: `<code_file_paths>`
+### Required Reading (MUST read using your file-reading or search tools):
+1. Approved Specification: `<spec_path(s)>` (`implementation_plan.md`, or `PRD.md` + `tickets/*.md` — check `Change Mode`, `Reviewed-At-Commit`, `## Intentional Deltas`, and `Replaces:` lineage if present)
+2. Diff Artifact(s): `<diff_path(s)>` (e.g. `<scratch_dir>/patch_changes.diff` or per-file `<scratch_dir>/diffs/*.diff`)
+3. Key Codebase & Test Files: `<code_file_paths>`
 4. Repository Guidelines: `AGENTS.md`
 5. Reviewer Discipline & Output Protocol: `<skill_dir>/REVIEWER-CODE-VALIDATION.md`
 6. Anti-Laziness Audit Criteria: `<skill_dir>/REVIEWER-ANTI-LAZINESS.md`
 7. Task-Specific Domain Skills: `<task_domain_skill_paths>`
 
 ### Dynamic Coverage Verification Checklist:
-1. **Plan Feature Coverage**: Does the `.diff` and codebase implement 100% of the specified features in the plan?
-2. **Task Checklist Verification**: Is every planned edit and verification item in `implementation_plan.md` backed by actual code in the `.diff` patch?
-3. **Safety & Transactional Guarantees**: Are rollback, directory creation, cleanup, and crash recovery mechanisms fully present?
-4. **Edge-Case & Line Handling**: Are empty/new file creation, boundary checks, and line end encodings handled correctly?
-5. **Validation & State Consistency**: Are duplicate path checks, cache flags, and state initializations accurate?
-6. **Backward Compatibility**: Are legacy wrappers and public API schemas fully preserved?
+1. **Spec Feature & Checkbox Coverage**: Does the codebase implement 100% of specified deliverables and mark completed `- [x]` items accurately against real code and tests?
+2. **Brownfield Parity & Scope Creep Guard**: Under `BROWNFIELD`, are all unmentioned observable behaviors, contracts, `initial intended UXUI`, and legacy `Replaces:` / `[DELETE]` seams preserved cleanly with zero unauthorized edits outside `INTENTIONALLY_CHANGED`?
+3. **Runtime & Verification Coverage**: Are acceptance criteria backed by passing automated tests, typechecks, and build checks (no skipped or tautological assertions)?
+4. **Safety, Edge-Case & Transactional Guarantees**: Are rollback, cleanup, crash recovery, boundary checks, and cross-platform/encoding paths handled correctly?
+5. **Domain Standards & Validation**: Are API/tool schemas, validation, state machines, and repository rules (`AGENTS.md`) satisfied?
 
 *Evaluate strictly per `<skill_dir>/REVIEWER-CODE-VALIDATION.md` and `<skill_dir>/REVIEWER-ANTI-LAZINESS.md` (resolving `<skill_dir>` relative to the active skill location).*
 ```
@@ -45,23 +44,25 @@ Verify that 100% of the features, safety guarantees, edge-case fixes, and schema
 
 When synthesizing the prompt checklist, ensure coverage across:
 
-- [ ] 100% of plan targets and verification checks verified in `.diff` and target files
+- [ ] 100% of spec targets, ticket deliverables/ACs, and verification checks verified in diff, target files, and test stdout
+- [ ] Zero unasked scope creep or `BROWNFIELD` UXUI/contract drift outside `## Intentional Deltas` (`INTENTIONALLY_CHANGED`)
 - [ ] Zero forbidden placeholder comments (`// ...`, `// TODO`, empty stubs) per [REVIEWER-ANTI-LAZINESS.md](REVIEWER-ANTI-LAZINESS.md)
-- [ ] Adherence to task-specific domain skills (`<task_domain_skill_paths>`) verified
-- [ ] Unit tests added covering new edge cases specified in plan
-- [ ] Tool/API schemas and parameter contracts match plan definitions
-- [ ] Optimistic locking, cleanup post-rollback, and startup recovery verified in code
-- [ ] Zero unhandled exception paths or hidden `AttributeError` / `NameError` bugs
-- [ ] Out-of-Scope / Non-Goals exclusions explicitly recorded
+- [ ] Adherence to task-specific domain skills (`<task_domain_skill_paths>`) and `AGENTS.md` verified
+- [ ] Unit/integration tests added covering new edge cases specified in the spec
+- [ ] Tool/API schemas and parameter contracts match spec definitions
+- [ ] Rollback, cleanup, and error recovery verified in code
+- [ ] Non-goals / `Out of Scope` exclusions preserved (explicitly untouched)
 
 ---
 
-## 3. Mode B .diff Artifact & Immutable Plan Protocol
+## 3. Mode B Diff Artifact & Immutable Spec Protocol
 
-1. **Generate `.diff` Artifact**: Run `git diff origin/<default-branch>` (or target base branch, capturing both committed and working tree edits) and save the untruncated patch to `<scratch_dir>/patch_changes.diff`.
+1. **Generate Diff Artifact(s)**: Resolve the base ref (`Reviewed-At-Commit` from `PRD.md` or `origin/<default-branch>`), capturing both committed and working tree edits:
+   - **Standard (`patch_changes.diff`)**: Run `git diff <base-ref>` and save the untruncated patch to `<scratch_dir>/patch_changes.diff`.
+   - **Large multi-file diff sharding**: When a single patch would overload context, export per-file diffs into `<scratch_dir>/diffs/` (via `git diff --name-only <base-ref>` + per-file `git diff`, or `export-diffs.js --update --json` if available) and supply the file list + targeted diff paths.
 2. **Provide 3-Way Context**: Supply the subagent reviewer with:
-   - Approved `implementation_plan.md` path.
-   - `.diff` artifact path (`<scratch_dir>/patch_changes.diff`).
+   - Approved spec path(s) (`implementation_plan.md`, or `PRD.md` + `tickets/*.md`).
+   - Diff artifact path(s).
    - Core codebase implementation and test files.
-3. **Iterative `.diff` Regeneration**: In Mode B, after applying codebase fixes in iteration $N$, the Main Agent MUST re-generate `scratch/patch_changes.diff` before spawning Reviewer $N+1$.
-4. **Immutable Plan Principle**: In Mode B, the approved plan is treated as immutable. Reviewers must NOT request edits to the plan; any discrepancy between plan and code must be resolved by fixing the **codebase**.
+3. **Iterative Diff Regeneration**: In Mode B, after applying codebase fixes in iteration $N$, regenerate updated diff artifact(s) before spawning Reviewer $N+1$.
+4. **Immutable Spec Principle**: In Mode B, the approved spec is treated as immutable. Reviewers must NOT request edits to the spec; any discrepancy between spec and code must be resolved by fixing the **codebase**.
