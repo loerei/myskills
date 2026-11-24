@@ -28,7 +28,8 @@ Audits boundary conditions, failure paths, OS/filesystem hazards, network partit
 - **Lineage Alignment & Empirical Verification (`<review_dir>/sandbox/Edgecase/`)**:
   - Read all DAs in `## Cross-Referenced DAs & Dependency Lineage` in `Context.md` to ensure lockfiles, teardown hooks, and error recovery do not conflict with `Upstream` DAs.
   - Author inline reproduction probes in `<review_dir>/sandbox/Edgecase/repro_<name>.*` testing boundary payloads (`null`, `0`, empty, overflow, `AbortSignal`, concurrent bursts) under a 15s timeout (monitor/kill hung tasks via `manage_task`). NEVER modify repository source files.
-- **Miss-Probability Gate (Headless AI Implementer Baseline)**:
+- **Fix Pre-Verification & Miss-Probability Gate (Headless AI Implementer Baseline)**:
+  - Verify directly on disk that referenced callers, ingress boundaries, resource handles, and target locations exist (never infer caller signatures or key names from memory or zero-match searches) and that producer/consumer contracts update symmetrically.
   Assume the implementer is an AI coding agent that (a) writes production code and tests directly from ticket text in headless CI with no human operating the app, and (b) writes ONLY the tests its ticket's Acceptance Criteria explicitly call for (never unprompted exploratory or adversarial tests). `"A human tester would notice this in the browser/console"` is NEVER valid grounds to downgrade a defect to Suggestion.
   For in-scope defects (excluding optional non-blocking suggestions), classify as **Suggestion Only** if and only if both conditions hold:
   1. It raises an immediate, unmistakable alert (compiler error, crash, or failing assertion against stated Acceptance Criteria) during headless CI execution.

@@ -17,7 +17,7 @@ Audits module test seams, mock-to-contract fidelity, anti-tautology, determinism
   - Run existing project test suites in non-interactive CI mode (`npx vitest run`, `npm test -- --watchAll=false`, `pytest -q`) under a 30s timeout to verify runner baseline.
   - Author inline mock/seam verification harnesses in `<review_dir>/sandbox/Testability/harness_<name>.*` and execute under a 15s timeout (monitor/kill hung tasks via `manage_task`). NEVER modify repository source files.
 - **Fix Pre-Verification & Miss-Probability Gate (Headless AI Implementer Baseline)**:
-  - Verify on disk that referenced test utilities, interfaces, and target locations exist and that boundary contracts remain symmetrical.
+  - Verify on disk that referenced test utilities, interfaces, and target locations exist and that boundary contracts remain symmetrical; before proposing any `[NEW]` test file or writing mock/storage/config keys in `Required Fix`, read the active test-runner config discovery patterns and the live reader or adjacent test-fixture files on disk (never infer keys, paths, or absent assertions from zero-match searches or memory).
 
   Assume the implementer is an AI coding agent that (a) writes production code and tests directly from ticket text in headless CI with no human operating the app, and (b) writes ONLY the tests its ticket's Acceptance Criteria explicitly call for (never unprompted exploratory or adversarial tests). `"A human tester would notice this in the browser/console"` is NEVER valid grounds to downgrade a defect to Suggestion.
   For in-scope defects (excluding optional non-blocking suggestions), classify as **Suggestion Only** if and only if both conditions hold:

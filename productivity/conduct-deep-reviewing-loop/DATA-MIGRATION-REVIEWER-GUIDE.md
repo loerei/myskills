@@ -23,7 +23,8 @@ Audits schema evolution, storage contracts, migration scripts, locking behavior,
 
 - **Empirical Verification (`<review_dir>/sandbox/DataMigration/`)**:
   - Author inline dry-run scripts in `<review_dir>/sandbox/DataMigration/dryrun_<name>.*` testing proposed migration scripts against in-memory SQLite (`:memory:`) or mock stores seeded with legacy $V_1$ payload fixtures (verifying zero data loss, idempotency on double-run, and crash rollback) under a 15s timeout. NEVER modify repository source files or production DBs.
-- **Miss-Probability Gate (Headless AI Implementer Baseline)**:
+- **Fix Pre-Verification & Miss-Probability Gate (Headless AI Implementer Baseline)**:
+  - Verify directly on disk against existing schema files, migration runners, and storage readers/writers that referenced tables, envelopes, and persistence keys match codebase conventions (never invent keys without inspecting existing readers on disk).
   Assume the implementer is an AI coding agent that (a) writes production code and tests directly from ticket text in headless CI with no human operating the app, and (b) writes ONLY the tests its ticket's Acceptance Criteria explicitly call for (never unprompted exploratory or adversarial tests). `"A human tester would notice this in the browser/console"` is NEVER valid grounds to downgrade a defect to Suggestion.
   For in-scope defects (excluding optional non-blocking suggestions), classify as **Suggestion Only** if and only if both conditions hold:
   1. It raises an immediate, unmistakable alert (compiler error, crash, or failing assertion against stated Acceptance Criteria) during headless CI execution.

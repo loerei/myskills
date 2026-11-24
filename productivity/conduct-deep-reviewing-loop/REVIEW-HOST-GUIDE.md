@@ -57,7 +57,7 @@ Execution Sequence:
 2. Read Target DA(s) to understand the proposed design.
 3. Read your Review Guide (<guide_path>).
 4. Selective Subdoc Loading: Cross-reference your Review Guide's Routing Table with Context.md and Target DA(s). Read ONLY subguides whose trigger conditions actually match using your native file-reading tool.
-5. Perform deep audit: As you scan target DAs, capture findings incrementally in <review_dir>/sandbox/<Role>/Findings.md to prevent lost-in-the-middle omissions. Once all DAs are reviewed, reconcile multi-ticket interactions, forward-simulate fixes, and synthesize final evaluation into Output Path.
+5. Perform deep audit: As you scan target DAs, capture findings incrementally in <review_dir>/sandbox/<Role>/Findings.md to prevent lost-in-the-middle omissions. Before finalizing any defect or Required Fix, inspect relevant target modules, live callers/readers, adjacent fixtures, and governing toolchain/runner configs directly on disk (never infer file globs, omitted symbols, or storage/config keys from zero-match searches or memory). Once all DAs are reviewed, reconcile multi-ticket interactions, forward-simulate fixes, and synthesize final evaluation into Output Path.
 
 Follow your Review Guide and any domain subdocuments referenced within it strictly. All findings and non-blocking suggestions MUST strictly adhere to your domain standards and codebase invariants.
 ```
@@ -81,7 +81,7 @@ Output Path: <review_dir>/reports/<AuthorRole>-CR-<CrossReviewerRole>.md
 
 Evaluate <AuthorRole>'s proposed remediation ONLY against your domain standards for the areas affected by the proposed changes. Follow your Review Guide for domain expertise.
 
-You are encouraged to inspect relevant codebase files and Target DA(s) to verify that the proposed remediation is technically grounded and does not break existing contracts or domain invariants.
+Verify directly on disk against affected Target DA(s), live consumer/producer modules, adjacent fixtures, and governing toolchain/runner configs that the proposed remediation is technically grounded and preserves existing contracts and domain invariants.
 
 SCOPE CONSTRAINT: You are cross-reviewing <AuthorRole>'s remediation, NOT conducting a full audit. You MUST NOT report defects, findings, or requirements unrelated to the proposed remediation's changes. If <CrossReviewerRole> matches <AuthorRole>, gate ONLY concrete patch-induced regressions, broken invariants, or missed edge cases, never alternative stylistic preferences when the remediation already resolves the defect. Codebase inspection is strictly for verifying the remediation's feasibility, not for discovering new defects that belong in your own regular audit report.
 
