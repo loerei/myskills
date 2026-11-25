@@ -19,18 +19,19 @@ Publish or sync a local PRD and its constituent ticket markdown files to GitHub 
    - New Key (split child `01.1.1` or new `05.2`): Create issue (`gh issue create`).
    - Orphaned Key (removed or split `01.1`): Close stale remote issue as not planned with a closing comment (`gh issue close --reason "not planned" --comment "..."`).
 5. **Topological Publishing**: Publish prerequisite tickets before dependent tickets so downstream issues receive valid upstream GitHub issue IDs.
-6. **Taxonomy Auto-Labels**:
-   - Parent PRD: `epic`, `epic-<num>` (e.g. `epic,epic-02`).
-   - Child Tickets: `ticket`, `epic-<num>` (e.g. `ticket,epic-02`).
+6. **Taxonomy & Review-State Auto-Labels**:
+   - Parent PRD: `epic`, `epic-<key>` (e.g. `epic,epic-02`, `epic,epic-09.1`).
+   - Child Tickets: `ticket`, `epic-<key>` (e.g. `ticket,epic-02`, `ticket,epic-09.1`).
+   - Unreviewed Draft Flag (`to-be-reviewed`): Applied to **both** Parent PRD and all Child Tickets when `PRD.md` has `Review Status: TO_BE_REVIEWED` (or missing/placeholder `Reviewed-At-Commit`, or `--to-be-reviewed` / `!TBR`), and automatically removed when re-syncing after `Review Status: REVIEWED` (or `--reviewed`). Legacy PRDs lacking `Review Status` with a valid `Reviewed-At-Commit` SHA preserve existing `to-be-reviewed` state unless overridden by CLI flag.
 
 ## Workflow
 
-1. Pre-scan sibling PRDs under `docs/specs/` to build the cross-Epic key map.
-2. Ephemerally compile and update the parent PRD issue on GitHub.
-3. Reconcile ticket keys (matching vs new vs orphaned) and close orphaned issues concurrently.
-4. Ephemerally compile and run concurrent in-place updates for matching tickets (default pool: `6`).
+1. Pre-scan sibling PRDs under `docs/specs/` and query remote `epic`/`ticket` issues (`gh issue list --state all`) to build the cross-Epic key-to-issue map without mutating disk.
+2. Ephemerally compile and create/update the parent PRD issue on GitHub (syncing `epic`, `epic-<key>`, and `to-be-reviewed`).
+3. Reconcile ticket keys (matching vs new vs orphaned) and close open orphaned issues concurrently.
+4. Ephemerally compile and run concurrent in-place updates for matching tickets (default pool: `6`, adding or removing `to-be-reviewed` per review state).
 5. Ephemerally compile and topologically create new tickets.
-6. Output the JSON key-to-issue mapping (`"01.1.1.1": 138`) and unblocked frontier ready for `implement-a-ticket`, leaving local files untouched.
+6. Output the JSON key-to-issue mapping, summary table (`Epic | Parent Issue | Review Status | Tickets`), and unblocked frontier ready for local tracking or `implement-a-ticket`, leaving local files untouched.
 
 ## CLI Usage
 
@@ -41,9 +42,18 @@ node <skill-dir>/scripts/publish-epic.js docs/specs/<epic-dir>/PRD.md --dry-run
 # Reconcile and publish single Epic (concurrency pool of 8, zero disk mutation)
 node <skill-dir>/scripts/publish-epic.js docs/specs/<epic-dir>/PRD.md --concurrency 8
 
-# Batch sync all Epics across the workspace
+# Batch sync all Epics across the workspace (auto-applies/removes `to-be-reviewed` from Review Status)
 node <skill-dir>/scripts/publish-epic.js docs/specs/ --all --concurrency 8
+
+# Force review-state label override on legacy PRDs
+node <skill-dir>/scripts/publish-epic.js docs/specs/<epic-dir>/PRD.md --to-be-reviewed
+node <skill-dir>/scripts/publish-epic.js docs/specs/<epic-dir>/PRD.md --reviewed
 
 # Target specific repo or parent issue
 node <skill-dir>/scripts/publish-epic.js docs/specs/<other-epic-dir>/PRD.md --parent-id 94 --repo <owner>/<repo>
 ```
+
+## Domain Terms and Tag Commands
+
+- **`!TBR` (To Be Reviewed)**: Force `--to-be-reviewed` on target publish/sync even if `Review Status` is missing or already stamped (Default: auto-detected from `PRD.md`; Timing: `Start-time`).
+  - **Agent Action**: Pass `--to-be-reviewed` when invoking `<skill-dir>/scripts/publish-epic.js`.

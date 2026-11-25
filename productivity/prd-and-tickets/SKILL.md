@@ -50,6 +50,7 @@ When deciding whether a new scope should produce `2+` PRDs, or splitting an exis
 # PRD: <Epic Title>
 
 - **Change Mode:** `BROWNFIELD | GREENFIELD`
+- **Review Status:** `TO_BE_REVIEWED | REVIEWED` *(set `TO_BE_REVIEWED` on new drafts; updated to `REVIEWED` on `conduct-deep-reviewing-loop` `FINAL_PASS`)*
 - **Reviewed-At-Commit:** `<HEAD SHA>`
 - **Upstream Prerequisite:** `<upstream-epic-dir>` *(optional; include when sequentially dependent on a prior PRD)*
 
