@@ -90,7 +90,7 @@ High-level architectural and user-facing solution.
 PRD: <Epic Title>
 
 ## Status
-ready-for-agent
+planned
 
 ## Blocked by
 - `<upstream-key>` — <Upstream Title> (or `None — can start immediately`)

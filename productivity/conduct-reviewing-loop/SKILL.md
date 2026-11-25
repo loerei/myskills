@@ -56,7 +56,7 @@ flowchart TD
 
 | Mode | Target Artifacts | Primary Goal | Reviewer Action | Termination Condition |
 | :--- | :--- | :--- | :--- | :--- |
-| **Mode A: Design & Plan Audit** *(Pre-Implementation)* | Draft `implementation_plan.md`, PRD, Skill RFC | Discover architectural gaps, edge cases, and design flaws before coding | Output numbered edits to the **draft document** | `Final PASS` ($\text{PassCount} = \text{SP}$) or User-Approved Invalid Rationale |
+| **Mode A: Design & Plan Audit** *(Pre-Implementation)* | Draft `implementation_plan.md`, PRD, Skill RFC | Discover architectural gaps, edge cases, and design flaws before coding | Output numbered edits to the **draft document** | `Final PASS` ($\text{PassCount} = \text{SP}$; stamp `Review Status: REVIEWED` & `Reviewed-At-Commit` on PRDs) or User-Approved Invalid Rationale |
 | **Mode B: Implementation Validation** *(Post-Implementation)* | Approved Plan / PRD + Tickets + Diff Artifact(s) + Modified Code/Tests | Verify 100% spec coverage, zero regressions, zero scope creep, and full compliance | Output numbered missing spec items, parity drifts, or defects in the **codebase** | `Final PASS` ($\text{PassCount} = \text{SP}$) or User-Approved Invalid Rationale |
 
 ### 2. Reviewer Loop Protocol (Blind Protocol & Approval Gate)
@@ -69,7 +69,7 @@ flowchart TD
 > 4. **Immutable Active Prompt Reuse**: Freeze the approved prompt as Active Prompt ($P_{active}$) and reuse it 100% identically for subsequent reviewers (#2, #3... #N), changing only the Reviewer ID.
 > 5. **Prompt Revision Exception (v1 $\rightarrow$ vN)**: Prompt updates (`reviewer_prompt_v<Version>.md`) are permitted ONLY if triggered by `!PU`, explicit user instructions, a newly discovered High-Level Specification, or user-approved exclusions/non-goals (Mode B), all requiring user confirmation (*"Conduct?"*).
 > 6. **Preventing Blind Reviewer Deadlocks**: Record user-approved rejected suggestions under **Out-of-Scope / Non-Goals** in the draft (Mode A) or in `reviewer_prompt_v<Version>.md` (Mode B) so subsequent blind reviewers do not re-raise them.
-> 7. **Clean & Neutral Artifact Rule (Anti-Anchoring)**: Integrate Mode A draft updates seamlessly as native specifications without past reviewer references, reviewer-based version tags, or meta-changelogs.
+> 7. **Clean & Neutral Artifact Rule (Anti-Anchoring)**: Integrate Mode A draft updates seamlessly as native specifications without past reviewer references, reviewer-based version tags, or meta-changelogs. On Mode A `Final PASS` for a `PRD.md` (or plan with header metadata), stamp `Review Status: REVIEWED` and `Reviewed-At-Commit: <git rev-parse HEAD>` so downstream implementers and `gitpublish-prd-and-tickets` recognize the verified baseline.
 
 > [!WARNING]
 > **Critical Evaluation & Non-Blocking Churn Guard (Main Agent Gatekeeper)**: Evaluate reviewer feedback critically against YAGNI, empirical codebase facts, repository rules (`AGENTS.md`), and rejection criteria in `../conduct-deep-reviewing-loop/HOW-TO-GATE.md` (Mode A) or `REVIEWER-CODE-VALIDATION.md` (Mode B) — rejecting `Spec-Induced Regression` that overrides `BROWNFIELD` patterns or `initial intended UXUI` without `INTENTIONALLY_CHANGED`, `Ungrounded Fix Proposal` lacking `Proof` or on-disk verification of APIs/CSS/keys/runner paths, and regime-mismatched Mobile/WCAG/Continuous-Op demands.

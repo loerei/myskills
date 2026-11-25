@@ -12,12 +12,16 @@ Execute multi-ticket or multi-step work sequentially via subagents, monitoring c
 1. **Zero Specs in Prompt (No Prompt Telephone Game)**: NEVER summarize, paraphrase, or re-explain requirements or acceptance criteria in the orchestrator prompt. Include ONLY the target ticket/spec path, git directives (branch, commit format, `closes #XX`), and verification commands; subagents MUST read specs directly from disk.
 2. **Sequential Ticket Execution**: Dispatch one ticket at a time for atomic commits, clean history, and conflict-free testing.
 3. **Data-Driven Context Lifecycle**: Before assigning another ticket to an existing subagent, inspect its context health via `chronicle:get_session_benchmarks` rather than guessing truncation or saturation.
+4. **Pre-Dispatch Review Gate**: Before dispatching any ticket from a PRD, read `Review Status` in `PRD.md`. If `TO_BE_REVIEWED` (and unreviewed execution was not explicitly authorized), STOP and ask the user whether to review the PRD first or proceed anyway.
 
 ## Workflow
 
 ```mermaid
 flowchart TD
-    Start["Ticket Ready to Dispatch"] --> HasSubagent{"Active Subagent Exists?"}
+    Start["Ticket Ready to Dispatch"] --> RevGate{"PRD Review Status == TO_BE_REVIEWED?"}
+    RevGate -->|"Yes (Unapproved)"| AskRev["STOP: Warn & Ask User<br/>(Review first or proceed?)"]
+    AskRev -->|"User Authorizes"| HasSubagent{"Active Subagent Exists?"}
+    RevGate -->|"No (REVIEWED / N/A)"| HasSubagent
     
     HasSubagent -->|"No"| SpawnNew["invoke_subagent (Fresh Context)<br/>• Model: inherit<br/>• Role: Ticket Implementer"]
     
@@ -51,7 +55,7 @@ Implement Ticket: <Ticket-Title>
 Directives:
 1. Work on branch: `<branch-name>`.
 2. Execution Mandate:
-   - Read Target Ticket and Parent Spec (`PRD.md`, specifically `Change Mode`, `Reviewed-At-Commit`, and `## Intentional Deltas`) directly from disk. Do not assume or guess specifications.
+   - Read Target Ticket and Parent Spec (`PRD.md`, specifically `Review Status`, `Change Mode`, `Reviewed-At-Commit`, and `## Intentional Deltas`) directly from disk. Do not assume or guess specifications.
    - Pre-flight spec drift, unasked-change guard & considerate porting: Resolve baseline commit from `Reviewed-At-Commit` in the Parent Spec or Target Ticket, falling back to `git log -n 1 --format=%H -- <spec-dir>` if missing; when a SHA is found, run `git log --oneline <sha>..HEAD -- <touched-paths>` before editing (if untracked/empty, verify touched files and symbols directly on disk), inspect overlapping commits, and reconcile live defaults, protocols, or handlers instead of overwriting newer live behavior (report semantic contradictions to the orchestrator before coding). Implement only what is explicitly specified; do NOT alter, restyle, or remove unasked behaviors. When modifying, migrating, or replacing an existing file/component (including `[NEW]` deliverables declaring `Replaces: <legacy-file-path(s)>`), read the live legacy implementation and paired assets/stylesheets/tests first; underlying implementation layers may change per ticket, while all existing observable behavior, contracts, and `initial intended UXUI` default to **PRESERVE** unless explicitly listed under `INTENTIONALLY_CHANGED` in `PRD.md`.
    - Zero Re-Planning: Do NOT create an `implementation_plan.md`. Use the ticket file itself as your live plan.
    - Autonomous execution: Start implementation immediately. Do NOT ask for user confirmation or briefing approval.
