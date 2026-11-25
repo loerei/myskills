@@ -13,7 +13,7 @@ Multi-agent review loop using isolated clean-slate domain reviewers, topological
 | :--- | :--- | :--- |
 | **Layer 1** | Main Agent | Resolves `<short_title>`, binds `<review_dir>` (`.scratch/deep-review-<short_title>`) and external `<trace_vault>` (`/tmp/deep-review-trace-<short_title>`), initializes `Context.md`, spawns clean-slate Layer 2 Host per round, archives round artifacts to `<trace_vault>/round-<NN>/` after killing Host, manages `!PA` pause gate and rollbacks, and exports chronological trace on completion. |
 | **Layer 2** | Review Host & Critical Gate | Ephemeral single-round orchestrator (`REVIEW-HOST-GUIDE.md`) and gatekeeper (`HOW-TO-GATE.md`). Selects active roster in Round 1, executes 4-tier DAG routing, enforces Tier Batch Gate and Intra-Tier Conflict resolution, runs Cross-Domain Remediation Review (unless `!NCR` disables it), preserves intra-round negotiation artifacts in `<review_dir>/host/trace/`, backfills skipped roles, mutates target DA(s) in-place, and writes `host/State.md` and `host/Analyzation.md`. |
-| **Layer 3** | Domain Reviewers | Ephemeral clean-slate specialist subagents (up to 12 roles across 4 Tiers) executing domain audits per `<Role>-REVIEWER-GUIDE.md`, or summoned as fresh single-turn Cross-Reviewers to validate sibling role remediations. |
+| **Layer 3** | Domain Reviewers | Ephemeral clean-slate specialist subagents (up to 12 roles across 4 Tiers) executing domain audits per `<Role>-REVIEWER-GUIDE.md`, or summoned as fresh single-turn Cross-Reviewers per `CR-Guide.md` + `<Role>-REVIEWER-GUIDE.md` to validate sibling role remediations. |
 
 ## Workflow
 
@@ -77,10 +77,10 @@ flowchart TD
        - **`Form Factor`**:
          - If `!MOBILE` or `!RESPONSIVE` is present, or codebase/DA targets mobile/tablet/multi-screen web browsers or PWAs: declare `Form Factor: CROSS_DEVICE_RESPONSIVE` with concise technical justification (routes `UXUI` to `UX-MOBILE-RESPONSIVE-PERFORMANCE.md`).
          - Otherwise (Electron, Tauri, native desktop GUI, or desktop-only web tools/launchers/IDEs with fine pointer mouse/trackpad and bounded window dimensions): declare `Form Factor: DESKTOP_ONLY` (default for desktop apps; routes `UXUI` exclusively to `UX-DESKTOP-LAYOUT-PERFORMANCE.md`).
-     - `## Cross-Domain Remediation Review`: Inspect invocation prompt for `!NCR` (case-insensitive):
-       - If `!NCR` is present: declare `Cross-Review: DISABLED` (Host skips Step 4B Cross-Domain Remediation Review).
-       - Otherwise: declare `Cross-Review: ENABLED` (default).
-     - `## Active Modifiers` (e.g. `!PA`, `!SP<N>`, `!NC`, `!BF`, `!GF`, `!NCR`, `!A11Y`, `!MOBILE`), codebase rules (`AGENTS.md`), task domain skills, user criteria, and static `SP` threshold.
+     - `## Cross-Domain Remediation Review`: Inspect invocation prompt for `!NCR` and `!CRC<N>` (case-insensitive):
+       - If `!NCR` or `!CRC0` is present (`!NCR` takes precedence): declare `Cross-Review: DISABLED` (Host skips Step 4B Cross-Domain Remediation Review).
+       - Otherwise: declare `Cross-Review: ENABLED` (default), plus `Cross-Review Wave Cap: <N>` if `!CRC<N>` (`N >= 1`) is specified, or `Cross-Review Wave Cap: UNLIMITED` (default).
+     - `## Active Modifiers` (e.g. `!PA`, `!SP<N>`, `!NC`, `!BF`, `!GF`, `!NCR`, `!CRC<N>`, `!A11Y`, `!MOBILE`), codebase rules (`AGENTS.md`), task domain skills, user criteria, and static `SP` threshold.
    - Copy `<repo-root>/<review_dir>/Context.md` to `/tmp/deep-review-trace-<short_title>/00-initial-context/Context.md`.
 
 ### Step 2: Spawn Review Host & Critical Gate (Layer 2)
@@ -165,6 +165,7 @@ When `ROUND_REVISION_NEEDED` occurs under `!PA` / `!WA`:
 | `!A11Y` / `!WCAG` | Set UX/UI regime to `STRICT_ACCESSIBILITY_COMPLIANCE` (loads `UX-STRICT-ACCESSIBILITY-WCAG.md`). Default is `PRAGMATIC_PRODUCT_UX` (`UX-PRAGMATIC-INTERACTION-DX.md`). |
 | `!MOBILE` / `!RESPONSIVE` | Set UX/UI form factor to `CROSS_DEVICE_RESPONSIVE` (loads `UX-MOBILE-RESPONSIVE-PERFORMANCE.md`). Default for desktop/Electron/Tauri apps is `DESKTOP_ONLY` (`UX-DESKTOP-LAYOUT-PERFORMANCE.md`). |
 | `!NCR` | Disable Step 4B Cross-Domain Remediation Review (`Cross-Review: DISABLED` in `Context.md`). Default is enabled. |
+| `!CRC<N>` | Cap Step 4B Cross-Domain Remediation Review waves per role at positive integer `N` (`N >= 1`; `!CRC0` aliases `!NCR`; Default: `UNLIMITED`). When Wave `N` still has `CROSS-GATED` items, `AuthorRole` executes one final incorporation turn without spawning Wave `N+1`, deferring re-verification to the next Primary DAG round. |
 | `!FPA` | Instantly kill running subagents and pause execution. |
 
 - **`!REF [Role(s)]` (Reference-Only Query)**: Consult matching reviewer guides and domain subdocuments in `<skill_dir>` as a direct knowledge reference without starting a review loop (Default: `auto-select matching roles`; Timing: `Start-time`).

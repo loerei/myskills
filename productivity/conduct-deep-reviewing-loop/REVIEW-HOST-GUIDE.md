@@ -62,7 +62,7 @@ Execution Sequence:
 Follow your Review Guide and any domain subdocuments referenced within it strictly. All findings and non-blocking suggestions MUST strictly adhere to your domain standards and codebase invariants.
 ```
 
-- **Dynamic Guide Resolution**: Resolve `<guide_path>` dynamically relative to the active skill location (`.agents/skills/<skill-name>/<Role>-REVIEWER-GUIDE.md` in distributed projects, `skills/<skill-name>/<Role>-REVIEWER-GUIDE.md` in standalone plugin checkouts, or `productivity/<skill-name>/<Role>-REVIEWER-GUIDE.md` in central `myskills`).
+- **Dynamic Guide Resolution**: Resolve `<guide_path>` (`<Role>-REVIEWER-GUIDE.md`) and `<cr_guide_path>` (`CR-Guide.md`) dynamically relative to the active skill location (`.agents/skills/<skill-name>/...` in distributed projects, `skills/<skill-name>/...` in standalone plugin checkouts, or `productivity/<skill-name>/...` in central `myskills`).
 - **Tool Metadata & Banned Calling Tokens**: Specify neutral metadata (`toolAction: "Summoning reviewer"`, `toolSummary: "Domain review"`). NEVER include tokens: `Round`, `Sweep`, `Targeted`, `Re-verify`, `Re-audit`, `Fix`, `Pass`, `Iteration`, `Previous round`.
 
 ### 2B. Cross-Reviewer Prompt Template
@@ -75,45 +75,33 @@ Codebase Root: <repo-root>
 Target DA(s): <da_path(s)>
 Target Remediation: <review_dir>/reports/<AuthorRole>.md
 Domain Context: <review_dir>/Context.md
-Review Guide: <guide_path>
+CR Guide: <cr_guide_path>
+Domain Guide: <guide_path>
 Sandbox Directory: <review_dir>/sandbox/<AuthorRole>-CR-<CrossReviewerRole>/
 Output Path: <review_dir>/reports/<AuthorRole>-CR-<CrossReviewerRole>.md
+CR Wave Mode: <INITIAL_AUDIT | DELTA_RECHECK>
 
-Evaluate <AuthorRole>'s proposed remediation ONLY against your domain standards for the areas affected by the proposed changes. Follow your Review Guide for domain expertise.
-
-Verify directly on disk against affected Target DA(s), live consumer/producer modules, adjacent fixtures, and governing toolchain/runner configs that the proposed remediation is technically grounded and preserves existing contracts and domain invariants.
-
-SCOPE CONSTRAINT: You are cross-reviewing <AuthorRole>'s remediation, NOT conducting a full audit. You MUST NOT report defects, findings, or requirements unrelated to the proposed remediation's changes. If <CrossReviewerRole> matches <AuthorRole>, gate ONLY concrete patch-induced regressions, broken invariants, or missed edge cases, never alternative stylistic preferences when the remediation already resolves the defect. Codebase inspection is strictly for verifying the remediation's feasibility, not for discovering new defects that belong in your own regular audit report.
-
-If the remediation satisfies your domain standards for the affected areas, return CROSS-PASSED.
-If it does not, return CROSS-GATED with concrete requirements and specification text the authoring role must incorporate.
-
-Write your evaluation to the Output Path per the Cross-Review Output Format, then notify Host via send_message with the exact text: "CR-COMPLETE <VERDICT>: <AuthorRole>-CR-<CrossReviewerRole>"
+FIRST read CR Guide (<cr_guide_path>), Domain Context, Target Remediation, and Domain Guide (<guide_path>), then execute the cross-review strictly per CR Guide.
 ```
 
 ### 2C. Cross-Review Output & Request Formats
-- **`<review_dir>/reports/<AuthorRole>-CR-<CrossReviewerRole>.md`**:
-  ```markdown
-  # Cross-Review: <AuthorRole> Remediation
-  - **Cross-Reviewer**: <CrossReviewerRole>
-  - **Verdict**: CROSS-PASSED | CROSS-GATED
-
-  ## Cross-Gated Requirements
-  <!-- Only present when verdict is CROSS-GATED -->
-  1. **[Requirement Title]**:
-     - **Affected Remediation Section**: <Section in AuthorRole.md where the gap exists>
-     - **Domain Standard**: <Specific standard from cross-reviewer's domain not satisfied>
-     - **Required Specification**: <Concrete spec text or acceptance criteria the authoring role must incorporate>
-  ```
+- **`<review_dir>/reports/<AuthorRole>-CR-<CrossReviewerRole>.md`**: Authored per `CR-Guide.md` §4 (`CROSS-PASSED | CROSS-PASSED-WITH-SUGGESTIONS | CROSS-GATED`).
 - **`<review_dir>/reports/<AuthorRole>-Cross-Review-Requests.md`** (compiled by Host):
   ```markdown
   # Cross-Review Requests: <AuthorRole>
-  The following cross-domain requirements must be incorporated into your remediation in <review_dir>/reports/<AuthorRole>.md.
+  <!-- Include ## Blocking Requirements ONLY when 1+ accepted CROSS-GATED reports exist -->
+  ## Blocking Requirements (Must Resolve)
+  Incorporate all blocking requirements below into <review_dir>/reports/<AuthorRole>.md.
 
-  ## From <CrossReviewerRole1>
-  <Requirements copied from CR file>
+  ### From <CrossReviewerRole>
+  <Accepted Blocking Requirements from CR file>
 
-  Update your report and notify Host via send_message with the exact text: "CR-UPDATED: <AuthorRole>"
+  <!-- Include ## Advisory Suggestions ONLY when 1+ Advisory Suggestions exist -->
+  ## Advisory Suggestions (Apply or Decline)
+  Evaluate each suggestion below. Apply valid improvements directly into <review_dir>/reports/<AuthorRole>.md, or decline with a 1-line technical rationale in your reply to Host (do NOT write declined suggestions into <AuthorRole>.md).
+
+  ### From <CrossReviewerRole>
+  <Advisory Suggestions from CR file>
   ```
 
 ---
@@ -207,10 +195,11 @@ Evaluate Layer 3 reports strictly per **tier batch** after `PendingTierRoles` is
   - **1+ accepted blocking defects**: Proceed to Step 4B (when `Cross-Review: ENABLED` in `Context.md`, default), or skip Step 4B directly to Step 5 Early Suspension (when `Cross-Review: DISABLED` / `!NCR` is active in `Context.md`).
 
 ### Step 4B: Cross-Domain Remediation Review
-*(Skipped when `Context.md` sets `Cross-Review: DISABLED` via `!NCR`, transitioning straight to Step 5 Early Suspension.)*
+*(Skipped when `Context.md` sets `Cross-Review: DISABLED` via `!NCR` / `!CRC0`, transitioning straight to Step 5 Early Suspension.)*
 
-When a tier batch (`<FailingTier>`) resolves with 1+ accepted blocking defects (`STATUS: REVISIONS NEEDED`), validate remediations against cross-domain standards before Early Suspension (Step 5) or DA Mutation (Step 7):
-1. **Collect Remediations**: Identify all `<Role>.md` reports in the resolved `<FailingTier>` with status `STATUS: REVISIONS NEEDED`.
+When a tier batch (`<FailingTier>`) resolves with 1+ accepted blocking defects (`STATUS: REVISIONS NEEDED`), validate remediations against cross-domain standards before Early Suspension (Step 5) or DA Mutation (Step 7). Read `Cross-Review Wave Cap` from `Context.md` (`UNLIMITED` default, or integer `CRC >= 1` via `!CRC<N>`).
+
+1. **Collect Remediations**: Identify all `<Role>.md` reports in `<FailingTier>` with `STATUS: REVISIONS NEEDED`.
 2. **Determine Cross-Review Roles (Selective Triggering)**:
    - **Zero Cross-Domain Impact (`Cross-Review Roles: None`)**: If a remediation is strictly self-contained within a single module/function (e.g. fixing an internal calculation, adding error `cause` chaining, refining local unit test assertions, pinning a lockfile version) and does NOT alter: (a) cross-module interfaces/DTOs, (b) persistent schemas/migrations, (c) state machine transitions or concurrency locks, (d) security/authz boundaries or ingress schemas, (e) UI layout/interaction flows, (f) ticket WBS sequencing, or (g) feature matrices, CV splits, loss/metric formulations, or ML training/inference pipelines $\rightarrow$ assign `Cross-Review Roles: None` and skip cross-review for that remediation.
    - **Cross-Cutting Remediations**: Whenever a remediation is not `None`, include a fresh clean-slate instance of `<AuthorRole>` itself plus all affected sibling roles from the active roster:
@@ -223,17 +212,25 @@ When a tier batch (`<FailingTier>`) resolves with 1+ accepted blocking defects (
      - Feature engineering, data splitting/CV, loss/metric formulations, model architectures, training loops, ONNX/runtime export parity, or ensembling/inference pipelines $\rightarrow$ `DataScience`, `Testability` (plus `Performance` when altering runtime tensor shapes, batching, or EP latency, and `Security` when introducing unsafe checkpoint deserialization or untrusted model/tensor ingress)
      - Component composition, focus lifecycle, event handling, or rendering $\rightarrow$ `UXUI`
    - **`Cross-Review Tier Invariant`**: Cross-Reviewers validate `<AuthorRole>`'s proposed remediation in-flight; they are NOT primary tier reviewers for the round and **MUST NEVER shift, override, or alter `Highest Modified Tier` or `Reviewer Accounting` in `host/State.md`**.
-3. **Invoke Cross-Reviewers**: Launch all `<AuthorRole>-CR-<CrossReviewerRole>` subagents simultaneously in a single wave per §2B (`CRWave = 1`). Initialize `PendingCrossReviewRoles[AuthorRole]` and arm a 600s timer per Step 3.
-4. **Wakeup & Immediate Termination**: Upon receiving `"CR-COMPLETE <VERDICT>: <AuthorRole>-CR-<CrossReviewerRole>"` via `send_message`, verify report on disk, de-queue, and immediately terminate that cross-reviewer via `manage_subagents(Action="kill")`.
-5. **Cross-Review Resolution & Trace Preservation**:
-   - **All `CROSS-PASSED`**: Move `<AuthorRole>-CR-*.md` files into `<review_dir>/host/trace/cr_w<CRWave>_...` without reading them, and mark `<AuthorRole>` resolved.
-   - **Any `CROSS-GATED`**: Read ONLY `CROSS-GATED` reports, compile `<review_dir>/reports/<AuthorRole>-Cross-Review-Requests.md` per §2C, copy current `<AuthorRole>.md` to `<review_dir>/host/trace/cr_w<CRWave>_<AuthorRole>.pre-cr.md`, and message `<AuthorRole>`:
-     `Cross-domain review identified requirements for your remediation. Read <review_dir>/reports/<AuthorRole>-Cross-Review-Requests.md. Incorporate all listed requirements into your report at <review_dir>/reports/<AuthorRole>.md. Once updated, notify Host via send_message with the exact text: "CR-UPDATED: <AuthorRole>"`
-   - Upon receiving `"CR-UPDATED: <AuthorRole>"`:
-     1. Move `<AuthorRole>-Cross-Review-Requests.md` and prior `<AuthorRole>-CR-*.md` files into `<review_dir>/host/trace/cr_w<CRWave>_...`, and purge `<review_dir>/sandbox/<AuthorRole>-CR-*/`.
-     2. Increment `CRWave += 1`.
-     3. **Re-Evaluate Cross-Review Roles on Updated Remediation**: Inspect the updated `<AuthorRole>.md` and spawn fresh clean-slate cross-reviewers per §2B for all previously gating roles **PLUS any active role (including roles that returned `CROSS-PASSED` in Wave 1 or newly affected roles) whose domain standards are affected by the newly incorporated changes**.
-     4. Repeat until all selected cross-review roles return `CROSS-PASSED`.
+3. **Invoke Cross-Reviewers**: Launch all `<AuthorRole>-CR-<CrossReviewerRole>` subagents simultaneously in a single wave per §2B (`CRWave = 1`, `CR Wave Mode: INITIAL_AUDIT`). Initialize `PendingCrossReviewRoles[AuthorRole]` and arm a 600s timer per Step 3.
+4. **Wakeup & Immediate Termination**: Upon receiving `"CR-COMPLETE <VERDICT>: <AuthorRole>-CR-<CrossReviewerRole>"` (`CROSS-PASSED`, `CROSS-PASSED-WITH-SUGGESTIONS`, or `CROSS-GATED`) via `send_message`, verify report on disk, de-queue, and immediately terminate that cross-reviewer via `manage_subagents(Action="kill")`.
+5. **Cross-Review Triage & Convergence Resolution**:
+   When `PendingCrossReviewRoles[AuthorRole]` empties:
+   - **Host CR Filter (for `CROSS-GATED` items)**: Before compiling blocking requests, filter `CROSS-GATED` items per `CR-Guide.md` §2–§3 without rewriting fixes: drop items lacking disk proof or violating `DELTA_RECHECK` scope (re-opening unchanged sections without delta invalidation), and downgrade purely additive/mechanical items (that layer onto `R` without breaking contracts or requiring structural rework) into `## Advisory Suggestions`.
+   - **Case 1 — All `CROSS-PASSED` (0 accepted blocking items, 0 suggestions)**: Move `<AuthorRole>-CR-*.md` into `<review_dir>/host/trace/cr_w<CRWave>_...`, purge `<review_dir>/sandbox/<AuthorRole>-CR-*/`, and mark `<AuthorRole>` resolved.
+   - **Case 2 — 0 accepted blocking items, `>= 1` `Advisory Suggestions` (`CROSS-PASSED-WITH-SUGGESTIONS` or all `CROSS-GATED` downgraded/filtered)**:
+     1. Copy `<AuthorRole>.md` to `<review_dir>/host/trace/cr_w<CRWave>_<AuthorRole>.pre-cr.md`, compile `<review_dir>/reports/<AuthorRole>-Cross-Review-Requests.md` (`## Advisory Suggestions` only), and message `<AuthorRole>`:
+        `Cross-review passed with advisory suggestions only. Read <review_dir>/reports/<AuthorRole>-Cross-Review-Requests.md. Apply valid suggestions directly in <review_dir>/reports/<AuthorRole>.md, or decline with a 1-line technical rationale in your reply (do NOT write declined suggestions into <AuthorRole>.md). Notify Host via send_message starting with "CR-ADVISORY-COMPLETE: <AuthorRole>" followed by any declined suggestion titles and rationales.`
+     2. Upon `"CR-ADVISORY-COMPLETE: <AuthorRole>"`: archive `<AuthorRole>-Cross-Review-Requests.md`, `<AuthorRole>-CR-*.md`, and any declined advisory rationales (`cr_w<CRWave>_<AuthorRole>-Advisory-Log.md`) into `<review_dir>/host/trace/cr_w<CRWave>_...`, purge `<review_dir>/sandbox/<AuthorRole>-CR-*/`, run a Step 4 gate check (`HOW-TO-GATE.md`) on updated `<AuthorRole>.md` for newly introduced ungrounded APIs or intra-report contradictions (gate `<AuthorRole>` 1-on-1 via `<AuthorRole>_Gated_Issues.md` only if broken; never spawn another CR wave), then mark `<AuthorRole>` resolved.
+   - **Case 3 — `>= 1` accepted blocking items AND cap not reached (`CRC == UNLIMITED` or `CRWave < CRC`)**:
+     1. Read blocking CR reports, compile `<review_dir>/reports/<AuthorRole>-Cross-Review-Requests.md` (`## Blocking Requirements` plus any `## Advisory Suggestions`) per §2C, copy current `<AuthorRole>.md` to `<review_dir>/host/trace/cr_w<CRWave>_<AuthorRole>.pre-cr.md`, and message `<AuthorRole>`:
+        `Cross-domain review identified blocking requirements for your remediation. Read <review_dir>/reports/<AuthorRole>-Cross-Review-Requests.md. Incorporate all Blocking Requirements, and apply or decline any Advisory Suggestions (without writing declined suggestions into <AuthorRole>.md) at <review_dir>/reports/<AuthorRole>.md. Notify Host via send_message starting with "CR-UPDATED: <AuthorRole>" followed by any declined suggestion titles and rationales.`
+     2. Upon `"CR-UPDATED: <AuthorRole>"`: move `<AuthorRole>-Cross-Review-Requests.md`, prior `<AuthorRole>-CR-*.md` files, and any declined advisory rationales (`cr_w<CRWave>_<AuthorRole>-Advisory-Log.md`) into `<review_dir>/host/trace/cr_w<CRWave>_...`, purge `<review_dir>/sandbox/<AuthorRole>-CR-*/`, and increment `CRWave += 1`.
+     3. **Selective `DELTA_RECHECK` Re-Summon**: Inspect ONLY the newly changed deltas in `<AuthorRole>.md` and spawn fresh clean-slate cross-reviewers per §2B (`CR Wave Mode: DELTA_RECHECK`) ONLY for: (a) roles with accepted `CROSS-GATED` findings in Wave `CRWave - 1`, PLUS (b) any active sibling role whose domain triggers are directly affected by the newly changed lines (never re-summon `CROSS-PASSED` or `CROSS-PASSED-WITH-SUGGESTIONS` roles whose domain triggers remain untouched by the new delta).
+   - **Case 4 — `>= 1` accepted blocking items AND `CRWave >= CRC` (Cross-Review Cap Reached)**:
+     1. Do NOT spawn Wave `CRWave + 1`. Compile `<AuthorRole>-Cross-Review-Requests.md` (`## Blocking Requirements` plus any `## Advisory Suggestions`), copy current `<AuthorRole>.md` to `<review_dir>/host/trace/cr_w<CRWave>_<AuthorRole>.pre-cr.md`, and message `<AuthorRole>`:
+        `Cross-review cap (CRC=<CRC>) reached. Read <review_dir>/reports/<AuthorRole>-Cross-Review-Requests.md. Incorporate all Blocking Requirements, and apply or decline any Advisory Suggestions (without writing declined suggestions into <AuthorRole>.md) into <review_dir>/reports/<AuthorRole>.md. No additional CR wave will run; notify Host via send_message starting with "CR-CAP-FINAL: <AuthorRole>" followed by any declined suggestion titles and rationales.`
+     2. Upon `"CR-CAP-FINAL: <AuthorRole>"`: archive `<AuthorRole>-Cross-Review-Requests.md`, `<AuthorRole>-CR-*.md`, and any declined advisory log into `<review_dir>/host/trace/cr_w<CRWave>_...`, purge `<review_dir>/sandbox/<AuthorRole>-CR-*/`, run a Step 4 gate check (`HOW-TO-GATE.md`) on updated `<AuthorRole>.md` (gating 1-on-1 via `<AuthorRole>_Gated_Issues.md` only if malformed/contradictory), mark `<AuthorRole>` resolved, and record `Cross-Review Cap Note: Cross-Review terminated at cap (CRC=<CRC>); final wave incorporations deferred to Round <R+1> Primary DAG verification` in `Analyzation.md`.
 
 ### Step 5: Early Suspension
 - After Step 4B completes (or directly after Step 4 when Step 4B is skipped via `!NCR`) for a tier batch (`<FailingTier>`, e.g. `Layer 3.X`) with accepted blocking defects: bind **`Highest Modified Tier = <FailingTier>`** (the exact DAG tier whose primary reviewer(s) returned `STATUS: REVISIONS NEEDED` — NEVER a Cross-Reviewer's tier from Step 4B), reset `PassCount = 0`, cancel downstream tiers for that round, and transition directly to Step 7.
@@ -258,7 +255,7 @@ When a tier batch (`<FailingTier>`) resolves with 1+ accepted blocking defects (
    - **Dimension 4 — Cross-DA & Dependency DAG Propagation**: In multi-file epics (`PRD.md` + `tickets/*.md`), when a remediation modifies a shared contract (function signature, DTO, IPC channel, database table, environment variable, or design token) or introduces a cross-ticket dependency, propagate the update symmetrically across `PRD.md` and **all producer and consumer tickets**, and update **`Blocked by` / prerequisite links** whenever Ticket B now consumes an artifact created in Ticket A.
    - **Dimension 5 — Exhaustive 1-to-1 Issue & Suggestion Accounting**: Before authoring `State.md` and `Analyzation.md`, audit every accepted `<Role>.md` report item-by-item:
      - Verify that **100% of sub-requirements (`1, 2, 3...`) and criteria** inside every accepted `Blocking Issue` are present in the mutated DA(s).
-     - Account for **100% of items under `### Suggestions for Improvement (Non-blocking):`** 1-to-1: every suggestion MUST either be applied to the DA (following Dimensions 1–4) and documented under `## Accepted Issues and Suggestions` in `Analyzation.md`, OR rejected with technical rationale under `## Rejected Suggestions` in `Analyzation.md`. NEVER silently drop a suggestion, and NEVER record previously gated/removed Blocking Issues under `## Rejected Suggestions`.
+     - Account for **100% of items under `### Suggestions for Improvement (Non-blocking):`** 1-to-1: every suggestion MUST either be applied to the DA (following Dimensions 1–4) and documented under `## Accepted Issues and Suggestions` in `Analyzation.md`, OR rejected with technical rationale under `## Rejected Suggestions` in `Analyzation.md`. NEVER silently drop a suggestion, and NEVER record previously gated/removed Blocking Issues or declined Step 4B CR advisory suggestions (already archived in `host/trace/`) under `## Rejected Suggestions`.
    - **WBS File Tree Synchronization**: If accepted `Progress` feedback splits, merges, creates, or deletes DA files:
      - For `DECOMPOSE_PLAN_TO_PRD_AND_TICKETS`: create `<epic_dir>/PRD.md` and `<epic_dir>/tickets/01-...md` .. `0N-...md`, preserve `<source_plan_stem>.bak.md`, delete original monolithic plan file, and update `## Target Directive Artifacts` in `Context.md`.
      - For `SPLIT_PRD`, `MERGE_PRDS`, `EXTRACT_PRD_FROM_TICKETS`, `SPLIT_TICKET_TRACER_BULLETS`: create, rename, or remove target DA files on disk and synchronize `Context.md`.
@@ -342,6 +339,7 @@ To prevent anchoring Host $N+1$ on prior round mutation details, `State.md` cont
 - **Current PassCount**: <N> / <SP>
 - **Active Roster**: <List of active roles>
 - **Highest Modified Tier**: Layer 3.X | None
+- **Cross-Review Cap Note**: None | Cross-Review terminated at cap (CRC=<N>); final wave incorporations deferred to Round <R+1> Primary DAG verification
 
 <!-- When Gate Verdict is PLAN_INFEASIBLE -->
 ## Technical Impasse Analysis
