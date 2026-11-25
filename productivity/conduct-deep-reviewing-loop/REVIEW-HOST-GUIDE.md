@@ -229,7 +229,7 @@ When a tier batch (`<FailingTier>`) resolves with 1+ accepted blocking defects (
    - **Case 4 — `>= 1` accepted blocking items AND `CRWave >= CRC` (Cross-Review Cap Reached)**:
      1. Do NOT spawn Wave `CRWave + 1`. Compile `<AuthorRole>-Cross-Review-Requests.md` (`## Blocking Requirements` plus any `## Advisory Suggestions`), copy current `<AuthorRole>.md` to `<review_dir>/host/trace/cr_w<CRWave>_<AuthorRole>.pre-cr.md`, and message `<AuthorRole>`:
         `Cross-review cap (CRC=<CRC>) reached. Read <review_dir>/reports/<AuthorRole>-Cross-Review-Requests.md. Incorporate all Blocking Requirements, and apply or decline any Advisory Suggestions (without writing declined suggestions into <AuthorRole>.md) into <review_dir>/reports/<AuthorRole>.md. No additional CR wave will run; notify Host via send_message starting with "CR-CAP-FINAL: <AuthorRole>" followed by any declined suggestion titles and rationales.`
-     2. Upon `"CR-CAP-FINAL: <AuthorRole>"`: archive `<AuthorRole>-Cross-Review-Requests.md`, `<AuthorRole>-CR-*.md`, and any declined advisory log into `<review_dir>/host/trace/cr_w<CRWave>_...`, purge `<review_dir>/sandbox/<AuthorRole>-CR-*/`, run a Step 4 gate check (`HOW-TO-GATE.md`) on updated `<AuthorRole>.md` (gating 1-on-1 via `<AuthorRole>_Gated_Issues.md` only if malformed/contradictory), mark `<AuthorRole>` resolved, and record `Cross-Review Cap Note: Cross-Review terminated at cap (CRC=<CRC>); final wave incorporations deferred to Round <R+1> Primary DAG verification` in `Analyzation.md`.
+     2. Upon `"CR-CAP-FINAL: <AuthorRole>"`: archive `<AuthorRole>-Cross-Review-Requests.md`, `<AuthorRole>-CR-*.md`, and any declined advisory log into `<review_dir>/host/trace/cr_w<CRWave>_...`, purge `<review_dir>/sandbox/<AuthorRole>-CR-*/`, run a Step 4 gate check (`HOW-TO-GATE.md`) on updated `<AuthorRole>.md` (gating 1-on-1 via `<AuthorRole>_Gated_Issues.md` only if malformed/contradictory), mark `<AuthorRole>` resolved, and record `Cross-Review Cap Note: Cross-Review terminated at cap (CRC=<CRC>); final wave incorporations deferred to the next Primary DAG round` in `Analyzation.md`.
 
 ### Step 5: Early Suspension
 - After Step 4B completes (or directly after Step 4 when Step 4B is skipped via `!NCR`) for a tier batch (`<FailingTier>`, e.g. `Layer 3.X`) with accepted blocking defects: bind **`Highest Modified Tier = <FailingTier>`** (the exact DAG tier whose primary reviewer(s) returned `STATUS: REVISIONS NEEDED` — NEVER a Cross-Reviewer's tier from Step 4B), reset `PassCount = 0`, cancel downstream tiers for that round, and transition directly to Step 7.
@@ -338,7 +338,7 @@ To prevent anchoring Host $N+1$ on prior round mutation details, `State.md` cont
 - **Current PassCount**: <N> / <SP>
 - **Active Roster**: <List of active roles>
 - **Highest Modified Tier**: Layer 3.X | None
-- **Cross-Review Cap Note**: None | Cross-Review terminated at cap (CRC=<N>); final wave incorporations deferred to Round <R+1> Primary DAG verification
+- **Cross-Review Cap Note**: None | Cross-Review terminated at cap (CRC=<N>); final wave incorporations deferred to the next Primary DAG round
 
 <!-- When Gate Verdict is PLAN_INFEASIBLE -->
 ## Technical Impasse Analysis
