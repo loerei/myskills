@@ -23,15 +23,20 @@ Publish or sync a local PRD and its constituent ticket markdown files to GitHub 
    - Parent PRD: `epic`, `epic-<key>` (e.g. `epic,epic-02`, `epic,epic-09.1`).
    - Child Tickets: `ticket`, `epic-<key>` (e.g. `ticket,epic-02`, `ticket,epic-09.1`).
    - Unreviewed Draft Flag (`to-be-reviewed`): Applied to **both** Parent PRD and all Child Tickets when `PRD.md` has `Review Status: TO_BE_REVIEWED` (or missing/placeholder `Reviewed-At-Commit`, or `--to-be-reviewed` / `!TBR`), and automatically removed when re-syncing after `Review Status: REVIEWED` (or `--reviewed`). Legacy PRDs lacking `Review Status` with a valid `Reviewed-At-Commit` SHA preserve existing `to-be-reviewed` state unless overridden by CLI flag.
+7. **Script-First + Minimal Manual Cleanup (Cost & Safety Boundary)**:
+   - Always run `publish-epic.js` for bulk compilation, no-op skipping (`[UNCHANGED]`), parallel updates, topological creation, and dot-split orphan closure (`03` -> `03.1, 03.2`); NEVER manually read all ticket files or loop `gh issue create`/`edit` for bulk epic sync.
+   - Reserve manual `gh` calls strictly for semantic transitions that filesystem key diffing cannot safely infer:
+     1. **Superseded PRD after `!SPL`** (`<NN>` split into `<NN>.1`, `<NN>.2`): run `gh issue list --label epic-<NN> --state open` and close those superseded issues (`gh issue close --reason "not planned" --comment "Superseded by #<NN.1>, #<NN.2>"`).
+     2. **Non-dot ticket merge/renumbering** (e.g. `07 + 08 -> 05`): append a cross-link comment pointing to `#<newId>` on the closed issue if the updated Parent PRD checklist is insufficient.
 
 ## Workflow
 
 1. Pre-scan sibling PRDs under `docs/specs/` and query remote `epic`/`ticket` issues (`gh issue list --state all`) to build the cross-Epic key-to-issue map without mutating disk.
 2. Ephemerally compile and create/update the parent PRD issue on GitHub (syncing `epic`, `epic-<key>`, and `to-be-reviewed`).
-3. Reconcile ticket keys (matching vs new vs orphaned) and close open orphaned issues concurrently.
-4. Ephemerally compile and run concurrent in-place updates for matching tickets (default pool: `6`, adding or removing `to-be-reviewed` per review state).
-5. Ephemerally compile and topologically create new tickets.
-6. Output the JSON key-to-issue mapping, summary table (`Epic | Parent Issue | Review Status | Tickets`), and unblocked frontier ready for local tracking or `implement-a-ticket`, leaving local files untouched.
+3. Ephemerally compile and run concurrent in-place updates for modified matching tickets (skipping `[UNCHANGED]` issues).
+4. Ephemerally compile and topologically create new tickets.
+5. Close open orphaned issues concurrently as `not planned` (linking any dot-split child `#id`s created/matched in steps 3-4) and update the Parent PRD checklist.
+6. Output the JSON key-to-issue mapping, summary table (`Epic | Parent Issue | Review Status | Tickets`), and unblocked frontier ready for local tracking or `implement-a-ticket`, leaving local files untouched (if publishing post-`!SPL` epics, close stale `epic-<NN>` issues manually per Directive 7).
 
 ## CLI Usage
 

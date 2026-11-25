@@ -2,6 +2,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import { pathToFileURL } from 'node:url';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 
@@ -26,11 +27,6 @@ Options:
     process.exit(exitCode);
 }
 
-const args = process.argv.slice(2);
-if (args.length === 0 || args.includes('--help') || args.includes('-h')) {
-    printUsage(args.length === 0 ? 1 : 0);
-}
-
 let targetPath = null;
 let parentId = null;
 let repo = null;
@@ -39,37 +35,51 @@ let isAll = false;
 let isDryRun = false;
 let forceReviewMode = null;
 
-for (let i = 0; i < args.length; i++) {
-    if (args[i] === '--parent-id' && args[i + 1]) {
-        parentId = parseInt(args[++i], 10);
-    } else if (args[i] === '--repo' && args[i + 1]) {
-        repo = args[++i];
-    } else if (args[i] === '--concurrency' && args[i + 1]) {
-        concurrency = Math.max(1, parseInt(args[++i], 10) || 6);
-    } else if (args[i] === '--all') {
-        isAll = true;
-    } else if (args[i] === '--dry-run') {
-        isDryRun = true;
-    } else if (args[i] === '--to-be-reviewed') {
-        if (forceReviewMode === 'reviewed') {
-            console.error('Error: Cannot combine --to-be-reviewed and --reviewed.');
-            process.exit(1);
-        }
-        forceReviewMode = 'to-be-reviewed';
-    } else if (args[i] === '--reviewed') {
-        if (forceReviewMode === 'to-be-reviewed') {
-            console.error('Error: Cannot combine --to-be-reviewed and --reviewed.');
-            process.exit(1);
-        }
-        forceReviewMode = 'reviewed';
-    } else if (!args[i].startsWith('--') && !targetPath) {
-        targetPath = args[i];
+function parseCliArgs(argv) {
+    if (argv.length === 0 || argv.includes('--help') || argv.includes('-h')) {
+        printUsage(argv.length === 0 ? 1 : 0);
     }
-}
 
-if (!targetPath) {
-    console.error('Error: Missing target PRD file or Epic directory path.');
-    printUsage(1);
+    targetPath = null;
+    parentId = null;
+    repo = null;
+    concurrency = 6;
+    isAll = false;
+    isDryRun = false;
+    forceReviewMode = null;
+
+    for (let i = 0; i < argv.length; i++) {
+        if (argv[i] === '--parent-id' && argv[i + 1]) {
+            parentId = parseInt(argv[++i], 10);
+        } else if (argv[i] === '--repo' && argv[i + 1]) {
+            repo = argv[++i];
+        } else if (argv[i] === '--concurrency' && argv[i + 1]) {
+            concurrency = Math.max(1, parseInt(argv[++i], 10) || 6);
+        } else if (argv[i] === '--all') {
+            isAll = true;
+        } else if (argv[i] === '--dry-run') {
+            isDryRun = true;
+        } else if (argv[i] === '--to-be-reviewed') {
+            if (forceReviewMode === 'reviewed') {
+                console.error('Error: Cannot combine --to-be-reviewed and --reviewed.');
+                process.exit(1);
+            }
+            forceReviewMode = 'to-be-reviewed';
+        } else if (argv[i] === '--reviewed') {
+            if (forceReviewMode === 'to-be-reviewed') {
+                console.error('Error: Cannot combine --to-be-reviewed and --reviewed.');
+                process.exit(1);
+            }
+            forceReviewMode = 'reviewed';
+        } else if (!argv[i].startsWith('--') && !targetPath) {
+            targetPath = argv[i];
+        }
+    }
+
+    if (!targetPath) {
+        console.error('Error: Missing target PRD file or Epic directory path.');
+        printUsage(1);
+    }
 }
 
 const env = { ...process.env };
@@ -171,7 +181,7 @@ async function runGh(ghArgs) {
         return `[DRY-RUN gh ${ghArgs.join(' ')}]`;
     }
     try {
-        const { stdout } = await execFileAsync('gh', ghArgs, { env, encoding: 'utf8' });
+        const { stdout } = await execFileAsync('gh', ghArgs, { env, encoding: 'utf8', maxBuffer: 50 * 1024 * 1024 });
         return stdout.trim();
     } catch (err) {
         if (err.stderr) console.error(`gh error: ${err.stderr.toString().trim()}`);
@@ -284,11 +294,25 @@ function pickPreferredIssue(a, b) {
     return a.number > b.number ? a : b;
 }
 
+function isIssueUnchanged(remoteIssue, desiredTitle, desiredMainBody, requiredBaseLabels, reviewMode) {
+    if (!remoteIssue || typeof remoteIssue.body !== 'string') return false;
+    const remoteTitle = (remoteIssue.title || '').trim();
+    const remoteBody = remoteIssue.body.replace(/\r\n/g, '\n').trim();
+    if (remoteTitle !== desiredTitle.trim() || remoteBody !== desiredMainBody.trim()) return false;
+    const existingLabels = new Set(remoteIssue.labelNames || normalizeIssueLabels(remoteIssue));
+    for (const req of requiredBaseLabels) {
+        if (!existingLabels.has(req.toLowerCase())) return false;
+    }
+    if (reviewMode === 'add' && !existingLabels.has(REVIEW_LABEL)) return false;
+    if (reviewMode === 'remove' && existingLabels.has(REVIEW_LABEL)) return false;
+    return true;
+}
+
 async function fetchRemoteIssues() {
     if (isDryRun) {
         return { epicIssues: [], ticketIssues: [] };
     }
-    const baseFields = ['--state', 'all', '--json', 'number,title,labels,state'];
+    const baseFields = ['--state', 'all', '--json', 'number,title,body,labels,state'];
     const epicArgs = ['issue', 'list', '--label', 'epic', '--limit', '500', ...baseFields];
     const ticketArgs = ['issue', 'list', '--label', 'ticket', '--limit', '1000', ...baseFields];
     if (repo) {
@@ -424,7 +448,8 @@ function buildGlobalRegistry(specsRootDir, remoteData) {
                         title: rIssue.title,
                         issueId: rIssue.number,
                         state: rIssue.state,
-                        labelNames: rIssue.labelNames
+                        labelNames: rIssue.labelNames,
+                        remoteIssue: rIssue
                     };
                 } else {
                     const preferred = existing.issueId
@@ -433,6 +458,7 @@ function buildGlobalRegistry(specsRootDir, remoteData) {
                     existing.issueId = preferred.number;
                     existing.state = preferred.state;
                     existing.labelNames = preferred.labelNames || rIssue.labelNames;
+                    existing.remoteIssue = preferred.body !== undefined ? preferred : rIssue;
                 }
             }
         }
@@ -513,6 +539,7 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
     const prdTitleMatch = prdRawContent.match(/^#\s+(.+)$/m);
     const prdTitle = prdTitleMatch ? cleanTitle(prdTitleMatch[1]) : `Epic ${currentEpicKey}: ${path.basename(targetEpicDir)}`;
     const matchedRemoteParent = globalRegistry[currentEpicKey] ? globalRegistry[currentEpicKey].parentIssue : null;
+    let parentRemoteIssue = matchedRemoteParent;
     let parentLabelNames = matchedRemoteParent ? matchedRemoteParent.labelNames : null;
 
     if (!finalParentId) {
@@ -527,6 +554,7 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
     const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'prd-publish-'));
 
     if (!finalParentId) {
+        parentRemoteIssue = null;
         if (isDryRun) {
             finalParentId = 999;
             console.log(`[DRY-RUN] Create Parent Issue "${prdTitle}" (labels: ${prdCreateLabels}) -> #${finalParentId}`);
@@ -548,19 +576,22 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
         }
     } else {
         console.log(`Using existing Parent Issue #${finalParentId} (labels: ${prdCreateLabels}, reviewMode: ${reviewState.mode}).`);
-        if (!isDryRun && !parentLabelNames && reviewState.mode === 'remove') {
+        if (!isDryRun && (!parentRemoteIssue || parentRemoteIssue.number !== finalParentId)) {
             try {
-                const viewArgs = ['issue', 'view', String(finalParentId), '--json', 'labels'];
+                const viewArgs = ['issue', 'view', String(finalParentId), '--json', 'number,title,body,labels,state'];
                 if (repo) viewArgs.push('--repo', repo);
                 const viewOut = await runGh(viewArgs);
-                parentLabelNames = normalizeIssueLabels(JSON.parse(viewOut || '{}'));
+                const parsed = JSON.parse(viewOut || '{}');
+                parentLabelNames = normalizeIssueLabels(parsed);
+                parentRemoteIssue = { ...parsed, labelNames: parentLabelNames };
             } catch (_) {
                 parentLabelNames = [];
+                parentRemoteIssue = null;
             }
         }
     }
 
-    // Reconcile
+    // Collect orphans now, close AFTER newTickets are created so split children can be linked
     const existingRemoteTickets = (globalRegistry[currentEpicKey] && globalRegistry[currentEpicKey].tickets) || {};
     const localKeySet = new Set(targetTickets.map(t => t.key));
     const orphanedRemoteTickets = [];
@@ -569,28 +600,6 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
         if (!localKeySet.has(rKey) && rTicket.issueId && rTicket.state !== 'CLOSED') {
             orphanedRemoteTickets.push(rTicket);
         }
-    }
-
-    if (orphanedRemoteTickets.length > 0) {
-        console.log(`Closing ${orphanedRemoteTickets.length} orphaned/split tickets concurrently...`);
-        await runConcurrent(orphanedRemoteTickets, concurrency, async (orphan) => {
-            if (!isDryRun) {
-                try {
-                    const closeArgs = [
-                        'issue', 'close', String(orphan.issueId),
-                        '--reason', 'not planned',
-                        '--comment', `Superseded or split under Parent PRD #${finalParentId}. Closing.`
-                    ];
-                    if (repo) closeArgs.push('--repo', repo);
-                    await runGh(closeArgs);
-                    console.log(`  [CLOSED (not planned)] Stale Issue #${orphan.issueId} [${orphan.key}]`);
-                } catch (err) {
-                    console.warn(`  Warning: Could not close #${orphan.issueId}: ${err.message}`);
-                }
-            } else {
-                console.log(`  [DRY-RUN CLOSE] Stale Issue #${orphan.issueId} [${orphan.key}] (reason: not planned)`);
-            }
-        });
     }
 
     // Separate into In-Place Updates vs New Tickets
@@ -603,7 +612,8 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
             inPlaceTickets.push({
                 ...t,
                 existingIssueId: existingEntry.issueId,
-                existingLabels: existingEntry.labelNames || []
+                existingLabels: existingEntry.labelNames || [],
+                remoteIssue: existingEntry.remoteIssue || null
             });
         } else {
             newTickets.push(t);
@@ -615,9 +625,9 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
         dynamicLocalMap[t.key] = t.existingIssueId;
     }
 
-    // 1. Concurrent In-Place Updates (Ephemeral Compile -> gh issue edit -> Zero Disk Mutation)
+    // 1. Concurrent In-Place Updates (Ephemeral Compile -> no-op skip or gh issue edit -> Zero Disk Mutation)
     if (inPlaceTickets.length > 0) {
-        console.log(`\nExecuting ${inPlaceTickets.length} In-Place Updates concurrently (Pool size: ${concurrency})...`);
+        console.log(`\nChecking ${inPlaceTickets.length} In-Place Tickets concurrently (Pool size: ${concurrency})...`);
         await runConcurrent(inPlaceTickets, concurrency, async (t) => {
             let compiledBody = replaceSemanticKeysInBody(t.rawContent, currentEpicKey, globalRegistry, dynamicLocalMap);
             if (!compiledBody.includes(`## Parent\n#${finalParentId}`) && !compiledBody.includes(`## Parent\nhttps://github.com/`)) {
@@ -628,6 +638,9 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
             const shouldRemoveReviewLabel = reviewState.mode === 'remove' && t.existingLabels.includes(REVIEW_LABEL);
             if (isDryRun) {
                 console.log(`  [DRY-RUN EDIT] [${t.key}] In-Place Update #${t.existingIssueId}: "${t.title}" (${reviewState.mode})`);
+                await syncOverflowComments(t.existingIssueId, overflowComments, tempDir, t.fileName);
+            } else if (isIssueUnchanged(t.remoteIssue, t.title, mainBody, ['ticket', epicTag], reviewState.mode)) {
+                console.log(`  [UNCHANGED] #${t.existingIssueId} [${t.key}]: "${t.title}"`);
                 await syncOverflowComments(t.existingIssueId, overflowComments, tempDir, t.fileName);
             } else {
                 const tempFilePath = path.join(tempDir, t.fileName);
@@ -683,7 +696,37 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
         }
     }
 
-    // Compile and Upload Parent PRD Body (Ephemeral compile, updates GitHub)
+    // 3. Close Orphaned / Split Remote Tickets (AFTER newTickets so split children can be linked)
+    if (orphanedRemoteTickets.length > 0) {
+        console.log(`\nClosing ${orphanedRemoteTickets.length} orphaned/split tickets concurrently...`);
+        await runConcurrent(orphanedRemoteTickets, concurrency, async (orphan) => {
+            const splitChildKeys = Object.keys(dynamicLocalMap)
+                .filter(k => k.startsWith(`${orphan.key}.`) && dynamicLocalMap[k])
+                .sort();
+            const closeComment = splitChildKeys.length > 0
+                ? `Split into ${splitChildKeys.map(k => `#${dynamicLocalMap[k]} (${k})`).join(', ')} under Parent PRD #${finalParentId}. Closing.`
+                : `Superseded or removed under Parent PRD #${finalParentId}. Closing.`;
+
+            if (!isDryRun) {
+                try {
+                    const closeArgs = [
+                        'issue', 'close', String(orphan.issueId),
+                        '--reason', 'not planned',
+                        '--comment', closeComment
+                    ];
+                    if (repo) closeArgs.push('--repo', repo);
+                    await runGh(closeArgs);
+                    console.log(`  [CLOSED (not planned)] Stale Issue #${orphan.issueId} [${orphan.key}]: ${closeComment}`);
+                } catch (err) {
+                    console.warn(`  Warning: Could not close #${orphan.issueId}: ${err.message}`);
+                }
+            } else {
+                console.log(`  [DRY-RUN CLOSE] Stale Issue #${orphan.issueId} [${orphan.key}] (reason: not planned): ${closeComment}`);
+            }
+        });
+    }
+
+    // Compile and Upload Parent PRD Body (Ephemeral compile, no-op skip if unchanged)
     console.log(`\nCompiling and Updating Parent PRD #${finalParentId} on GitHub...`);
     let compiledPrd = prdRawContent;
     let ticketListMarkdown = '';
@@ -701,6 +744,9 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
 
     if (isDryRun) {
         console.log(`[DRY-RUN] Update PRD #${finalParentId} on GitHub (add: ${prdCreateLabels}${shouldRemoveParentReviewLabel ? `, remove: ${REVIEW_LABEL}` : ''}).`);
+        await syncOverflowComments(finalParentId, prdOverflow, tempDir, 'PRD_final');
+    } else if (isIssueUnchanged(parentRemoteIssue, prdTitle, prdMainBody, ['epic', epicTag], reviewState.mode)) {
+        console.log(`[UNCHANGED] Parent PRD #${finalParentId} is already up to date.`);
         await syncOverflowComments(finalParentId, prdOverflow, tempDir, 'PRD_final');
     } else {
         const tempPrdPath = path.join(tempDir, 'PRD_final.md');
@@ -732,6 +778,7 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
 
 // Main CLI Entrypoint
 async function main() {
+    parseCliArgs(process.argv.slice(2));
     const resolvedTarget = path.resolve(targetPath);
     if (!fs.existsSync(resolvedTarget)) {
         console.error(`Error: Target path does not exist: ${resolvedTarget}`);
@@ -787,7 +834,12 @@ async function main() {
     console.log(`======================================================\n`);
 }
 
-main().catch(err => {
-    console.error(`Fatal error: ${err.message}`);
-    process.exit(1);
-});
+export { extractEpicKey, resolveReviewLabelMode, isIssueUnchanged, replaceSemanticKeysInBody };
+
+const isMain = Boolean(process.argv[1]) && import.meta.url === pathToFileURL(fs.realpathSync(process.argv[1])).href;
+if (isMain) {
+    main().catch(err => {
+        console.error(`Fatal error: ${err.message}`);
+        process.exit(1);
+    });
+}
