@@ -2,8 +2,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
-import { pathToFileURL } from 'node:url';
-import { execFile } from 'node:child_process';
+import { pathToFileURL, fileURLToPath } from 'node:url';
+import { execFile, execFileSync } from 'node:child_process';
 import { promisify } from 'node:util';
 
 const execFileAsync = promisify(execFile);
@@ -255,27 +255,191 @@ function resolveReviewLabelMode(prdContent, forceMode) {
     return { mode: 'preserve', displayStatus: 'LEGACY' };
 }
 
-function replaceSemanticKeysInBody(content, currentEpicKey, registry, dynamicLocalMap) {
-    let transformed = content;
+function resolveRepoContext(specsRootDir, repoOverride) {
+    let repoRoot = null;
+    try {
+        repoRoot = execFileSync('git', ['-C', specsRootDir, 'rev-parse', '--show-toplevel'], {
+            encoding: 'utf8',
+            stdio: ['ignore', 'pipe', 'ignore']
+        }).trim();
+    } catch (_) {
+        repoRoot = null;
+    }
 
-    // 1. Cross-PRD replacement: "Epic XX: YY.YY", "Epic 09.1: 01", or "[Epic XX] YY.YY"
-    transformed = transformed.replace(/(?:\[?\b(?:Epic|PRD)\s*(\d+(?:\.\d+)*)\b\]?[\s:—–\(\)]*)\b(\d+(?:\.\d+)*)\b/gi, (match, epicNo, key) => {
-        const normEpic = extractEpicKey(epicNo);
-        const targetEpic = (normEpic && registry[normEpic]) || registry[epicNo];
-        if (targetEpic && targetEpic.tickets[key] && targetEpic.tickets[key].issueId) {
-            return `#${targetEpic.tickets[key].issueId} (Epic ${epicNo}: ${key})`;
+    let repoSlug = repoOverride || null;
+    let defaultBranch = 'main';
+    if (repoRoot) {
+        if (!repoSlug) {
+            try {
+                const originUrl = execFileSync('git', ['-C', repoRoot, 'remote', 'get-url', 'origin'], {
+                    encoding: 'utf8',
+                    stdio: ['ignore', 'pipe', 'ignore']
+                }).trim();
+                const m = originUrl.match(/[:/]([^/:\s]+\/[^/\s]+?)(?:\.git)?$/);
+                if (m) repoSlug = m[1];
+            } catch (_) {}
         }
-        return match;
-    });
+        try {
+            const symRef = execFileSync('git', ['-C', repoRoot, 'symbolic-ref', 'refs/remotes/origin/HEAD'], {
+                encoding: 'utf8',
+                stdio: ['ignore', 'pipe', 'ignore']
+            }).trim();
+            if (symRef.startsWith('refs/remotes/origin/')) {
+                defaultBranch = symRef.slice('refs/remotes/origin/'.length) || 'main';
+            }
+        } catch (_) {}
+    }
 
-    // 2. Intra-PRD replacement: local semantic keys from dynamicLocalMap
-    const sortedKeys = Object.keys(dynamicLocalMap).sort((a, b) => b.length - a.length);
-    for (const key of sortedKeys) {
-        const id = dynamicLocalMap[key];
-        if (!id) continue;
-        const escapedKey = key.replace(/\./g, '\\.');
-        const keyRegex = new RegExp(`(?<![#\\w\\.\\/])${escapedKey}(?![\\w\\.\\/])`, 'g');
-        transformed = transformed.replace(keyRegex, `#${id} (${key})`);
+    return { repoRoot, repoSlug, defaultBranch };
+}
+
+function encodePosixPathSegments(relPosix) {
+    return relPosix.split('/').map(seg => encodeURIComponent(seg)).join('/');
+}
+
+function isPathInsideRoot(candidatePath, rootPath) {
+    if (!candidatePath || !rootPath) return false;
+    const normRoot = path.resolve(rootPath);
+    const normCandidate = path.resolve(candidatePath);
+    const cmpRoot = process.platform === 'win32' ? normRoot.toLowerCase() : normRoot;
+    const cmpCandidate = process.platform === 'win32' ? normCandidate.toLowerCase() : normCandidate;
+    if (cmpCandidate === cmpRoot) return true;
+    const sep = path.sep;
+    return cmpCandidate.startsWith(cmpRoot.endsWith(sep) ? cmpRoot : `${cmpRoot}${sep}`);
+}
+
+function rewriteFileLinksForGitHub(content, repoContext) {
+    if (!content) return content;
+    const ctx = repoContext || {};
+
+    return content.replace(/\[([^\]]+)\]\((file:\/\/\/[^)\s]+)\)/gi, (fullMatch, label, rawFileUrl) => {
+        let localPath = '';
+        let fragment = '';
+        try {
+            const parsed = new URL(rawFileUrl);
+            fragment = parsed.hash || '';
+            localPath = fileURLToPath(parsed);
+        } catch (_) {
+            const stripped = rawFileUrl.replace(/^file:\/\/\/?/i, '');
+            const hashIdx = stripped.indexOf('#');
+            const rawPath = hashIdx >= 0 ? stripped.slice(0, hashIdx) : stripped;
+            fragment = hashIdx >= 0 ? stripped.slice(hashIdx) : '';
+            localPath = decodeURIComponent(rawPath);
+        }
+
+        if (ctx.repoRoot && isPathInsideRoot(localPath, ctx.repoRoot)) {
+            const rel = path.relative(ctx.repoRoot, localPath);
+            const relPosix = rel.split(path.sep).join('/');
+            if (ctx.repoSlug) {
+                if (!relPosix) {
+                    return `[${label}](https://github.com/${ctx.repoSlug}/tree/${encodeURIComponent(ctx.defaultBranch || 'main')}${fragment})`;
+                }
+                let kind = 'blob';
+                try {
+                    if (fs.existsSync(localPath) && fs.statSync(localPath).isDirectory()) {
+                        kind = 'tree';
+                    }
+                } catch (_) {}
+                const branch = encodeURIComponent(ctx.defaultBranch || 'main');
+                return `[${label}](https://github.com/${ctx.repoSlug}/${kind}/${branch}/${encodePosixPathSegments(relPosix)}${fragment})`;
+            }
+            return `\`${relPosix || label}${fragment}\``;
+        }
+
+        // Off-repo local paths must not leak machine paths to GitHub Issues
+        return `\`${path.basename(localPath) || label}\``;
+    });
+}
+
+function replaceSemanticKeysInBody(content, currentEpicKey, registry, dynamicLocalMap, repoContext = null) {
+    const placeholders = [];
+    const stash = (str) => {
+        const token = `\u0000GH_MASK_${placeholders.length}\u0000`;
+        placeholders.push(str);
+        return token;
+    };
+
+    let transformed = String(content || '').replace(/\r\n/g, '\n');
+
+    // Mask fenced code blocks (including mermaid diagrams) so code/diagrams are never corrupted
+    transformed = transformed.replace(/```[\s\S]*?```/g, (m) => stash(m));
+
+    // Convert local file:/// links to GitHub blob/tree links (or safe non-leaking text) before masking URLs
+    transformed = rewriteFileLinksForGitHub(transformed, repoContext);
+
+    // Mask H1 title, ## Parent, ## Tickets, and PRD metadata header bullets
+    transformed = transformed.replace(/^# .+$/m, (m) => stash(m));
+    transformed = transformed.replace(/^## Parent\n[\s\S]*?(?=\n## |$)/m, (m) => stash(m));
+    transformed = transformed.replace(/^## Tickets\n[\s\S]*?(?=\n## |$)/m, (m) => stash(m));
+    transformed = transformed.replace(/^\s*-\s*\*\*(?:Change Mode|Review Status|Reviewed-At-Commit):\*\*.*$/gm, (m) => stash(m));
+
+    // Mask markdown links (saving URL destinations while rewriting cross-PRD/ticket spec references first where matched)
+    const applyTicketReplacements = (text) => {
+        let out = text;
+
+        // 1. Cross-PRD Ticket references: "Epic 01: 02", "[PRD 09.1] 03.1", "Epic 01, Ticket 02"
+        out = out.replace(
+            /(?:\[?\b(?:Epic|PRD)\s*(\d+(?:\.\d+)*)\b\]?(?:\s*[:—–-]\s*|\s*,\s*(?:Ticket\s*)?|\s+Ticket\s+)`?(\d+(?:\.\d+)*)`?)/gi,
+            (match, epicNo, key) => {
+                const normEpic = extractEpicKey(epicNo);
+                const targetEpic = (normEpic && registry[normEpic]) || registry[epicNo];
+                if (targetEpic && targetEpic.tickets[key] && targetEpic.tickets[key].issueId) {
+                    return stash(`#${targetEpic.tickets[key].issueId} (Epic ${normEpic || epicNo}: ${key})`);
+                }
+                return match;
+            }
+        );
+
+        // 2. Standalone Cross-PRD Epic references: "PRD 01", "Epic 02"
+        out = out.replace(/\b(PRD|Epic)\s+(\d+(?:\.\d+)*)\b/gi, (match, kind, epicNo) => {
+            const normEpic = extractEpicKey(epicNo);
+            const targetEpic = (normEpic && registry[normEpic]) || registry[epicNo];
+            if (targetEpic && targetEpic.parentIssue && targetEpic.parentIssue.number) {
+                return stash(`#${targetEpic.parentIssue.number} (${kind} ${epicNo})`);
+            }
+            return match;
+        });
+
+        // 3. Explicit intra-PRD ticket contexts (ONLY inside ## Blocked by / ## Dependency Lineage or explicit Ticket/blocked-by prose)
+        const sortedKeys = Object.keys(dynamicLocalMap || {}).sort((a, b) => b.length - a.length);
+        if (sortedKeys.length > 0) {
+            const keyAlternation = sortedKeys.map(k => k.replace(/\./g, '\\.')).join('|');
+            const resolveKey = (k) => (dynamicLocalMap[k] ? `#${dynamicLocalMap[k]} (${k})` : k);
+
+            // 3a. Replace explicit `Ticket 04`, `Tickets 03, 04`, `blocked by 04`, `depends on 04`
+            const phraseBlockRegex = /\b(?:Tickets?|blocked\s+by|depends\s+on|from\s+Ticket)\b[^\n.;!?]*/gi;
+            const singleKeyRegex = new RegExp(`(?<![#\\w\\.\\/])\`?(${keyAlternation})\`?(?![#\\w\\.\\/])`, 'g');
+            out = out.replace(phraseBlockRegex, (segment) => {
+                return segment.replace(singleKeyRegex, (m, key) => {
+                    return dynamicLocalMap[key] ? stash(resolveKey(key)) : m;
+                });
+            });
+
+            // 3b. Replace bullet keys inside ## Blocked by / ## Dependency Lineage sections
+            out = out.replace(/^(## (?:Blocked by|Dependency Lineage)[^\n]*\n[\s\S]*?)(?=\n## |$)/gim, (section) => {
+                const keyLineRegex = new RegExp(`(^\\s*-\\s*(?:\\[)?)\`?(${keyAlternation})\`?(?![#\\w\\.\\/])`, 'gm');
+                return section.replace(keyLineRegex, (m, lead, key) => {
+                    return dynamicLocalMap[key] ? `${lead}${stash(resolveKey(key))}` : m;
+                });
+            });
+
+            // 3c. Replace tickets/<key>-<slug>.md path references for current epic
+            const ticketPathRegex = new RegExp(`tickets\\/(${keyAlternation})-[^\\s)\\]\`]+\\.md`, 'g');
+            out = out.replace(ticketPathRegex, (m, key) => {
+                return dynamicLocalMap[key] ? stash(`${resolveKey(key)} (${m})`) : m;
+            });
+        }
+
+        return out;
+    };
+
+    // Mask inline code spans ONLY outside ## Blocked by / Ticket phrases by handling inline URLs first
+    transformed = transformed.replace(/https?:\/\/[^\s)>\]]+/g, (m) => stash(m));
+    transformed = applyTicketReplacements(transformed);
+
+    // Unmask recursively in reverse order
+    while (/\u0000GH_MASK_\d+\u0000/.test(transformed)) {
+        transformed = transformed.replace(/\u0000GH_MASK_(\d+)\u0000/g, (_m, idx) => placeholders[Number(idx)]);
     }
 
     return transformed;
@@ -468,7 +632,7 @@ function buildGlobalRegistry(specsRootDir, remoteData) {
 }
 
 // Publish or Reconcile a single Epic (PURE COMPILATION — ZERO DISK MUTATION OF TICKETS)
-async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
+async function processEpic(prdFilePath, parentIdOverride, globalRegistry, repoContext) {
     const targetEpicDir = path.dirname(prdFilePath);
     const ticketsDirPath = path.join(targetEpicDir, 'tickets');
     const currentEpicKey = extractEpicKey(path.basename(targetEpicDir));
@@ -560,7 +724,8 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
             console.log(`[DRY-RUN] Create Parent Issue "${prdTitle}" (labels: ${prdCreateLabels}) -> #${finalParentId}`);
         } else {
             console.log(`Creating Parent Issue "${prdTitle}"...`);
-            const { mainBody, overflowComments } = splitBodyForGitHub(prdRawContent);
+            const initialBody = rewriteFileLinksForGitHub(prdRawContent, repoContext);
+            const { mainBody, overflowComments } = splitBodyForGitHub(initialBody);
             const tempPrdPath = path.join(tempDir, 'PRD.md');
             fs.writeFileSync(tempPrdPath, mainBody, 'utf8');
 
@@ -571,10 +736,16 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
             finalParentId = idMatch ? parseInt(idMatch[1], 10) : null;
             console.log(`Created Parent Issue #${finalParentId}: ${outUrl}`);
             if (finalParentId) {
+                if (globalRegistry[currentEpicKey]) {
+                    globalRegistry[currentEpicKey].parentIssue = { number: finalParentId, state: 'OPEN', labelNames: prdCreateLabels.split(',') };
+                }
                 await syncOverflowComments(finalParentId, overflowComments, tempDir, 'PRD');
             }
         }
     } else {
+        if (globalRegistry[currentEpicKey] && !globalRegistry[currentEpicKey].parentIssue) {
+            globalRegistry[currentEpicKey].parentIssue = { number: finalParentId, state: 'OPEN', labelNames: parentLabelNames || [] };
+        }
         console.log(`Using existing Parent Issue #${finalParentId} (labels: ${prdCreateLabels}, reviewMode: ${reviewState.mode}).`);
         if (!isDryRun && (!parentRemoteIssue || parentRemoteIssue.number !== finalParentId)) {
             try {
@@ -629,7 +800,7 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
     if (inPlaceTickets.length > 0) {
         console.log(`\nChecking ${inPlaceTickets.length} In-Place Tickets concurrently (Pool size: ${concurrency})...`);
         await runConcurrent(inPlaceTickets, concurrency, async (t) => {
-            let compiledBody = replaceSemanticKeysInBody(t.rawContent, currentEpicKey, globalRegistry, dynamicLocalMap);
+            let compiledBody = replaceSemanticKeysInBody(t.rawContent, currentEpicKey, globalRegistry, dynamicLocalMap, repoContext);
             if (!compiledBody.includes(`## Parent\n#${finalParentId}`) && !compiledBody.includes(`## Parent\nhttps://github.com/`)) {
                 compiledBody = compiledBody.replace(/## Epic\n[^\n]+/m, `## Parent\n#${finalParentId} (${prdTitle})\n\n## Epic\n${prdTitle}`);
             }
@@ -663,7 +834,7 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
         console.log(`\nCreating ${newTickets.length} New Tickets in topological order...`);
         let simCounter = 500;
         for (const t of newTickets) {
-            let compiledBody = replaceSemanticKeysInBody(t.rawContent, currentEpicKey, globalRegistry, dynamicLocalMap);
+            let compiledBody = replaceSemanticKeysInBody(t.rawContent, currentEpicKey, globalRegistry, dynamicLocalMap, repoContext);
             if (!compiledBody.includes(`## Parent\n#${finalParentId}`) && !compiledBody.includes(`## Parent\nhttps://github.com/`)) {
                 compiledBody = compiledBody.replace(/## Epic\n[^\n]+/m, `## Parent\n#${finalParentId} (${prdTitle})\n\n## Epic\n${prdTitle}`);
             }
@@ -728,7 +899,7 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
 
     // Compile and Upload Parent PRD Body (Ephemeral compile, no-op skip if unchanged)
     console.log(`\nCompiling and Updating Parent PRD #${finalParentId} on GitHub...`);
-    let compiledPrd = prdRawContent;
+    let compiledPrd = replaceSemanticKeysInBody(prdRawContent, currentEpicKey, globalRegistry, dynamicLocalMap, repoContext);
     let ticketListMarkdown = '';
 
     for (const t of targetTickets) {
@@ -736,8 +907,7 @@ async function processEpic(prdFilePath, parentIdOverride, globalRegistry) {
         ticketListMarkdown += `- #${issueNum} — ${t.title} (\`tickets/${t.fileName}\`)\n`;
     }
 
-    compiledPrd = compiledPrd.replace(/## Tickets\n+[\s\S]*?(?=\n## |$)/, `## Tickets\n\n${ticketListMarkdown}`);
-    compiledPrd = replaceSemanticKeysInBody(compiledPrd, currentEpicKey, globalRegistry, dynamicLocalMap);
+    compiledPrd = compiledPrd.replace(/## Tickets\n+[\s\S]*?(?=\n## |$)/, `## Tickets\n\n${ticketListMarkdown.trimEnd()}`);
 
     const { mainBody: prdMainBody, overflowComments: prdOverflow } = splitBodyForGitHub(compiledPrd);
     const shouldRemoveParentReviewLabel = reviewState.mode === 'remove' && Array.isArray(parentLabelNames) && parentLabelNames.includes(REVIEW_LABEL);
@@ -814,12 +984,13 @@ async function main() {
     }
 
     console.log(`=== Pre-scanning Global Registry (Specs Root: ${resolvedSpecsRoot}) ===`);
+    const repoContext = resolveRepoContext(resolvedSpecsRoot, repo);
     const remoteData = await fetchRemoteIssues();
     const globalRegistry = buildGlobalRegistry(resolvedSpecsRoot, remoteData);
 
     const summaries = [];
     for (const prdFile of targetPrdList) {
-        summaries.push(await processEpic(prdFile, targetPrdList.length === 1 ? parentId : null, globalRegistry));
+        summaries.push(await processEpic(prdFile, targetPrdList.length === 1 ? parentId : null, globalRegistry, repoContext));
     }
 
     console.log('\n=== Publish Summary ===');
@@ -834,7 +1005,7 @@ async function main() {
     console.log(`======================================================\n`);
 }
 
-export { extractEpicKey, resolveReviewLabelMode, isIssueUnchanged, replaceSemanticKeysInBody };
+export { extractEpicKey, resolveReviewLabelMode, isIssueUnchanged, replaceSemanticKeysInBody, rewriteFileLinksForGitHub, resolveRepoContext };
 
 const isMain = Boolean(process.argv[1]) && import.meta.url === pathToFileURL(fs.realpathSync(process.argv[1])).href;
 if (isMain) {

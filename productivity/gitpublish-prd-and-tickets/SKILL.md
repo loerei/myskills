@@ -11,7 +11,7 @@ Publish or sync a local PRD and its constituent ticket markdown files to GitHub 
 
 1. **Source Purity & Zero Disk Mutation**:
    - Local files under `docs/specs/` (`PRD.md` and `tickets/*.md`) MUST remain pure semantic files and MUST NEVER be modified on disk by the publish script.
-   - All key-to-issue transformations (`01.1` -> `#138 (01.1)`, parent references) MUST compile ephemerally in memory or OS tempdir exclusively for GitHub API upload, keeping clean semantic keys intact for `conduct-deep-reviewing-loop`.
+   - All key-to-issue transformations (`01.1` -> `#138 (01.1)`, standalone `PRD 01` -> `#37 (PRD 01)`, parent references) and local workspace `file:///` links -> GitHub `blob/`/`tree/` URLs MUST compile ephemerally in memory or OS tempdir exclusively for GitHub API upload, keeping clean semantic keys and local links intact for `conduct-deep-reviewing-loop`.
 2. **Parallel Execution**: Execute in-place ticket updates and independent creations concurrently using the worker pool (`--concurrency <N>`, default: `6`).
 3. **Batch Multi-Epic Sync**: Pass `--all` to discover, pre-scan, and sync all Epics under `docs/specs/` in one run.
 4. **Idempotent Reconciliation**:
