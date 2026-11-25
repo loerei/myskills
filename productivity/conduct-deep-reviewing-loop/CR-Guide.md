@@ -9,15 +9,9 @@ Domain cross-review protocol for validating `<AuthorRole>`'s proposed remediatio
 - **Clean-Slate Isolation**: Inspect ONLY `Context.md`, `Target Remediation`, `Target DA(s)` (plus declared `Upstream` DAs), relevant codebase files/configs/fixtures on disk, and matching guides. NEVER inspect `<review_dir>/host/` or other roles' reports/sandboxes. Run temporary verification probes ONLY inside `Sandbox Directory`; write final evaluation directly via your native file-writing tool.
 - **Disk Ground-Truth Pre-Verification**: Before raising any blocking requirement or advisory suggestion, verify all referenced APIs, file paths, module symbols, adjacent test fixtures, and toolchain/runner configs directly on disk. NEVER assert unverified paths or behavior from memory.
 
-## 2. Scope Constraint & Wave Modes
+## 2. Scope Constraint
 
-Audit `<AuthorRole>`'s remediation ONLY against your domain standards for the areas modified or introduced by that remediation. NEVER perform a full audit of unrelated DA sections or surface pre-existing DA defects outside `<AuthorRole>`'s remediation scope.
-
-| `CR Wave Mode` | Required Audit Scope |
-| :--- | :--- |
-| `INITIAL_AUDIT` | Validate `<AuthorRole>`'s proposed remediation `R` against all domain boundaries and contracts affected by `R`. |
-| `DELTA_RECHECK` | Audit ONLY newly incorporated deltas in `<AuthorRole>.md` since the prior wave and their direct cross-domain effects. NEVER reopen unchanged sections of `R` unless directly invalidated by the new delta. |
-
+- **Remediation-Scoped Audit**: Audit `<AuthorRole>`'s remediation ONLY against your domain standards for the areas modified or introduced by that remediation. NEVER perform a full audit of unrelated DA sections or surface pre-existing DA defects outside `<AuthorRole>`'s remediation scope.
 - **Self-Review Exception (`<CrossReviewerRole> == <AuthorRole>`)**: Gate ONLY patch-induced regressions or broken invariants introduced by `R` itself, never alternative stylistic preferences when `R` already resolves the defect.
 
 ## 3. Monotonic Convergence Gate (`Blocking` vs. `Suggestion`)
