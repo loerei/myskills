@@ -13,7 +13,7 @@ Render hard-to-reach production UI states (errors, size limits, empty/loading st
 2. **Real app fidelity**: ALWAYS render through the real app/page entrypoint or shell with its root stylesheets, theme attributes (`data-theme` / `html` / `body` classes), i18n, and surrounding layout. NEVER mount an isolated leaf component with missing theme variables or hardcoded fallback colors.
 3. **Self-contained live URL (No agent-only stubs)**: When giving a preview URL to the user, the page MUST boot into the target state automatically in any browser tab without requiring manual query params or DevTools injection.
 4. **Live HMR by default**: Serve the preview through the project's live dev server (e.g. Vite) rather than a one-off static bundle so source/CSS edits update live in the user's browser while iterating.
-5. **Dedicated scratch subfolder & README**: Place all preview harness files inside `.scratch/ui-previews/<preview-name>/` (never scatter loose files at `.scratch/` root), and create/maintain a `README.md` there documenting the simulated state/stubs, preview URL, and exact OS-appropriate launch command (including `cd <repo-root>`).
+5. **Dedicated scratch subfolder & two-tier README**: Place each preview inside `.scratch/ui-previews/<preview-name>/` with its own `README.md` (simulated state/stubs, URL, OS-appropriate launch command with `cd <repo-root>`), and maintain a root index at `.scratch/ui-previews/README.md` with a 4-column table (`Preview` linking to `<preview-name>/README.md` | `State` | `URL` | `Launch Command`). Support a configurable port env var (e.g. `PREVIEW_PORT`) with distinct default ports to avoid collisions when multiple previews exist.
 6. **Re-launch command**: ALWAYS include the exact OS-appropriate command to restart the preview server (including `cd <repo-root>`) and the exact preview URL in your response.
 
 ## Strategy Selection
@@ -27,4 +27,4 @@ Render hard-to-reach production UI states (errors, size limits, empty/loading st
 ## Recovery & Teardown
 
 - If the preview shows wrong theme colors, broken layout, or missing state, inspect the app's real HTML/root entrypoint for missing global stylesheets, theme bootstrap scripts, root `data-theme`/class attributes, or required URL/IPC defaults.
-- Leave the preview server running while the user is iterating; stop the background server and clean up `.scratch/ui-previews/<name>/` when the user finishes.
+- Leave the preview server running while the user is iterating; when removing a preview, stop its server, delete `.scratch/ui-previews/<name>/`, and remove its row from `.scratch/ui-previews/README.md`.
