@@ -5,23 +5,26 @@ description: Use when previewing rare production UI states live without modifyin
 
 # UI State Preview
 
-Render hard-to-reach production UI states (errors, size limits, empty/loading states, edge data) with real app styling and layout without touching production code.
+Render hard-to-reach production UI states (errors, size limits, empty/loading states, edge data) with real app styling, layout, and live reload so the user can inspect and iterate without touching production code.
 
 ## Invariants
 
 1. **Zero production edits**: NEVER edit production source files to force a preview state.
-2. **Real app fidelity**: ALWAYS render through the real app/page entrypoint with its root stylesheets, theme attributes (`data-theme` / `html` / `body` classes), i18n, and surrounding layout shell. NEVER mount an isolated leaf component with missing theme variables or hardcoded fallback colors.
-3. **Outer-boundary injection**: Trigger the target state by stubbing the outermost I/O seam (HTTP, IPC, bridge API, or storage) rather than patching internal component logic.
-4. **Ephemeral isolation**: Place any temporary harness files in a gitignored scratch directory (e.g. `.scratch/`) and stop temporary dev servers when done.
+2. **Real app fidelity**: ALWAYS render through the real app/page entrypoint or shell with its root stylesheets, theme attributes (`data-theme` / `html` / `body` classes), i18n, and surrounding layout. NEVER mount an isolated leaf component with missing theme variables or hardcoded fallback colors.
+3. **Self-contained live URL (No agent-only stubs)**: When giving a preview URL to the user, the page MUST boot into the target state automatically in any browser tab without requiring manual query params or DevTools injection.
+4. **Live HMR by default**: Serve the preview through the project's live dev server (e.g. Vite) rather than a one-off static bundle so source/CSS edits update live in the user's browser while iterating.
+5. **Dedicated scratch subfolder**: Place all preview harness files inside `.scratch/ui-previews/<preview-name>/` (never scatter loose files at `.scratch/` root).
+6. **Re-launch command**: ALWAYS include the exact OS-appropriate command to restart the preview server (including `cd <repo-root>`) and the exact preview URL.
 
 ## Strategy Selection
 
 | Condition | Action |
 | :--- | :--- |
-| App has a local dev server (web or desktop renderer) | Start the real dev server and inject boundary stubs at runtime (e.g., Playwright `page.route` / `addInitScript`, MSW, or a dev-only preload stub) against the real page URL. |
-| Repo already configures Storybook, Ladle, or Histoire | Mount the full page/shell in a temporary story using the app's root theme/CSS and mocked boundary callbacks. |
-| Dev server cannot run standalone | Build a scratch entry in `.scratch/` that imports the app's real root CSS/theme setup and page shell with mocked boundary callbacks. |
+| App has a live dev server (e.g. Vite) | Create `.scratch/ui-previews/<name>/index.html` + `entry.tsx` (or a stub-injecting dev proxy) served by the project's dev server that imports root CSS/themes, installs outer-boundary stubs (`window.*` bridge, MSW/fetch mock, URL params), and mounts the real page/shell. |
+| Repo already configures Storybook, Ladle, or Histoire | Mount the full page/shell in a temporary story under `.scratch/ui-previews/<name>/` (or Storybook's configured preview) using the app's root theme/CSS and mocked boundary callbacks. |
+| No live dev server exists | Serve `.scratch/ui-previews/<name>/` via a local watch/reload harness or minimal static server and state clearly that manual refresh is required. |
 
-## Recovery
+## Recovery & Teardown
 
-If the preview shows wrong theme colors, broken layout, or unstyled defaults, inspect the app's real HTML/root entrypoint for missing global stylesheets, theme bootstrap scripts, or root `data-theme` / class attributes, and include them before presenting the preview.
+- If the preview shows wrong theme colors, broken layout, or missing state, inspect the app's real HTML/root entrypoint for missing global stylesheets, theme bootstrap scripts, root `data-theme`/class attributes, or required URL/IPC defaults.
+- Leave the preview server running while the user is iterating; stop the background server and clean up `.scratch/ui-previews/<name>/` when the user finishes.
