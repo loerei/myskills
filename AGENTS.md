@@ -104,7 +104,7 @@ Every turn starts in **Tier 2**. Explicit override/modifier tags (`T1`, `T2`, `T
 
 ## Phase 2A: Implementation Plan & Ticket Workflow
 
-- **PRD / Ticket Carve-Out:** When executing against an active PRD/ticket set or ticket orchestrator (e.g. `implement-with-subagents`, `implement-a-ticket`), track state directly in that ticket/PRD workflow instead of forcing a duplicate `implementation_plan.md`.
+- **PRD / Ticket Carve-Out:** When executing against an active PRD/ticket set or ticket orchestrator (e.g. `implement-with-subagents`, `implement`), track state directly in that ticket/PRD workflow instead of forcing a duplicate `implementation_plan.md`.
 - **Standalone Plan State Machine (`implementation_plan.md`):**
   - Embed GFM task-list status directly on file entries, acceptance criteria, and test commands: `- [ ]` Pending, `- [/]` In-Progress (STRICT LIMIT: max ONE `[/]` active), `- [x]` Completed (only after runtime verification).
   - MUST NOT create standalone progress sections (`## Execution Steps`, `## Steps`, `## Tasks`).

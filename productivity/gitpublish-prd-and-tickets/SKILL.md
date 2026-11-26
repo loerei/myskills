@@ -36,7 +36,7 @@ Publish or sync a local PRD and its constituent ticket markdown files to GitHub 
 3. Ephemerally compile and run concurrent in-place updates for modified matching tickets (skipping `[UNCHANGED]` issues).
 4. Ephemerally compile and topologically create new tickets.
 5. Close open orphaned issues concurrently as `not planned` (linking any dot-split child `#id`s created/matched in steps 3-4) and update the Parent PRD checklist.
-6. Output the JSON key-to-issue mapping, summary table (`Epic | Parent Issue | Review Status | Tickets`), and unblocked frontier ready for local tracking or `implement-a-ticket`, leaving local files untouched (if publishing post-`!SPL` epics, close stale `epic-<NN>` issues manually per Directive 7).
+6. Output the JSON key-to-issue mapping, summary table (`Epic | Parent Issue | Review Status | Tickets`), and unblocked frontier ready for local tracking or `implement`, leaving local files untouched (if publishing post-`!SPL` epics, close stale `epic-<NN>` issues manually per Directive 7).
 
 ## CLI Usage
 
