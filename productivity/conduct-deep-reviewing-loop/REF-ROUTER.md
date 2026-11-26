@@ -80,3 +80,4 @@ Use this index when `!REF` is active to select ONLY the matching reviewer guides
 | [`UX-STRICT-ACCESSIBILITY-WCAG.md`](UX-STRICT-ACCESSIBILITY-WCAG.md) | Strict WCAG 2.1 AA / WAI-ARIA APG (`!A11Y` / `!WCAG` only) |
 | [`UX-DESKTOP-LAYOUT-PERFORMANCE.md`](UX-DESKTOP-LAYOUT-PERFORMANCE.md) | Desktop window layout stability, `min-width: 0`, and optimistic UI (`DESKTOP_ONLY`) |
 | [`UX-MOBILE-RESPONSIVE-PERFORMANCE.md`](UX-MOBILE-RESPONSIVE-PERFORMANCE.md) | Mobile/tablet breakpoints, `100dvh`, and touch targets (`!MOBILE` / `!RESPONSIVE` only) |
+| [`UX-INPUT-IME-SAFETY.md`](UX-INPUT-IME-SAFETY.md) | Text `<input>`, `<textarea>`, search/filter, multi-slot/OTP, `[contenteditable]`, or IME composition safety |

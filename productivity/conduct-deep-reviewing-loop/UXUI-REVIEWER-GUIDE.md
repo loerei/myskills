@@ -4,7 +4,7 @@ Audits target-audience interaction flows, physical focus retention, layout stabi
 
 ## 1. Core Review Protocol & Constraints
 
-- **Clean-Slate Isolation**: Audit target DA(s) solely against codebase ground-truth, `<review_dir>/Context.md`, this guide, and the **exact 2 matching subdocuments** loaded from §2. NEVER inspect git history, `<review_dir>/host/`, or other roles' reports/sandboxes.
+- **Clean-Slate Isolation**: Audit target DA(s) solely against codebase ground-truth, `<review_dir>/Context.md`, this guide, and ONLY the matching subdocuments loaded from §2. NEVER inspect git history, `<review_dir>/host/`, or other roles' reports/sandboxes.
 - **Single-Pass Exhaustiveness, Incremental Capture & Forward Simulation**:
   - **Incremental Capture (`<review_dir>/sandbox/UXUI/Findings.md`)**: To prevent lost-in-the-middle drift across large epics, immediately append each discovered defect (ticket/file location, defect, referenced symbols, affected views) as lightweight notes while reading. NEVER write prematurely to `<review_dir>/reports/UXUI.md`.
   - **Synthesis & Forward Simulation**: After scanning the entire DA end-to-end, review `Findings.md` to reconcile cross-ticket UX flows and component hierarchies, eliminate false positives, group shared root causes, mentally apply all proposed fixes, and re-audit the projected state. Report all defects in one pass directly to `<review_dir>/reports/UXUI.md` via your native file-writing tool (NEVER write helper `.js`/`.py` scripts in `sandbox/UXUI/` to generate or edit reports).
@@ -39,22 +39,23 @@ Audits target-audience interaction flows, physical focus retention, layout stabi
   Otherwise, classify as a **Blocking Defect** (MUST include `Why This Would Be Missed`).
   *(Exception: If a requirement violates hard physical, platform, or sandbox constraints with zero viable in-scope fixes, classify as `STATUS: INFEASIBLE`)*.
 
-## 2. Domain Subdocuments Routing Table (Strict Physical Context Isolation)
+## 2. Domain Subdocuments Routing Table (Strict Context Isolation)
 
-Read `## UX/UI & Accessibility Regime` in `<review_dir>/Context.md` (`UX/UI Regime` and `Form Factor`). To prevent cross-regime context contamination, use your native file-reading tool to read **ONLY** the **1 matching Interaction subdocument** AND the **1 matching Layout/Form-Factor subdocument** below — **NEVER read non-matching subdocuments**:
+Read `## UX/UI & Accessibility Regime` in `<review_dir>/Context.md` (`UX/UI Regime` and `Form Factor`) and inspect the target DA for text-input triggers. To prevent cross-regime context contamination, use your native file-reading tool to load **ONLY** the **1 matching Interaction subdocument**, the **1 matching Layout/Form-Factor subdocument**, and (conditionally) the **IME subdocument** only when its trigger matches — **NEVER read non-matching subdocuments**:
 
-| Axis in `Context.md` | Declared Mode in `Context.md` | Subdocument to Load |
+| Axis / Scope | Trigger Condition (When to Load) | Subdocument to Load |
 | :--- | :--- | :--- |
 | **1. Interaction & DX Regime** *(Pick 1)* | `UX/UI Regime: PRAGMATIC_PRODUCT_UX` *(Default)* | [`UX-PRAGMATIC-INTERACTION-DX.md`](UX-PRAGMATIC-INTERACTION-DX.md) |
 | **1. Interaction & DX Regime** *(Pick 1)* | `UX/UI Regime: STRICT_ACCESSIBILITY_COMPLIANCE` (`!A11Y` / `!WCAG`) | [`UX-STRICT-ACCESSIBILITY-WCAG.md`](UX-STRICT-ACCESSIBILITY-WCAG.md) |
 | **2. Layout & Form Factor** *(Pick 1)* | `Form Factor: DESKTOP_ONLY` *(Default for Desktop/Electron/Tauri)* | [`UX-DESKTOP-LAYOUT-PERFORMANCE.md`](UX-DESKTOP-LAYOUT-PERFORMANCE.md) |
 | **2. Layout & Form Factor** *(Pick 1)* | `Form Factor: CROSS_DEVICE_RESPONSIVE` (`!MOBILE` / `!RESPONSIVE`) | [`UX-MOBILE-RESPONSIVE-PERFORMANCE.md`](UX-MOBILE-RESPONSIVE-PERFORMANCE.md) |
+| **3. Text Input & IME** *(Conditional)* | DA adds or modifies text `<input>`, `<textarea>`, search/filter inputs, multi-slot/OTP inputs, `[contenteditable]` editors, or keyboard shortcuts on text inputs | [`UX-INPUT-IME-SAFETY.md`](UX-INPUT-IME-SAFETY.md) |
 
 ## 3. Verdict Rules & Standard Output Protocol
 
 Write evaluation to `<review_dir>/reports/UXUI.md`, then notify Host via `send_message`:
-- `STATUS: PASS`: Zero Blocking Defects under §1 invariants and the 2 loaded subdocuments.
-- `STATUS: REVISIONS NEEDED`: One or more Blocking Defects exist under §1 invariants or the 2 loaded subdocuments.
+- `STATUS: PASS`: Zero Blocking Defects under §1 invariants and all loaded §2 subdocuments.
+- `STATUS: REVISIONS NEEDED`: One or more Blocking Defects exist under §1 invariants or loaded §2 subdocuments.
 - `STATUS: INFEASIBLE`: UI requirement violates hard platform/browser constraints (overrides fixable defects as overall status).
 
 ```markdown
