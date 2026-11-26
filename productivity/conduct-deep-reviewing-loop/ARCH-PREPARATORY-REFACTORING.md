@@ -17,7 +17,16 @@ Audit target files and landing zones across 4 distinct quality axes:
 1. **Maintainability (Locality & Cohesion)**:
    - *Deep Module Test*: Target module conceals internal state and business rules behind a simple interface; callers are not forced to orchestrate steps.
    - *Cohesion Order*: Logic related to the incoming change is concentrated in one place; shotgun-surgery caller edits are eliminated.
-   - *Cohesive Task Locality*: Keep logic for a single task unified. Do not split functions solely for line count or branch nesting unless separating mixed concerns (e.g. business logic from transport/storage) or creating an interface seam.
+   - *Module Decomposition Criterion (Split vs. Keep Together)*: NEVER split or keep modules unified based solely on line count, branch nesting, or raw static-analysis scores. Decide by semantic hidden design decisions (secrets), state/I/O/lifecycle connectedness, and module depth:
+
+     | Structural Signal | Required Action |
+     | :--- | :--- |
+     | **Disjoint state, external I/O, or lifecycle clusters** (groups sharing no domain invariants once shared read-only plumbing like `options`, `config`, or `logger` is ignored) | **Split** — isolate each cohesive cluster into its own module |
+     | **Independent axes of change** (separate design decisions evolving independently, e.g., wire protocol, domain rules, persistence, resource lifecycle) | **Split** — assign each secret a single owning module behind a narrow interface |
+     | **General-purpose mechanism embedded in special-purpose logic** (e.g., retry engine, worker pool, parser, client adapter) | **Split** — extract the reusable mechanism when extraction yields a narrower interface |
+     | **Shared secret / invariant** (splitting forces both files to know the same internal format or invariant) | **Keep together** — avoid information leakage |
+     | **Shallow pass-through or ping-pong comprehension** (new interface mirrors its implementation or forces jumping between files to understand one task) | **Keep together** — preserve module depth and locality |
+     | **Cohesive pure stateless utilities** (related pure helpers serving one domain purpose with no shared mutable state) | **Keep together** — do not split merely because helpers share no instance fields |
 2. **Extensibility (Structural Seams & Adapters)**:
    - *Seam Identification*: A clean structural seam exists (dependency injection, strategy pattern) to inject new behavior without modifying stable callers.
    - *Adapter Isolation*: Domain logic is isolated from transport (HTTP/IPC/gRPC) and storage (SQL/NoSQL) layers via adapters.
@@ -40,6 +49,7 @@ Audit target files and landing zones across 4 distinct quality axes:
     4. **Tidy First Execution Order ($S \to B$)**: Structuring implementation into explicit prerequisite structural steps ($S_1 \to S_2$) followed by behavioral change ($B$).
     5. **Storage Readiness Invariant**: If a proposed feature modifies persistent data schemas, but the target codebase lacks a centralized schema version runner, classify the state as Bad State. Mandate establishing a minimal isolated schema version runner as Step $S$ directly in the DA before implementing feature behavior $B$.
     6. **Configuration & Environment Readiness Invariant**: If a proposed feature modifies application configuration schemas, environment variable bindings, or runtime dependency interfaces, but the target codebase lacks a centralized, strictly validated configuration boot boundary (or relies on ad-hoc runtime branching between legacy and new formats), classify the state as Bad State. Mandate establishing a canonical configuration schema parser and migrating legacy configuration files, environment definitions, and test fixtures as a prerequisite structural step ($S$) directly in the DA before implementing feature behavior ($B$).
+    7. **Module Boundary & Accretion Invariant**: If a DA appends an independent design decision, disjoint mutable state/I/O/lifecycle cluster, or extractable general-purpose mechanism to an existing file—OR modifies code entangled with an unrelated axis of change inside a multi-concern file—and separating it does not leak a shared secret, create a shallow pass-through wrapper, or fragment a pure stateless utility module, classify the state as Bad State. Mandate isolating the new responsibility in a `[NEW]` module and/or extracting the entangled concern as Step $S$ before implementing behavior $B$.
   - If not satisfied (DA skips prerequisite structural steps or lacks required specifications) $\rightarrow$ Reject DA (`STATUS: REVISIONS NEEDED`) and mandate missing items.
   - If satisfied $\rightarrow$ Clear preparatory architecture for implementation.
 
@@ -104,4 +114,5 @@ class JapanSpecialTierStrategy implements PricingStrategy {
 ## Failure Modes & Mitigations
 
 - **Progressive Codebase Rot**: Enforce `STATUS: REVISIONS NEEDED` when a plan proposes modifying high-cyclomatic-complexity files without a prerequisite Tidying ($S$) step.
+- **Boiling-Frog File Accretion**: Reject plans that bolt independent design decisions, disjoint state/I/O/lifecycles, or general-purpose mechanisms onto existing files by misapplying anti-shallow-splitting rules; apply the Split vs. Keep Together criterion to require `[NEW]` modules or Step $S$ extraction.
 - **Brittle Test Mocking**: Reject plans whose test strategy mocks private class internals; require introducing a public interface seam first.

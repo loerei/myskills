@@ -8,12 +8,14 @@ Audits package visibility, internal facade contracts, dependency DAG acyclicity,
 - [ ] **Package Visibility**: Ensure domain entities and internal repositories maintain module-private visibility (e.g. Go `internal/`, Java package-private, Rust crate privacy). Reject direct cross-domain imports reaching into foreign data access layers or private structs.
 - [ ] **API Abstraction & DTO Demarcation**: Verify inter-module communication occurs exclusively through explicit public Interfaces or Application Services using immutable Data Transfer Objects (DTOs). Reject shared in-memory mutable state across distinct modules.
 - [ ] **Third-Party SDK Anti-Corruption Layer (ACL)**: Reject importing third-party vendor SDK clients, raw response types, or vendor-specific exceptions (e.g. Stripe, OpenAI, AWS, Supabase SDKs) directly into core domain services or UI components. Encapsulate external vendor SDKs behind domain-owned Port/Adapter interfaces that translate vendor payloads and rate-limit headers (`Retry-After`) into canonical domain DTOs and typed domain errors.
-- [ ] **Module Cohesion & Strategy Decomposition**: Verify that distinct domain variants, formats, codecs, or polymorphic strategies are isolated into dedicated, cohesive module files. Reject directive artifacts that bundle multiple domain strategies into a single monolithic file or inline heavy domain logic directly into coordinating facades and package entrypoints. Entrypoints MUST remain thin routers or export facades.
+- [ ] **Module Cohesion & Secret-Based Decomposition**: Verify each module encapsulates one primary hidden design decision (secret) rather than accumulating disjoint mutable state, external I/O, or resource-lifecycle clusters (ignoring shared read-only plumbing such as `options`, `config`, `logger`, or DI containers). Isolate polymorphic variants (strategies, formats, codecs, drivers), independent axes of change (boundary parsing/routing, domain rules, external I/O clients, operational retry/concurrency governance, resource lifecycles), and extractable general-purpose mechanisms into dedicated modules. Reject directive artifacts that accumulate unrelated responsibilities in one file or inline domain/I/O logic into coordinating facades, boundary adapters, or package entrypoints. Entrypoints and boundary routers MUST remain thin dispatchers (parse ingress, delegate, map errors).
 
 ### 2. Dependency DAG Topology & Decomposition Thresholds
 - [ ] **Circular Dependency Analysis**: Verify module dependency graphs are strictly acyclic at both compile-time and runtime levels.
 - [ ] **Inversion of Control**: Confirm high-level policy modules depend on abstractions (interfaces), not low-level concrete infrastructure modules.
-- [ ] **Module Scope Limit**: If a proposed change touches 5+ existing architectural modules simultaneously, demand phased preparatory refactoring and isolated seam adapters.
+- [ ] **Cross-Module Blast Radius & Single-File Accretion Gate**:
+  - **Cross-Module Coupling**: If a single behavioral change requires synchronized edits across multiple domain boundaries without an isolating seam or adapter (shotgun surgery), require phased preparatory refactoring ($S \to B$) to introduce a seam before behavior $B$.
+  - **Single-File Accretion**: If a change introduces an independent design decision, disjoint mutable state/I/O/lifecycle cluster, or extractable general-purpose mechanism into an existing file, require declaring a `[NEW]` module or prerequisite extraction ($S \to B$)—unless separating it would leak a shared secret or create a shallow pass-through wrapper.
 - [ ] **Redundant Endpoint Integration**: Reject new API endpoints or seam routes that introduce redundant data representations; require integration into existing domain interface schemas.
 
 ### 3. Operational Context Flow & Governance Separation
@@ -210,9 +212,40 @@ export function extractSchema(strategy: string, data: unknown) {
 }
 ```
 
+### Anti-Pattern 8: Multi-Concern File Accretion (Including the Hub-Field Trap)
+
+```typescript
+// BAD: Independent axes of change and disjoint state/I/O/lifecycle clusters glued into one file.
+// Note the hub-field trap: all methods read shared plumbing (`this.options`, `this.logger`),
+// which makes syntactic class-cohesion tools report one connected component even though
+// boundary dispatch, remote HTTP retry/pooling, and handle lifecycle share zero domain invariants.
+export class WorkspaceModule {
+  private readonly activeHandles = new Map<string, ResourceHandle>();
+  private readonly inflightJobs = new Map<string, AbortController>();
+  constructor(private readonly options: ModuleOptions, private readonly logger: Logger) {}
+
+  handleRequest(rawInput: unknown) { /* reads this.options + this.logger; parses ingress & dispatches */ }
+  async syncRemoteBatch(items: string[]) { /* uses this.inflightJobs + this.options; chunking, backoff retry, worker pool */ }
+  openManagedHandle(id: string) { /* uses this.activeHandles + this.logger; resource creation, crash recovery, teardown */ }
+}
+
+// GOOD: One hidden design decision per module; general-purpose machinery extracted behind narrow ports.
+// src/workspace/remote-sync-client.ts  -> hides external protocol, chunking, retry, concurrency pool
+// src/workspace/handle-lifecycle.ts    -> hides handle map, crash recovery, teardown
+// src/workspace/boundary-handler.ts    -> thin dispatcher (parse ingress, delegate, map errors)
+export class WorkspaceBoundaryHandler {
+  constructor(
+    private readonly syncClient: RemoteSyncClient,
+    private readonly lifecycle: HandleLifecycleManager
+  ) {}
+
+  handleRequest(rawInput: unknown) { /* parse ingress, delegate to syncClient/lifecycle, map errors */ }
+}
+```
+
 ## Failure Modes & Mitigations
 
 - **Cascading Module Refactoring**: Enforce module-private visibility on internal repositories and expose public DTO facades.
 - **Inflexible Consumer Coupling & Test-Resistant Constants**: Extract operational flags and timeouts into injected caller `options` and constructor parameters so unit tests can run with millisecond thresholds.
 - **Domain Smuggling via Proximity Placement**: Elevate generic utilities buried inside domain folders to package-root shared directories (`src/utils/`, `src/common/`).
-- **Strategy Monoliths & Heavy Entrypoints**: Decompose polymorphic strategies, formats, and driver variants into dedicated sibling files coordinated by thin router facades.
+- **Strategy Monoliths & Multi-Concern File Accretion**: Decompose polymorphic variants (strategies, formats, drivers), disjoint mutable state/I/O/lifecycle clusters, and independent axes of change into dedicated sibling modules coordinated by thin facades; require `[NEW]` module extraction when a change embeds an unrelated design decision or general-purpose mechanism into an existing file.
