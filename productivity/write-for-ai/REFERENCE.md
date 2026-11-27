@@ -12,10 +12,10 @@
 | **Phantom / Reactionary Bans** | Delete the prompt trigger that caused an unwanted artifact instead of adding `NEVER`. Reserve `NEVER` for default LLM biases. | `STRICT BAN: NEVER output Persona Trees.` *(while trigger remains)* | *(Delete original instruction requesting Persona Trees)* |
 | **Opaque Error Messages** | State exact failure cause and concrete recovery action. | `Unexpected internal exception in image pipeline.` | `Unsupported 'image/bmp'. Convert to PNG, JPEG, or WebP and retry.` |
 | **Hollow Structure** | Never wrap 1–2 sentences in a header; title bullets in plain English only for cross-referencing. | `### Enforcement Gate\nReject PR if checks fail.` | `- Reject PR if checks fail.` |
-| **Incident / Domain Lock-In (`Rule 3`)** | Never bolt a triggering incident's layer/technology onto an existing rule; lift to the domain-agnostic invariant subsuming all cases. | `Ban 24/7 DB dual-write shims and React UI prop bridges.` | `Ban temporary cross-ticket compatibility bridges, shims, or dual-path adapters retired later in the same epic.` |
+| **Incident / Domain Lock-In (`Rule 3`)** | Never bolt a triggering incident's layer/technology onto an existing rule; lift to the domain-agnostic invariant subsuming all cases. | `Never hardcode PostgreSQL ports, Redis URLs, or S3 bucket names.` | `Never hardcode environment-specific configuration or secrets in tracked source; inject via runtime config.` |
 | **Cross-Repo & Runtime Lock-In** | Cut local filenames, dataset jargon, and host-locked tool IDs (`view_file`, `grep_search`); use capability phrasing and parameterized paths while keeping contract-pinned APIs exact. | `Call view_file on Client.csv and run pwsh repo/scripts/run.ps1.` | `Read local schema fixtures with your native file-reading tool and run pwsh <skill_dir>/scripts/run.ps1.` |
 | **Lossy Compression** | Never shorten if it drops conditions (`more generalized OR more concise`), weakens `MUST`, or breaks repeated variable-binding noun phrases. | `Replace any prompt with a shorter rule.` | `Replace any instruction or instruction set with a more generalized or more concise one of equal or better quality.` |
-| **Cross-Doc Protocol Drift** | Align status enums, caller/callee prerequisites, and handoff templates across linked files; strip YAML frontmatter from non-skill subdocs. | Caller expects `STATUS: REVISIONS NEEDED`; subdoc has frontmatter and emits `ROUND_REVISION_NEEDED`. | Remove subdoc frontmatter; align prerequisite call and exact `STATUS: REVISIONS NEEDED` enum. |
+| **Cross-Doc Protocol Drift** | Align status enums, caller/callee prerequisites, and handoff templates across linked files; strip YAML frontmatter from non-skill subdocs. | Caller checks `status == "APPROVED"`; subdoc has frontmatter and emits `"PASS"`. | Strip subdoc frontmatter; align caller check and subdoc output on one status enum. |
 | **Recall-Lossy Checklist Compression** | Compress *gating/routing policies* to invariants, but preserve concrete defect signatures and `BAD`/`GOOD` pairs in *audit checklists*. | `Ensure JWTs, session IDs, and paths follow security best practices.` | `Reject alg:"none" JWTs, Math.random() tokens, and path.join() without resolved root containment check.` |
 
 ---
@@ -46,13 +46,13 @@
 - **Operational Rationale (Keep):** `Isolate explorer and auditor into separate subagents because authors have confirmation bias and overlook defects in their own code.`
 
 ### C. Post-Incident Additive Patching vs. Invariant Abstraction (Core Rule 3)
-- **Incident Patch (Bad):** `Under !NC, ban 24/7 DB dual-write shims, expand-contract SQL columns, and temporary React prop bridges between tickets.`
-- **Domain-Agnostic Invariant (Good):** `Under !NC, ban temporary cross-ticket compatibility bridges, shims, or dual-path adapters introduced solely to keep unmigrated subsystems wired before terminal cutover (and retired later in the same epic).`
+- **Incident Patch (Bad):** `Never auto-retry HTTP 500 on POST /payments, POST /orders, or DELETE /sessions.`
+- **Domain-Agnostic Invariant (Good):** `Never auto-retry non-idempotent mutations unless the request carries a stable idempotency key.`
 
 ### D. Enumeration Trap vs. Generative Compression (Decision Gates)
-- **Enumeration Trap (Brittle):** Listing 6 sub-cases of "Suggestion Only" (compiler errors, missing DEBUG logs in retry loops, idempotent `finally` teardown...) implies unlisted cases are exempt.
+- **Enumeration Trap (Brittle):** Listing 6 sub-cases to warn instead of failing CI (unused local var, comment typo, import order...) implies unlisted cases are exempt.
 - **Generative Invariant (Good):**
-  `Classify as Suggestion Only iff (1) automated CI raises an immediate, unmistakable alert, AND (2) the fix is mechanically obvious without domain insight. Otherwise classify as Blocking Defect.`
+  `Warn instead of failing CI iff (1) the issue has zero runtime impact AND (2) an automated fixer resolves it deterministically. Otherwise fail CI.`
 
 ### E. Decision-Gate Compression vs. Audit-Checklist Recall
 - Compress **gating/routing rules** into general invariants (Contrast D) to close loopholes.
