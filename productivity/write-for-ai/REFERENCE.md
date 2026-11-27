@@ -7,7 +7,7 @@
 | **Fluff, Chaff & Synonym Stacking** | Cut buzzwords (`robust`, `seamless`, `orchestrate`), hedging (`Please note`, `try to`), and stacked qualifiers (`strict, absolute, mandatory`). Use active verbs + single `MUST`/`NEVER`. | `Please make sure to always robustly orchestrate avatar updates` | `MUST update user avatar URL in database` |
 | **Implementation Trivia** | Cut internal algorithms, threading, or caches the caller cannot control; state only external behavior and return contracts. | `Uses multi-threaded SHA-256 hashing to verify file integrity` | `Checks whether a file changed on disk` |
 | **Schema & Naming Duplication** | Omit types, defaults, required flags, and self-evident rephrasings already in schemas; state triggers and side effects. | `delete_user: Deletes a user. Optional boolean preview defaults to false.` | `delete_user: Permanently deletes account, purges caches, revokes keys. preview=true returns diff only.` |
-| **Motivational Fluff vs. Operational Rationale** | Cut cost/UX/history justification; KEEP failure-mode or anti-bias rationale that changes edge-case judgment (Drop Test). | `Compress to JPEG to save S3 bandwidth and speed up mobile.` | `Isolate explorer and auditor because authors overlook defects in their own code.` |
+| **Motivational Fluff vs. Operational Rationale** | Cut cost/UX/history justification; KEEP failure-mode or anti-bias rationale that changes edge-case judgment (Drop Test). | `Isolate explorer and auditor to keep agent prompts modular and clean.` | `Isolate explorer and auditor because authors overlook defects in their own code.` |
 | **Reference Over-Specification** | Link by high-level category only; never catalog internal sub-topics in the link sentence. | `For Auth, Emails, and Payments case studies, see REFERENCE.md.` | `For canonical case studies, see REFERENCE.md.` |
 | **Phantom / Reactionary Bans** | Delete the prompt trigger that caused an unwanted artifact instead of adding `NEVER`. Reserve `NEVER` for default LLM biases. | `STRICT BAN: NEVER output Persona Trees.` *(while trigger remains)* | *(Delete original instruction requesting Persona Trees)* |
 | **Opaque Error Messages** | State exact failure cause and concrete recovery action. | `Unexpected internal exception in image pipeline.` | `Unsupported 'image/bmp'. Convert to PNG, JPEG, or WebP and retry.` |
@@ -41,7 +41,7 @@
 - **True Deslop:** `Permanently delete user account by user_id. Fails if unknown, unverified, or active subscriptions exist (cancel first).`
 
 ### B. Operational Rationale vs. Motivational Fluff (Drop Test)
-- **Fluff (Cut):** `Compress avatars to JPEG to save S3 storage and improve mobile load time.`
+- **Fluff (Cut):** `Isolate explorer and auditor into separate subagents to keep prompts modular and roles clean.`
 - **Over-Pruned (Loses compass):** `Isolate explorer and auditor into separate subagents.` *(explorer may self-verify on blocker)*
 - **Operational Rationale (Keep):** `Isolate explorer and auditor into separate subagents because authors have confirmation bias and overlook defects in their own code.`
 
