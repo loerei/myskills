@@ -20,11 +20,11 @@ Render hard-to-reach production UI states (errors, size limits, empty/loading st
 
 | Condition | Action |
 | :--- | :--- |
-| App has a live dev server (e.g. Vite) | Create `.scratch/ui-previews/<name>/index.html` + `entry.tsx` (or a stub-injecting dev proxy) served by the project's dev server that imports root CSS/themes, installs outer-boundary stubs (`window.*` bridge, MSW/fetch mock, URL params), and mounts the real page/shell. |
+| App has a live dev server (e.g. Vite) | Create `.scratch/ui-previews/<name>/index.html` + `entry.tsx` (or a stub-injecting dev proxy) served by the project's dev server that installs outer-boundary stubs (`window.*` bridge, MSW/fetch mock, URL params) and imports the real entrypoint or root shell (prefer direct entrypoint/shell import over duplicating providers or CSS so upstream updates propagate; mirror selectively only if top-level side effects conflict). |
 | Repo already configures Storybook, Ladle, or Histoire | Mount the full page/shell in a temporary story under `.scratch/ui-previews/<name>/` (or Storybook's configured preview) using the app's root theme/CSS and mocked boundary callbacks. |
 | No live dev server exists | Serve `.scratch/ui-previews/<name>/` via a local watch/reload harness or minimal static server and state clearly that manual refresh is required. |
 
-## Recovery & Teardown
+## Reuse, Recovery & Teardown
 
-- If the preview shows wrong theme colors, broken layout, or missing state, inspect the app's real HTML/root entrypoint for missing global stylesheets, theme bootstrap scripts, root `data-theme`/class attributes, or required URL/IPC defaults.
-- Leave the preview server running while the user is iterating; when removing a preview, stop its server, delete `.scratch/ui-previews/<name>/`, and remove its row from `.scratch/ui-previews/README.md`.
+- **Sync drifted wrappers before relaunch or on failure**: Before reusing an existing `.scratch/ui-previews/<name>/` preview (or if it errors, renders wrong theme colors, broken layout, or missing state), diff it against the app's current `index.html`, root entrypoint (e.g. `main.tsx`/`App.tsx`), CSS/font imports, theme bootstrap (`data-theme`/classes), and stubbed boundary contracts; update any drifted providers, root markup, assets, or mock signatures before serving.
+- **Keep alive until explicit removal**: Keep the preview server running across turns; NEVER stop or delete a preview automatically on task completion. Only when the user explicitly requests removing a preview, stop its server, delete `.scratch/ui-previews/<name>/`, and remove its row from `.scratch/ui-previews/README.md`.
