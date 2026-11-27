@@ -2,212 +2,60 @@
 
 ## 1. Master Deslop Matrix & Checklist
 
-Use this matrix as both a lookup reference and an audit checklist:
-
-| Noise Category | What to Cut & How to Fix | Bad (Slopped / Overexplained / Lossy) | Good (Deslopped / Actionable / Precise) |
+| Noise Category | Fix | Bad | Good |
 | :--- | :--- | :--- | :--- |
-| **Pompous Verbs & Fluff Adjectives** | Cut buzzwords (`utilize`, `leverage`, `orchestrate`, `facilitate`, `robust`, `seamless`, `atomic`, `intelligent`). Use simple active verbs (`fetch`, `update`, `check`). | `Safely and intelligently orchestrate avatar updates without corrupting state` | `Update user avatar URL in database` |
-| **Implementation Trivia** | Cut internal algorithms, threading models, memory caches, or languages the caller cannot control. State only external behavior and return contracts. | `Uses a multi-threaded SHA-256 hashing algorithm to verify file integrity` | `Checks if a file was modified on disk` |
-| **Schema & Location Duplication** | Do not repeat types, default values, enums, required status, or repo layout already in schemas/configs. State only runtime behavior or return values. | `"description": "Optional boolean flag. If true, previews changes. Defaults to false."` | `"description": "Preview changes without writing to disk. Returns diff."` |
-| **Circular Naming** | Do not rephrase what the tool/parameter identifier already makes obvious. State unique triggers, differentiators, or side effects. | `# Tool: delete_user<br/>This tool is used to delete a user from the system.` | `# Tool: delete_user<br/>Permanently delete user account, purge session caches, and revoke API keys.` |
-| **Conversational Chaff & Hedging** | Cut polite filler and weak modals (`Please note`, `try to`, `Make sure to`). Use direct imperatives (`MUST`, `NEVER`, `ALWAYS`). | `Please make sure to always remember that you should try to run tests before committing` | `MUST run tests before committing` |
-| **Synonym Stacking** | Cut chained near-identical qualifiers (`strict, absolute, mandatory, non-negotiable`). Use a single unambiguous keyword (`MUST`, `MUST NOT`). | `It is strictly, absolutely, and mandatory non-negotiable to run impact analysis before editing symbols.` | `MUST run impact analysis before modifying any function or class symbol.` |
-| **Motivational Fluff vs. Operational Rationale** | Cut creation history, author preferences, and cost/UX justifications. **EXCEPTION (Drop Test):** Preserve operational rationale (failure mode, blast radius, anti-bias mechanism) if dropping it causes edge-case errors. | `Compresses avatars to JPEG to save server bandwidth and improve user UX.` | **Constraint:** `Compresses uploaded avatars to JPEG (max 512x512).`<br/>**Operational Rationale:** `Isolate auditor in a clean session because authors have confirmation bias and overlook own bugs.` |
-| **Reference Over-Specification** | Do not catalog internal sub-topics or case study titles inside a link sentence. State only the high-level category of the target file. | `For canonical case studies (Auth, Emails, Payments, Images), see [REFERENCE.md](REFERENCE.md).` | `For canonical case studies, see [REFERENCE.md](REFERENCE.md).` |
-| **Phantom / Reactionary Bans** | Do not add `NEVER` rules against custom artifacts introduced by earlier prompt drafts. Delete the original trigger instruction instead. Reserve `NEVER` for default LLM biases. | `STRICT BAN: NEVER output multi-role Persona Trees ([For DevOps], [For Cost Leads]) under any circumstances.` | *(Delete the prompt instruction that originally requested Persona Trees; add zero negative rules)* |
-| **Opaque Error Messages** | Cut generic failure strings or raw internal jargon. State exactly what failed and the next recovery action. | `{"error": "An unexpected internal exception occurred in the image pipeline."}` | `{"error": "Unsupported format 'image/bmp'. Convert to PNG, JPEG, or WebP and retry."}` |
-| **Decorative Bullet Titles** | Never force pseudo-titles onto bullets for decoration. Title bullets in plain English ONLY when needed for cross-referencing. | `- **Action Enforcement**: Verify that all tests pass before merge.` | `- Verify all tests pass before merge.` |
-| **Theatrical / Hollow Headers** | Never create headers or sub-headers wrapping 1–2 sentences. Merge directly into parent flow or list. | `### Enforcement Gate<br/>If checks fail, reject the pull request.` | `- If checks fail -> Reject the pull request.` |
-| **Domain Lock-In / Scope Narrowing** | Do not lock a general principle to narrow domain, role, or context nouns, or add cosmetic sub-cases. If the constraint holds outside that context, state the general relation or decision criterion instead. | `Never brag about repo cleanup to recruiters; keep architectural mechanics only for engineering leads.` | `Keep a detail ONLY if the target reader has the context to understand why it matters; cut unshared internals and effort-showing details.` |
-| **Cross-Repo Context Contamination** | Never leak local filenames, dataset names, or repo jargon into shared rules. Write from the standpoint of an agent in an unfamiliar repo. | `Before modifying parser, check telemetry in Client.csv and Record.csv for schema drift.` | `Before modifying parser, inspect local schema definitions and test fixtures for schema changes.` |
-| **Lossy Compression (Stylistic Paraphrasing)** | Never shorten a rule if doing so drops a condition (`more generalized OR more concise`), narrows set mappings (`1-to-1` vs. `N-to-M`), weakens `MUST`, or breaks variable binding. | `If a prompt can be replaced by a shorter rule, replace it.` *(drops `instruction set`, `more generalized`, and quality check)* | `If an instruction or instruction set can be reproduced by another instruction or instruction set that is more generalized or more concise with similar or better quality, the old instruction or instruction set MUST be replaced by that simpler instruction or instruction set.` |
-| **Runtime & Path Lock-In** | Cut host-specific built-in tool IDs (`view_file`, `write_to_file`, `grep_search`) and hardcoded layout paths in portable skills; use capability phrasing and relative/variable asset paths while keeping contract-pinned APIs exact. | `Call view_file on subdocs and run pwsh repo/scripts/run.ps1.` | `Read matching subdocs with your native file-reading tool and run pwsh <skill_dir>/scripts/run.ps1.` |
-| **Cross-Doc Protocol Drift** | Repair broken contracts across linked files before tightening prose: align status enums, caller/callee prerequisites, handoff templates, and strip spurious YAML frontmatter on non-skill guides. | Caller expects `STATUS: REVISIONS NEEDED` + setup preamble; guide has YAML frontmatter and outputs `ROUND_REVISION_NEEDED`. | Remove subdoc YAML frontmatter; align prerequisite call, handoff template, and exact `STATUS: REVISIONS NEEDED` enum. |
-| **Recall-Lossy Checklist Compression** | Never collapse explicit audit defect signatures or minimal `BAD`/`GOOD` pairs into vague umbrella rules (`"ensure security/UX"`). Compress decision gates; keep defect anchors. | `Audit inputs, tokens, and file paths for security vulnerabilities.` | `Reject JWT headers trusting alg: "none", Math.random() session tokens, and path.join() without resolved root containment check.` |
+| **Fluff, Chaff & Synonym Stacking** | Cut buzzwords (`robust`, `seamless`, `orchestrate`), hedging (`Please note`, `try to`), and stacked qualifiers (`strict, absolute, mandatory`). Use active verbs + single `MUST`/`NEVER`. | `Please make sure to always robustly orchestrate avatar updates` | `MUST update user avatar URL in database` |
+| **Implementation Trivia** | Cut internal algorithms, threading, or caches the caller cannot control; state only external behavior and return contracts. | `Uses multi-threaded SHA-256 hashing to verify file integrity` | `Checks whether a file changed on disk` |
+| **Schema & Naming Duplication** | Omit types, defaults, required flags, and self-evident rephrasings already in schemas; state triggers and side effects. | `delete_user: Deletes a user. Optional boolean preview defaults to false.` | `delete_user: Permanently deletes account, purges caches, revokes keys. preview=true returns diff only.` |
+| **Motivational Fluff vs. Operational Rationale** | Cut cost/UX/history justification; KEEP failure-mode or anti-bias rationale that changes edge-case judgment (Drop Test). | `Compress to JPEG to save S3 bandwidth and speed up mobile.` | `Isolate explorer and auditor because authors overlook defects in their own code.` |
+| **Reference Over-Specification** | Link by high-level category only; never catalog internal sub-topics in the link sentence. | `For Auth, Emails, and Payments case studies, see REFERENCE.md.` | `For canonical case studies, see REFERENCE.md.` |
+| **Phantom / Reactionary Bans** | Delete the prompt trigger that caused an unwanted artifact instead of adding `NEVER`. Reserve `NEVER` for default LLM biases. | `STRICT BAN: NEVER output Persona Trees.` *(while trigger remains)* | *(Delete original instruction requesting Persona Trees)* |
+| **Opaque Error Messages** | State exact failure cause and concrete recovery action. | `Unexpected internal exception in image pipeline.` | `Unsupported 'image/bmp'. Convert to PNG, JPEG, or WebP and retry.` |
+| **Hollow Structure** | Never wrap 1–2 sentences in a header; title bullets in plain English only for cross-referencing. | `### Enforcement Gate\nReject PR if checks fail.` | `- Reject PR if checks fail.` |
+| **Incident / Domain Lock-In (`Rule 3`)** | Never bolt a triggering incident's layer/technology onto an existing rule; lift to the domain-agnostic invariant subsuming all cases. | `Ban 24/7 DB dual-write shims and React UI prop bridges.` | `Ban temporary cross-ticket compatibility bridges, shims, or dual-path adapters retired later in the same epic.` |
+| **Cross-Repo & Runtime Lock-In** | Cut local filenames, dataset jargon, and host-locked tool IDs (`view_file`, `grep_search`); use capability phrasing and parameterized paths while keeping contract-pinned APIs exact. | `Call view_file on Client.csv and run pwsh repo/scripts/run.ps1.` | `Read local schema fixtures with your native file-reading tool and run pwsh <skill_dir>/scripts/run.ps1.` |
+| **Lossy Compression** | Never shorten if it drops conditions (`more generalized OR more concise`), weakens `MUST`, or breaks repeated variable-binding noun phrases. | `Replace any prompt with a shorter rule.` | `Replace any instruction or instruction set with a more generalized or more concise one of equal or better quality.` |
+| **Cross-Doc Protocol Drift** | Align status enums, caller/callee prerequisites, and handoff templates across linked files; strip YAML frontmatter from non-skill subdocs. | Caller expects `STATUS: REVISIONS NEEDED`; subdoc has frontmatter and emits `ROUND_REVISION_NEEDED`. | Remove subdoc frontmatter; align prerequisite call and exact `STATUS: REVISIONS NEEDED` enum. |
+| **Recall-Lossy Checklist Compression** | Compress *gating/routing policies* to invariants, but preserve concrete defect signatures and `BAD`/`GOOD` pairs in *audit checklists*. | `Ensure JWTs, session IDs, and paths follow security best practices.` | `Reject alg:"none" JWTs, Math.random() tokens, and path.join() without resolved root containment check.` |
 
 ---
 
 ## 2. Artifact Target Matrix
 
-| Artifact Type | Primary Purpose | Must Answer | What to Cut |
+| Artifact Type | Primary Purpose | Must Answer | Cut |
 | :--- | :--- | :--- | :--- |
-| **Tool Description** | Tool selection | When to call this vs. peer tools? | Parameter repetition, internal implementation details, marketing adjectives |
-| **Parameter Doc** | Value formulation | What value format is expected & what behavior does it switch? | Type/default repeats, redundant explanations of self-evident names |
-| **System / Agent Rule** | Behavioral constraint | What MUST / NEVER happen under this condition? | Polite hedging (`try to`), motivational fluff/history (preserve operational rationale passing Drop Test) |
-| **SKILL.md Frontmatter** | Router gate / Trigger | When to load this skill? (`Use when...` in 10–15 words) | Feature summaries (What), benefits (Why), slash command mentions |
-| **Tool Error Message** | Agent recovery | What failed and what exact command/action fixes it? | Generic failures (`Something went wrong`), internal stack traces without recovery steps |
-| **Audit / Reviewer Guide** | Defect recall & verdict | Which scope is isolated, which subdocs load per condition, what concrete defect signatures fail review, and what output schema/status to emit? | Vague `"check quality/security"` summaries, narrative filler, non-matching subdocs loaded out of regime |
+| **Tool Description** | Tool selection | Action, trigger vs. peers, required inputs, failure/recovery | Parameter repeats, internals, marketing adjectives |
+| **Parameter Doc** | Value formulation | Expected format and behavior switch | Type/default repeats, circular descriptions |
+| **System / Agent Rule** | Behavioral constraint | Condition, `MUST`/`NEVER` invariant, scope, recovery | Hedging, creation history, incident-layer patches |
+| **SKILL.md Frontmatter** | Router trigger | `Use when [triggers].` in 10–15 words | Feature summaries, benefits, slash commands |
+| **Tool Error Message** | Agent recovery | Exact failure cause and next corrective action | Generic errors, raw traces without recovery |
+| **Audit / Reviewer Guide** | Defect recall & verdict | Scope isolation, conditional subdocs, concrete defect signatures, exact verdict/schema | Vague quality summaries, narrative filler |
 
 ---
 
-## 3. Structural & Multi-Line Case Studies
+## 3. High-Signal Contrasts
 
-### A. Tool Description: Single Action (`resize_image`)
+### A. Over-Pruning vs. True Deslop (Tool Description)
+- **Bloated:** `Perform a robust, atomic user deletion using optimistic locks to prevent orphaned rows; fails if user_id is unknown, unverified, or has active subscriptions.`
+- **Over-Pruned (Lossy):** `Delete a user account.` *(drops blocking preconditions and irreversibility)*
+- **True Deslop:** `Permanently delete user account by user_id. Fails if unknown, unverified, or active subscriptions exist (cancel first).`
 
-**Before:**
-```text
-Perform a robust, GPU-accelerated image resize operation on a target image file.
-Can be optionally scaled by aspect ratio or constrained to max width and height
-using bilinear interpolation. Includes safety format checks, file existence
-validation, and preview thumbnail generation.
-```
+### B. Operational Rationale vs. Motivational Fluff (Drop Test)
+- **Fluff (Cut):** `Compress avatars to JPEG to save S3 storage and improve mobile load time.`
+- **Over-Pruned (Loses compass):** `Isolate explorer and auditor into separate subagents.` *(explorer may self-verify on blocker)*
+- **Operational Rationale (Keep):** `Isolate explorer and auditor into separate subagents because authors have confirmation bias and overlook defects in their own code.`
 
-**After:**
-```text
-Resize an image file to target width and height, or scale by percentage.
-Supported formats: PNG, JPEG, WebP. Overwrites source file if in_place=true.
-```
+### C. Post-Incident Additive Patching vs. Invariant Abstraction (Core Rule 3)
+- **Incident Patch (Bad):** `Under !NC, ban 24/7 DB dual-write shims, expand-contract SQL columns, and temporary React prop bridges between tickets.`
+- **Domain-Agnostic Invariant (Good):** `Under !NC, ban temporary cross-ticket compatibility bridges, shims, or dual-path adapters introduced solely to keep unmigrated subsystems wired before terminal cutover (and retired later in the same epic).`
 
-**Rationale:** Cut marketing (`robust`), implementation trivia (`GPU-accelerated`, `bilinear interpolation`), universal baseline checks (`file existence validation`), and parameter restatements (`preview thumbnail generation`). Kept supported formats and mutation side-effect (`in_place=true`).
+### D. Enumeration Trap vs. Generative Compression (Decision Gates)
+- **Enumeration Trap (Brittle):** Listing 6 sub-cases of "Suggestion Only" (compiler errors, missing DEBUG logs in retry loops, idempotent `finally` teardown...) implies unlisted cases are exempt.
+- **Generative Invariant (Good):**
+  `Classify as Suggestion Only iff (1) automated CI raises an immediate, unmistakable alert, AND (2) the fix is mechanically obvious without domain insight. Otherwise classify as Blocking Defect.`
 
-### B. Tool Description: Batch Operation (`batch_send_emails`)
-
-**Before:**
-```text
-Perform an atomic, transactional email dispatch operation across multiple recipients.
-Uses SMTP connection pooling with a safety guarantee: if any recipient address fails validation,
-the entire batch is rolled back safely, preventing partial delivery.
-Includes crash-resilient queue persistence and rate-limit backoff.
-```
-
-**After:**
-```text
-Send emails to a list of recipients in one call.
-All recipient addresses are validated before sending; if any address is invalid, no emails are sent.
-```
-
-**Rationale:** Cut infrastructure trivia (`SMTP connection pooling`, `queue persistence`, `rate-limit backoff`) and buzzwords (`atomic, transactional`), while preserving the exact all-or-nothing validation contract.
-
-### C. Tool Description: Status & Result Retrieval (`get_export_result`)
-
-**Before:**
-```text
-Retrieve the exported archive that was prepared by start_export, using only its job_id.
-Avoids streaming large binary payloads over the primary socket, cutting bandwidth
-roughly in half for the client. Fails with a clear error if the job_id is unknown,
-expired (TTL 24 hours), or if the archive is still generating (pending state).
-```
-
-**After:**
-```text
-Download the zip archive produced by start_export using its job_id.
-Returns download_url. Fails if job_id is expired (24h TTL) or if status is still pending.
-```
-
-**Rationale:** Cut architectural motivation (`Avoids streaming... cutting bandwidth...`) and tautology (`Fails with a clear error`). Preserved parameter link (`job_id`), return contract (`download_url`), and failure states (`expired`, `pending`).
-
-### D. Prose Rule vs. 2-Column Decision Table
-
-**Before (Ambiguous Prose):**
-```text
-Always compress images before uploading if they are large.
-```
-
-**After (Exact Decision Table):**
-
-| Condition | Action |
-| :--- | :--- |
-| File size > 5 MB | Compress with quality=80 before upload |
-| Dimensions > 2048px | Resize to max 2048px width before upload |
-| File size <= 5 MB and <= 2048px | Upload directly |
-
-### E. Skill Frontmatter Description (Router Gate)
-
-**Bad (What-Summary & Slash Command Clutter — 22 words):**
-```yaml
-description: Draft reproducible bug reports with environment details, raw logs, and file replicas. Use when documenting bugs, tool failures, or invoking /write-a-bug-report.
-```
-
-**Bad (Vague — No Actionable Trigger):**
-```yaml
-description: Helps write better bug reports.
-```
-
-**Good (Pure Trigger — 12 words):**
-```yaml
-description: Use when asked to write a bug report or document tool failures.
-```
-
-### F. Over-Pruning vs. True Deslop
-
-**Bad (Bloated Slop):**
-```text
-Perform a robust, secure, and state-of-the-art deletion of a user account.
-Engineered to prevent orphaned records in relational tables and cut query load.
-Includes optimistic concurrency locks to prevent race conditions and fails with an error
-if user_id is unknown, if the account has active subscriptions, or if unverified.
-```
-
-**Bad (Over-Pruned — Drops Blocking Constraints):**
-```text
-Delete a user account.
-```
-
-**Good (True Deslop — 100% Signal Preserved):**
-```text
-Permanently delete a user account by user_id.
-Fails if the account has active subscriptions (must cancel first) or is unverified.
-```
-
-### G. Operational Rationale vs. Motivational Fluff (The Drop Test)
-
-**Bad (Motivational Fluff — External Cost/UX):**
-```text
-Compress uploaded avatar images to JPEG to save server disk storage, reduce AWS S3 bandwidth costs, and improve user mobile load time.
-```
-
-**Bad (Over-Pruned Rule — Loses Edge-Case Compass):**
-```text
-Isolate explorer and auditor into separate subagents.
-```
-*(Without knowing WHY, an explorer hitting a blocker may re-run scripts to "quickly self-verify", violating the anti-confirmation-bias boundary).*
-
-**Good (Operational Rationale Preserved — Passes Drop Test):**
-```text
-Isolate explorer and auditor into separate subagents because authors have confirmation bias and systematically overlook defects in their own hypotheses or code.
-```
-
-### H. Generative Compression vs. The Enumeration Trap (Occam's Instruction Law)
-
-**Bad (The Enumeration Trap — Sprawling Sub-Case Table):**
-```markdown
-| Defect Behavior in Automated Review | Classification |
-| :--- | :--- |
-| Silently missed (plausible wrong output, state drift, race condition) OR raises an error whose generalized fix across the class requires architectural/domain insight not obvious from the error message | **Blocking Defect** |
-| Produces an immediate compiler error, uncaught stack trace, or failing assertion against stated Acceptance Criteria with an obvious fix; misses intermediate DEBUG logs in transient retry loops that re-raise on exhaustion; or uses best-effort idempotent resource teardown in finally blocks | **Suggestion Only** |
-```
-*(Brittle: Reviewers endlessly append domain-specific examples, creating the false impression that unlisted defects are excused).*
-
-**Good (Truth Table — 2-Axis Decomposition):**
-
-| Alert Raised in Automated CI | Fix Obvious Without Domain Knowledge | Classification |
-| :---: | :---: | :--- |
-| True | True | Suggestion Only |
-| True | False | Blocking Defect |
-| False | Any | Blocking Defect |
-
-**Best (Generative Compression — Unified 2-Condition Invariant):**
-```markdown
-A defect MUST be classified as **Suggestion Only** if and only if it satisfies both conditions:
-1. It raises an immediate, unmistakable alert (compiler error, crash, or failing test assertion) during automated CI execution.
-2. The fix is mechanically obvious from the symptom without requiring domain-specific architectural insight.
-Otherwise, it MUST be classified as a **Blocking Defect** (and state why automated checks would miss it).
-```
-
-### I. Recall Preservation in Audit Checklists vs. Decision-Gate Compression
-
-Apply Occam's Instruction Law differently by role:
-- **Gating / Routing Rules (Case Study H):** Compress sub-case lists into general invariants so unlisted items do not act as loopholes.
-- **Audit Checklists & Subdocuments:** Keep explicit failure signatures and minimal `BAD`/`GOOD` contrasts as attention triggers; generalizing them into high-level categories causes auditors to overlook real defects.
-
-**Bad (Over-Compressed Audit Checklist - Collapses Recall):**
-```markdown
-- Ensure JWT tokens, session IDs, and file access paths follow security best practices.
-```
-
-**Good (Preserved Failure Signatures - High Recall):**
-```markdown
-- Reject JWT verification trusting `decoded.header.alg` (allowlist `RS256`/`EdDSA` only; block `alg: "none"`).
-- Reject `Math.random()` for session IDs or nonces (require CSPRNG such as `crypto.randomBytes`).
-- Reject `path.join(baseDir, userInput)` without normalizing via `path.resolve` and asserting `target.startsWith(safeBase + path.sep)`.
-```
+### E. Decision-Gate Compression vs. Audit-Checklist Recall
+- Compress **gating/routing rules** into general invariants (Contrast D) to close loopholes.
+- Preserve **explicit failure signatures** in **audit checklists** so auditors recall specific defects:
+  - **Bad:** `Audit JWTs, session tokens, and file paths for security issues.`
+  - **Good:** `Reject JWT verification trusting decoded.header.alg (allowlist RS256/EdDSA; block alg:"none"), Math.random() session tokens (require CSPRNG), and path.join(base, input) without path.resolve containment check.`
