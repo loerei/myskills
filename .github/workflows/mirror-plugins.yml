@@ -1,0 +1,82 @@
+name: Mirror Plugin Repositories
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'productivity/conduct-reviewing-loop/**'
+      - 'productivity/conduct-deep-reviewing-loop/**'
+      - 'productivity/your-co-engineer-for-this-jet-engine-is-an-infant/**'
+      - '.github/plugin-mirrors.json'
+      - '.github/scripts/mirror-plugins.mjs'
+      - '.github/workflows/mirror-plugins.yml'
+  workflow_dispatch:
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - repo: loerei/conduct-reviewing-loop
+            branch: main
+          - repo: loerei/your-co-engineer-for-this-jet-engine-is-an-infant
+            branch: main
+
+    steps:
+      - name: Verify cross-repo sync token
+        env:
+          PLUGIN_SYNC_TOKEN: ${{ secrets.PLUGIN_SYNC_TOKEN }}
+        run: |
+          if [ -z "$PLUGIN_SYNC_TOKEN" ]; then
+            echo "::error::Missing secrets.PLUGIN_SYNC_TOKEN (fine-grained PAT with contents:write on mirrored plugin repositories)."
+            exit 1
+          fi
+
+      - name: Checkout myskills
+        uses: actions/checkout@v4
+        with:
+          path: myskills
+          fetch-depth: 0
+
+      - name: Check whether mirror target changed
+        id: filter
+        shell: bash
+        run: |
+          BEFORE="${{ github.event.before }}"
+          if [ "${{ github.event_name }}" != "push" ] || [ -z "$BEFORE" ] || [[ "$BEFORE" =~ ^0+$ ]] || ! git -C myskills cat-file -e "$BEFORE^{commit}" 2>/dev/null; then
+            echo "should_sync=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          changed=$(git -C myskills diff --name-only "$BEFORE" "${{ github.sha }}")
+          should_sync=$(node myskills/.github/scripts/mirror-plugins.mjs --repo "${{ matrix.repo }}" --config myskills/.github/plugin-mirrors.json --check-paths "$changed")
+          echo "should_sync=$should_sync" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout target plugin repository
+        if: steps.filter.outputs.should_sync == 'true'
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ matrix.repo }}
+          ref: ${{ matrix.branch }}
+          token: ${{ secrets.PLUGIN_SYNC_TOKEN }}
+          path: target
+
+      - name: Sync skill files from myskills
+        if: steps.filter.outputs.should_sync == 'true'
+        run: node myskills/.github/scripts/mirror-plugins.mjs --repo "${{ matrix.repo }}" --source myskills --target target
+
+      - name: Commit and push mirror changes
+        if: steps.filter.outputs.should_sync == 'true'
+        run: |
+          cd target
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to mirror for ${{ matrix.repo }}."
+            exit 0
+          fi
+          SHORT_SHA=$(git -C ../myskills rev-parse --short HEAD)
+          git commit -m "chore(sync): mirror from myskills ($SHORT_SHA)"
+          git push origin "${{ matrix.branch }}"

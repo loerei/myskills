@@ -33,4 +33,4 @@ description: Use when [specific triggers].
 1. Edit source `SKILL.md` (and any subdocs) under `<myskills-root>/<category>/<skill-name>/`.
 2. Run `agents audit` to validate frontmatter, duplicate names, and policy files.
 3. Run `agents distribute` to sync all registered workspaces and IDEs, or `agents distribute -t <path>` for a specific project directory.
-4. Commit and push changes in `myskills`.
+4. Commit and push changes in `myskills`. (Mirrored standalone plugin repositories listed in `.github/plugin-mirrors.json` sync automatically via GitHub Actions on push to `main`.)

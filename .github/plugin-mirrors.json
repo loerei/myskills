@@ -1,0 +1,35 @@
+[
+  {
+    "repo": "loerei/conduct-reviewing-loop",
+    "branch": "main",
+    "mappings": [
+      {
+        "src": "productivity/conduct-reviewing-loop",
+        "dest": "skills/conduct-reviewing-loop",
+        "mode": "replace-dir"
+      },
+      {
+        "src": "productivity/conduct-deep-reviewing-loop",
+        "dest": "skills/conduct-deep-reviewing-loop",
+        "mode": "replace-dir"
+      }
+    ]
+  },
+  {
+    "repo": "loerei/your-co-engineer-for-this-jet-engine-is-an-infant",
+    "branch": "main",
+    "mappings": [
+      {
+        "src": "productivity/your-co-engineer-for-this-jet-engine-is-an-infant",
+        "dest": ".",
+        "mode": "sync-root",
+        "preserve": [
+          ".git",
+          ".claude-plugin",
+          ".gitignore",
+          "LICENSE"
+        ]
+      }
+    ]
+  }
+]
