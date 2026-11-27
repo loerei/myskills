@@ -25,9 +25,9 @@ Resolve `TODO_DIR` in order:
 ## 3. Update & Progress Rules
 
 - Assign monotonically increasing `#N` IDs per repository file (`#1`, `#2`, ...; never reuse IDs).
-- Move an entry under the matching status section (`## WIP`, `## To-do`, `## For Consideration`, `## Done`) whenever status changes, and refresh `Updated: YYYY-MM-DD HH:mm`.
+- Move an entry under the matching status section (`## WIP`, `## To-do`, `## For Consideration`, `## Done`) and update its GFM checkbox (`- [/]` for `WIP`, `- [ ]` for `To-do` and `For Consideration`, `- [x]` for `Done`) whenever status changes; refresh `Updated: YYYY-MM-DD HH:mm`.
 - Include `Session` as `[<Session Title>](conversation://<conversation-id>)` alongside `<short-id>` (add subsequent sessions that touch the entry) and link relevant PRs, artifacts, files, or concise code notes in `Details`.
-- Append `- YYYY-MM-DD HH:mm: <note>` to `Progress` **only at meaningful milestones** (status transition, confirmed root cause or decision, PR/commit/artifact created, blocker hit, or pause/handoff). NEVER log routine reads or intermediate tool chatter.
+- Keep `Progress` sub-bullets unmarked (`- YYYY-MM-DD HH:mm: <note>`, no checkboxes) and append **only at meaningful milestones** (status transition, confirmed root cause or decision, PR/commit/artifact created, blocker hit, or pause/handoff). NEVER log routine reads or intermediate tool chatter.
 
 ## 4. File Template (`<TODO_DIR>/<repo-slug>.md`)
 
@@ -36,16 +36,22 @@ Resolve `TODO_DIR` in order:
 
 ## WIP
 
-### #1 <Entry Title>
-- **Session:** [<Session Title>](conversation://<conversation-id>) (`<short-id>`)
-- **Created:** YYYY-MM-DD HH:mm | **Updated:** YYYY-MM-DD HH:mm
-- **Details:** <Scope, decision context, PR/artifact/file links, or code notes>
-- **Progress:**
-  - YYYY-MM-DD HH:mm: <Milestone or state transition>
+- [/] **#1 <Entry Title>**
+  - **Session:** [<Session Title>](conversation://<conversation-id>) (`<short-id>`)
+  - **Created:** YYYY-MM-DD HH:mm | **Updated:** YYYY-MM-DD HH:mm
+  - **Details:** <Scope, decision context, PR/artifact/file links, or code notes>
+  - **Progress:**
+    - YYYY-MM-DD HH:mm: <Milestone or state transition>
 
 ## To-do
 
+- [ ] **#2 <Entry Title>**
+
 ## For Consideration
 
+- [ ] **#3 <Entry Title>**
+
 ## Done
+
+- [x] **#4 <Entry Title>**
 ```
