@@ -1,8 +1,13 @@
 [
   {
-    "repo": "loerei/conduct-reviewing-loop",
+    "repo": "loerei/trust-issues",
     "branch": "main",
     "mappings": [
+      {
+        "src": "productivity/prd-and-tickets",
+        "dest": "skills/prd-and-tickets",
+        "mode": "replace-dir"
+      },
       {
         "src": "productivity/conduct-reviewing-loop",
         "dest": "skills/conduct-reviewing-loop",
@@ -11,6 +16,21 @@
       {
         "src": "productivity/conduct-deep-reviewing-loop",
         "dest": "skills/conduct-deep-reviewing-loop",
+        "mode": "replace-dir"
+      },
+      {
+        "src": "productivity/gitpublish-prd-and-tickets",
+        "dest": "skills/gitpublish-prd-and-tickets",
+        "mode": "replace-dir"
+      },
+      {
+        "src": "engineering/implement",
+        "dest": "skills/implement",
+        "mode": "replace-dir"
+      },
+      {
+        "src": "productivity/implement-with-subagents",
+        "dest": "skills/implement-with-subagents",
         "mode": "replace-dir"
       }
     ]

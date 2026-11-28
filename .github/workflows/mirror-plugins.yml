@@ -4,8 +4,12 @@ on:
   push:
     branches: [main]
     paths:
+      - 'productivity/prd-and-tickets/**'
       - 'productivity/conduct-reviewing-loop/**'
       - 'productivity/conduct-deep-reviewing-loop/**'
+      - 'productivity/gitpublish-prd-and-tickets/**'
+      - 'engineering/implement/**'
+      - 'productivity/implement-with-subagents/**'
       - 'productivity/your-co-engineer-for-this-jet-engine-is-an-infant/**'
       - '.github/plugin-mirrors.json'
       - '.github/scripts/mirror-plugins.mjs'
@@ -19,7 +23,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - repo: loerei/conduct-reviewing-loop
+          - repo: loerei/trust-issues
             branch: main
           - repo: loerei/your-co-engineer-for-this-jet-engine-is-an-infant
             branch: main
