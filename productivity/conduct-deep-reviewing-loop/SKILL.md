@@ -42,7 +42,7 @@ flowchart TD
 1. **Resolve `<short_title>`, `<review_dir>`, and `<trace_vault>`**:
    - Determine `<Topic>` by strict precedence:
      1. **Explicit User Specification**: Title/slug in prompt (excluding role names, modifier tags, and file paths).
-     2. **Single Target DA Topic / Stem**: If filename stem is generic (`implementation_plan`, `plan`, `spec`, `draft`, `index`) or inside `.gemini/antigravity/brain/<id>/`, extract top-level H1 header text and strip leading prefixes matching `^(?:Implementation\s+Plan|Plan|Spec(?:ification)?|Design\s+Doc(?:ument)?|Architecture\s+Spec(?:ification)?)\s*[:–—|-]\s*`. Fallback to filename stem if no H1 exists.
+     2. **Single Target DA Topic / Stem**: If filename stem is generic (`implementation_plan`, `plan`, `spec`, `draft`, `index`) or inside a session/artifact plan directory, extract top-level H1 header text and strip leading prefixes matching `^(?:Implementation\s+Plan|Plan|Spec(?:ification)?|Design\s+Doc(?:ument)?|Architecture\s+Spec(?:ification)?)\s*[:–—|-]\s*`. Fallback to filename stem if no H1 exists.
      3. **Cluster / Epic Topic**: Common parent folder name or 2–3 word topic slug when auditing multiple DAs.
    - **Slugification Pipeline**:
      1. Convert whitespace, underscores (`_`), and non-alphanumeric characters to hyphens (`-`).
