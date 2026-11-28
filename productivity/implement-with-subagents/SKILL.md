@@ -81,4 +81,6 @@ Before sending a follow-up work unit to an existing subagent, call `chronicle:ge
 | `Curr. Context >= 90,000` tokens | **SPAWN NEW**: Near capacity; risks mid-turn truncation on next work unit. |
 | `Checkpoint Count == 1` AND `Curr. Context < 90,000` | **REUSE SUBAGENT**: Healthy reasoning history and token headroom. |
 
+If `chronicle:get_session_benchmarks` is unavailable in the active runtime, default to **SPAWN NEW** for every work unit rather than guessing context headroom.
+
 After each subagent reports done, verify tests and the commit range (`git log <base>..HEAD`) on the target branch before dispatching the next work unit.
